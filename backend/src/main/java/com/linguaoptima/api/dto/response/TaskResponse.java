@@ -1,0 +1,55 @@
+package com.linguaoptima.api.dto.response;
+
+import com.linguaoptima.api.domain.Task;
+import com.linguaoptima.api.domain.enums.CefrLevel;
+import com.linguaoptima.api.domain.enums.DifficultyLevel;
+import com.linguaoptima.api.domain.enums.TaskType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class TaskResponse {
+
+    private UUID id;
+    private TaskType type;
+    private CefrLevel cefrLevel;
+    private String grammarTopic;
+    private String domain;
+    private String content;
+    private DifficultyLevel difficulty;
+    private boolean isTemplate;
+    private LocalDateTime createdAt;
+    @Builder.Default
+    private List<QuestionResponse> questions = new ArrayList<>();
+
+    public static TaskResponse fromEntity(Task task) {
+        if (task == null) return null;
+        List<QuestionResponse> questionResponses = task.getQuestions() != null
+            ? task.getQuestions().stream().map(QuestionResponse::fromEntity).collect(Collectors.toList())
+            : new ArrayList<>();
+
+        return TaskResponse.builder()
+            .id(task.getId())
+            .type(task.getType())
+            .cefrLevel(task.getCefrLevel())
+            .grammarTopic(task.getGrammarTopic())
+            .domain(task.getDomain())
+            .content(task.getContent())
+            .difficulty(task.getDifficulty())
+            .isTemplate(task.isTemplate())
+            .createdAt(task.getCreatedAt())
+            .questions(questionResponses)
+            .build();
+    }
+}

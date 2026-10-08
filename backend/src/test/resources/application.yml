@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+app:
+  jwt:
+    secret: test-secret-key-that-is-at-least-32-bytes-long-for-hmac-sha256-testing!
+  encryption:
+    key: test-encryption-key-for-unit-tests-32-bytes!
+  ai:
+    groq:
+      api-key: test-groq-key
+    gemini:
+      api-key: test-gemini-key
+  cors:
+    allowed-origins: http://localhost:5173

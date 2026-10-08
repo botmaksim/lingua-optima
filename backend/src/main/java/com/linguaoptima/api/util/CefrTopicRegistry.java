@@ -1,0 +1,61 @@
+package com.linguaoptima.api.util;
+
+import com.linguaoptima.api.domain.enums.CefrLevel;
+
+import java.util.List;
+import java.util.Map;
+
+public final class CefrTopicRegistry {
+
+    private CefrTopicRegistry() {}
+
+    private static final Map<CefrLevel, List<String>> CEFR_GRAMMAR_TOPICS = Map.of(
+        CefrLevel.B1, List.of(
+            "Present Perfect vs Past Simple",
+            "Past Continuous",
+            "Conditionals 0, 1, 2",
+            "Passive Voice (Present & Past Simple)",
+            "Modal Verbs (obligation, permission, advice)",
+            "Comparatives and Superlatives",
+            "Used to / Would",
+            "Relative Clauses (defining)"
+        ),
+        CefrLevel.B2, List.of(
+            "Third Conditional & Mixed Conditionals",
+            "Passive Voice (Continuous & Perfect)",
+            "Reported Speech",
+            "Wish / If Only",
+            "Modal Verbs of Deduction (Past)",
+            "Relative Clauses (non-defining)",
+            "Gerunds vs Infinitives",
+            "Inversion with Negative Adverbials"
+        ),
+        CefrLevel.C1, List.of(
+            "Advanced Inversion & Fronting",
+            "Subjunctive Mood",
+            "Cleft Sentences",
+            "Participle Clauses",
+            "Ellipsis and Substitution",
+            "Advanced Discourse Markers",
+            "Nuanced Modal Idioms",
+            "Hypothetical Meaning & Unreal Past"
+        )
+    );
+
+    private static final List<String> COMMON_DOMAINS = List.of(
+        "Business & Work",
+        "Travel & Tourism",
+        "Academic & Science",
+        "Culture & Arts",
+        "Technology & AI",
+        "Daily Life & Relationships"
+    );
+
+    public static List<String> getTopicsForLevel(CefrLevel level) {
+        return CEFR_GRAMMAR_TOPICS.getOrDefault(level, List.of("General Grammar"));
+    }
+
+    public static List<String> getCommonDomains() {
+        return COMMON_DOMAINS;
+    }
+}
