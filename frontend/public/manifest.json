@@ -1,0 +1,17 @@
+{
+  "name": "Lingua Optima",
+  "short_name": "LinguaOptima",
+  "description": "Adaptive AI-powered English learning platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
