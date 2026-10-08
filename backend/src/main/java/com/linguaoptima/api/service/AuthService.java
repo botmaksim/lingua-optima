@@ -31,16 +31,27 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final StringRedisTemplate stringRedisTemplate;
 
-    @Autowired(required = false)
-    private StringRedisTemplate stringRedisTemplate;
+    public AuthService(
+            UserRepository userRepository,
+            SubscriptionRepository subscriptionRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            @Autowired(required = false) StringRedisTemplate stringRedisTemplate
+    ) {
+        this.userRepository = userRepository;
+        this.subscriptionRepository = subscriptionRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.stringRedisTemplate = stringRedisTemplate;
+    }
 
     @Transactional
     public TokenResponse register(RegisterRequest request) {
