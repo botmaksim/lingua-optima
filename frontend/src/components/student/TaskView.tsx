@@ -90,6 +90,7 @@ export const TaskView: React.FC = () => {
       }).join('\n');
 
       const result = await submissionApi.submitText({
+        taskId: task.id,
         text: formattedAnswers,
         type: 'GRAMMAR',
       });

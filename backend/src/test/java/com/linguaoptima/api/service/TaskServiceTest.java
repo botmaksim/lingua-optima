@@ -491,5 +491,87 @@ class TaskServiceTest {
         assertTrue(res.getContent().contains("General Topic"));
         assertTrue(res.getContent().contains("Daily Life"));
     }
+
+    /**
+     * @brief Verifies prompt leak detection sanitizes AI content to default instructions.
+     */
+    @Test
+    void testGenerateTaskWithPromptLeakContentFallback() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .taskType(TaskType.MCQ)
+            .grammarTopic("Conditionals")
+            .build();
+
+        String leakedJson = "{\"content\": \"System parameters and instructions: generate an english test\", \"questions\": []}";
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(leakedJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertTrue(res.getContent().contains("Conditionals"));
+        assertTrue(res.getContent().contains("Complete the following exercises focusing on"));
+    }
+
+    /**
+     * @brief Verifies essay fallback incorporates custom topic and domain when present.
+     */
+    @Test
+    void testGenerateEssayTaskWithProvidedTopicAndDomain() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic("Artificial Intelligence")
+            .domain("Higher Education")
+            .build();
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn("{\"content\":\"\"}");
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertTrue(res.getContent().contains("Artificial Intelligence"));
+        assertTrue(res.getContent().contains("Higher Education"));
+    }
+
+    /**
+     * @brief Verifies essay fallback with blank topic and domain uses default context strings.
+     */
+    @Test
+    void testGenerateEssayTaskWithBlankTopicAndDomain() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic("   ")
+            .domain("   ")
+            .build();
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn("{\"content\":\"\"}");
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertTrue(res.getContent().contains("General Topic"));
+        assertTrue(res.getContent().contains("Daily Life"));
+    }
+
+    /**
+     * @brief Verifies non-essay fallback with blank topic uses default English grammar string.
+     */
+    @Test
+    void testGenerateNonEssayTaskWithBlankTopic() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .taskType(TaskType.MCQ)
+            .grammarTopic("   ")
+            .build();
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn("{\"content\":\"\"}");
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertTrue(res.getContent().contains("English grammar"));
+    }
 }
 

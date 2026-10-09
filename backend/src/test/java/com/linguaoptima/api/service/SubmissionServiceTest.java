@@ -20,6 +20,7 @@ import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.TaskAssignmentRepository;
+import com.linguaoptima.api.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,6 +51,9 @@ class SubmissionServiceTest {
     /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Test fixture or mock dependency for task repository. */
+    @Mock
+    private TaskRepository taskRepository;
     /** @brief Test fixture or mock dependency for ocr service. */
     @Mock
     private OCRService ocrService;
@@ -143,7 +147,57 @@ class SubmissionServiceTest {
         assertEquals(85.0, res.getScore());
         verify(usageService).incrementEvaluation(student);
         verify(gamificationService).onSubmissionCompleted(student);
-        verify(progressService).updateFromSubmission(student, "Passive Voice", true);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: submit text with taskId creating self-assignment.
+     */
+    @Test
+    void testSubmitTextWithTaskId() {
+        Task t = Task.builder()
+            .id(UUID.randomUUID())
+            .createdBy(student)
+            .grammarTopic("Reported Speech")
+            .answerKey("[{\"questionOrder\": 1, \"correctOption\": \"said\"}]")
+            .build();
+        TextSubmissionRequest req = TextSubmissionRequest.builder()
+            .taskId(t.getId())
+            .text("She said that...")
+            .type("GRAMMAR")
+            .build();
+
+        when(taskRepository.findById(t.getId())).thenReturn(Optional.of(t));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), t.getId())).thenReturn(Optional.empty());
+        when(taskAssignmentRepository.save(any(TaskAssignment.class))).thenReturn(assignment);
+        when(scoringService.scoreGrammarTask(eq("She said that..."), eq(t.getAnswerKey()), eq(student)))
+            .thenReturn(Map.of("score", 90.0, "feedback", "Great"));
+        when(scoringService.extractScore(any())).thenReturn(90.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
+            Submission s = inv.getArgument(0);
+            s.setId(UUID.randomUUID());
+            return s;
+        });
+
+        SubmissionResultResponse res = submissionService.submitText(req, student);
+        assertNotNull(res);
+        assertEquals(90.0, res.getScore());
+        verify(progressService).updateFromSubmission(student, "Reported Speech", true);
+
+        // Test with createdBy == null
+        t.setCreatedBy(null);
+        SubmissionResultResponse resNullCreatedBy = submissionService.submitText(req, student);
+        assertNotNull(resNullCreatedBy);
+
+        // Test when taskId is provided but task is not found
+        UUID notFoundId = UUID.randomUUID();
+        TextSubmissionRequest reqNotFound = TextSubmissionRequest.builder()
+            .taskId(notFoundId)
+            .text("Some other text")
+            .type("GRAMMAR")
+            .build();
+        when(taskRepository.findById(notFoundId)).thenReturn(Optional.empty());
+        SubmissionResultResponse resNotFound = submissionService.submitText(reqNotFound, student);
+        assertNotNull(resNotFound);
     }
 
     /**

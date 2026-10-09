@@ -24,6 +24,9 @@ public class TextSubmissionRequest {
     /** @brief Field representing assignment id in TextSubmissionRequest. */
     private UUID assignmentId;
 
+    /** @brief Optional direct task identifier when submitted outside teacher assignment. */
+    private UUID taskId;
+
     /** @brief Field representing text in TextSubmissionRequest. */
     @NotBlank(message = "Text cannot be blank")
     private String text;

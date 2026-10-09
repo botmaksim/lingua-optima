@@ -130,6 +130,12 @@ class AIProvidersTest {
 
         String res = provider.complete("hello");
         assertEquals("Fallback response", res);
+
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenThrow(new RuntimeException())
+            .thenReturn(new ResponseEntity<>(json, HttpStatus.OK));
+        String resNullMsg = provider.complete("hello");
+        assertEquals("Fallback response", resNullMsg);
     }
 
     /**

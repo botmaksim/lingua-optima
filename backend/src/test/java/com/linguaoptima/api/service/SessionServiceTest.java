@@ -49,6 +49,9 @@ class SessionServiceTest {
     /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Test fixture or mock dependency for task repository. */
+    @Mock
+    private TaskRepository taskRepository;
     /** @brief Test fixture or mock dependency for task question repository. */
     @Mock
     private TaskQuestionRepository taskQuestionRepository;
@@ -136,6 +139,40 @@ class SessionServiceTest {
         User other = User.builder().id(UUID.randomUUID()).build();
         when(taskAssignmentRepository.findById(assignment.getId())).thenReturn(Optional.of(assignment));
         assertThrows(ForbiddenException.class, () -> sessionService.startSession(assignment.getId(), other));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: start session with taskId creates self-assignment.
+     */
+    @Test
+    void testStartSessionWithTaskIdSuccess() {
+        task.setCreatedBy(student);
+        UUID taskId = task.getId();
+        when(taskAssignmentRepository.findById(taskId)).thenReturn(Optional.empty());
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), taskId)).thenReturn(Optional.empty());
+        when(taskAssignmentRepository.save(any(TaskAssignment.class))).thenReturn(assignment);
+        when(sessionStateRepository.save(any(SessionState.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        SessionState state = sessionService.startSession(taskId, student);
+        assertNotNull(state);
+        assertEquals(AssignmentStatus.IN_PROGRESS, assignment.getStatus());
+
+        task.setCreatedBy(null);
+        SessionState state2 = sessionService.startSession(taskId, student);
+        assertNotNull(state2);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: start session when neither assignment nor task is found.
+     */
+    @Test
+    void testStartSessionNotFoundThrows() {
+        UUID unknownId = UUID.randomUUID();
+        when(taskAssignmentRepository.findById(unknownId)).thenReturn(Optional.empty());
+        when(taskRepository.findById(unknownId)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> sessionService.startSession(unknownId, student));
     }
 
     /**

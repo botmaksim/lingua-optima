@@ -83,8 +83,10 @@ class ProgressControllerTest {
      */
     @Test
     void testConfirmLevelUp() {
-        ResponseEntity<Void> res = progressController.confirmLevelUp(student);
+        when(progressService.confirmLevelUp(student)).thenReturn(student);
+        ResponseEntity<User> res = progressController.confirmLevelUp(student);
         assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(student, res.getBody());
         verify(progressService).confirmLevelUp(student);
     }
 }

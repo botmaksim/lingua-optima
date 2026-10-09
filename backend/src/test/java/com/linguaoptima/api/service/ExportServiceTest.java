@@ -109,6 +109,8 @@ class ExportServiceTest {
     @Test
     void testGenerateStudentReportCsvAndPdf() {
         ProgressRecord pr = ProgressRecord.builder().student(student).grammarTopic("Passive").totalAttempts(5).masteryScore(0.8).build();
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
         when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
         when(progressRecordRepository.findByStudent(student)).thenReturn(List.of(pr));
         when(submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId())).thenReturn(List.of());
@@ -120,6 +122,24 @@ class ExportServiceTest {
         byte[] pdf = exportService.generateStudentReport(student.getId(), "pdf", teacher);
         assertNotNull(pdf);
         assertTrue(pdf.length > 0);
+
+        User admin = User.builder().id(UUID.randomUUID()).role(Role.ADMIN).build();
+        byte[] adminPdf = exportService.generateStudentReport(student.getId(), "pdf", admin);
+        assertNotNull(adminPdf);
+
+        byte[] selfPdf = exportService.generateStudentReport(student.getId(), "pdf", student);
+        assertNotNull(selfPdf);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: generate student report forbidden when teacher does not teach student.
+     */
+    @Test
+    void testGenerateStudentReportForbidden() {
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(otherTeacher)).thenReturn(List.of());
+        assertThrows(ForbiddenException.class,
+            () -> exportService.generateStudentReport(student.getId(), "csv", otherTeacher));
     }
 
     /**
@@ -157,6 +177,8 @@ class ExportServiceTest {
         assertThrows(RuntimeException.class, () -> exportService.generateGroupReport(group.getId(), "pdf", teacher));
 
         when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
         when(progressRecordRepository.findByStudent(student)).thenReturn(java.util.Collections.singletonList(null));
         when(submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId())).thenReturn(List.of());
         assertThrows(RuntimeException.class, () -> exportService.generateStudentReport(student.getId(), "csv", teacher));

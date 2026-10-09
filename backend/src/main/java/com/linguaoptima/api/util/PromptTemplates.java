@@ -49,6 +49,7 @@ public final class PromptTemplates {
                   "id": 1,
                   "text": "Question text here...",
                   "options": ["Option A", "Option B", "Option C", "Option D"],
+                  "correctAnswer": "Option A",
                   "difficulty": 2,
                   "grammarRule": "Grammar rule tested"
                 }
@@ -56,6 +57,7 @@ public final class PromptTemplates {
               "answerKey": [
                 {
                   "questionId": 1,
+                  "questionOrder": 1,
                   "correctOption": "Option A",
                   "explanation": "Why this is correct"
                 }

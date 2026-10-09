@@ -76,7 +76,7 @@ public class SubmissionResultResponse {
             .studentId(submission.getStudent().getId())
             .submissionType(submission.getSubmissionType())
             .originalText(submission.getStudentText())
-            .score(submission.getEffectiveScore())
+            .score(submission.getAiScore() != null ? submission.getAiScore() : submission.getEffectiveScore())
             .effectiveScore(submission.getEffectiveScore())
             .feedback(submission.getAiFeedback())
             .overrideScore(submission.getOverrideScore())

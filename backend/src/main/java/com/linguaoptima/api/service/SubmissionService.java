@@ -6,6 +6,7 @@ package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linguaoptima.api.domain.Submission;
+import com.linguaoptima.api.domain.Task;
 import com.linguaoptima.api.domain.TaskAssignment;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.AssignmentStatus;
@@ -20,6 +21,7 @@ import com.linguaoptima.api.exception.OcrException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.TaskAssignmentRepository;
+import com.linguaoptima.api.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,8 @@ public class SubmissionService {
     private final SubmissionRepository submissionRepository;
     /** @brief Field representing task assignment repository in SubmissionService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Field representing task repository in SubmissionService. */
+    private final TaskRepository taskRepository;
     /** @brief Field representing ocr service in SubmissionService. */
     private final OCRService ocrService;
     /** @brief Field representing scoring service in SubmissionService. */
@@ -91,6 +95,22 @@ public class SubmissionService {
             if (assignment.getTask() != null) {
                 answerKey = assignment.getTask().getAnswerKey();
                 grammarTopic = assignment.getTask().getGrammarTopic();
+            }
+        } else if (request.getTaskId() != null) {
+            Task task = taskRepository.findById(request.getTaskId()).orElse(null);
+            if (task != null) {
+                answerKey = task.getAnswerKey();
+                grammarTopic = task.getGrammarTopic();
+                assignment = taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), task.getId())
+                    .orElseGet(() -> taskAssignmentRepository.save(TaskAssignment.builder()
+                        .student(student)
+                        .task(task)
+                        .assignedBy(task.getCreatedBy() != null ? task.getCreatedBy() : student)
+                        .status(AssignmentStatus.SUBMITTED)
+                        .createdAt(LocalDateTime.now())
+                        .build()));
+                assignment.setStatus(AssignmentStatus.SUBMITTED);
+                taskAssignmentRepository.save(assignment);
             }
         }
 

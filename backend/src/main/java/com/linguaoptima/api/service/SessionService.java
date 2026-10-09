@@ -41,6 +41,8 @@ public class SessionService {
     private final SessionStateRepository sessionStateRepository;
     /** @brief Field representing task assignment repository in SessionService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Field representing task repository in SessionService. */
+    private final TaskRepository taskRepository;
     /** @brief Field representing task question repository in SessionService. */
     private final TaskQuestionRepository taskQuestionRepository;
     /** @brief Field representing submission repository in SessionService. */
@@ -53,17 +55,28 @@ public class SessionService {
     private final ObjectMapper objectMapper;
 
     /**
-     * @brief Initiates a new adaptive testing session for a student's task assignment.
-     * @param assignmentId Unique identifier of the task assignment.
+     * @brief Initiates a new adaptive testing session for a student's task assignment or direct task.
+     * @param assignmentOrTaskId Unique identifier of the task assignment or task.
      * @param student The student initiating the session.
      * @return Newly initialized SessionState entity.
-     * @throws ResourceNotFoundException if assignment does not exist.
+     * @throws ResourceNotFoundException if assignment or task does not exist.
      * @throws ForbiddenException if assignment does not belong to the requesting student.
      */
     @Transactional
-    public SessionState startSession(UUID assignmentId, User student) {
-        TaskAssignment assignment = taskAssignmentRepository.findById(assignmentId)
-            .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentId));
+    public SessionState startSession(UUID assignmentOrTaskId, User student) {
+        TaskAssignment assignment = taskAssignmentRepository.findById(assignmentOrTaskId)
+            .orElseGet(() -> {
+                Task task = taskRepository.findById(assignmentOrTaskId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Assignment not found: " + assignmentOrTaskId));
+                return taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), task.getId())
+                    .orElseGet(() -> taskAssignmentRepository.save(TaskAssignment.builder()
+                        .student(student)
+                        .task(task)
+                        .assignedBy(task.getCreatedBy() != null ? task.getCreatedBy() : student)
+                        .status(AssignmentStatus.PENDING)
+                        .createdAt(LocalDateTime.now())
+                        .build()));
+            });
 
         if (!assignment.getStudent().getId().equals(student.getId())) {
             throw new ForbiddenException("Assignment does not belong to student.");

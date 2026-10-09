@@ -47,15 +47,15 @@ public class ApiKeyController {
      *
      * @param user Authenticated user principal.
      * @param request Payload containing AI provider name and plaintext API key.
-     * @return HTTP 200 on successful encryption and persistence.
+     * @return HTTP 200 with saved ApiKey entity containing provider metadata.
      */
     @PostMapping
-    public ResponseEntity<Void> addApiKey(
+    public ResponseEntity<ApiKey> addApiKey(
         @AuthenticationPrincipal User user,
         @Valid @RequestBody CreateApiKeyRequest request
     ) {
-        apiKeyService.saveKey(request, user);
-        return ResponseEntity.ok().build();
+        ApiKey saved = apiKeyService.saveKey(request, user);
+        return ResponseEntity.ok(saved);
     }
 
     /**

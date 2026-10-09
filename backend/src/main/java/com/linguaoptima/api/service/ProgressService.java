@@ -121,16 +121,18 @@ public class ProgressService {
     /**
      * @brief Confirms student acceptance of a suggested CEFR level upgrade.
      * @param student Authenticated student accepting the upgrade.
+     * @return Updated User entity with newly assigned CEFR level.
      */
     @Transactional
-    public void confirmLevelUp(User student) {
+    public User confirmLevelUp(User student) {
         CefrLevel next = student.getCefrLevel().getNextLevel();
         student.setCefrLevel(next);
         student.setLevelUpSuggestedAt(null);
-        userRepository.save(student);
-        notificationService.send(student,
+        User saved = userRepository.save(student);
+        notificationService.send(saved,
             "🎉 Congratulations! Your CEFR level has been upgraded to " + next + ".",
             NotificationType.SYSTEM);
+        return saved;
     }
 
     /**

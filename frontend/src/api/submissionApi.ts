@@ -15,7 +15,7 @@ export const submissionApi = {
    * @param data Submission payload containing optional assignment ID, text content, and task type.
    * @return Promise resolving to SubmissionResult with score and rubric feedback.
    */
-  submitText: async (data: { assignmentId?: string; text: string; type?: string }): Promise<SubmissionResult> => {
+  submitText: async (data: { assignmentId?: string; taskId?: string; text: string; type?: string }): Promise<SubmissionResult> => {
     const res = await axiosInstance.post<SubmissionResult>('/submissions/text', data);
     return res.data;
   },

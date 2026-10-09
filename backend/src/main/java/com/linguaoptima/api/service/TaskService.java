@@ -255,7 +255,7 @@ public class TaskService {
             if (answerKeyNode.isArray()) {
                 int idx = 1;
                 for (JsonNode ak : answerKeyNode) {
-                    int qOrder = ak.path("questionOrder").asInt(idx++);
+                    int qOrder = ak.path("questionOrder").asInt(ak.path("questionId").asInt(idx++));
                     String opt = ak.path("correctOption").asText(ak.path("correctAnswer").asText(""));
                     if (!opt.isBlank()) {
                         answerKeyMap.put(qOrder, opt);
@@ -335,7 +335,7 @@ public class TaskService {
      * @return Sanitized student-facing task instructions or topic.
      */
     private String sanitizeTaskContent(String rawContent, TaskParamsRequest params) {
-        if (rawContent == null || rawContent.isBlank() || containsPromptLeak(rawContent)) {
+        if (rawContent.isBlank() || containsPromptLeak(rawContent)) {
             return generateDefaultTaskContent(params);
         }
         return rawContent.trim();

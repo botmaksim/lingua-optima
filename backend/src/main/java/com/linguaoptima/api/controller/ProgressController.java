@@ -76,11 +76,11 @@ public class ProgressController {
      * @brief Confirms promotion to the next suggested CEFR proficiency level.
      *
      * @param student Authenticated student principal.
-     * @return HTTP 200 OK after CEFR level update.
+     * @return HTTP 200 OK with the updated User entity.
      */
     @PostMapping({"/level-up", "/level-up/confirm"})
-    public ResponseEntity<Void> confirmLevelUp(@AuthenticationPrincipal User student) {
-        progressService.confirmLevelUp(student);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<User> confirmLevelUp(@AuthenticationPrincipal User student) {
+        User updated = progressService.confirmLevelUp(student);
+        return ResponseEntity.ok(updated);
     }
 }

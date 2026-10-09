@@ -68,8 +68,11 @@ class ApiKeyControllerTest {
     @Test
     void testAddApiKey() {
         CreateApiKeyRequest req = CreateApiKeyRequest.builder().provider(AIProvider.OPENAI).rawKey("key").build();
-        ResponseEntity<Void> res = apiKeyController.addApiKey(user, req);
+        ApiKey saved = ApiKey.builder().id(UUID.randomUUID()).provider(AIProvider.OPENAI).build();
+        when(apiKeyService.saveKey(req, user)).thenReturn(saved);
+        ResponseEntity<ApiKey> res = apiKeyController.addApiKey(user, req);
         assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(saved, res.getBody());
         verify(apiKeyService).saveKey(req, user);
     }
 

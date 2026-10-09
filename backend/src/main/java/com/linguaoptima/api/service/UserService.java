@@ -48,6 +48,8 @@ public class UserService {
     private final SessionStateRepository sessionStateRepository;
     /** @brief Field representing submission repository in UserService. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field representing task assignment repository in UserService. */
+    private final TaskAssignmentRepository taskAssignmentRepository;
     /** @brief Field representing password encoder in UserService. */
     private final PasswordEncoder passwordEncoder;
 
@@ -134,10 +136,9 @@ public class UserService {
         notificationRepository.findByUserIdOrderByCreatedAtDesc(uid).forEach(notificationRepository::delete);
         subscriptionRepository.findByUserId(uid).ifPresent(subscriptionRepository::delete);
         usageCounterRepository.findByUserId(uid).ifPresent(usageCounterRepository::delete);
-        groupStudentRepository.findByStudentIdAndIsActiveTrue(uid).forEach(groupStudentRepository::delete);
-        groupStudentRepository.findAllByStudentId(uid).forEach(groupStudentRepository::delete);
-        sessionStateRepository.findAllByStudentIdAndStatus(uid, null).forEach(sessionStateRepository::delete);
         sessionStateRepository.findAllByStudentId(uid).forEach(sessionStateRepository::delete);
+        groupStudentRepository.findAllByStudentId(uid).forEach(groupStudentRepository::delete);
+        taskAssignmentRepository.findByStudentIdOrderByCreatedAtDesc(uid).forEach(taskAssignmentRepository::delete);
 
         userRepository.deleteById(uid);
         log.info("User {} deleted successfully under GDPR", uid);

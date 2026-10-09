@@ -130,9 +130,11 @@ class ProgressServiceTest {
      */
     @Test
     void testConfirmLevelUp() {
-        progressService.confirmLevelUp(student);
-        assertEquals(CefrLevel.B2, student.getCefrLevel());
-        assertNull(student.getLevelUpSuggestedAt());
+        when(userRepository.save(student)).thenReturn(student);
+        User updated = progressService.confirmLevelUp(student);
+        assertNotNull(updated);
+        assertEquals(CefrLevel.B2, updated.getCefrLevel());
+        assertNull(updated.getLevelUpSuggestedAt());
         verify(userRepository).save(student);
     }
 

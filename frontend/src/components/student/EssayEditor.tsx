@@ -62,6 +62,7 @@ export const EssayEditor: React.FC = () => {
 
     try {
       const result = await submissionApi.submitText({
+        taskId: task?.id,
         text: content,
         type: 'ESSAY',
       });

@@ -12,6 +12,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.opencsv.CSVWriter;
 import com.linguaoptima.api.domain.*;
+import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.GroupRepository;
@@ -90,6 +91,14 @@ public class ExportService {
     public byte[] generateStudentReport(UUID studentId, String format, User teacher) {
         User student = userRepository.findById(studentId)
             .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
+
+        if (teacher.getRole() != Role.ADMIN && !teacher.getId().equals(studentId)) {
+            boolean isTeacherOfStudent = groupRepository.findByTeacher(teacher).stream()
+                .anyMatch(g -> groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(g.getId(), studentId));
+            if (!isTeacherOfStudent) {
+                throw new ForbiddenException("Access denied: You do not have permission to view this student's report.");
+            }
+        }
 
         List<ProgressRecord> records = progressRecordRepository.findByStudent(student);
         List<Submission> submissions = submissionRepository.findByStudentIdOrderBySubmittedAtDesc(studentId);
