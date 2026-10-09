@@ -93,6 +93,7 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
+    document.cookie = 'g_state=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
     window.google.accounts.id.initialize({
       client_id: googleClientId,
       callback: async (response) => {
