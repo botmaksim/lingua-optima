@@ -6,7 +6,7 @@
 
 ## 🎬 Интерактивная презентация и Документация
 
-> 📊 **[Открыть интерактивную презентацию проекта (`presentation.html`)](./presentation.html)**  
+> 📊 **[Открыть интерактивную презентацию проекта (`docs/presentation.html`)](./docs/presentation.html)**  
 > 📘 **[Открыть скомпилированную Doxygen документацию (`docs/generated/html/index.html`)](./docs/generated/html/index.html)**
 
 ### 🗂 Полный навигатор по документации проекта
@@ -18,9 +18,9 @@
 | **Frontend Specification** | [`docs/FRONTEND.md`](./docs/FRONTEND.md) | Архитектура React 18 + TypeScript + Vite PWA, компоненты, Zustand-сторы, кастомные хуки, маршрутизация |
 | **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Цепочка провайдеров (BYOK → Groq → Gemini), промпт-инжиниринг, Zero-Retention OCR в RAM, алгоритм CAT |
 | **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, мультистейдж Dockerfiles, Nginx, GitHub Actions CI/CD, конфигурация `.env` |
-| **Интерактивная презентация** | [`presentation.html`](./presentation.html) | Интерактивный Pitch Deck и визуализация архитектуры платформы (открывается в любом браузере) |
-| **План документации** | [`DOCUMENTATION_PLAN.md`](./DOCUMENTATION_PLAN.md) | Реестр всех задокументированных модулей, классов, компонентов и тестов |
+| **Интерактивная презентация** | [`docs/presentation.html`](./docs/presentation.html) | Интерактивный Pitch Deck и визуализация архитектуры платформы (открывается в любом браузере) |
 | **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Автоматически сгенерированная документация Doxygen по всем пакетам, классам, методам и типам |
+
 
 ---
 
