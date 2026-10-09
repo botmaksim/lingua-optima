@@ -8,7 +8,7 @@ import { CefrLevel, User } from './user';
 /**
  * @brief Types of pedagogical tasks available.
  */
-export type TaskType = 'MCQ' | 'GAP_FILL' | 'REWRITE' | 'ESSAY';
+export type TaskType = 'MCQ' | 'GAP_FILL' | 'OPEN_BRACKETS' | 'REWRITE' | 'ESSAY' | 'SHORT_ANSWER';
 
 /**
  * @brief Task difficulty categorization.

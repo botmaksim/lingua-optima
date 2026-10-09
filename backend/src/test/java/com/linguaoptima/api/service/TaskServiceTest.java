@@ -814,5 +814,52 @@ class TaskServiceTest {
         TaskResponse enrichedPending = taskService.getTaskById(taskId, studentUser);
         assertTrue(enrichedPending.getCanSubmit());
     }
+
+    /**
+     * @brief Verifies unit test scenario: REWRITE and OPEN_BRACKETS generation enforces empty options array.
+     */
+    @Test
+    void testGenerateTaskRewriteAndOpenBracketsEnforcesEmptyOptions() {
+        String jsonWithOptions = """
+            {
+              "content": "Exercise content",
+              "questions": [
+                {
+                  "text": "Rewrite sentence",
+                  "options": ["A", "B", "C"],
+                  "correctAnswer": "Rewritten sentence"
+                }
+              ],
+              "answerKey": []
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(jsonWithOptions);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskParamsRequest rewriteReq = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Conditionals")
+            .taskType(TaskType.REWRITE)
+            .build();
+
+        TaskResponse rewriteRes = taskService.generateTask(rewriteReq, studentUser);
+        assertNotNull(rewriteRes);
+        assertEquals(TaskType.REWRITE, rewriteRes.getType());
+        assertEquals(1, rewriteRes.getQuestions().size());
+        assertEquals(0, rewriteRes.getQuestions().get(0).getOptions().size());
+
+        TaskParamsRequest bracketsReq = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Past Simple vs Present Perfect")
+            .taskType(TaskType.OPEN_BRACKETS)
+            .build();
+
+        TaskResponse bracketsRes = taskService.generateTask(bracketsReq, studentUser);
+        assertNotNull(bracketsRes);
+        assertEquals(TaskType.OPEN_BRACKETS, bracketsRes.getType());
+        assertEquals(1, bracketsRes.getQuestions().size());
+        assertEquals(0, bracketsRes.getQuestions().get(0).getOptions().size());
+    }
 }
 

@@ -16,6 +16,8 @@ public enum TaskType {
     ESSAY,
     /** @brief Constant or enum value representing rewrite in TaskType. */
     REWRITE,
+    /** @brief Constant or enum value representing open brackets (раскрытие скобок) in TaskType. */
+    OPEN_BRACKETS,
+    /** @brief Constant or enum value representing short answer in TaskType. */
     SHORT_ANSWER
-/** @brief Constant or enum value representing short answer in TaskType. */
 }

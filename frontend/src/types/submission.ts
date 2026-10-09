@@ -90,7 +90,7 @@ export interface SubmissionResult {
   submittedAt: string;
   /** @brief Associated task ID if linked. */
   taskId?: string;
-  /** @brief Associated task type format (MCQ, GAP_FILL, ESSAY, REWRITE). */
+  /** @brief Associated task type format (MCQ, GAP_FILL, OPEN_BRACKETS, REWRITE, ESSAY). */
   taskType?: string;
   /** @brief Student-facing reading context passage or assignment topic. */
   taskContent?: string;

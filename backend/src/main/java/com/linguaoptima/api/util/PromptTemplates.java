@@ -89,6 +89,97 @@ public final class PromptTemplates {
                 """.formatted(cefrLevel, grammarTopic, domain, difficulty, extraContext, grammarTopic);
         }
 
+        if ("REWRITE".equalsIgnoreCase(taskType)) {
+            return """
+                Generate an English sentence rewriting exercise based on the following parameters:
+                - CEFR Level: %s
+                - Grammar Topic: %s
+                - Domain/Context: %s
+                - Task Type: REWRITE (Sentence Transformation)
+                - Difficulty: %s
+                - Number of Questions: %d%s
+
+                CRITICAL REQUIREMENTS:
+                1. This is a SENTENCE REWRITING exercise (Sentence Transformation).
+                2. For each question, provide an original sentence and instruct the student to rewrite it according to the target grammar structure (e.g., 'Rewrite the following sentence using used to or would: ...', 'Rewrite in the passive voice: ...', 'Rewrite using reported speech: ...').
+                3. CRITICAL: Do NOT provide multiple-choice options. The student must write/type the answer themselves. The "options" array MUST be empty [].
+                4. The "correctAnswer" field must be the complete, ideal rewritten sentence, with acceptable alternatives separated by ' / '.
+                5. The "content" field must contain clear, student-facing exercise instructions, NEVER system meta-instructions.
+                6. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+
+                Return ONLY a valid JSON object with the following structure:
+                {
+                  "content": "Rewrite the following sentences using the specified grammatical rules and structures.",
+                  "questions": [
+                    {
+                      "id": 1,
+                      "text": "Rewrite using 'used to' or 'would': When I lived in Kyoto, I regularly visited the quiet bamboo groves every Sunday morning.",
+                      "options": [],
+                      "correctAnswer": "When I lived in Kyoto, I used to visit the quiet bamboo groves every single Sunday morning. / When I lived in Kyoto, I would visit the quiet bamboo groves every single Sunday morning.",
+                      "difficulty": 3,
+                      "grammarRule": "Past Habitual Actions ('used to' vs 'would')"
+                    }
+                  ],
+                  "answerKey": [
+                    {
+                      "questionId": 1,
+                      "questionOrder": 1,
+                      "correctOption": "When I lived in Kyoto, I used to visit the quiet bamboo groves every single Sunday morning.",
+                      "explanation": "Both 'used to' and 'would' can express repeated past actions, but 'used to' emphasizes past habits that no longer occur."
+                    }
+                  ]
+                }
+                """.formatted(cefrLevel, grammarTopic, domain, difficulty, numberOfQuestions, extraContext);
+        }
+
+        if ("OPEN_BRACKETS".equalsIgnoreCase(taskType)) {
+            return """
+                Generate an English grammar exercise for opening brackets ('раскрытие скобок') based on the following parameters:
+                - CEFR Level: %s
+                - Grammar Topic: %s
+                - Domain/Context: %s
+                - Task Type: OPEN_BRACKETS (Put the verbs or phrases in brackets into the correct tense or form)
+                - Difficulty: %s
+                - Number of Questions: %d%s
+
+                CRITICAL REQUIREMENTS:
+                1. This is an OPEN BRACKETS exercise ('раскрытие скобок').
+                2. For each question, provide a sentence containing a base-form verb or root phrase in parentheses (e.g. '(visit)', '(not / see)', '(already / leave)', '(be)'), followed by a blank or gap (e.g. '_________').
+                3. CRITICAL: Do NOT provide multiple-choice options. The student must write/type the correct conjugated or transformed form of the word in brackets. The "options" array MUST be empty [].
+                4. The "correctAnswer" field must contain ONLY the correct form of the word in brackets (e.g. 'used to visit' or 'had already left' or acceptable alternatives separated by ' / ').
+                5. The "content" field must contain clear, student-facing exercise instructions, NEVER system meta-instructions.
+                6. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+
+                Return ONLY a valid JSON object with the following structure:
+                {
+                  "content": "Put the verbs or phrases in brackets into the correct grammatical form to complete the sentences.",
+                  "questions": [
+                    {
+                      "id": 1,
+                      "text": "By the time Sarah arrived at the station, the train (already / leave) _________.",
+                      "options": [],
+                      "correctAnswer": "had already left",
+                      "difficulty": 2,
+                      "grammarRule": "Past Perfect with 'already'"
+                    }
+                  ],
+                  "answerKey": [
+                    {
+                      "questionId": 1,
+                      "questionOrder": 1,
+                      "correctOption": "had already left",
+                      "explanation": "Past Perfect is required because the departure of the train happened before the past arrival time."
+                    }
+                  ]
+                }
+                """.formatted(cefrLevel, grammarTopic, domain, difficulty, numberOfQuestions, extraContext);
+        }
+
+        boolean isMcq = "MCQ".equalsIgnoreCase(taskType);
+        String optionsRequirement = isMcq
+            ? "Every question MUST include 4 distinct plausible choices in the \"options\" array [\"Option A\", \"Option B\", \"Option C\", \"Option D\"]."
+            : "The \"options\" array can contain 4 choices or be empty [] if testing open cloze fill-in-the-blanks.";
+
         return """
             Generate an English grammar exercise based on the following parameters:
             - CEFR Level: %s
@@ -100,13 +191,14 @@ public final class PromptTemplates {
 
             CRITICAL QUALITY CONTRACT:
             1. Every question MUST explicitly evaluate the target grammar topic and rules specified above.
-            2. The reading content, question sentences, and options MUST actively utilize and contextualize the target vocabulary if provided.
-            3. The "content" field must contain ONLY student-facing reading material or a clear assignment topic, NEVER system meta-instructions.
-            4. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+            2. %s
+            3. The reading content, question sentences, and options MUST actively utilize and contextualize the target vocabulary if provided.
+            4. The "content" field must contain ONLY student-facing reading material or a clear assignment topic, NEVER system meta-instructions.
+            5. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
 
             Return ONLY a valid JSON object with the following structure:
             {
-              "content": "A natural reading context or essay topic for the student",
+              "content": "A natural reading context or exercise topic for the student",
               "questions": [
                 {
                   "id": 1,
@@ -126,7 +218,7 @@ public final class PromptTemplates {
                 }
               ]
             }
-            """.formatted(cefrLevel, grammarTopic, domain, taskType, difficulty, numberOfQuestions, extraContext);
+            """.formatted(cefrLevel, grammarTopic, domain, taskType, difficulty, numberOfQuestions, extraContext, optionsRequirement);
     }
 
     /**

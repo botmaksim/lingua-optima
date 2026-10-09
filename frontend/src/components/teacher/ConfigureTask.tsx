@@ -835,19 +835,27 @@ export const ConfigureTask: React.FC = () => {
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Task Type
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {(['MCQ', 'GAP_FILL', 'REWRITE', 'ESSAY'] as TaskType[]).map((t) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+              {(
+                [
+                  { type: 'MCQ', label: 'MCQ' },
+                  { type: 'GAP_FILL', label: 'Gap Fill' },
+                  { type: 'OPEN_BRACKETS', label: 'Open Brackets' },
+                  { type: 'REWRITE', label: 'Rewrite' },
+                  { type: 'ESSAY', label: 'Essay' },
+                ] as { type: TaskType; label: string }[]
+              ).map((item) => (
                 <button
                   type="button"
-                  key={t}
-                  onClick={() => setTaskType(t)}
+                  key={item.type}
+                  onClick={() => setTaskType(item.type)}
                   className={`py-2 px-2.5 rounded-xl border text-xs font-semibold text-center transition ${
-                    taskType === t
+                    taskType === item.type
                       ? 'border-primary bg-indigo-50 text-primary'
                       : 'border-slate-200 text-slate-600 hover:border-slate-300'
                   }`}
                 >
-                  {t}
+                  {item.label}
                 </button>
               ))}
             </div>

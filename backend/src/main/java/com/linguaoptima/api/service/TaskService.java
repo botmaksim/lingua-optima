@@ -372,6 +372,9 @@ public class TaskService {
                     int currentOrder = order++;
                     JsonNode optionsNode = qNode.path("options");
                     String optionsJson = optionsNode.isMissingNode() ? "[]" : optionsNode.toString();
+                    if (params.getTaskType() == TaskType.REWRITE || params.getTaskType() == TaskType.OPEN_BRACKETS) {
+                        optionsJson = "[]";
+                    }
 
                     String resolvedAnswer = qNode.path("correctAnswer").asText(
                         qNode.path("correctOption").asText(

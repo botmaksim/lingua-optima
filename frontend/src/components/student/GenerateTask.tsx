@@ -885,11 +885,12 @@ export const GenerateTask: React.FC = () => {
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Task Type
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             {(
               [
                 { type: 'MCQ', label: 'Multiple Choice' },
                 { type: 'GAP_FILL', label: 'Fill in Blanks' },
+                { type: 'OPEN_BRACKETS', label: 'Open Brackets (Скобки)' },
                 { type: 'REWRITE', label: 'Sentence Rewrite' },
                 { type: 'ESSAY', label: 'Essay Writing' },
               ] as { type: TaskType; label: string }[]

@@ -302,7 +302,7 @@ export const TaskView: React.FC = () => {
                 </span>
               </div>
 
-              {Array.isArray(q.options) && q.options.length > 0 ? (
+              {task.type !== 'REWRITE' && task.type !== 'OPEN_BRACKETS' && task.type !== 'SHORT_ANSWER' && Array.isArray(q.options) && q.options.length > 0 ? (
                 <div className="space-y-2">
                   {q.options.map((opt, optIdx) => {
                     const isSelected = answers[q.id] === opt;
@@ -324,11 +324,24 @@ export const TaskView: React.FC = () => {
                     );
                   })}
                 </div>
+              ) : task.type === 'REWRITE' ? (
+                <textarea
+                  rows={2}
+                  disabled={task.canSubmit === false}
+                  placeholder="Rewrite the complete sentence here..."
+                  value={answers[q.id] || ''}
+                  onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
+                  className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60 resize-y"
+                />
               ) : (
                 <input
                   type="text"
                   disabled={task.canSubmit === false}
-                  placeholder="Type your answer here..."
+                  placeholder={
+                    task.type === 'OPEN_BRACKETS'
+                      ? 'Type the correct form of the word in brackets...'
+                      : 'Type your answer here...'
+                  }
                   value={answers[q.id] || ''}
                   onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
                   className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60"
