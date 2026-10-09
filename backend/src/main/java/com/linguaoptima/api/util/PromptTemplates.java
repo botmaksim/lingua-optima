@@ -29,6 +29,39 @@ public final class PromptTemplates {
      */
     public static String buildTaskGenerationPrompt(String cefrLevel, String grammarTopic, String domain,
                                                    String taskType, String difficulty, int numberOfQuestions) {
+        if ("ESSAY".equalsIgnoreCase(taskType)) {
+            return """
+                Generate an English essay writing assignment and prompt based on the following parameters:
+                - CEFR Level: %s
+                - Topic/Focus: %s
+                - Domain/Context: %s
+                - Target Difficulty: %s
+
+                CRITICAL REQUIREMENTS:
+                1. This is an open-ended ESSAY writing assignment, NOT a multiple-choice or gap-fill grammar exercise.
+                2. Do NOT include numbered blanks, bracketed options, or multiple-choice choices in the text.
+                3. The "content" field must contain a rich, student-facing essay topic with background context, debate perspectives, and instructions to compose an essay of at least 250 words.
+                4. The "questions" array must contain 2 to 4 guiding discussion prompts or structural questions to help the student organize their essay arguments (each with empty options array []).
+                5. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+
+                Return ONLY a valid JSON object with the following structure:
+                {
+                  "content": "An engaging background scenario and clear essay task instructions for the student...",
+                  "questions": [
+                    {
+                      "id": 1,
+                      "text": "Guiding discussion question for the student's essay...",
+                      "options": [],
+                      "correctAnswer": "Open-ended essay response",
+                      "difficulty": 3,
+                      "grammarRule": "%s"
+                    }
+                  ],
+                  "answerKey": []
+                }
+                """.formatted(cefrLevel, grammarTopic, domain, difficulty, grammarTopic);
+        }
+
         return """
             Generate an English grammar exercise based on the following parameters:
             - CEFR Level: %s

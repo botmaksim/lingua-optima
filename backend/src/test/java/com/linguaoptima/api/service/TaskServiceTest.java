@@ -573,5 +573,49 @@ class TaskServiceTest {
         assertNotNull(res);
         assertTrue(res.getContent().contains("English grammar"));
     }
+
+    /**
+     * @brief Verifies that essay content containing gap-fill exercise markers is replaced with clean essay instructions.
+     */
+    @Test
+    void testGenerateEssayTaskWithInappropriateExerciseMarkersSanitized() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.C1)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic("Cleft sentences")
+            .domain("Technology")
+            .build();
+
+        String rawJson = "{\"content\":\"For each numbered blank, choose the correct cleft construction.\",\"questions\":[]}";
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(rawJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertFalse(res.getContent().contains("numbered blank"));
+        assertTrue(res.getContent().contains("Write an essay discussing Cleft sentences"));
+    }
+
+    /**
+     * @brief Verifies valid clean essay content without markers is preserved.
+     */
+    @Test
+    void testGenerateEssayTaskWithValidCleanContentPreserved() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.C1)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic("Cleft sentences")
+            .domain("Technology")
+            .build();
+
+        String cleanContent = "Evaluate the socioeconomic impacts of autonomous AI systems. Discuss both opportunities and risks.";
+        String rawJson = "{\"content\":\"" + cleanContent + "\",\"questions\":[]}";
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(rawJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertEquals(cleanContent, res.getContent());
+    }
 }
 

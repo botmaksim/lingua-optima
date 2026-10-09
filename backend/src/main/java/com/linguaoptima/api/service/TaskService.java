@@ -313,6 +313,15 @@ public class TaskService {
         "overall instructions or context passage"
     );
 
+    private static final List<String> ESSAY_INAPPROPRIATE_MARKERS = List.of(
+        "numbered blank",
+        "choose the correct",
+        "fill in the blank",
+        "fill in the blanks",
+        "multiple choice",
+        "select the correct"
+    );
+
     /**
      * @brief Strips markdown code fence blocks from AI response strings.
      * @param rawJson Raw AI response string.
@@ -338,7 +347,25 @@ public class TaskService {
         if (rawContent.isBlank() || containsPromptLeak(rawContent)) {
             return generateDefaultTaskContent(params);
         }
+        if (params.getTaskType() == TaskType.ESSAY && isExerciseLikeForEssay(rawContent)) {
+            return generateDefaultTaskContent(params);
+        }
         return rawContent.trim();
+    }
+
+    /**
+     * @brief Checks if essay instructions mistakenly contain gap-fill or multiple-choice exercise phrases.
+     * @param text Text to evaluate.
+     * @return True if exercise markers are detected.
+     */
+    private boolean isExerciseLikeForEssay(String text) {
+        String lower = text.toLowerCase();
+        for (String marker : ESSAY_INAPPROPRIATE_MARKERS) {
+            if (lower.contains(marker)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

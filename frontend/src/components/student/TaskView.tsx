@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Send, Clock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, Send, Clock, CheckCircle2, AlertTriangle, RotateCcw } from 'lucide-react';
 import { taskApi } from '../../api/taskApi';
 import { submissionApi } from '../../api/submissionApi';
 import { Task, TaskQuestion } from '../../types/task';
@@ -26,6 +26,7 @@ export const TaskView: React.FC = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
@@ -35,6 +36,10 @@ export const TaskView: React.FC = () => {
     const loadTask = async () => {
       try {
         const data = await taskApi.getTaskById(taskId);
+        if (data.type === 'ESSAY') {
+          navigate(`/student/essay/${taskId}`, { replace: true });
+          return;
+        }
         setTask(data);
 
         const draft = await getDraftLocal(`task_${taskId}`);
@@ -83,6 +88,7 @@ export const TaskView: React.FC = () => {
   const handleSubmit = async () => {
     if (!task) return;
     setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
       const formattedAnswers = (task.questions || []).map((q, idx) => {
@@ -96,9 +102,9 @@ export const TaskView: React.FC = () => {
       });
 
       navigate(`/student/review/${result.id}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Submission failed:', err);
-      alert('Submission failed. Your draft has been saved locally.');
+      setSubmitError(err?.response?.data?.message || 'Submission failed. Your draft has been saved locally.');
       await handleSaveDraft();
     } finally {
       setIsSubmitting(false);
@@ -147,6 +153,70 @@ export const TaskView: React.FC = () => {
           <span>{formatTimer(elapsedSeconds)}</span>
         </div>
       </div>
+
+      {isSubmitting && (
+        <div className="p-5 rounded-3xl bg-indigo-50/90 border border-indigo-200/80 shadow-sm space-y-3 animate-in fade-in duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="relative flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 animate-ping absolute" />
+              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center relative">
+                <Send className="w-4 h-4 animate-spin" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                Evaluating Answers with Pedagogical AI...
+              </h3>
+              <p className="text-xs text-indigo-700 font-medium">
+                Verifying grammatical accuracy, rule compliance, and formulating corrections.
+              </p>
+            </div>
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-3 border border-indigo-100 text-xs text-slate-600 space-y-1.5 leading-relaxed">
+            <p className="flex items-center space-x-1.5">
+              <Clock className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+              <span>Checking grammar typically takes <strong>5–15 seconds</strong>. Please do not close this page.</span>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {submitError && (
+        <div className="p-5 rounded-3xl bg-amber-50 border border-amber-200/80 shadow-sm space-y-3 animate-in fade-in duration-300">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <h3 className="text-sm font-bold text-slate-900">
+                {submitError.toLowerCase().includes('queue') || submitError.toLowerCase().includes('temporarily')
+                  ? 'AI Service Queue · High Demand'
+                  : 'Submission Error'}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {submitError}
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Retry Evaluation</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold transition"
+                >
+                  Configure BYOK API Key
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
         <div className="flex items-center space-x-2">

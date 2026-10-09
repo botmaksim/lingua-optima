@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FileText, Save, Send, CheckCircle2, AlertCircle } from 'lucide-react';
+import { FileText, Save, Send, CheckCircle2, AlertCircle, Clock, RotateCcw } from 'lucide-react';
 import { taskApi } from '../../api/taskApi';
 import { submissionApi } from '../../api/submissionApi';
 import { Task } from '../../types/task';
@@ -108,13 +108,88 @@ export const EssayEditor: React.FC = () => {
                 : undefined
             )}
           </p>
+          {task.questions && task.questions.length > 0 && (
+            <div className="pt-2">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                Guiding Questions to Address:
+              </h4>
+              <ul className="space-y-1.5 text-xs text-slate-600 bg-slate-50/70 p-3 rounded-xl border border-slate-100">
+                {task.questions.map((q, idx) => (
+                  <li key={q.id || idx} className="flex items-start space-x-2">
+                    <span className="font-bold text-primary">{idx + 1}.</span>
+                    <span>{q.questionText}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isSubmitting && (
+        <div className="p-5 rounded-3xl bg-indigo-50/90 border border-indigo-200/80 shadow-sm space-y-3 animate-in fade-in duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="relative flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 animate-ping absolute" />
+              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center relative">
+                <Send className="w-4 h-4 animate-spin" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                Evaluating Essay with IELTS/Cambridge Rubric...
+              </h3>
+              <p className="text-xs text-indigo-700 font-medium">
+                Scoring Task Achievement, Coherence, Lexical Resource, and Grammatical Range.
+              </p>
+            </div>
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-3 border border-indigo-100 text-xs text-slate-600 space-y-1.5 leading-relaxed">
+            <p className="flex items-center space-x-1.5">
+              <Clock className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+              <span>Full linguistic scoring and sentence-level corrections take <strong>10–25 seconds</strong>. Please do not close this page.</span>
+            </p>
+            <p className="text-[11px] text-slate-500">
+              Your essay draft remains safely saved locally in your browser cache.
+            </p>
+          </div>
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center space-x-2">
-          <AlertCircle className="w-5 h-5 flex-shrink-0" />
-          <span>{error}</span>
+        <div className="p-5 rounded-3xl bg-amber-50 border border-amber-200/80 shadow-sm space-y-3 animate-in fade-in duration-300">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertCircle className="w-4 h-4" />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <h3 className="text-sm font-bold text-slate-900">
+                {error.toLowerCase().includes('queue') || error.toLowerCase().includes('temporarily')
+                  ? 'AI Service Queue · High Demand'
+                  : 'Submission Error'}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {error}
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Retry Evaluation</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold transition"
+                >
+                  Configure BYOK API Key
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

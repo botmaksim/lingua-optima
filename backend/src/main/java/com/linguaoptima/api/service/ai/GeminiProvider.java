@@ -110,7 +110,7 @@ public class GeminiProvider implements AIProvider {
 
         List<String> modelsToTry = new java.util.ArrayList<>();
         modelsToTry.add(modelName);
-        for (String m : List.of("gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite")) {
+        for (String m : List.of("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.6-flash", "gemini-3.5-flash")) {
             if (!modelsToTry.contains(m)) {
                 modelsToTry.add(m);
             }

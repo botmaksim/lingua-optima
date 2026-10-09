@@ -19,6 +19,8 @@ const PROMPT_LEAK_PATTERNS = [
   /official answer key/i,
   /cambridge\/ielts english examiner/i,
   /0-10 scale/i,
+  /numbered blank/i,
+  /for each numbered blank/i,
 ];
 
 /**

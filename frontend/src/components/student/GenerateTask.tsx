@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, RotateCcw, AlertTriangle, Cpu } from 'lucide-react';
+import { Sparkles, RotateCcw, AlertTriangle, Cpu, Clock, Key } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useUsage } from '../../hooks/useUsage';
 import { useUIStore } from '../../store/uiStore';
@@ -198,10 +198,81 @@ export const GenerateTask: React.FC = () => {
         </p>
       </div>
 
+      {isLoading && (
+        <div className="p-5 rounded-3xl bg-indigo-50/90 border border-indigo-200/80 shadow-sm space-y-3 animate-in fade-in duration-300">
+          <div className="flex items-center space-x-3">
+            <div className="relative flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-indigo-500/20 animate-ping absolute" />
+              <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center relative">
+                <Sparkles className="w-4 h-4 animate-spin" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                Generating Custom CEFR {cefrLevel} Practice...
+              </h3>
+              <p className="text-xs text-indigo-700 font-medium">
+                Engine: <span className="font-mono font-semibold">{provider} ({modelName})</span> · Topic: <span className="font-semibold">{grammarTopic}</span>
+              </p>
+            </div>
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-3 border border-indigo-100 text-xs text-slate-600 space-y-1.5 leading-relaxed">
+            <p className="flex items-center space-x-1.5">
+              <Clock className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+              <span>Pedagogical task generation typically takes <strong>5–20 seconds</strong> depending on provider traffic.</span>
+            </p>
+            <p className="text-[11px] text-slate-500">
+              Please keep this page open. If public AI traffic is elevated, automated failover seamlessly attempts backup high-availability models.
+            </p>
+          </div>
+        </div>
+      )}
+
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-center space-x-2">
-          <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-          <span>{error}</span>
+        <div className="p-5 rounded-3xl bg-amber-50 border border-amber-200/80 shadow-sm space-y-3 animate-in fade-in duration-300">
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <AlertTriangle className="w-4 h-4" />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <h3 className="text-sm font-bold text-slate-900">
+                {error.toLowerCase().includes('queue') || error.toLowerCase().includes('temporarily')
+                  ? 'AI Service Queue · High Demand'
+                  : 'Generation Error'}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                {error}
+              </p>
+              <div className="pt-2 flex flex-wrap gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={(e) => handleGenerate(e as any)}
+                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Retry Generation</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProvider('GEMINI');
+                    setModelName('gemini-3.5-flash-lite');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-100/50 text-amber-800 border border-amber-300 font-semibold transition"
+                >
+                  Switch to Gemini 3.5 Flash Lite
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold transition flex items-center space-x-1.5"
+                >
+                  <Key className="w-3.5 h-3.5 text-primary" />
+                  <span>Configure BYOK Key</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

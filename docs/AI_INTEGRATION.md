@@ -170,12 +170,23 @@ classDiagram
 
 ## 2. Fallback Chain (Resilience Pipeline)
 
-A critical resilience mechanism ensuring uninterrupted service on free-tier API quotas.
+A multi-tiered resilience architecture guarantees high availability across free-tier API quotas and upstream traffic spikes:
 
-**Execution Logic:**
-- Groq fails (HTTP 429 / 5xx) → automatically fall back to Gemini.
-- Gemini fails → wait 60s and retry Groq once more.
-- All providers fail → persist the request in the database (`pending_ai_tasks` table) → return `202 Accepted` with the message `"Your request is queued"`.
+### 2.1 Provider-Level Fallback Sequence
+- **Task Generation:** Primary provider (`GroqProvider` / Qwen 3.8 27B) → secondary fallback (`GeminiProvider` / Gemini Lite) → retry → database queue (`pending_ai_tasks`).
+- **Essay Scoring:** Primary provider (`GeminiProvider` / Gemini Flash) → secondary fallback (`GroqProvider`) → database queue (`pending_ai_tasks`).
+- **All Providers Exhausted:** If third-party APIs return HTTP 429 (quota exceeded) or 503 (high upstream demand), the request is persisted in PostgreSQL (`pending_ai_tasks` with status `QUEUED`) and translated by `GlobalExceptionHandler` to HTTP 503 `AI_SERVICE_UNAVAILABLE`.
+- **Frontend Waiting & Queue UX:**
+  - **In-Flight Banner:** During the 5–25s LLM evaluation cycle, an animated status banner informs the student of model progress (`{provider} · {modelName}`), expected latency, and automatic failover.
+  - **Queue / High Demand Banner:** On HTTP 503 or quota limits, students receive an informative queue banner with one-click **Retry**, an option to instantly switch to high-availability `Gemini 3.5 Flash Lite`, or configure a personal **BYOK** key in `/profile`.
+
+### 2.2 Model-Level Fallback Chain (GeminiProvider)
+When Google Gemini is called, `GeminiProvider` steps through an optimized cascade:
+1. Configured / Requested model (e.g. `gemini-3.8-flash`).
+2. `gemini-3.5-flash-lite` (High-availability Lite tier, generous rate limits, <1.5s latency).
+3. `gemini-3.1-flash-lite` (Ultra-fast backup Lite model).
+4. `gemini-3.6-flash` (Production stable).
+5. `gemini-3.5-flash` (Balanced fallback).
 
 ```mermaid
 sequenceDiagram
@@ -185,11 +196,11 @@ sequenceDiagram
     participant GeminiAPI
     participant Database
     
-    Client->>AIBrokerService: Request generation
+    Client->>AIBrokerService: Request generation (shows in-flight banner)
     AIBrokerService->>GroqAPI: complete(prompt)
     alt Groq Error (429/5xx)
         GroqAPI-->>AIBrokerService: Error
-        AIBrokerService->>GeminiAPI: complete(prompt)
+        AIBrokerService->>GeminiAPI: complete(prompt) [tries requested -> gemini-3.5-flash-lite -> gemini-3.1-flash-lite]
         alt Gemini Error
             GeminiAPI-->>AIBrokerService: Error
             AIBrokerService->>AIBrokerService: wait 60s
@@ -197,7 +208,8 @@ sequenceDiagram
             alt Retry Error
                 GroqAPI-->>AIBrokerService: Error
                 AIBrokerService->>Database: insert into pending_ai_tasks
-                AIBrokerService-->>Client: 202 Accepted ("Your request is queued")
+                AIBrokerService-->>Client: 503 Service Unavailable ("Request queued, high demand")
+                Client-->>Client: Renders Queue & Retry banner (Switch to Lite / BYOK)
             else Retry Success
                 GroqAPI-->>AIBrokerService: Success
                 AIBrokerService-->>Client: 200 OK
@@ -214,19 +226,34 @@ sequenceDiagram
 
 ---
 
-## 3. Prompt Templates
+## 3. Prompt Templates & Content Sanitization
 
 Exact structured prompt templates used across AI evaluation workflows.
 
-### Task Generation (Grammar Exercises)
+### Task Generation (Grammar Exercises: MCQ / Gap-Fill)
 ```json
 {
   "system": "You are an expert English teacher creating targeted exercises.",
-  "prompt": "Generate an English grammar exercise based on the following parameters:\n- CEFR Level: {cefrLevel}\n- Grammar Topic: {grammarTopic}\n- Domain/Context: {domain}\n- Task Type: {taskType}\n- Difficulty: {difficulty}\n- Number of Questions: {numberOfQuestions}\n\nReturn ONLY a valid JSON object with the following structure:\n{\n  \"questions\": [ { \"id\": 1, \"text\": \"...\", \"options\": [\"a\", \"b\", \"c\", \"d\"] } ],\n  \"answerKey\": [ { \"questionId\": 1, \"correctOption\": \"a\", \"explanation\": \"...\" } ]\n}"
+  "prompt": "Generate an English grammar exercise based on the following parameters:\n- CEFR Level: {cefrLevel}\n- Grammar Topic: {grammarTopic}\n- Domain/Context: {domain}\n- Task Type: {taskType}\n- Difficulty: {difficulty}\n- Number of Questions: {numberOfQuestions}\n\nReturn ONLY a valid JSON object with the following structure:\n{\n  \"content\": \"Natural reading passage or context...\",\n  \"questions\": [ { \"id\": 1, \"text\": \"...\", \"options\": [\"a\", \"b\", \"c\", \"d\"], \"correctAnswer\": \"a\" } ],\n  \"answerKey\": [ { \"questionId\": 1, \"correctOption\": \"a\", \"explanation\": \"...\" } ]\n}"
 }
 ```
 
-### Essay Scoring
+### Essay Assignment Generation (`TaskType.ESSAY`)
+To avoid models mistakenly returning gap-fill grammar blanks or multiple-choice questions for writing assignments, `PromptTemplates.buildTaskGenerationPrompt` routes `ESSAY` tasks to a dedicated prompt contract:
+```json
+{
+  "system": "You are an expert English teacher creating targeted exercises.",
+  "prompt": "Generate an English essay writing assignment and prompt based on the following parameters:\n- CEFR Level: {cefrLevel}\n- Topic/Focus: {grammarTopic}\n- Domain/Context: {domain}\n- Target Difficulty: {difficulty}\n\nCRITICAL REQUIREMENTS:\n1. This is an open-ended ESSAY writing assignment, NOT a multiple-choice or gap-fill exercise.\n2. Do NOT include numbered blanks, bracketed options, or multiple-choice choices in the text.\n3. The \"content\" field must contain a rich, student-facing essay topic with background context, debate perspectives, and instructions to compose an essay of at least 250 words.\n4. The \"questions\" array must contain 2 to 4 guiding discussion prompts (options: []).\n\nReturn ONLY a valid JSON object:\n{\n  \"content\": \"A detailed background scenario and clear essay task instructions...\",\n  \"questions\": [ { \"id\": 1, \"text\": \"Guiding question...\", \"options\": [], \"correctAnswer\": \"Open-ended essay response\" } ],\n  \"answerKey\": []\n}"
+}
+```
+
+#### Multi-Tiered Essay Content Sanitization
+If an upstream AI model outputs exercise-like text for an essay assignment, Lingua Optima's safety layers intercept it:
+1. **Backend Sanitization (`TaskService.sanitizeTaskContent`):** Inspects incoming content with `isExerciseLikeForEssay()`. If phrases like `"numbered blank"`, `"choose the correct"`, or `"fill in the blanks"` are detected, the system replaces it with clean pedagogical instructions: `"Write an essay discussing {topic} in relation to {domain}. Present clear arguments and relevant examples to support your viewpoint."`
+2. **Frontend Sanitization (`textSanitizer.sanitizeTaskContent`):** Detects internal prompt leak patterns and replaces malformed text with student-friendly fallbacks.
+3. **Route Auto-Redirection:** Opening `/student/task/:taskId` for an `ESSAY` task automatically redirects to `/student/essay/:taskId` (the full-featured Essay Studio with word count trackers and 4-pillar rubrics).
+
+### Essay Scoring (Cambridge / IELTS Rubric)
 ```json
 {
   "system": "You are a strict Cambridge/IELTS English examiner.",
@@ -234,11 +261,11 @@ Exact structured prompt templates used across AI evaluation workflows.
 }
 ```
 
-### Grammar Checking (OCR Submissions)
+### Grammar Checking (OCR & Text Submissions)
 ```json
 {
   "system": "You are an automated grading assistant.",
-  "prompt": "Compare the student's text against the official answer key and score it.\n\nStudent Text: {studentText}\nAnswer Key: {answerKey}\n\nIdentify mistakes, provide corrections, and calculate a score from 0 to 100. Return ONLY a valid JSON object:\n{\n  \"score\": 85,\n  \"errors\": [ { \"type\": \"grammar/spelling\", \"description\": \"...\" } ],\n  \"corrections\": [ { \"original\": \"...\", \"corrected\": \"...\" } ]\n}"
+  "prompt": "Compare the student's text against the official answer key and score it.\n\nStudent Text: {studentText}\nAnswer Key: {answerKey}\n\nIdentify mistakes, provide corrections, and calculate a score from 0 to 100. Return ONLY a valid JSON object:\n{\n  \"score\": 85,\n  \"feedback\": \"Detailed feedback\",\n  \"errors\": [ { \"type\": \"grammar/spelling\", \"description\": \"...\" } ],\n  \"corrections\": [ { \"original\": \"...\", \"corrected\": \"...\" } ]\n}"
 }
 ```
 

@@ -34,5 +34,11 @@ class PromptTemplatesTest {
         String grammarPrompt = PromptTemplates.buildGrammarCheckingPrompt("Student text", "Answer key");
         assertTrue(grammarPrompt.contains("Student text"));
         assertTrue(grammarPrompt.contains("Answer key"));
+        String essayGenPrompt = PromptTemplates.buildTaskGenerationPrompt("C1", "Cleft Sentences", "Technology", "ESSAY", "HARD", 5);
+        assertTrue(essayGenPrompt.contains("C1"));
+        assertTrue(essayGenPrompt.contains("Cleft Sentences"));
+        assertTrue(essayGenPrompt.contains("Technology"));
+        assertTrue(essayGenPrompt.contains("ESSAY writing assignment"));
+        assertTrue(essayGenPrompt.contains("guiding discussion prompts"));
     }
 }

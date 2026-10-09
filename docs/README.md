@@ -70,6 +70,8 @@
 | Self-service tasks | Automatic self-assignment (`assigned_by = student`) | Unifies the execution and grading flow for both student-created and teacher-assigned tasks |
 | Image Storage | **Zero-Retention OCR** — photos exist strictly in RAM and are never written to disk | GDPR compliance and handwriting biometric privacy |
 | Level Progression | **Full CEFR scale (A1–C2)** starting from A1 Beginner with automatic promotion recommendations | Accommodates learners of all proficiencies from foundational to native-like mastery |
+| Task vs Essay Prompts | **Dedicated prompt contracts:** Essays use open-ended topics (250+ words, guiding discussion questions, zero blanks) | Prevents LLMs from generating gap-fill brackets or multiple-choice questions for writing essays |
+| AI Resilience & Queue UX | **Multi-tier fallback + In-flight status & Queue banners:** Fallback cascade (Groq ↔ Gemini Lite ↔ DB queue) with real-time UI status | Eliminates confusion during 5–25s inference latency and guides students during upstream provider rate limits |
 
 ---
 
