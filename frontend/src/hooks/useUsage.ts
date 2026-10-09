@@ -37,16 +37,30 @@ export const useUsage = () => {
     fetchUsage();
   }, [isAuthenticated]);
 
+  const isUnlimited = usage
+    ? usage.dailyEvaluationsLimit >= 999999 || usage.dailyEvaluationsLimit === -1
+    : false;
+
+  const isUnlimitedOcr = usage
+    ? usage.dailyOcrLimit >= 999999 || usage.dailyOcrLimit === -1
+    : false;
+
   const remainingEvaluations = usage
-    ? Math.max(0, usage.dailyEvaluationsLimit - usage.dailyAiEvaluations)
+    ? isUnlimited
+      ? Infinity
+      : Math.max(0, usage.dailyEvaluationsLimit - usage.dailyAiEvaluations)
     : 0;
 
   const remainingOcr = usage
-    ? Math.max(0, usage.dailyOcrLimit - usage.dailyOcrScans)
+    ? isUnlimitedOcr
+      ? Infinity
+      : Math.max(0, usage.dailyOcrLimit - usage.dailyOcrScans)
     : 0;
 
   const isQuotaExceeded = usage
-    ? usage.dailyAiEvaluations >= usage.dailyEvaluationsLimit
+    ? isUnlimited
+      ? false
+      : usage.dailyAiEvaluations >= usage.dailyEvaluationsLimit
     : false;
 
   return {
@@ -54,6 +68,8 @@ export const useUsage = () => {
     isLoading,
     remainingEvaluations,
     remainingOcr,
+    isUnlimited,
+    isUnlimitedOcr,
     isQuotaExceeded,
     refreshUsage: fetchUsage,
   };

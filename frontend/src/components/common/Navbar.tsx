@@ -42,7 +42,7 @@ import { formatDate } from '../../utils/formatDate';
 export const Navbar: React.FC = () => {
   const { user, isStudent, isTeacher, logout } = useAuth();
   const { setUser } = useAuthStore();
-  const { remainingEvaluations, isQuotaExceeded } = useUsage();
+  const { remainingEvaluations, isQuotaExceeded, isUnlimited } = useUsage();
   const { notifications, unreadCount, fetchNotifications, markAsRead } = useNotificationStore();
   const { openUpgradeWall } = useUIStore();
   const navigate = useNavigate();
@@ -256,15 +256,23 @@ export const Navbar: React.FC = () => {
               <TranslatorDropdown />
               <button
                 onClick={() => isQuotaExceeded && openUpgradeWall()}
-                className={`hidden sm:flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition ${
+                className={`hidden sm:flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition ${
                   isQuotaExceeded
                     ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100'
+                    : isUnlimited
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
                     : 'bg-indigo-50 text-primary border-indigo-200 hover:bg-indigo-100'
                 }`}
-                title={isQuotaExceeded ? 'Daily limit reached. Click to upgrade.' : 'Remaining daily evaluations'}
+                title={
+                  isQuotaExceeded
+                    ? 'Daily limit reached. Click to upgrade.'
+                    : isUnlimited
+                    ? 'Unlimited AI generations & evaluations active'
+                    : 'Remaining daily AI evaluations & generations'
+                }
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{remainingEvaluations} evaluations left</span>
+                <Sparkles className={`w-3.5 h-3.5 ${isUnlimited ? 'text-emerald-600' : ''}`} />
+                <span>{isUnlimited ? 'Unlimited AI' : `${remainingEvaluations} evaluations left`}</span>
               </button>
 
               <div className="relative" ref={notifMenuRef}>

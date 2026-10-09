@@ -533,21 +533,23 @@ export const GenerateTask: React.FC = () => {
             Target CEFR Level
           </label>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-            {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => (
-              <button
-                type="button"
-                key={level}
-                onClick={() => handleCefrChange(level)}
-                className={`py-2.5 px-3 rounded-2xl border text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5 transition ${
-                  cefrLevel === level
-                    ? 'border-primary bg-indigo-50/50 text-primary shadow-sm'
-                    : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                }`}
-              >
-                <span>{level}</span>
-                <CefrBadge level={level} size="sm" />
-              </button>
-            ))}
+            {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => {
+              const isSelected = cefrLevel === level;
+              return (
+                <button
+                  type="button"
+                  key={level}
+                  onClick={() => handleCefrChange(level)}
+                  className={`py-2.5 px-3 rounded-2xl border flex items-center justify-center transition ${
+                    isSelected
+                      ? 'border-primary bg-indigo-50/70 ring-2 ring-primary/20 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50'
+                  }`}
+                >
+                  <CefrBadge level={level} size="md" />
+                </button>
+              );
+            })}
           </div>
         </div>
 

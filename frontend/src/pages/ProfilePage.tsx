@@ -392,13 +392,12 @@ export const ProfilePage: React.FC = () => {
                   } disabled:opacity-50`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-base font-black text-slate-900">{level}</span>
-                    <CefrBadge level={level} size="sm" />
+                    <CefrBadge level={level} size="md" />
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                      {meta.title}
+                    </span>
                   </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-slate-700 leading-tight">{meta.title}</p>
-                    <p className="text-[10px] text-slate-400 line-clamp-2 mt-0.5">{meta.desc}</p>
-                  </div>
+                  <p className="text-[11px] text-slate-500 line-clamp-2 mt-1">{meta.desc}</p>
                 </button>
               );
             })}
