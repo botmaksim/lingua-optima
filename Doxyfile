@@ -7,7 +7,8 @@ OUTPUT_LANGUAGE        = English
 
 INPUT                  = README.md docs/README.md docs/BACKEND.md docs/FRONTEND.md docs/AI_INTEGRATION.md docs/DEVOPS.md backend/src/main/java backend/src/test/java backend/src/main/resources/db/migration frontend/src frontend/vite.config.ts frontend/public/sw.js
 USE_MDFILE_AS_MAINPAGE = docs/README.md
-HTML_EXTRA_FILES       = docs/presentation.html docs/qr_code.png docs/qr_code.svg
+HTML_EXTRA_FILES       = docs/presentation.html docs/qr_code.png docs/qr_code.svg docs/mermaid.min.js
+HTML_FOOTER            = docs/doxygen_footer.html
 RECURSIVE              = YES
 FILE_PATTERNS          = *.java *.ts *.tsx *.js *.sql *.md
 EXTENSION_MAPPING      = ts=Javascript tsx=Javascript js=Javascript sql=C
@@ -23,6 +24,9 @@ INLINE_SOURCES         = YES
 
 JAVADOC_AUTOBRIEF      = YES
 OPTIMIZE_OUTPUT_JAVA   = YES
+
+HAVE_DOT               = YES
+UML_LOOK               = YES
 
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html

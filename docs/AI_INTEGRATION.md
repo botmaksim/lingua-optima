@@ -157,12 +157,12 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A[Request Task Generation] --> B{Calculate SHA256 of Prompt}
-    B --> C[Check Redis key: ai_cache:{hash}]
-    C -->|Cache Hit| D[Return Cached JSON]
-    C -->|Cache Miss| E[Call AIProvider.complete()]
-    E --> F[Save JSON to Redis TTL 1h]
-    F --> G[Return JSON]
+    A["Request Task Generation"] --> B{"Calculate SHA256 of Prompt"}
+    B --> C["Check Redis key: ai_cache:{hash}"]
+    C -->|Cache Hit| D["Return Cached JSON"]
+    C -->|Cache Miss| E["Call AIProvider.complete()"]
+    E --> F["Save JSON to Redis TTL 1h"]
+    F --> G["Return JSON"]
 ```
 
 ---
@@ -221,17 +221,17 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A[Start Session] --> B[Set Difficulty = MEDIUM 2]
-    B --> C[Ask Question]
-    C --> D{Is Answer Correct?}
-    D -- Yes --> E[Difficulty = min(Difficulty + 1, 4)]
-    D -- No --> F[Difficulty = max(Difficulty - 1, 1)]
-    F --> G[Record Error for Topic]
-    E --> H{Questions Answered == 10?}
+    A["Start Session"] --> B["Set Difficulty = MEDIUM (2)"]
+    B --> C["Ask Question"]
+    C --> D{"Is Answer Correct?"}
+    D -- Yes --> E["Difficulty = min(Difficulty + 1, 4)"]
+    D -- No --> F["Difficulty = max(Difficulty - 1, 1)"]
+    F --> G["Record Error for Topic"]
+    E --> H{"Questions Answered == 10?"}
     G --> H
     H -- No --> C
-    H -- Yes --> I[Calculate Mastery Score]
-    I --> J[End Session]
+    H -- Yes --> I["Calculate Mastery Score"]
+    I --> J["End Session"]
 ```
 
 ---

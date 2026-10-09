@@ -1,0 +1,79 @@
+<!-- HTML footer for doxygen 1.9.8-->
+<!-- start footer part -->
+<!--BEGIN GENERATE_TREEVIEW-->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    $navpath
+    <li class="footer">$generatedby <a href="https://www.doxygen.org/index.html"><img class="footer" src="$relpath^doxygen.svg" width="104" height="31" alt="doxygen"/></a> $doxygenversion </li>
+  </ul>
+</div>
+<!--END GENERATE_TREEVIEW-->
+<!--BEGIN !GENERATE_TREEVIEW-->
+<hr class="footer"/><address class="footer"><small>
+$generatedby&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="$relpath^doxygen.svg" width="104" height="31" alt="doxygen"/></a> $doxygenversion
+</small></address>
+<!--END !GENERATE_TREEVIEW-->
+<script src="$relpath^mermaid.min.js"></script>
+<script>
+(function() {
+  async function renderMermaidDiagrams() {
+    if (typeof mermaid === 'undefined') {
+      return;
+    }
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'default',
+      securityLevel: 'loose',
+      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    });
+
+    var mermaidRegex = /^(flowchart|graph|sequenceDiagram|erDiagram|classDiagram|stateDiagram|stateDiagram-v2|gantt|pie)\b/;
+    var fragments = Array.prototype.slice.call(document.querySelectorAll('div.fragment'));
+    var diagramIndex = 0;
+
+    for (var i = 0; i < fragments.length; i++) {
+      var frag = fragments[i];
+      var lines = Array.prototype.slice.call(frag.querySelectorAll('div.line'));
+      if (!lines.length) continue;
+      var code = lines.map(function(line) { return line.textContent; }).join('\n').trim();
+      if (!mermaidRegex.test(code)) continue;
+
+      diagramIndex += 1;
+      var container = document.createElement('div');
+      container.className = 'mermaid-diagram-container';
+      container.style.cssText = 'background:#ffffff;padding:20px;border-radius:10px;border:1px solid #cbd5e1;margin:18px 0;overflow-x:auto;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);';
+
+      var pre = document.createElement('pre');
+      pre.className = 'mermaid';
+      pre.style.cssText = 'background:transparent;border:none;margin:0;text-align:center;';
+      pre.textContent = code;
+      container.appendChild(pre);
+      frag.parentNode.replaceChild(container, frag);
+
+      var renderId = 'doxygen-mermaid-svg-' + diagramIndex;
+      try {
+        var res = await mermaid.render(renderId, code);
+        if (res && res.svg) {
+          container.innerHTML = res.svg;
+          var svgEl = container.querySelector('svg');
+          if (svgEl) {
+            svgEl.style.maxWidth = '100%';
+            svgEl.style.height = 'auto';
+            svgEl.style.margin = '0 auto';
+          }
+        }
+      } catch (e) {
+        console.error('Mermaid render error on diagram #' + diagramIndex + ':', e);
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaidDiagrams);
+  } else {
+    renderMermaidDiagrams();
+  }
+})();
+</script>
+</body>
+</html>
