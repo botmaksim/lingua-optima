@@ -72,6 +72,8 @@ public class TaskService {
         usageService.incrementEvaluation(user);
 
         String prompt = buildPromptFromParams(params);
+        user.setPreferredProvider(params.getProvider());
+        user.setPreferredModel(params.getModelName());
 
         String rawJson = aiBrokerService.generateTaskContent(prompt, user);
         Task task = parseAndBuildTask(rawJson, params, user, false);
@@ -102,6 +104,8 @@ public class TaskService {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
 
         String prompt = buildPromptFromParams(params);
+        user.setPreferredProvider(params.getProvider());
+        user.setPreferredModel(params.getModelName());
 
         String rawJson = aiBrokerService.generateTaskContent(prompt, user);
         Task task = parseAndBuildTask(rawJson, params, user, false);
@@ -123,6 +127,8 @@ public class TaskService {
         }
 
         String prompt = buildPromptFromParams(params);
+        teacher.setPreferredProvider(params.getProvider());
+        teacher.setPreferredModel(params.getModelName());
 
         String rawJson = aiBrokerService.generateTaskContent(prompt, teacher);
         Task task = parseAndBuildTask(rawJson, params, teacher, true);

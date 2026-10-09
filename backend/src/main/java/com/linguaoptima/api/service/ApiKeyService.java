@@ -50,10 +50,12 @@ public class ApiKeyService {
         if (existing.isPresent()) {
             apiKey = existing.get();
             apiKey.setEncryptedKey(encrypted);
+            apiKey.setModelName(request.getModelName());
         } else {
             apiKey = ApiKey.builder()
                 .user(user)
                 .provider(request.getProvider())
+                .modelName(request.getModelName())
                 .encryptedKey(encrypted)
                 .createdAt(LocalDateTime.now())
                 .build();

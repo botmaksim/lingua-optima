@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     provider VARCHAR(50) NOT NULL,
+    model_name VARCHAR(100),
     encrypted_key VARCHAR(1024) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

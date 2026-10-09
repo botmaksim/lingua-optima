@@ -15,18 +15,24 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * @brief Google Gemini API provider utilizing gemini-1.5-flash for essay evaluations and fallback generation.
+ * @brief Google Gemini API provider utilizing Gemini 2.5 / 3.x models for essay evaluations and generation.
  */
 @Slf4j
 @Component
 public class GeminiProvider implements AIProvider {
 
+    /** @brief Default Gemini model identifier. */
+    public static final String DEFAULT_MODEL = "gemini-2.5-flash";
+
     /** @brief Field representing api key in GeminiProvider. */
     private final String apiKey;
     /** @brief Field representing base url in GeminiProvider. */
     private final String baseUrl;
+    /** @brief Field representing model name in GeminiProvider. */
+    private final String modelName;
     /** @brief Field representing rest template in GeminiProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in GeminiProvider. */
@@ -46,8 +52,27 @@ public class GeminiProvider implements AIProvider {
         RestTemplate restTemplate,
         ObjectMapper objectMapper
     ) {
+        this(apiKey, baseUrl, DEFAULT_MODEL, restTemplate, objectMapper);
+    }
+
+    /**
+     * @brief Constructs a GeminiProvider with custom model name and base URL.
+     * @param apiKey Gemini API key.
+     * @param baseUrl Gemini API base URL.
+     * @param modelName Selected model identifier.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public GeminiProvider(
+        String apiKey,
+        String baseUrl,
+        String modelName,
+        RestTemplate restTemplate,
+        ObjectMapper objectMapper
+    ) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
+        this.modelName = Objects.requireNonNullElse(modelName, DEFAULT_MODEL);
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
@@ -72,14 +97,14 @@ public class GeminiProvider implements AIProvider {
     }
 
     /**
-     * @brief Sends content generation request to Google Gemini API using gemini-flash-latest.
+     * @brief Sends content generation request to Google Gemini API using the configured model.
      * @param prompt Input prompt text.
      * @return Generated model candidate text.
      * @throws Exception if HTTP exchange fails or non-2xx status code is returned.
      */
     @Override
     public String complete(String prompt) throws Exception {
-        String url = baseUrl.replaceAll("/+$", "") + "/v1beta/models/gemini-flash-latest:generateContent?key=" + apiKey;
+        String url = baseUrl.replaceAll("/+$", "") + "/v1beta/models/" + modelName + ":generateContent?key=" + apiKey;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

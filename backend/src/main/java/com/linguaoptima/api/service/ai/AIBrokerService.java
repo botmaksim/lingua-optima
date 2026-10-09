@@ -225,17 +225,21 @@ public class AIBrokerService {
             return Optional.empty();
         }
 
-        ApiKey key = keys.get(0);
+        ApiKey key = keys.stream()
+            .filter(k -> k.getProvider() == user.getPreferredProvider())
+            .findFirst()
+            .orElse(keys.get(0));
         String decryptedKey = encryptionService.decrypt(key.getEncryptedKey());
+        String modelName = Optional.ofNullable(user.getPreferredModel()).orElse(key.getModelName());
 
         return switch (key.getProvider()) {
-            case GROQ -> Optional.of((AIProvider) new GroqProvider(decryptedKey, restTemplate, objectMapper));
-            case GEMINI -> Optional.of((AIProvider) new GeminiProvider(decryptedKey, restTemplate, objectMapper));
-            case OPENAI -> Optional.of((AIProvider) new OpenAIProvider(decryptedKey, restTemplate, objectMapper));
-            case ANTHROPIC -> Optional.of((AIProvider) new AnthropicProvider(decryptedKey, restTemplate, objectMapper));
-            case DEEPSEEK -> Optional.of((AIProvider) new DeepSeekProvider(decryptedKey, restTemplate, objectMapper));
-            case QWEN -> Optional.of((AIProvider) new QwenProvider(decryptedKey, restTemplate, objectMapper));
-            case KIMI -> Optional.of((AIProvider) new KimiProvider(decryptedKey, restTemplate, objectMapper));
+            case GROQ -> Optional.of((AIProvider) new GroqProvider(decryptedKey, "https://api.groq.com/openai/v1", modelName, restTemplate, objectMapper));
+            case GEMINI -> Optional.of((AIProvider) new GeminiProvider(decryptedKey, "https://generativelanguage.googleapis.com", modelName, restTemplate, objectMapper));
+            case OPENAI -> Optional.of((AIProvider) new OpenAIProvider(decryptedKey, "https://api.openai.com/v1", modelName, restTemplate, objectMapper));
+            case ANTHROPIC -> Optional.of((AIProvider) new AnthropicProvider(decryptedKey, "https://api.anthropic.com/v1", modelName, restTemplate, objectMapper));
+            case DEEPSEEK -> Optional.of((AIProvider) new DeepSeekProvider(decryptedKey, "https://api.deepseek.com", modelName, restTemplate, objectMapper));
+            case QWEN -> Optional.of((AIProvider) new QwenProvider(decryptedKey, "https://dashscope-intl.aliyuncs.com/compatible-mode/v1", modelName, restTemplate, objectMapper));
+            case KIMI -> Optional.of((AIProvider) new KimiProvider(decryptedKey, "https://api.moonshot.cn/v1", modelName, restTemplate, objectMapper));
         };
     }
 

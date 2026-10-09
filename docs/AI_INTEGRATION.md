@@ -8,15 +8,15 @@ This document describes the artificial intelligence and OCR integration architec
 The platform leverages external AI APIs. We do not use self-hosted models or fine-tuning ($0 infrastructure budget).
 
 ## AI Provider Strategy
-- **Task Generation (grammar exercises):** Groq API → Llama 3.1 70B (free tier: 14,400 req/day, proxied via Cloudflare Edge to bypass Cloudflare GeoIP restrictions).
-- **Essay Scoring + Grammar Check:** Google Gemini 1.5 Flash (free tier: 1,500 req/day, direct or proxied).
+- **Task Generation (grammar exercises):** Groq API → Llama 3.3 70B Versatile / Llama 4 Maverick (free tier: 14,400 req/day, proxied via Cloudflare Edge to bypass Cloudflare GeoIP restrictions).
+- **Essay Scoring + Grammar Check:** Google Gemini 2.5 Flash / Gemini 3.0 Flash (free tier: 1,500 req/day, direct or proxied).
 - **OCR:** Tesseract via `tess4j` (local in-memory zero-retention execution inside Java container).
-- **User's own key (BYOK):** Supports 7 distinct providers:
-  - **Western Providers:** OpenAI (`gpt-4o-mini`), Anthropic (`claude-3-5-sonnet`), Groq (`llama-3.1-70b`), Google Gemini (`gemini-1.5-flash`).
+- **User's own key & Per-Task Provider + Model Selection (BYOK):** Supports 7 distinct providers and customizable modern models:
+  - **Western Providers:** OpenAI (`gpt-5`, `gpt-5-mini`, `gpt-4.1`, `gpt-4.1-mini`, `o4-mini`, `o3`), Anthropic (`claude-sonnet-4-6`, `claude-opus-4-6`, `claude-3-7-sonnet-latest`), Groq (`llama-3.3-70b-versatile`, `llama-4-maverick`, `llama-4-scout`, `deepseek-r1-distill-llama-70b`), Google Gemini (`gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash-preview`, `gemini-3.1-pro-preview`).
   - **Chinese Providers (No Geo-blocks for RU/BY):**
-    - **DeepSeek** (`deepseek-chat` / DeepSeek-V3 & `deepseek-reasoner` / R1): Direct access without VPN from RU/BY, state-of-the-art reasoning, ultra-low cost (~$0.14/1M tokens).
-    - **Alibaba Qwen (DashScope)** (`qwen-plus` / `qwen-turbo` / `qwen-max`): Full OpenAI compatibility, high throughput.
-    - **Moonshot Kimi** (`moonshot-v1-8k` / `32k` / `128k`): Exceptional long-context comprehension.
+    - **DeepSeek** (`deepseek-chat` / DeepSeek V3.2 & `deepseek-reasoner` / R1): Direct access without VPN from RU/BY, state-of-the-art reasoning, ultra-low cost (~$0.14/1M tokens).
+    - **Alibaba Qwen (DashScope)** (`qwen3-235b-a22b`, `qwen3-32b`, `qwq-plus`, `qwen-max-latest`, `qwen-plus-latest`): Full OpenAI compatibility, high throughput.
+    - **Moonshot Kimi** (`kimi-k2-0711-preview`, `kimi-latest`, `kimi-thinking-preview`, `moonshot-v1-128k`): Exceptional long-context and 1T MoE comprehension.
 
 ---
 

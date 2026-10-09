@@ -3,17 +3,24 @@
  * @brief Dynamic task generator interface allowing students to generate CEFR-aligned exercises.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Sparkles, RotateCcw, AlertTriangle, Cpu } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useUsage } from '../../hooks/useUsage';
 import { useUIStore } from '../../store/uiStore';
 import { taskApi } from '../../api/taskApi';
+import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
 import { CefrLevel } from '../../types/user';
 import { TaskType, DifficultyLevel } from '../../types/task';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import {
+  AI_PROVIDER_CATALOG,
+  AIProviderType,
+  getDefaultModelForProvider,
+  getModelsForProvider,
+} from '../../constants/aiModels';
 
 const CEFR_TOPICS: Record<CefrLevel, string[]> = {
   B1: [
@@ -60,8 +67,35 @@ export const GenerateTask: React.FC = () => {
   const [taskType, setTaskType] = useState<TaskType>('MCQ');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('MEDIUM');
   const [numberOfQuestions, setNumberOfQuestions] = useState<number>(5);
+  const [provider, setProvider] = useState<AIProviderType>('GEMINI');
+  const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
+  const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiKeyApi
+      .getKeys()
+      .then((keys) => {
+        setSavedKeys(keys);
+        if (keys.length > 0) {
+          const first = keys[0];
+          setProvider(first.provider);
+          setModelName(first.modelName || getDefaultModelForProvider(first.provider));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  /**
+   * @brief Event handler updating selected AI provider and its associated model.
+   * @param nextProvider New AI provider identifier.
+   */
+  const handleProviderChange = (nextProvider: AIProviderType) => {
+    setProvider(nextProvider);
+    const matchingKey = savedKeys.find((k) => k.provider === nextProvider);
+    setModelName(matchingKey?.modelName || getDefaultModelForProvider(nextProvider));
+  };
 
   /**
    * @brief Event handler or helper executing handle cefr change.
@@ -92,6 +126,8 @@ export const GenerateTask: React.FC = () => {
         taskType,
         difficulty,
         numberOfQuestions,
+        provider,
+        modelName,
       });
 
       if (taskType === 'ESSAY') {
@@ -129,7 +165,7 @@ export const GenerateTask: React.FC = () => {
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Generate Practice Task</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Customize your task parameters. Our AI fallback chain (Groq & Gemini) will generate curriculum-aligned exercises.
+          Customize your task parameters and choose your preferred AI provider and model.
         </p>
       </div>
 
@@ -141,6 +177,56 @@ export const GenerateTask: React.FC = () => {
       )}
 
       <form onSubmit={handleGenerate} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+        <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Cpu className="w-4 h-4 text-primary" />
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                AI Engine & Model Selection
+              </span>
+            </div>
+            <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
+              {provider} · {modelName}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                AI Provider
+              </label>
+              <select
+                value={provider}
+                onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              >
+                {AI_PROVIDER_CATALOG.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                AI Model
+              </label>
+              <select
+                value={modelName}
+                onChange={(e) => setModelName(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              >
+                {getModelsForProvider(provider).map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label} ({m.badge})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Target CEFR Level

@@ -4,11 +4,17 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Key, ShieldCheck, Trash2, CheckCircle2 } from 'lucide-react';
+import { Key, ShieldCheck, Trash2, CheckCircle2, Cpu } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { apiKeyApi, ApiKeyItem } from '../api/apiKeyApi';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import {
+  AI_PROVIDER_CATALOG,
+  AIProviderType,
+  getDefaultModelForProvider,
+  getModelsForProvider,
+} from '../constants/aiModels';
 
 /**
  * @brief User profile page component.
@@ -19,10 +25,20 @@ export const ProfilePage: React.FC = () => {
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [selectedProvider, setSelectedProvider] = useState<'GROQ' | 'GEMINI' | 'OPENAI' | 'ANTHROPIC' | 'DEEPSEEK' | 'QWEN' | 'KIMI'>('DEEPSEEK');
+  const [selectedProvider, setSelectedProvider] = useState<AIProviderType>('DEEPSEEK');
+  const [selectedModel, setSelectedModel] = useState<string>(getDefaultModelForProvider('DEEPSEEK'));
   const [rawKey, setRawKey] = useState('');
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keyMessage, setKeyMessage] = useState<string | null>(null);
+
+  /**
+   * @brief Event handler updating selected AI provider and its default model.
+   * @param provider New AI provider identifier.
+   */
+  const handleProviderChange = (provider: AIProviderType) => {
+    setSelectedProvider(provider);
+    setSelectedModel(getDefaultModelForProvider(provider));
+  };
 
   /**
    * @brief Event handler or helper executing load keys.
@@ -52,10 +68,10 @@ export const ProfilePage: React.FC = () => {
     setIsSavingKey(true);
     setKeyMessage(null);
     try {
-      await apiKeyApi.saveKey(selectedProvider, rawKey.trim());
+      await apiKeyApi.saveKey(selectedProvider, rawKey.trim(), selectedModel);
       setRawKey('');
-      setKeyMessage('Custom API key securely encrypted with AES-256-GCM and saved.');
-      setTimeout(() => setKeyMessage(null), 3000);
+      setKeyMessage(`Custom ${selectedProvider} key (${selectedModel}) encrypted with AES-256-GCM and saved.`);
+      setTimeout(() => setKeyMessage(null), 3500);
       await loadKeys();
     } catch (err: any) {
       console.error('Failed to save API key:', err);
@@ -85,7 +101,7 @@ export const ProfilePage: React.FC = () => {
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Profile & Security</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Manage your account information and Bring-Your-Own-Key (BYOK) AI provider settings.
+          Manage your account information and Bring-Your-Own-Key (BYOK) AI provider and model settings.
         </p>
       </div>
 
@@ -111,10 +127,10 @@ export const ProfilePage: React.FC = () => {
         <div>
           <div className="flex items-center space-x-2">
             <Key className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold text-slate-900">Custom AI Provider Keys (BYOK)</h2>
+            <h2 className="text-lg font-bold text-slate-900">Custom AI Provider & Model Keys (BYOK)</h2>
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Provide your personal API keys to bypass default daily limits. Stored safely with AES-256-GCM encryption.
+            Provide your personal API keys and choose your preferred model to bypass default daily limits. Stored safely with AES-256-GCM encryption.
           </p>
         </div>
 
@@ -133,23 +149,38 @@ export const ProfilePage: React.FC = () => {
         )}
 
         <form onSubmit={handleSaveKey} className="space-y-4 pt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
                 AI Provider
               </label>
               <select
                 value={selectedProvider}
-                onChange={(e) => setSelectedProvider(e.target.value as any)}
+                onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
-                <option value="DEEPSEEK">DeepSeek (DeepSeek-V3 / R1)</option>
-                <option value="QWEN">Alibaba Qwen (Qwen-Plus / Max)</option>
-                <option value="KIMI">Moonshot Kimi (v1-8k)</option>
-                <option value="OPENAI">OpenAI (GPT-4o mini)</option>
-                <option value="ANTHROPIC">Anthropic (Claude 3.5 Sonnet)</option>
-                <option value="GEMINI">Google Gemini 1.5 Flash</option>
-                <option value="GROQ">Groq (Llama 3.1 70B)</option>
+                {AI_PROVIDER_CATALOG.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                AI Model
+              </label>
+              <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              >
+                {getModelsForProvider(selectedProvider).map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.label} — {m.badge}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -160,7 +191,7 @@ export const ProfilePage: React.FC = () => {
               <input
                 type="password"
                 required
-                placeholder="sk-..."
+                placeholder="sk-... / AIza..."
                 value={rawKey}
                 onChange={(e) => setRawKey(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
@@ -173,7 +204,7 @@ export const ProfilePage: React.FC = () => {
             disabled={isSavingKey || !rawKey.trim()}
             className="py-2.5 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-sm disabled:opacity-50"
           >
-            {isSavingKey ? 'Encrypting & Saving...' : 'Save API Key'}
+            {isSavingKey ? 'Encrypting & Saving...' : 'Save API Key & Model'}
           </button>
         </form>
 
@@ -190,8 +221,12 @@ export const ProfilePage: React.FC = () => {
             <div className="divide-y divide-slate-100">
               {keys.map((k) => (
                 <div key={k.id} className="py-3 flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="font-bold text-slate-800">{k.provider}</span>
+                    <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md bg-indigo-50 text-primary font-mono text-[11px] font-semibold">
+                      <Cpu className="w-3 h-3" />
+                      <span>{k.modelName || getDefaultModelForProvider(k.provider)}</span>
+                    </span>
                     <span className="font-mono text-slate-400">••••••••••••••••</span>
                     <span className="text-[10px] text-slate-400">
                       Added {new Date(k.createdAt).toLocaleDateString()}

@@ -4,6 +4,7 @@
  */
 package com.linguaoptima.api.dto.request;
 
+import com.linguaoptima.api.domain.enums.AIProvider;
 import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.DifficultyLevel;
 import com.linguaoptima.api.domain.enums.TaskType;
@@ -43,4 +44,10 @@ public class TaskParamsRequest {
     /** @brief Field representing number of questions in TaskParamsRequest. */
     @Builder.Default
     private int numberOfQuestions = 5;
+
+    /** @brief Field representing provider in TaskParamsRequest. */
+    private AIProvider provider;
+
+    /** @brief Field representing model name in TaskParamsRequest. */
+    private String modelName;
 }

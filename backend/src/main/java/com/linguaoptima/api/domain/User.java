@@ -5,6 +5,7 @@
 package com.linguaoptima.api.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.linguaoptima.api.domain.enums.AIProvider;
 import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
 import jakarta.persistence.*;
@@ -105,6 +106,20 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    /**
+     * @brief Transient per-request AI provider override selected during task generation.
+     */
+    @Transient
+    @JsonIgnore
+    private AIProvider preferredProvider;
+
+    /**
+     * @brief Transient per-request AI model identifier override selected during task generation.
+     */
+    @Transient
+    @JsonIgnore
+    private String preferredModel;
 
     /**
      * @brief Pre-persist JPA callback populating default creation date, CEFR level, and anonymized alias.

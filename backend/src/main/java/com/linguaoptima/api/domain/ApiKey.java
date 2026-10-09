@@ -40,11 +40,17 @@ public class ApiKey {
     private User user;
 
     /**
-     * @brief Target AI provider for this key (GEMINI, GROQ, DEEPSEEK).
+     * @brief Target AI provider for this key (GEMINI, GROQ, DEEPSEEK, QWEN, KIMI, OPENAI, ANTHROPIC).
      */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AIProvider provider;
+
+    /**
+     * @brief Selected AI model identifier for this key (e.g., deepseek-chat, gemini-2.5-flash, gpt-5-mini).
+     */
+    @Column(name = "model_name")
+    private String modelName;
 
     /**
      * @brief AES-256-GCM encrypted API key ciphertext (excluded from JSON serialization).

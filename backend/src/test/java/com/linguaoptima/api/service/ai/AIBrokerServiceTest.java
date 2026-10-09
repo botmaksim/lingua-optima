@@ -218,6 +218,9 @@ class AIBrokerServiceTest {
             .encryptedKey("encKey")
             .build();
 
+        user.setPreferredProvider(AIProvider.OPENAI);
+        user.setPreferredModel("gpt-5");
+
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of(key));
         when(encryptionService.decrypt("encKey")).thenReturn("decrypted-openai-key");

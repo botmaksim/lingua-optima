@@ -15,18 +15,24 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * @brief Ultra-low-latency Groq LPU inference provider using Llama 3.1 models.
+ * @brief Ultra-low-latency Groq LPU inference provider using Llama 3.3 / Llama 4 models.
  */
 @Slf4j
 @Component
 public class GroqProvider implements AIProvider {
 
+    /** @brief Default Groq model identifier. */
+    public static final String DEFAULT_MODEL = "llama-3.3-70b-versatile";
+
     /** @brief Field representing api key in GroqProvider. */
     private final String apiKey;
     /** @brief Field representing base url in GroqProvider. */
     private final String baseUrl;
+    /** @brief Field representing model name in GroqProvider. */
+    private final String modelName;
     /** @brief Field representing rest template in GroqProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in GroqProvider. */
@@ -46,8 +52,27 @@ public class GroqProvider implements AIProvider {
         RestTemplate restTemplate,
         ObjectMapper objectMapper
     ) {
+        this(apiKey, baseUrl, DEFAULT_MODEL, restTemplate, objectMapper);
+    }
+
+    /**
+     * @brief Constructs a GroqProvider with custom model name and base URL.
+     * @param apiKey Groq API key.
+     * @param baseUrl Groq API base URL.
+     * @param modelName Selected model identifier.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public GroqProvider(
+        String apiKey,
+        String baseUrl,
+        String modelName,
+        RestTemplate restTemplate,
+        ObjectMapper objectMapper
+    ) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
+        this.modelName = Objects.requireNonNullElse(modelName, DEFAULT_MODEL);
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
@@ -72,7 +97,7 @@ public class GroqProvider implements AIProvider {
     }
 
     /**
-     * @brief Sends chat completion request to Groq API using llama-3.1-70b-versatile.
+     * @brief Sends chat completion request to Groq API using the configured model.
      * @param prompt User prompt text.
      * @return Model completion text content.
      * @throws Exception if HTTP exchange fails or non-2xx status code is received.
@@ -86,7 +111,7 @@ public class GroqProvider implements AIProvider {
         headers.setBearerAuth(apiKey);
 
         Map<String, Object> body = Map.of(
-            "model", "llama-3.1-70b-versatile",
+            "model", modelName,
             "messages", List.of(
                 Map.of("role", "system", "content", "You are an AI language learning assistant. Always return valid JSON as requested."),
                 Map.of("role", "user", "content", prompt)

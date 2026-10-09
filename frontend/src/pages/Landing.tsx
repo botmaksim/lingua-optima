@@ -39,9 +39,9 @@ export const Landing: React.FC = () => {
     },
     {
       icon: Sparkles,
-      title: 'AI Fallback Chain',
+      title: 'Multi-Model AI Fallback Chain',
       description:
-        'Ultra-fast generation powered by Groq Llama 3.1 with seamless automatic fallback to Gemini 1.5 Flash.',
+        'Ultra-fast generation powered by Groq Llama 3.3 70B & Llama 4 with seamless automatic fallback to Gemini 2.5 Flash.',
     },
     {
       icon: Award,
@@ -59,7 +59,7 @@ export const Landing: React.FC = () => {
       icon: ShieldCheck,
       title: 'Bring Your Own API Key (BYOK)',
       description:
-        'Optionally supply your OpenAI, Anthropic, Gemini, or Groq API key, encrypted safely at rest with AES-256-GCM.',
+        'Supply your DeepSeek V3.2/R1, Qwen 3, Kimi K2, OpenAI GPT-5, Claude Sonnet 4.6, Gemini 2.5/3.0, or Groq key, encrypted with AES-256-GCM.',
     },
   ];
 

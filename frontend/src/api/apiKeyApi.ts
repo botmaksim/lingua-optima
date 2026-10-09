@@ -12,6 +12,7 @@ import { axiosInstance } from './axiosInstance';
 export interface ApiKeyItem {
   id: string;
   provider: 'GROQ' | 'GEMINI' | 'OPENAI' | 'ANTHROPIC' | 'DEEPSEEK' | 'QWEN' | 'KIMI';
+  modelName?: string;
   createdAt: string;
 }
 
@@ -29,13 +30,14 @@ export const apiKeyApi = {
   },
 
   /**
-   * @brief Encrypts and saves a new custom API key on the backend.
-   * @param provider Provider identifier ('GROQ', 'GEMINI', 'OPENAI', 'ANTHROPIC').
+   * @brief Encrypts and saves a new custom API key and default model on the backend.
+   * @param provider Provider identifier ('GROQ', 'GEMINI', 'OPENAI', 'ANTHROPIC', 'DEEPSEEK', 'QWEN', 'KIMI').
    * @param rawKey Plaintext API key string.
+   * @param modelName Selected AI model identifier for this provider.
    * @return Promise resolving to saved ApiKeyItem.
    */
-  saveKey: async (provider: string, rawKey: string): Promise<ApiKeyItem> => {
-    const res = await axiosInstance.post<ApiKeyItem>('/api-keys', { provider, rawKey });
+  saveKey: async (provider: string, rawKey: string, modelName?: string): Promise<ApiKeyItem> => {
+    const res = await axiosInstance.post<ApiKeyItem>('/api-keys', { provider, rawKey, modelName });
     return res.data;
   },
 

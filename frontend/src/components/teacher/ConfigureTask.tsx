@@ -5,14 +5,21 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Bookmark, Eye, CheckCircle2 } from 'lucide-react';
+import { Send, Bookmark, Eye, CheckCircle2, Cpu } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
+import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
 import { Group } from '../../types/group';
 import { Task, TaskType, DifficultyLevel } from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 import { sanitizeTaskContent } from '../../utils/textSanitizer';
+import {
+  AI_PROVIDER_CATALOG,
+  AIProviderType,
+  getDefaultModelForProvider,
+  getModelsForProvider,
+} from '../../constants/aiModels';
 
 /**
  * @brief Teacher component for configuring and deploying AI-generated assignments to student groups.
@@ -30,6 +37,9 @@ export const ConfigureTask: React.FC = () => {
   const difficulty: DifficultyLevel = 'MEDIUM';
   const numberOfQuestions = 5;
   const [dueDate, setDueDate] = useState<string>('');
+  const [provider, setProvider] = useState<AIProviderType>('GEMINI');
+  const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
+  const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
 
   const [previewTask, setPreviewTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +53,29 @@ export const ConfigureTask: React.FC = () => {
         if (data.length > 0) setSelectedGroupIds([data[0].id]);
       })
       .catch((err) => console.error('Failed to load groups:', err));
+
+    apiKeyApi
+      .getKeys()
+      .then((keys) => {
+        setSavedKeys(keys);
+        if (keys.length > 0) {
+          const first = keys[0];
+          setProvider(first.provider);
+          setModelName(first.modelName || getDefaultModelForProvider(first.provider));
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  /**
+   * @brief Event handler updating selected AI provider and its associated model.
+   * @param nextProvider New AI provider identifier.
+   */
+  const handleProviderChange = (nextProvider: AIProviderType) => {
+    setProvider(nextProvider);
+    const matchingKey = savedKeys.find((k) => k.provider === nextProvider);
+    setModelName(matchingKey?.modelName || getDefaultModelForProvider(nextProvider));
+  };
 
   /**
    * @brief Event handler or helper executing toggle group.
@@ -68,6 +100,8 @@ export const ConfigureTask: React.FC = () => {
         taskType,
         difficulty,
         numberOfQuestions,
+        provider,
+        modelName,
       });
       setPreviewTask(task);
     } catch (err: any) {
@@ -91,6 +125,8 @@ export const ConfigureTask: React.FC = () => {
         taskType,
         difficulty,
         numberOfQuestions,
+        provider,
+        modelName,
       });
       setStatusMessage('Template saved to your curriculum catalog!');
     } catch (err: any) {
@@ -120,6 +156,8 @@ export const ConfigureTask: React.FC = () => {
         taskType,
         difficulty,
         numberOfQuestions,
+        provider,
+        modelName,
       });
 
       await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined);
@@ -153,6 +191,56 @@ export const ConfigureTask: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Cpu className="w-4 h-4 text-primary" />
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  AI Engine & Model
+                </span>
+              </div>
+              <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                {provider} · {modelName}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                  AI Provider
+                </label>
+                <select
+                  value={provider}
+                  onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 font-medium text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                >
+                  {AI_PROVIDER_CATALOG.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                  AI Model
+                </label>
+                <select
+                  value={modelName}
+                  onChange={(e) => setModelName(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 font-medium text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                >
+                  {getModelsForProvider(provider).map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label} ({m.badge})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Target Cohort Groups (Multi-select)

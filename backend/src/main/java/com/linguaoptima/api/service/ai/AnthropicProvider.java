@@ -14,17 +14,23 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * @brief Anthropic Claude API provider integration supporting BYOK user keys and claude-3-5-sonnet.
+ * @brief Anthropic Claude API provider integration supporting BYOK user keys and Claude 4.6 / 3.7 inference.
  */
 @Component
 public class AnthropicProvider implements AIProvider {
+
+    /** @brief Default Anthropic model identifier. */
+    public static final String DEFAULT_MODEL = "claude-sonnet-4-6";
 
     /** @brief Field representing api key in AnthropicProvider. */
     private final String apiKey;
     /** @brief Field representing base url in AnthropicProvider. */
     private final String baseUrl;
+    /** @brief Field representing model name in AnthropicProvider. */
+    private final String modelName;
     /** @brief Field representing rest template in AnthropicProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in AnthropicProvider. */
@@ -44,8 +50,27 @@ public class AnthropicProvider implements AIProvider {
         RestTemplate restTemplate,
         ObjectMapper objectMapper
     ) {
+        this(apiKey, baseUrl, DEFAULT_MODEL, restTemplate, objectMapper);
+    }
+
+    /**
+     * @brief Constructs an AnthropicProvider with custom model name and base URL.
+     * @param apiKey Anthropic API key.
+     * @param baseUrl Anthropic API base URL.
+     * @param modelName Selected model identifier.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public AnthropicProvider(
+        String apiKey,
+        String baseUrl,
+        String modelName,
+        RestTemplate restTemplate,
+        ObjectMapper objectMapper
+    ) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
+        this.modelName = Objects.requireNonNullElse(modelName, DEFAULT_MODEL);
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
@@ -79,7 +104,7 @@ public class AnthropicProvider implements AIProvider {
     }
 
     /**
-     * @brief Sends message completion request to Anthropic API using claude-3-5-sonnet-20241022.
+     * @brief Sends message completion request to Anthropic API using the configured model.
      * @param prompt Input prompt text.
      * @return Model completion text.
      * @throws Exception if HTTP exchange fails or non-2xx status code is returned.
@@ -94,7 +119,7 @@ public class AnthropicProvider implements AIProvider {
         headers.set("anthropic-version", "2023-06-01");
 
         Map<String, Object> body = Map.of(
-            "model", "claude-3-5-sonnet-20241022",
+            "model", modelName,
             "max_tokens", 2048,
             "messages", List.of(
                 Map.of("role", "user", "content", prompt)

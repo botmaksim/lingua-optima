@@ -86,6 +86,10 @@ export interface TaskParams {
   difficulty: DifficultyLevel;
   /** @brief Property representing number of questions in TaskParams. */
   numberOfQuestions?: number;
+  /** @brief Property representing preferred AI provider in TaskParams. */
+  provider?: string;
+  /** @brief Property representing preferred AI model identifier in TaskParams. */
+  modelName?: string;
 }
 
 /**

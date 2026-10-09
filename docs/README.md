@@ -47,7 +47,7 @@
 
 | # | Component | Description |
 |---|---|---|
-| 1 | Self-Service Task Generator | Exercise generation via Llama 3.1 (Groq API) |
+| 1 | Self-Service Task Generator | Exercise generation via Llama 3.3 70B / Llama 4 & multi-model selector |
 | 2 | Homework OCR Check | Photo upload → Tesseract OCR → AI grammar evaluation |
 | 3 | AI Essay Scoring | Rubric-based grading: Task Achievement, Coherence, Lexical Resource, Grammatical Range |
 | 4 | Adaptive Tests | CAT algorithm: question difficulty adapts in real time |
@@ -88,8 +88,8 @@ flowchart LR
     end
 
     subgraph AI ["AI Layer"]
-        Groq["Groq API (Llama 3.1 70B)"]
-        Gemini["Gemini 1.5 Flash"]
+        Groq["Groq API (Llama 3.3 70B)"]
+        Gemini["Gemini 2.5 Flash"]
         Tess["Tesseract OCR (tess4j)"]
     end
 
@@ -122,8 +122,8 @@ flowchart TD
     end
 
     subgraph External ["External AI"]
-        GROQ["Groq (Llama 3.1)"]
-        GEM["Gemini Flash"]
+        GROQ["Groq (Llama 3.3)"]
+        GEM["Gemini 2.5 Flash"]
         OWN["User's own key"]
     end
 
@@ -670,10 +670,10 @@ flowchart TD
 
 | Task | Primary Provider | Free-Tier Limit | Fallback Chain |
 |---|---|---|---|
-| Task Generation | Groq (Llama 3.1 70B, proxied via Cloudflare) | 14,400 req/day | → Gemini → retry → queue |
-| Essay Scoring | Gemini 1.5 Flash (direct or proxied) | 1,500 req/day | → Groq → retry → queue |
+| Task Generation | Groq (Llama 3.3 70B / Llama 4, proxied via Cloudflare) | 14,400 req/day | → Gemini → retry → queue |
+| Essay Scoring | Gemini 2.5 Flash / 3.0 Flash (direct or proxied) | 1,500 req/day | → Groq → retry → queue |
 | Homework OCR | Tesseract (tess4j, local in-memory) | Unlimited | `OcrException` → HTTP 422 |
-| User's Own Key (BYOK) | **7 Providers Supported**:<br/>• OpenAI (GPT-4o mini)<br/>• Anthropic (Claude 3.5 Sonnet)<br/>• DeepSeek (V3 / R1 - no geo-block)<br/>• Alibaba Qwen (DashScope - no geo-block)<br/>• Moonshot Kimi (no geo-block)<br/>• Groq (Llama 3.1 70B)<br/>• Gemini (1.5 Flash) | Per user's plan | Key failure → HTTP 402 |
+| User's Own Key (BYOK & Model Selector) | **7 Providers + Multi-Model Selection**:<br/>• OpenAI (GPT-5, GPT-4.1, o4-mini, o3)<br/>• Anthropic (Claude Sonnet 4.6, Opus 4.6)<br/>• DeepSeek (V3.2 / R1 - no geo-block)<br/>• Alibaba Qwen (Qwen 3 235B / QwQ Plus - no geo-block)<br/>• Moonshot Kimi (Kimi K2 / Thinking - no geo-block)<br/>• Groq (Llama 3.3 70B / Llama 4)<br/>• Gemini (2.5 Flash / 2.5 Pro / 3.0) | Per user's plan | Key failure → HTTP 402 |
 
 > 🌐 **Cloudflare Edge AI Proxy**: To bypass regional IP restrictions (e.g. Cloudflare GeoIP blocks affecting Groq or regional bans in RU/BY), all outgoing AI requests can be routed through an edge reverse-proxy (`ai-proxy.mybsu.online` or `*.workers.dev`) defined in `cloudflare-proxy/worker.js`. Parameters are fully configurable via `.env` (`GROQ_BASE_URL`, `DEEPSEEK_BASE_URL`, etc.). Chinese providers (DeepSeek, Qwen, Kimi) work directly without restrictions.
 

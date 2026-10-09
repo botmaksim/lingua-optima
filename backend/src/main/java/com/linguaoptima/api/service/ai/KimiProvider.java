@@ -14,17 +14,23 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * @brief Moonshot AI Kimi API provider integration supporting BYOK user keys and moonshot-v1-8k inference.
+ * @brief Moonshot AI Kimi API provider integration supporting BYOK user keys and Kimi K2 / 128k inference.
  */
 @Component
 public class KimiProvider implements AIProvider {
+
+    /** @brief Default Kimi model identifier. */
+    public static final String DEFAULT_MODEL = "kimi-k2-0711-preview";
 
     /** @brief Field representing api key in KimiProvider. */
     private final String apiKey;
     /** @brief Field representing base url in KimiProvider. */
     private final String baseUrl;
+    /** @brief Field representing model name in KimiProvider. */
+    private final String modelName;
     /** @brief Field representing rest template in KimiProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in KimiProvider. */
@@ -44,8 +50,27 @@ public class KimiProvider implements AIProvider {
         RestTemplate restTemplate,
         ObjectMapper objectMapper
     ) {
+        this(apiKey, baseUrl, DEFAULT_MODEL, restTemplate, objectMapper);
+    }
+
+    /**
+     * @brief Constructs a KimiProvider with custom model name and base URL.
+     * @param apiKey Kimi API key.
+     * @param baseUrl Kimi API base URL.
+     * @param modelName Selected model identifier.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public KimiProvider(
+        String apiKey,
+        String baseUrl,
+        String modelName,
+        RestTemplate restTemplate,
+        ObjectMapper objectMapper
+    ) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
+        this.modelName = Objects.requireNonNullElse(modelName, DEFAULT_MODEL);
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
@@ -79,7 +104,7 @@ public class KimiProvider implements AIProvider {
     }
 
     /**
-     * @brief Sends chat completion request to Moonshot AI Kimi API using moonshot-v1-8k.
+     * @brief Sends chat completion request to Moonshot AI Kimi API using the configured model.
      * @param prompt Input prompt text.
      * @return Model response text.
      * @throws Exception if HTTP exchange fails or non-2xx status code is returned.
@@ -93,7 +118,7 @@ public class KimiProvider implements AIProvider {
         headers.setBearerAuth(apiKey);
 
         Map<String, Object> body = Map.of(
-            "model", "moonshot-v1-8k",
+            "model", modelName,
             "messages", List.of(
                 Map.of("role", "system", "content", "You are an English language testing expert. Respond strictly with valid JSON."),
                 Map.of("role", "user", "content", prompt)
