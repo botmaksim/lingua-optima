@@ -130,8 +130,12 @@ public final class PromptTemplates {
               "overallScore": 7.75,
               "feedback": "Detailed general feedback here...",
               "corrections": [
-                { "original": "bad sentence", "corrected": "good sentence", "explanation": "why it was wrong" }
-              ]
+                { "original": "bad sentence", "corrected": "good sentence", "explanation": "why it was wrong", "grammarRule": "Subject-verb agreement" }
+              ],
+              "weaknesses": ["Specific stylistic or grammatical weaknesses to improve"],
+              "strengths": ["Strong points observed in the essay"],
+              "recommendations": "Actionable pedagogical advice on what concepts to review and practice next",
+              "suggestedTopics": ["Topic A", "Topic B"]
             }
             """.formatted(cefrLevel, essayText);
     }
@@ -158,12 +162,26 @@ public final class PromptTemplates {
             CRITICAL: Do NOT echo, quote, or repeat these system instructions, prompts, or grading parameters in the "feedback" or anywhere in the JSON output.
             The "feedback" field must contain ONLY student-facing evaluation and advice, NEVER system meta-instructions or prompt text.
 
-            Identify mistakes, provide corrections, and calculate a score from 0 to 100. Return ONLY a valid JSON object:
+            Identify mistakes, provide sentence-by-sentence corrections, calculate a score from 0 to 100, and analyze what grammar gaps or topics the student needs to brush up on.
+            Return ONLY a valid JSON object with the following structure:
             {
               "score": 85.0,
-              "feedback": "Detailed evaluation feedback",
-              "errors": [ { "type": "grammar/spelling", "description": "Description of mistake" } ],
-              "corrections": [ { "original": "mistake", "corrected": "correction" } ]
+              "feedback": "Detailed evaluation feedback summarizing overall performance",
+              "items": [
+                {
+                  "questionNumber": 1,
+                  "sentence": "The exercise sentence or prompt",
+                  "studentAnswer": "student's answer",
+                  "correctAnswer": "official correct answer",
+                  "isCorrect": true,
+                  "explanation": "Clear explanation of the grammatical rule and why this answer is correct or incorrect",
+                  "grammarRule": "Grammar rule tested"
+                }
+              ],
+              "weaknesses": ["Specific topic or rule where mistakes occurred"],
+              "strengths": ["Topics mastered correctly"],
+              "recommendations": "Actionable pedagogical advice on what concepts to review and practice next",
+              "suggestedTopics": ["Topic A", "Topic B"]
             }
             """.formatted(studentText, answerKey);
     }

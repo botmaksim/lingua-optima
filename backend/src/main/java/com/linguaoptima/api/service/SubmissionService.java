@@ -4,10 +4,13 @@
  */
 package com.linguaoptima.api.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linguaoptima.api.domain.SessionState;
 import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.Task;
 import com.linguaoptima.api.domain.TaskAssignment;
+import com.linguaoptima.api.domain.TaskQuestion;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.NotificationType;
@@ -15,10 +18,14 @@ import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubmissionType;
 import com.linguaoptima.api.dto.request.OverrideRequest;
 import com.linguaoptima.api.dto.request.TextSubmissionRequest;
+import com.linguaoptima.api.dto.response.AiAnalysisResponse;
+import com.linguaoptima.api.dto.response.SentenceCorrectionResponse;
+import com.linguaoptima.api.dto.response.SubmissionItemResponse;
 import com.linguaoptima.api.dto.response.SubmissionResultResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.OcrException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
+import com.linguaoptima.api.repository.SessionStateRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.TaskAssignmentRepository;
 import com.linguaoptima.api.repository.TaskRepository;
@@ -30,9 +37,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -52,6 +59,8 @@ public class SubmissionService {
     private final TaskAssignmentRepository taskAssignmentRepository;
     /** @brief Field representing task repository in SubmissionService. */
     private final TaskRepository taskRepository;
+    /** @brief Field representing session state repository in SubmissionService. */
+    private final SessionStateRepository sessionStateRepository;
     /** @brief Field representing ocr service in SubmissionService. */
     private final OCRService ocrService;
     /** @brief Field representing scoring service in SubmissionService. */
@@ -145,6 +154,7 @@ public class SubmissionService {
 
         SubmissionResultResponse response = SubmissionResultResponse.fromEntity(saved);
         response.setRubric(scoring);
+        enrichSubmissionResult(response, saved, scoring);
         return response;
     }
 
@@ -218,6 +228,7 @@ public class SubmissionService {
 
         SubmissionResultResponse response = SubmissionResultResponse.fromEntity(saved);
         response.setRubric(scoring);
+        enrichSubmissionResult(response, saved, scoring);
         return response;
     }
 
@@ -309,6 +320,391 @@ public class SubmissionService {
             throw new ForbiddenException("Access denied to this submission.");
         }
 
-        return SubmissionResultResponse.fromEntity(submission);
+        SubmissionResultResponse response = SubmissionResultResponse.fromEntity(submission);
+        enrichSubmissionResult(response, submission, null);
+        return response;
+    }
+
+    /**
+     * @brief Enriches a submission result with sentence-by-sentence evaluation items, corrections, and AI gap analysis.
+     * @param response The response DTO to enrich.
+     * @param submission The domain submission entity.
+     * @param rubric Optional scoring rubric map from AI grading.
+     */
+    public void enrichSubmissionResult(SubmissionResultResponse response, Submission submission, Map<String, Object> rubric) {
+        if (response == null || submission == null) return;
+
+        List<SubmissionItemResponse> items = new ArrayList<>();
+        List<SentenceCorrectionResponse> corrections = new ArrayList<>();
+        List<String> weaknesses = new ArrayList<>();
+        List<String> strengths = new ArrayList<>();
+
+        // 1. Check CAT Session
+        if (submission.getAssignment() != null) {
+            Optional<SessionState> sessionOpt = sessionStateRepository.findByAssignmentId(submission.getAssignment().getId());
+            if (sessionOpt.isPresent() && sessionOpt.get().getAnswersJson() != null && !sessionOpt.get().getAnswersJson().isBlank()) {
+                enrichFromCatSession(sessionOpt.get(), items, weaknesses, strengths);
+            }
+        }
+
+        // 2. Check Task Questions (MCQ, GAP_FILL, REWRITE, etc.)
+        if (items.isEmpty() && submission.getAssignment() != null && submission.getAssignment().getTask() != null) {
+            Task task = submission.getAssignment().getTask();
+            enrichFromTaskQuestions(task, submission.getStudentText(), items, weaknesses, strengths);
+        }
+
+        // 3. Extract from Rubric
+        if (rubric != null) {
+            extractFromRubric(rubric, corrections, weaknesses, strengths);
+        }
+
+        // 4. Extract from Feedback if it contains JSON
+        extractFromFeedback(submission.getAiFeedback(), corrections, weaknesses, strengths);
+
+        // Deduplicate
+        List<String> dedupWeaknesses = weaknesses.stream()
+            .filter(w -> w != null && !w.isBlank())
+            .distinct()
+            .collect(Collectors.toList());
+
+        List<String> dedupStrengths = strengths.stream()
+            .filter(s -> s != null && !s.isBlank())
+            .distinct()
+            .collect(Collectors.toList());
+
+        String summary = buildSummary(response, items, corrections);
+        String recommendations = buildRecommendations(response, dedupWeaknesses, dedupStrengths);
+        List<String> suggestedTopics = buildSuggestedTopics(response, dedupWeaknesses);
+
+        AiAnalysisResponse analysis = AiAnalysisResponse.builder()
+            .summary(summary)
+            .weaknesses(dedupWeaknesses)
+            .strengths(dedupStrengths)
+            .recommendations(recommendations)
+            .suggestedTopics(suggestedTopics)
+            .build();
+
+        response.setItems(items);
+        response.setCorrections(corrections);
+        response.setAiAnalysis(analysis);
+    }
+
+    /**
+     * @brief Enriches evaluation items and rule diagnostics from persisted task questions.
+     * @param task Associated educational task entity.
+     * @param studentText Raw submitted student text.
+     * @param items Target list of evaluated items.
+     * @param weaknesses Target list of detected grammar weaknesses.
+     * @param strengths Target list of detected grammar strengths.
+     */
+    private void enrichFromTaskQuestions(Task task, String studentText, List<SubmissionItemResponse> items, List<String> weaknesses, List<String> strengths) {
+        if (task.getQuestions() == null || task.getQuestions().isEmpty()) return;
+
+        Map<Integer, String> studentAnswers = parseStudentAnswers(studentText);
+        Map<Integer, String> explanations = parseAnswerKeyExplanations(task.getAnswerKey());
+
+        for (TaskQuestion q : task.getQuestions()) {
+            int qOrder = q.getQuestionOrder();
+            String studentAns = studentAnswers.getOrDefault(qOrder, "");
+            if (studentAns.isBlank()) {
+                studentAns = "No answer";
+            }
+            String correctAns = q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "";
+            boolean isCorrect = isAnswerMatching(studentAns, correctAns);
+
+            String rule = q.getGrammarRule() != null && !q.getGrammarRule().isBlank()
+                ? q.getGrammarRule()
+                : (task.getGrammarTopic() != null ? task.getGrammarTopic() : "Grammar");
+
+            String explanation = explanations.get(qOrder);
+            if (explanation == null || explanation.isBlank()) {
+                if (isCorrect) {
+                    explanation = "Correct! Accurately applies the rule: " + rule + ".";
+                } else {
+                    explanation = "Incorrect. The expected answer is '" + correctAns + "'. Tested rule: " + rule + ".";
+                }
+            }
+
+            items.add(SubmissionItemResponse.builder()
+                .questionNumber(qOrder)
+                .sentence(q.getQuestionText())
+                .studentAnswer(studentAns)
+                .correctAnswer(correctAns)
+                .isCorrect(isCorrect)
+                .explanation(explanation)
+                .grammarRule(rule)
+                .build());
+
+            if (isCorrect) {
+                strengths.add(rule);
+            } else {
+                weaknesses.add(rule);
+            }
+        }
+    }
+
+    /**
+     * @brief Checks if a student's answer matches the target answer key, accounting for case, punctuation, and variants.
+     * @param studentAns The student's submitted response.
+     * @param correctAns The expected reference answer.
+     * @return True if the response is considered a valid match.
+     */
+    private boolean isAnswerMatching(String studentAns, String correctAns) {
+        if (studentAns == null || correctAns == null) return false;
+        String s = normalizeText(studentAns);
+        String c = normalizeText(correctAns);
+        if (s.isEmpty() && c.isEmpty()) return true;
+        if (s.isEmpty() || c.isEmpty()) return false;
+        if (s.equals(c)) return true;
+
+        if (correctAns.contains("/")) {
+            for (String part : correctAns.split("/")) {
+                if (s.equals(normalizeText(part))) return true;
+            }
+        }
+        if (correctAns.contains(",")) {
+            for (String part : correctAns.split(",")) {
+                if (s.equals(normalizeText(part))) return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @brief Normalizes raw response strings by stripping punctuation, extra whitespace, and ordinal indicators.
+     * @param text Raw response string.
+     * @return Lowercase normalized token string.
+     */
+    private String normalizeText(String text) {
+        if (text == null) return "";
+        return text.trim().toLowerCase()
+            .replaceAll("^(?:q\\d+[:.)\\-\\s]+|\\d+[:.)\\-\\s]+)", "")
+            .replaceAll("[.,!?;:'\"()]", "")
+            .trim();
+    }
+
+    /**
+     * @brief Parses student responses into question-indexed lookup map.
+     * @param studentText Raw multi-line submitted text.
+     * @return Map of question index to student answer.
+     */
+    private Map<Integer, String> parseStudentAnswers(String studentText) {
+        Map<Integer, String> answers = new HashMap<>();
+        if (studentText == null || studentText.isBlank()) return answers;
+
+        String[] lines = studentText.split("\\r?\\n");
+        Pattern pattern = Pattern.compile("^(?:Q|Question\\s*)?(\\d+)[:.)\\-\\s]+(.*)$", Pattern.CASE_INSENSITIVE);
+
+        int fallbackIdx = 1;
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (trimmed.isBlank()) continue;
+            Matcher matcher = pattern.matcher(trimmed);
+            if (matcher.find()) {
+                try {
+                    int qNum = Integer.parseInt(matcher.group(1));
+                    String ans = matcher.group(2).trim();
+                    answers.put(qNum, ans);
+                } catch (NumberFormatException ignored) {
+                    answers.putIfAbsent(fallbackIdx++, trimmed);
+                }
+            } else {
+                answers.putIfAbsent(fallbackIdx++, trimmed);
+            }
+        }
+        return answers;
+    }
+
+    /**
+     * @brief Parses pedagogical explanation notes from persisted answer key JSON string.
+     * @param answerKeyJson Serialized answer key JSON.
+     * @return Map of question order index to explanation text.
+     */
+    private Map<Integer, String> parseAnswerKeyExplanations(String answerKeyJson) {
+        Map<Integer, String> explanations = new HashMap<>();
+        if (answerKeyJson == null || answerKeyJson.isBlank()) return explanations;
+        try {
+            JsonNode root = objectMapper.readTree(answerKeyJson);
+            if (root.isArray()) {
+                int idx = 1;
+                for (JsonNode node : root) {
+                    int order = node.path("questionOrder").asInt(node.path("questionId").asInt(idx++));
+                    String exp = node.path("explanation").asText("");
+                    if (!exp.isBlank()) {
+                        explanations.put(order, exp);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return explanations;
+    }
+
+    /**
+     * @brief Enriches evaluated question items from adaptive CAT testing session state.
+     * @param session Adaptive testing session state entity.
+     * @param items Target list of evaluated items.
+     * @param weaknesses Target list of detected grammar weaknesses.
+     * @param strengths Target list of detected grammar strengths.
+     */
+    private void enrichFromCatSession(SessionState session, List<SubmissionItemResponse> items, List<String> weaknesses, List<String> strengths) {
+        try {
+            JsonNode root = objectMapper.readTree(session.getAnswersJson());
+            if (root.isArray()) {
+                int idx = 1;
+                for (JsonNode node : root) {
+                    int qNum = idx++;
+                    String qText = node.path("questionText").asText("Diagnostic adaptive question " + qNum);
+                    String ans = node.path("answer").asText("");
+                    String corr = node.path("correctAnswer").asText("");
+                    boolean isCorr = node.path("isCorrect").asBoolean(false);
+                    String rule = node.path("grammarRule").asText("Adaptive grammar assessment");
+                    int diff = node.path("difficulty").asInt(2);
+
+                    String exp = isCorr
+                        ? "Correct! Demonstrated mastery at CAT difficulty level " + diff + "/4. Tested rule: " + rule + "."
+                        : "Incorrect. The expected answer is '" + corr + "'. Tested rule: " + rule + ".";
+
+                    items.add(SubmissionItemResponse.builder()
+                        .questionNumber(qNum)
+                        .sentence(qText)
+                        .studentAnswer(ans)
+                        .correctAnswer(corr)
+                        .isCorrect(isCorr)
+                        .explanation(exp)
+                        .grammarRule(rule)
+                        .build());
+
+                    if (isCorr) {
+                        strengths.add(rule);
+                    } else {
+                        weaknesses.add(rule);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * @brief Extracts sentence-level corrections, weaknesses, and strengths from grading rubric map.
+     * @param rubric Evaluation rubric map.
+     * @param corrections Target list of sentence corrections.
+     * @param weaknesses Target list of weaknesses.
+     * @param strengths Target list of strengths.
+     */
+    @SuppressWarnings("unchecked")
+    private void extractFromRubric(Map<String, Object> rubric, List<SentenceCorrectionResponse> corrections, List<String> weaknesses, List<String> strengths) {
+        Object corrObj = rubric.get("corrections");
+        if (corrObj instanceof List<?> list) {
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> m) {
+                    corrections.add(SentenceCorrectionResponse.builder()
+                        .original(m.get("original") != null ? String.valueOf(m.get("original")) : "")
+                        .corrected(m.get("corrected") != null ? String.valueOf(m.get("corrected")) : "")
+                        .explanation(m.get("explanation") != null ? String.valueOf(m.get("explanation")) : "")
+                        .grammarRule(m.get("grammarRule") != null ? String.valueOf(m.get("grammarRule")) : "Grammar & Style")
+                        .build());
+                }
+            }
+        }
+
+        Object wObj = rubric.get("weaknesses");
+        if (wObj instanceof List<?> list) {
+            list.forEach(w -> weaknesses.add(String.valueOf(w)));
+        }
+
+        Object sObj = rubric.get("strengths");
+        if (sObj instanceof List<?> list) {
+            list.forEach(s -> strengths.add(String.valueOf(s)));
+        }
+    }
+
+    /**
+     * @brief Extracts corrections and diagnostic notes from serialized JSON in AI feedback if present.
+     * @param aiFeedback Raw AI feedback text.
+     * @param corrections Target list of sentence corrections.
+     * @param weaknesses Target list of weaknesses.
+     * @param strengths Target list of strengths.
+     */
+    private void extractFromFeedback(String aiFeedback, List<SentenceCorrectionResponse> corrections, List<String> weaknesses, List<String> strengths) {
+        if (aiFeedback == null || !aiFeedback.trim().startsWith("{")) return;
+        try {
+            JsonNode root = objectMapper.readTree(aiFeedback);
+            if (root.has("corrections") && corrections.isEmpty()) {
+                for (JsonNode cNode : root.path("corrections")) {
+                    corrections.add(SentenceCorrectionResponse.builder()
+                        .original(cNode.path("original").asText(""))
+                        .corrected(cNode.path("corrected").asText(""))
+                        .explanation(cNode.path("explanation").asText(""))
+                        .grammarRule(cNode.path("grammarRule").asText("Grammar & Style"))
+                        .build());
+                }
+            }
+            if (root.has("weaknesses") && weaknesses.isEmpty()) {
+                for (JsonNode w : root.path("weaknesses")) {
+                    weaknesses.add(w.asText());
+                }
+            }
+            if (root.has("strengths") && strengths.isEmpty()) {
+                for (JsonNode s : root.path("strengths")) {
+                    strengths.add(s.asText());
+                }
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    /**
+     * @brief Generates high-level diagnostic summary text.
+     * @param response Submission response DTO.
+     * @param items List of evaluated sentence items.
+     * @param corrections List of sentence corrections.
+     * @return Diagnostic summary sentence.
+     */
+    private String buildSummary(SubmissionResultResponse response, List<SubmissionItemResponse> items, List<SentenceCorrectionResponse> corrections) {
+        if (!items.isEmpty()) {
+            long correct = items.stream().filter(SubmissionItemResponse::isCorrect).count();
+            int total = items.size();
+            long percent = Math.round(((double) correct / total) * 100);
+            return "You answered " + correct + " out of " + total + " questions correctly (" + percent + "% accuracy).";
+        }
+        if (!corrections.isEmpty()) {
+            return "Essay evaluated against CEFR criteria. Identified " + corrections.size() + " sentence-level corrections to enhance accuracy and style.";
+        }
+        return "Submission evaluated successfully. Overall score: " + Math.round(response.getEffectiveScore() != null ? response.getEffectiveScore() : 0.0) + "/100.";
+    }
+
+    /**
+     * @brief Generates actionable personalized recommendations from diagnostic strengths and weaknesses.
+     * @param response Submission response DTO.
+     * @param weaknesses Detected grammar weaknesses.
+     * @param strengths Demonstrated grammar strengths.
+     * @return Recommendation narrative string.
+     */
+    private String buildRecommendations(SubmissionResultResponse response, List<String> weaknesses, List<String> strengths) {
+        if (!weaknesses.isEmpty()) {
+            return "Identified areas for practice: " + String.join(", ", weaknesses) + ". Focus on reviewing verb conjugation patterns and clause structure to solidify accuracy.";
+        }
+        if (!strengths.isEmpty()) {
+            return "Solid mastery demonstrated across: " + String.join(", ", strengths) + ". Continue with advanced tasks to expand grammatical range.";
+        }
+        return "Great effort! Review the detailed explanations and continue regular daily practice to advance your proficiency.";
+    }
+
+    /**
+     * @brief Resolves suggested next syllabus modules to close detected grammar gaps.
+     * @param response Submission response DTO.
+     * @param weaknesses Detected grammar weaknesses.
+     * @return List of suggested follow-up study topics.
+     */
+    private List<String> buildSuggestedTopics(SubmissionResultResponse response, List<String> weaknesses) {
+        if (!weaknesses.isEmpty()) {
+            return weaknesses;
+        }
+        if (response.getGrammarTopic() != null && !response.getGrammarTopic().isBlank()) {
+            return List.of(response.getGrammarTopic() + " (Advanced Practice)");
+        }
+        return List.of("Grammar & Sentence Structure");
     }
 }

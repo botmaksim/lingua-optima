@@ -18,6 +18,7 @@ import com.linguaoptima.api.dto.request.TextSubmissionRequest;
 import com.linguaoptima.api.dto.response.SubmissionResultResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
+import com.linguaoptima.api.repository.SessionStateRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.TaskAssignmentRepository;
 import com.linguaoptima.api.repository.TaskRepository;
@@ -54,6 +55,9 @@ class SubmissionServiceTest {
     /** @brief Test fixture or mock dependency for task repository. */
     @Mock
     private TaskRepository taskRepository;
+    /** @brief Test fixture or mock dependency for session state repository. */
+    @Mock
+    private SessionStateRepository sessionStateRepository;
     /** @brief Test fixture or mock dependency for ocr service. */
     @Mock
     private OCRService ocrService;
@@ -499,5 +503,87 @@ class SubmissionServiceTest {
         assertEquals(1, submissionService.getMySubmissions(admin).size());
         assertEquals(1, submissionService.getGroupSubmissions(UUID.randomUUID(), admin).size());
         assertEquals(sub.getId(), submissionService.getSubmissionById(sub.getId(), admin).getId());
+    }
+
+    /**
+     * @brief Tests enrichment of submission results with task questions, CAT session, and rubric corrections.
+     */
+    @Test
+    void testEnrichSubmissionResultWithTaskQuestionsAndCatSessionAndRubric() {
+        Task task = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Past Simple")
+            .answerKey("[{\"questionOrder\":1,\"explanation\":\"Irregular past form of wake\"}]")
+            .build();
+
+        com.linguaoptima.api.domain.TaskQuestion q1 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(1)
+            .questionText("He ___ (wake) up early.")
+            .correctAnswer("woke")
+            .grammarRule("Past Simple Irregular Verbs")
+            .build();
+
+        com.linguaoptima.api.domain.TaskQuestion q2 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(2)
+            .questionText("She ___ (go) home.")
+            .correctAnswer("went / had gone")
+            .grammarRule("Past Simple Auxiliary Usage")
+            .build();
+
+        task.setQuestions(List.of(q1, q2));
+
+        TaskAssignment assign = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(student)
+            .build();
+
+        Submission subWithTask = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(assign)
+            .student(student)
+            .studentText("Q1: woke\nQ2: did went")
+            .aiScore(80.0)
+            .aiFeedback("Good effort.")
+            .build();
+
+        SubmissionResultResponse resp = SubmissionResultResponse.fromEntity(subWithTask);
+        submissionService.enrichSubmissionResult(resp, subWithTask, null);
+
+        assertNotNull(resp.getItems());
+        assertEquals(2, resp.getItems().size());
+        assertTrue(resp.getItems().get(0).isCorrect());
+        assertEquals("woke", resp.getItems().get(0).getStudentAnswer());
+        assertEquals("Irregular past form of wake", resp.getItems().get(0).getExplanation());
+
+        assertFalse(resp.getItems().get(1).isCorrect());
+        assertEquals("did went", resp.getItems().get(1).getStudentAnswer());
+        assertNotNull(resp.getAiAnalysis());
+        assertTrue(resp.getAiAnalysis().getWeaknesses().contains("Past Simple Auxiliary Usage"));
+        assertTrue(resp.getAiAnalysis().getStrengths().contains("Past Simple Irregular Verbs"));
+
+        // Test CAT session enrichment
+        com.linguaoptima.api.domain.SessionState catSession = com.linguaoptima.api.domain.SessionState.builder()
+            .answersJson("[{\"questionText\":\"CAT Q1\",\"answer\":\"A\",\"correctAnswer\":\"A\",\"isCorrect\":true,\"grammarRule\":\"CAT Rule\",\"difficulty\":3}]")
+            .build();
+        when(sessionStateRepository.findByAssignmentId(assign.getId())).thenReturn(Optional.of(catSession));
+
+        SubmissionResultResponse catResp = SubmissionResultResponse.fromEntity(subWithTask);
+        submissionService.enrichSubmissionResult(catResp, subWithTask, null);
+        assertEquals(1, catResp.getItems().size());
+        assertEquals("CAT Q1", catResp.getItems().get(0).getSentence());
+
+        // Test rubric corrections and AI feedback JSON parsing
+        when(sessionStateRepository.findByAssignmentId(assign.getId())).thenReturn(Optional.empty());
+        Map<String, Object> rubric = Map.of(
+            "corrections", List.of(Map.of("original", "bad", "corrected", "good", "explanation", "fix", "grammarRule", "Syntax")),
+            "weaknesses", List.of("Essay Weakness"),
+            "strengths", List.of("Essay Strength")
+        );
+        SubmissionResultResponse rubricResp = SubmissionResultResponse.fromEntity(subWithTask);
+        submissionService.enrichSubmissionResult(rubricResp, subWithTask, rubric);
+        assertFalse(rubricResp.getCorrections().isEmpty());
+        assertEquals("bad", rubricResp.getCorrections().get(0).getOriginal());
+        assertTrue(rubricResp.getAiAnalysis().getWeaknesses().contains("Essay Weakness"));
     }
 }
