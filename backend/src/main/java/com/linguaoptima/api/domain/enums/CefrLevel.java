@@ -1,5 +1,9 @@
 package com.linguaoptima.api.domain.enums;
 
+/**
+ * @file CefrLevel.java
+ * @brief CEFR language proficiency levels (B1 Intermediate, B2 Upper-Intermediate, C1 Advanced).
+ */
 public enum CefrLevel {
     B1,
     B2,

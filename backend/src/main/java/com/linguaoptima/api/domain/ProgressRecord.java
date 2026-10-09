@@ -6,6 +6,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file ProgressRecord.java
+ * @brief JPA entity tracking student attempts, errors, and mastery score per grammar topic.
+ */
 @Entity
 @Table(name = "progress_records", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"student_id", "grammar_topic"})

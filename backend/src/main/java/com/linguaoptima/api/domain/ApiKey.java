@@ -7,6 +7,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file ApiKey.java
+ * @brief JPA entity storing encrypted user-provided AI provider API keys.
+ */
 @Entity
 @Table(name = "api_keys")
 @Getter

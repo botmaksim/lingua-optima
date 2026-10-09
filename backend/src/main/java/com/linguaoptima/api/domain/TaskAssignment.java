@@ -7,6 +7,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file TaskAssignment.java
+ * @brief JPA entity linking a task to a student with status and due date.
+ */
 @Entity
 @Table(name = "task_assignments")
 @Getter

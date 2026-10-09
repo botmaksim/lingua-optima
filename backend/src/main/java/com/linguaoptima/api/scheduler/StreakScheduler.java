@@ -6,6 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+/**
+ * @file StreakScheduler.java
+ * @brief Nightly scheduler task maintaining student study streaks and applying freeze token protections.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -14,8 +18,10 @@ public class StreakScheduler {
     private final GamificationService gamificationService;
 
     /**
-     * Executes daily at 01:00 AM:
-     * Checks users' last active date, uses freeze tokens or resets streaks.
+     * @brief Executes daily at 01:00 AM to validate user activity streaks.
+     *
+     * Inspects active students: if inactive yesterday, automatically applies an available
+     * freeze token or resets the streak count to zero.
      */
     @Scheduled(cron = "0 0 1 * * *")
     public void runDailyStreakCheck() {

@@ -9,6 +9,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file User.java
+ * @brief JPA entity representing a platform user (Student, Teacher, or Admin).
+ */
 @Entity
 @Table(name = "users")
 @Getter

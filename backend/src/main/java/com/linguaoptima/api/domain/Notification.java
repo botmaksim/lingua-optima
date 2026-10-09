@@ -7,6 +7,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file Notification.java
+ * @brief JPA entity representing system alerts, task assignments, and level-up notifications.
+ */
 @Entity
 @Table(name = "notifications")
 @Getter

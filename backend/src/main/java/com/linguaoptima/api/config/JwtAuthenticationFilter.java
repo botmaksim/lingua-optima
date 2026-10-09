@@ -20,6 +20,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 
+/**
+ * @file JwtAuthenticationFilter.java
+ * @brief HTTP servlet filter intercepting Bearer JWT tokens and establishing SecurityContext authentication.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -27,6 +31,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
 
+    /**
+     * @brief Inspects incoming HTTP requests for Authorization headers, validates JWT tokens, and sets authentication.
+     * @param request Incoming HTTP request.
+     * @param response Outgoing HTTP response.
+     * @param filterChain Target filter execution chain.
+     * @throws ServletException in case of servlet processing error.
+     * @throws IOException in case of I/O failure.
+     */
     @Override
     protected void doFilterInternal(
         @NonNull HttpServletRequest request,
@@ -62,7 +74,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception ignored) {
-            // In case of invalid/tampered token, context remains unauthenticated
         }
 
         filterChain.doFilter(request, response);

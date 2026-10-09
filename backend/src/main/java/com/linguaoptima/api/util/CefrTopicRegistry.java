@@ -5,6 +5,10 @@ import com.linguaoptima.api.domain.enums.CefrLevel;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @file CefrTopicRegistry.java
+ * @brief Static registry mapping CEFR proficiency levels (B1, B2, C1) to syllabus grammar topics and contexts.
+ */
 public final class CefrTopicRegistry {
 
     private CefrTopicRegistry() {}
@@ -51,10 +55,19 @@ public final class CefrTopicRegistry {
         "Daily Life & Relationships"
     );
 
+    /**
+     * @brief Retrieves canonical grammar topics for a given CEFR proficiency level.
+     * @param level Target CEFR level.
+     * @return List of grammar topic titles.
+     */
     public static List<String> getTopicsForLevel(CefrLevel level) {
         return CEFR_GRAMMAR_TOPICS.getOrDefault(level, List.of("General Grammar"));
     }
 
+    /**
+     * @brief Returns standard thematic domains for contextualized exercise generation.
+     * @return List of thematic domains.
+     */
     public static List<String> getCommonDomains() {
         return COMMON_DOMAINS;
     }

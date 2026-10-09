@@ -8,9 +8,18 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+/**
+ * @file RedisConfig.java
+ * @brief Redis caching and session store configuration.
+ */
 @Configuration
 public class RedisConfig {
 
+    /**
+     * @brief Configures generic object RedisTemplate with JSON serialization for values.
+     * @param connectionFactory Underlying RedisConnectionFactory.
+     * @return Configured RedisTemplate bean.
+     */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
@@ -23,6 +32,11 @@ public class RedisConfig {
         return template;
     }
 
+    /**
+     * @brief Configures StringRedisTemplate for string-keyed rate limiting and token caching.
+     * @param connectionFactory Underlying RedisConnectionFactory.
+     * @return Configured StringRedisTemplate bean.
+     */
     @Bean
     public StringRedisTemplate stringRedisTemplate(RedisConnectionFactory connectionFactory) {
         return new StringRedisTemplate(connectionFactory);

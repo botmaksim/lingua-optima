@@ -6,6 +6,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file PendingAiTask.java
+ * @brief JPA entity queuing failed AI requests for background retry processing.
+ */
 @Entity
 @Table(name = "pending_ai_tasks")
 @Getter

@@ -17,6 +17,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+/**
+ * @file SecurityConfig.java
+ * @brief Spring Security configuration for HTTP security, JWT filters, stateless sessions, and role authorization.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -26,6 +30,12 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CorsConfigurationSource corsConfigurationSource;
 
+    /**
+     * @brief Configures the application security filter chain and authorization rules.
+     * @param http HttpSecurity configuration object.
+     * @return Configured SecurityFilterChain bean.
+     * @throws Exception if security building fails.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -33,7 +43,6 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Public auth endpoints
                 .requestMatchers(
                     "/api/auth/register",
                     "/api/auth/login",
@@ -41,21 +50,15 @@ public class SecurityConfig {
                     "/api/auth/forgot-password",
                     "/actuator/**"
                 ).permitAll()
-
-                // Teacher restricted endpoints
                 .requestMatchers(HttpMethod.POST, "/api/tasks/{id}/assign").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/tasks/template").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers("/api/groups/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/submissions/{id}/override").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers("/api/exports/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers("/api/progress/student/**", "/api/progress/group/**").hasAnyRole("TEACHER", "ADMIN")
-
-                // Student restricted endpoints
                 .requestMatchers("/api/sessions/**").hasAnyRole("STUDENT", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/submissions/text", "/api/submissions/image").hasAnyRole("STUDENT", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/submissions/my").hasAnyRole("STUDENT", "ADMIN")
-
-                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -63,11 +66,21 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * @brief Configures BCrypt password encoder with work factor 12.
+     * @return BCryptPasswordEncoder instance.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
     }
 
+    /**
+     * @brief Exposes Spring Security AuthenticationManager bean.
+     * @param config Authentication configuration.
+     * @return AuthenticationManager instance.
+     * @throws Exception if retrieval fails.
+     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file Group.java
+ * @brief JPA entity representing an educator study group or classroom.
+ */
 @Entity
 @Table(name = "groups")
 @Getter

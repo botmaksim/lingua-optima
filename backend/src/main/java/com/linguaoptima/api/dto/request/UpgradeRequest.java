@@ -7,6 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file UpgradeRequest.java
+ * @brief Request payload for upgrading subscription tier with payment token.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -16,5 +20,5 @@ public class UpgradeRequest {
     @NotNull(message = "Target tier is required")
     private SubscriptionTier targetTier;
 
-    private String paymentToken; // Token for payment stub
+    private String paymentToken;
 }

@@ -7,6 +7,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file Subscription.java
+ * @brief JPA entity maintaining user subscription tier, expiration dates, and billing state.
+ */
 @Entity
 @Table(name = "subscriptions")
 @Getter

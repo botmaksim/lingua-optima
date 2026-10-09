@@ -7,6 +7,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file Submission.java
+ * @brief JPA entity representing student homework submission, AI scores, and teacher overrides.
+ */
 @Entity
 @Table(name = "submissions")
 @Getter

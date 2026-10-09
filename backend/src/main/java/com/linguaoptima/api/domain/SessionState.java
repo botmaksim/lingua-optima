@@ -7,6 +7,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file SessionState.java
+ * @brief JPA entity maintaining state for interactive Computerized Adaptive Testing (CAT) sessions.
+ */
 @Entity
 @Table(name = "session_states")
 @Getter
@@ -34,7 +38,7 @@ public class SessionState {
 
     @Column(name = "current_difficulty", nullable = false)
     @Builder.Default
-    private int currentDifficulty = 2; // Starts at MEDIUM = 2
+    private int currentDifficulty = 2;
 
     @Column(name = "answers_json", columnDefinition = "TEXT")
     @Builder.Default
@@ -53,6 +57,9 @@ public class SessionState {
     @Builder.Default
     private LocalDateTime lastActiveAt = LocalDateTime.now();
 
+    /**
+     * @brief Pre-persist lifecycle callback setting default timestamps.
+     */
     @PrePersist
     public void prePersist() {
         if (startedAt == null) {

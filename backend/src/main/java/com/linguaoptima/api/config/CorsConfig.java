@@ -10,12 +10,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @file CorsConfig.java
+ * @brief Cross-Origin Resource Sharing (CORS) security configuration.
+ */
 @Configuration
 public class CorsConfig {
 
     @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
     private String allowedOrigins;
 
+    /**
+     * @brief Builds CORS configuration source allowing configured frontend client origins.
+     * @return CorsConfigurationSource bean.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

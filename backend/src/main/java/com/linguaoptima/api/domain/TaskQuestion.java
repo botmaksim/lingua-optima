@@ -5,6 +5,10 @@ import lombok.*;
 
 import java.util.UUID;
 
+/**
+ * @file TaskQuestion.java
+ * @brief JPA entity representing an individual question or exercise item within a task.
+ */
 @Entity
 @Table(name = "task_questions")
 @Getter
@@ -36,7 +40,7 @@ public class TaskQuestion {
 
     @Column(nullable = false)
     @Builder.Default
-    private int difficulty = 2; // 1-4
+    private int difficulty = 2;
 
     @Column(name = "grammar_rule")
     private String grammarRule;

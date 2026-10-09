@@ -6,6 +6,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file UsageCounter.java
+ * @brief JPA entity recording weekly evaluation and OCR counts for rate-limited free users.
+ */
 @Entity
 @Table(name = "usage_counters")
 @Getter

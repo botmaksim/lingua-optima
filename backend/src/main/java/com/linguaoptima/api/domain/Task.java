@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file Task.java
+ * @brief JPA entity representing an educational assignment task or lesson template.
+ */
 @Entity
 @Table(name = "tasks")
 @Getter

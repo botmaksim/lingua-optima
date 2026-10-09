@@ -6,6 +6,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file GroupStudent.java
+ * @brief JPA join entity managing student membership in groups with soft-delete support.
+ */
 @Entity
 @Table(name = "group_students", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"group_id", "student_id"})

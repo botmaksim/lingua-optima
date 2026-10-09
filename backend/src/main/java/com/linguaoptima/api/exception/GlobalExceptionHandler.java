@@ -15,9 +15,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @file GlobalExceptionHandler.java
+ * @brief Centralized exception handler and HTTP error response mapper.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * @brief Translates OcrException into HTTP 422 Unprocessable Entity error response.
+     * @param ex Caught OcrException.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(OcrException.class)
     public ResponseEntity<ErrorResponse> handleOcrException(OcrException ex) {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(
@@ -30,6 +39,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates QuotaExceededException into HTTP 429 Too Many Requests response.
+     * @param ex Caught QuotaExceededException.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(QuotaExceededException.class)
     public ResponseEntity<ErrorResponse> handleQuotaExceeded(QuotaExceededException ex) {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
@@ -42,6 +56,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates AIServiceException into HTTP 503 Service Unavailable response.
+     * @param ex Caught AIServiceException.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(AIServiceException.class)
     public ResponseEntity<ErrorResponse> handleAIServiceException(AIServiceException ex) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
@@ -54,6 +73,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates PaymentException into HTTP 402 Payment Required response.
+     * @param ex Caught PaymentException.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(PaymentException.class)
     public ResponseEntity<ErrorResponse> handlePaymentException(PaymentException ex) {
         return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(
@@ -66,6 +90,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates ResourceNotFoundException into HTTP 404 Not Found response.
+     * @param ex Caught ResourceNotFoundException.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -78,6 +107,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates UnauthorizedException into HTTP 401 Unauthorized response.
+     * @param ex Caught UnauthorizedException.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ErrorResponse> handleUnauthorized(UnauthorizedException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
@@ -90,6 +124,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates BadCredentialsException into HTTP 401 Unauthorized response.
+     * @param ex Caught BadCredentialsException.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
@@ -102,6 +141,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates ForbiddenException and AccessDeniedException into HTTP 403 Forbidden response.
+     * @param ex Caught security exception.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})
     public ResponseEntity<ErrorResponse> handleForbidden(Exception ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
@@ -114,6 +158,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates MethodArgumentNotValidException into HTTP 400 Bad Request with field validation errors.
+     * @param ex Caught validation exception.
+     * @return ErrorResponse ResponseEntity with error item list.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         List<String> errors = ex.getBindingResult().getFieldErrors().stream()
@@ -131,6 +180,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Translates MaxUploadSizeExceededException into HTTP 413 Payload Too Large response.
+     * @param ex Caught upload size exception.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ErrorResponse> handleMaxSize(MaxUploadSizeExceededException ex) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
@@ -143,6 +197,11 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * @brief Handles unhandled general exceptions, returning HTTP 500 Internal Server Error.
+     * @param ex Caught generic Exception.
+     * @return ErrorResponse ResponseEntity.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
