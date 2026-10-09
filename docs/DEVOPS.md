@@ -184,15 +184,22 @@ Complete reference table of all environment variables used across the system:
 ### Backend
 | Variable | Description |
 |---|---|
-| `DB_URL` | PostgreSQL JDBC connection URL (e.g. `jdbc:postgresql://db:5432/lingua_optima`) |
-| `DB_USER` | Database username |
-| `DB_PASS` | Database password |
-| `REDIS_HOST` | Redis server hostname |
+| `DB_URL` / `SPRING_DATASOURCE_URL` | PostgreSQL JDBC connection URL (e.g. `jdbc:postgresql://db:5432/lingua_optima`) |
+| `DB_USER` / `SPRING_DATASOURCE_USERNAME` | Database username |
+| `DB_PASS` / `SPRING_DATASOURCE_PASSWORD` | Database password |
+| `REDIS_HOST` / `SPRING_REDIS_HOST` | Redis server hostname |
 | `JWT_SECRET` | Secret key used for signing and verifying JWT tokens |
 | `GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID from Google Cloud Console used to verify the `aud` claim in Google ID tokens |
 | `GOOGLE_CLIENT_SECRET` | OAuth 2.0 Client Secret from Google Cloud Console |
-| `GROQ_API_KEY` | API key for Groq (Llama 3.1 LLM) |
-| `GEMINI_API_KEY` | API key for Google Gemini (Multimodal & Essay AI) |
+| `GROQ_API_KEY` | API key for Groq (Llama 3.3 70B & Llama 4 LLM) |
+| `GROQ_BASE_URL` | Groq API base URL or Cloudflare Edge reverse-proxy endpoint (`https://ai-proxy.mybsu.online/groq/openai/v1`) |
+| `GEMINI_API_KEY` | API key for Google Gemini 2.5 / 3.0 Flash & Pro |
+| `GEMINI_BASE_URL` | Gemini API base URL or Cloudflare Edge reverse-proxy endpoint |
+| `OPENAI_BASE_URL` | OpenAI API base URL or Cloudflare Edge reverse-proxy endpoint |
+| `ANTHROPIC_BASE_URL` | Anthropic API base URL or Cloudflare Edge reverse-proxy endpoint |
+| `DEEPSEEK_API_KEY` / `DEEPSEEK_BASE_URL` | DeepSeek V3.2 / R1 API key and base URL (`https://api.deepseek.com`) |
+| `QWEN_API_KEY` / `QWEN_BASE_URL` | Alibaba Qwen 3 DashScope API key and base URL |
+| `KIMI_API_KEY` / `KIMI_BASE_URL` | Moonshot Kimi K2 API key and base URL (`https://api.moonshot.cn/v1`) |
 | `ENCRYPTION_KEY` | AES-256-GCM encryption key used to protect user-supplied API keys at rest |
 | `CORS_ORIGINS` | Allowed origins for Cross-Origin Resource Sharing (e.g. `http://localhost:5173`) |
 

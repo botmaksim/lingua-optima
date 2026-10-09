@@ -80,9 +80,9 @@ The central component for interacting with Large Language Models is `AIBrokerSer
 
 Seven provider implementations are available: `GroqProvider`, `GeminiProvider`, `OpenAIProvider`, `AnthropicProvider`, `DeepSeekProvider`, `QwenProvider`, and `KimiProvider`.
 
-**Provider Selection Logic:**
-1. Does the user have a custom API key configured? → Route to the user's configured provider (AES-256-GCM decrypted at runtime).
-2. No custom key? → Route to the system default provider (Groq for task generation, Gemini for essay scoring).
+**Provider & Model Selection Logic:**
+1. Does the user have a custom API key configured? → Match the user's `preferredProvider` (selected per task or first configured key), decrypt the key with AES-256-GCM at runtime, and instantiate the provider with `Optional.ofNullable(user.getPreferredModel()).orElse(key.getModelName())` (falling back to the provider's modern `DEFAULT_MODEL`).
+2. No custom key? → Route to the system default provider (`GroqProvider` with `llama-3.3-70b-versatile` for task generation, `GeminiProvider` with `gemini-2.5-flash` for essay scoring).
 
 ```mermaid
 classDiagram
@@ -104,42 +104,49 @@ classDiagram
     class GroqProvider {
         -String apiKey
         -String baseUrl
+        -String modelName
         +complete(String prompt) String
     }
     
     class GeminiProvider {
         -String apiKey
         -String baseUrl
+        -String modelName
         +complete(String prompt) String
     }
     
     class OpenAIProvider {
         -String apiKey
         -String baseUrl
+        -String modelName
         +complete(String prompt) String
     }
     
     class AnthropicProvider {
         -String apiKey
         -String baseUrl
+        -String modelName
         +complete(String prompt) String
     }
 
     class DeepSeekProvider {
         -String apiKey
         -String baseUrl
+        -String modelName
         +complete(String prompt) String
     }
 
     class QwenProvider {
         -String apiKey
         -String baseUrl
+        -String modelName
         +complete(String prompt) String
     }
 
     class KimiProvider {
         -String apiKey
         -String baseUrl
+        -String modelName
         +complete(String prompt) String
     }
     

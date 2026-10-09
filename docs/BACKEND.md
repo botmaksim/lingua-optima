@@ -155,19 +155,19 @@ backend/
 │   │   ├── PaymentService.java        — processPayment() — STUB: always returns success. Has full PaymentResult with transactionId and error handling infrastructure.
 │   │   ├── UsageService.java          — incrementEvaluation(), incrementOcr(), getRemainingUsage(), resetWeeklyCounters() (called by scheduler)
 │   │   ├── ExportService.java         — generateGroupReport(format), generateStudentReport(format) — PDF via OpenPDF, CSV via OpenCSV. Streamed, not persisted.
-│   │   ├── ApiKeyService.java         — saveKey(encrypt), getDecryptedKey(), deleteKey()
+│   │   ├── ApiKeyService.java         — saveKey(encrypt + modelName), getDecryptedKey(), deleteKey()
 │   │   ├── EncryptionService.java     — encrypt(AES-256-GCM), decrypt(). Key from env variable.
 │   │   ├── LeaderboardService.java    — getGroupLeaderboard(groupId) — queries submissions within group for current week, returns ranked list
 │   │   └── ai/
-│   │       ├── AIBrokerService.java    — generateTaskContent(), scoreEssay(), checkGrammar(). Selects provider (own key → user's, else system). Fallback chain: Groq → Gemini → retry → queue. Caches identical prompts in Redis (1h TTL). Rate limits per user.
+│   │       ├── AIBrokerService.java    — generateTaskContent(), scoreEssay(), checkGrammar(). Selects provider & model (preferredProvider/preferredModel or user BYOK key, else system fallback chain: Groq → Gemini → retry → queue). Caches identical prompts in Redis (1h TTL). Rate limits per user.
 │   │       ├── AIProvider.java        — Interface: complete(prompt) → String
-│   │       ├── GroqProvider.java       — Implements AIProvider. REST client for Groq API (Llama 3.1 70B, proxied via Cloudflare)
-│   │       ├── GeminiProvider.java     — Implements AIProvider. REST client for Gemini 1.5 Flash (direct or proxied)
-│   │       ├── OpenAIProvider.java     — Implements AIProvider. For user-provided BYOK keys (GPT-4o mini)
-│   │       ├── AnthropicProvider.java  — Implements AIProvider. For user-provided BYOK keys (Claude 3.5 Sonnet)
-│   │       ├── DeepSeekProvider.java   — Implements AIProvider. For user-provided BYOK keys (DeepSeek-V3 / R1)
-│   │       ├── QwenProvider.java       — Implements AIProvider. For user-provided BYOK keys (Alibaba Qwen-Plus)
-│   │       └── KimiProvider.java       — Implements AIProvider. For user-provided BYOK keys (Moonshot Kimi v1-8k)
+│   │       ├── GroqProvider.java       — Implements AIProvider. REST client for Groq API (Llama 3.3 70B / Llama 4, proxied via Cloudflare)
+│   │       ├── GeminiProvider.java     — Implements AIProvider. REST client for Gemini 2.5 Flash / 3.0 (direct or proxied)
+│   │       ├── OpenAIProvider.java     — Implements AIProvider. For user-provided BYOK keys (GPT-5, GPT-4.1, o4-mini, o3)
+│   │       ├── AnthropicProvider.java  — Implements AIProvider. For user-provided BYOK keys (Claude Sonnet 4.6, Opus 4.6)
+│   │       ├── DeepSeekProvider.java   — Implements AIProvider. For user-provided BYOK keys (DeepSeek V3.2 / R1)
+│   │       ├── QwenProvider.java       — Implements AIProvider. For user-provided BYOK keys (Alibaba Qwen 3 235B / QwQ Plus)
+│   │       └── KimiProvider.java       — Implements AIProvider. For user-provided BYOK keys (Moonshot Kimi K2 / 128K)
 │   │
 │   ├── scheduler/
 │   │   ├── StreakScheduler.java        — @Scheduled(cron='0 0 1 * * *') daily: check last_active_date, apply freeze or reset streak
@@ -185,7 +185,7 @@ backend/
 │   │   └── ForbiddenException.java    — 403: wrong role or not group member
 │   │
 │   └── util/
-│       ├── PromptTemplates.java       — Static prompt strings for task generation, essay scoring, grammar checking
+│       ├── PromptTemplates.java       — Anti-echo hardened prompt templates for task generation, essay scoring, and grammar checking
 │       └── CefrTopicRegistry.java     — Static map of CEFR levels to grammar topics and domains
 │
 ├── src/main/resources/

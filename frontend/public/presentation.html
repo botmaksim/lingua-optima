@@ -547,11 +547,11 @@
     <div class="g2 gap32" style="align-items:start;">
       <div class="fc gap16">
         <h3 style="font-size:14px;color:var(--muted);letter-spacing:2px;font-family:'JetBrains Mono',monospace;text-transform:uppercase;margin-bottom:4px;">Task Generation Sequence</h3>
-        <div class="step"><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:10px;font-weight:700;">01</span> Learner or Teacher configures parameters</div>
+        <div class="step"><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:10px;font-weight:700;">01</span> Learner or Teacher selects AI provider, model &amp; parameters</div>
         <div style="text-align:center;color:var(--accent);font-size:18px;"><span class="flow-arr">↓</span></div>
-        <div class="step"><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:10px;font-weight:700;">02</span> AI Broker queries Groq Llama 3.1 70B &amp; fallback chain</div>
+        <div class="step"><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:10px;font-weight:700;">02</span> AI Broker queries Groq Llama 3.3 70B / BYOK model &amp; fallback chain</div>
         <div style="text-align:center;color:var(--accent);font-size:18px;"><span class="flow-arr">↓</span></div>
-        <div class="step"><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:10px;font-weight:700;">03</span> Sequence of exercises + answer keys compiled</div>
+        <div class="step"><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:10px;font-weight:700;">03</span> Sequence of exercises + answer keys compiled &amp; sanitized</div>
         <div style="text-align:center;color:var(--accent);font-size:18px;"><span class="flow-arr">↓</span></div>
         <div class="step"><span style="color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;margin-right:10px;font-weight:700;">04</span> System deploys task to learner dashboard</div>
         <div style="text-align:center;color:var(--accent);font-size:18px;"><span class="flow-arr">↓</span></div>
@@ -563,7 +563,7 @@
         <div style="text-align:center;color:var(--cyan);font-size:18px;"><span class="flow-arr">↓</span></div>
         <div class="step"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> In-memory Tesseract (tess4j) parses handwriting</div>
         <div style="text-align:center;color:var(--cyan);font-size:18px;"><span class="flow-arr">↓</span></div>
-        <div class="step"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg> Gemini 1.5 Flash evaluates against answer key</div>
+        <div class="step"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg> Gemini 2.5 Flash evaluates against answer key</div>
         <div style="text-align:center;color:var(--cyan);font-size:18px;"><span class="flow-arr">↓</span></div>
         <div class="step" style="background:rgba(2,132,199,.05);border-color:rgba(2,132,199,.2);"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> Instant feedback returned; image purged (Zero-Retention)</div>
         <div class="card" style="background:var(--s2);margin-top:12px;border:none;">

@@ -256,16 +256,19 @@ lingua_optima/
 │   │   │   ├── PaymentService.java          — Payment STUB (always approves)
 │   │   │   ├── UsageService.java            — Weekly usage counters and limits
 │   │   │   ├── ExportService.java           — PDF and CSV report generation
-│   │   │   ├── ApiKeyService.java           — User AI key management
+│   │   │   ├── ApiKeyService.java           — User AI key & model management
 │   │   │   ├── EncryptionService.java       — AES-256-GCM authenticated encryption
 │   │   │   ├── LeaderboardService.java      — Privacy-preserving intra-group leaderboard
 │   │   │   └── ai/
-│   │   │       ├── AIBrokerService.java     — Provider routing, caching, and fallback chain
+│   │   │       ├── AIBrokerService.java     — Provider/model routing, caching, and fallback chain
 │   │   │       ├── AIProvider.java          — Provider interface: complete(prompt) → String
-│   │   │       ├── GroqProvider.java        — Llama 3.1 70B (free tier)
-│   │   │       ├── GeminiProvider.java      — Gemini 1.5 Flash (free tier)
-│   │   │       ├── OpenAIProvider.java      — For user-supplied BYOK keys
-│   │   │       └── AnthropicProvider.java   — For user-supplied BYOK keys
+│   │   │       ├── GroqProvider.java        — Llama 3.3 70B / Llama 4 (free tier & BYOK)
+│   │   │       ├── GeminiProvider.java      — Gemini 2.5 Flash / 3.0 (free tier & BYOK)
+│   │   │       ├── OpenAIProvider.java      — GPT-5 / GPT-4.1 / o4-mini (BYOK)
+│   │   │       ├── AnthropicProvider.java   — Claude Sonnet 4.6 / Opus 4.6 (BYOK)
+│   │   │       ├── DeepSeekProvider.java    — DeepSeek V3.2 / R1 (BYOK, no geo-block)
+│   │   │       ├── QwenProvider.java        — Alibaba Qwen 3 235B / QwQ (BYOK, no geo-block)
+│   │   │       └── KimiProvider.java        — Moonshot Kimi K2 / 128K (BYOK, no geo-block)
 │   │   │
 │   │   ├── scheduler/                       ── Scheduled CRON Jobs
 │   │   │   ├── StreakScheduler.java          — 01:00 daily: streak verification
@@ -283,7 +286,7 @@ lingua_optima/
 │   │   │   └── ForbiddenException.java      — 403: Forbidden
 │   │   │
 │   │   └── util/
-│   │       ├── PromptTemplates.java         — Structured AI prompt templates
+│   │       ├── PromptTemplates.java         — Structured AI prompt templates (anti-echo hardened)
 │   │       └── CefrTopicRegistry.java       — CEFR level to grammar topic mapping
 │   │
 │   └── src/main/resources/
@@ -302,6 +305,8 @@ lingua_optima/
     └── src/
         ├── main.tsx
         ├── App.tsx                     — Router and application layout
+        ├── constants/
+        │   └── aiModels.ts             — 2026 AI provider and model catalog (7 providers)
         ├── api/                        — 12 Axios API client modules
         │   ├── axiosInstance.ts        — Interceptors and silent JWT refresh
         │   ├── authApi.ts
@@ -329,7 +334,7 @@ lingua_optima/
         │   │   └── ConfirmDialog.tsx
         │   ├── student/                — 11 student components
         │   │   ├── Dashboard.tsx
-        │   │   ├── GenerateTask.tsx
+        │   │   ├── GenerateTask.tsx    — Task generator with AI Provider & Model selector
         │   │   ├── TaskView.tsx
         │   │   ├── AdaptiveSession.tsx — CAT session + interrupted session resume
         │   │   ├── OcrSubmit.tsx
@@ -342,7 +347,7 @@ lingua_optima/
         │   ├── teacher/                — 5 educator components
         │   │   ├── TeacherDashboard.tsx
         │   │   ├── StudentGroups.tsx
-        │   │   ├── ConfigureTask.tsx
+        │   │   ├── ConfigureTask.tsx   — Task designer with AI Provider & Model selector
         │   │   ├── SubmissionsReview.tsx
         │   │   └── ExportReports.tsx
         │   └── auth/
@@ -351,7 +356,7 @@ lingua_optima/
         ├── hooks/                      — 6 custom React hooks
         ├── store/                      — 4 Zustand state stores
         ├── types/                      — 8 TypeScript type definition modules
-        ├── utils/                      — Helper utilities
+        ├── utils/                      — Helper utilities (including textSanitizer.ts)
         └── pages/                      — 6 route-level page wrappers
 ```
 
@@ -379,7 +384,8 @@ erDiagram
     API_KEYS {
         bigint id PK
         bigint user_id FK
-        varchar provider "GROQ|GEMINI|OPENAI|ANTHROPIC"
+        varchar provider "GROQ|GEMINI|OPENAI|ANTHROPIC|DEEPSEEK|QWEN|KIMI"
+        varchar model_name "Selected AI model ID"
         varchar encrypted_key "AES-256-GCM"
         timestamp created_at
     }

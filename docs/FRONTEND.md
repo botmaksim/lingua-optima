@@ -28,6 +28,9 @@ frontend/
 │   ├── vite-env.d.ts
 │   ├── index.css              — Tailwind imports + CSS variables
 │   │
+│   ├── constants/             — Shared application constants
+│   │   └── aiModels.ts        — Up-to-date 2026 AI provider and model catalog (DeepSeek, Qwen, Kimi, Gemini, Groq, OpenAI, Anthropic)
+│   │
 │   ├── api/                   — HTTP layer (all backend communication)
 │   │   ├── axiosInstance.ts   — Base axios config, JWT interceptor (silent refresh), error handling
 │   │   ├── authApi.ts         — login(), register(), googleLogin(), refresh(), logout()
@@ -38,7 +41,7 @@ frontend/
 │   │   ├── groupApi.ts        — getGroups(), createGroup(), addStudent(), removeStudent(), deleteGroup()
 │   │   ├── notificationApi.ts — connectSSE(), markAsRead()
 │   │   ├── subscriptionApi.ts — getMyTier(), getUsage(), upgradeTier()
-│   │   ├── apiKeyApi.ts       — getKeys(), saveKey(), deleteKey()
+│   │   ├── apiKeyApi.ts       — getKeys(), saveKey(provider, rawKey, modelName), deleteKey()
 │   │   ├── exportApi.ts       — downloadGroupReport(), downloadStudentReport()
 │   │   └── leaderboardApi.ts  — getGroupLeaderboard(groupId)
 │   │
@@ -58,11 +61,11 @@ frontend/
 │   │   │
 │   │   ├── student/           — Student-only components
 │   │   │   ├── Dashboard.tsx          — Streak counter, CEFR progress bar, active assignments list, recent tasks, grammar gaps. Buttons: [+ Generate New Task] [Submit Homework Photo]
-│   │   │   ├── GenerateTask.tsx       — CEFR level selector, grammar topic multiselect, domain select, task type (MCQ/Gap-fill/Rewrite/Essay), difficulty slider, own API key toggle. Buttons: [Generate Task] [Clear]
-│   │   │   ├── TaskView.tsx           — Task title + CEFR badge, questions list (MCQ radio/inputs), timer (optional). Buttons: [Submit Answers] [Save Draft] [← Back]
+│   │   │   ├── GenerateTask.tsx       — AI Provider & Model selector (7 providers + modern 2026 models), CEFR level selector, grammar topic select, domain select, task type (MCQ/Gap-fill/Rewrite/Essay), difficulty & question slider. Buttons: [Generate Task] [Clear]
+│   │   │   ├── TaskView.tsx           — Task title + CEFR badge, sanitized task instructions, questions list (MCQ radio/inputs). Buttons: [Submit Answers] [Save Draft] [← Back]
 │   │   │   ├── AdaptiveSession.tsx    — Single question at a time, difficulty indicator, progress bar, answer input. Handles resume from GET /sessions/active. Buttons: [Submit Answer] [Next]
 │   │   │   ├── OcrSubmit.tsx          — Drag&drop zone / [Browse File] button, image preview, hint 'deleted after processing'. Buttons: [Analyse Photo] [Clear Photo]
-│   │   │   ├── EssayEditor.tsx        — Task prompt (read-only), CEFR target badge, textarea (min 250 words), live word counter, auto-save to localStorage every 30s. Buttons: [Submit for Scoring] [Save Draft]
+│   │   │   ├── EssayEditor.tsx        — Sanitized essay prompt, CEFR target badge, textarea (min 250 words), live word counter, auto-save to localStorage every 30s. Buttons: [Submit for Scoring] [Save Draft]
 │   │   │   ├── AIReview.tsx           — Original text (strikethrough red), corrected text (green highlights), tags [Rule] [Level] [Domain], essay rubric breakdown (TA/Coherence/LR/GR out of 10), overall score. Buttons: [Save to My Units] [Try Another Task] [Share Result]
 │   │   │   ├── MyUnits.tsx            — Filters: CEFR/Topic/Domain/Date. Task cards with name/date/score/type. Buttons per card: [Retry Task] [Delete]
 │   │   │   ├── Progress.tsx           — Grammar mastery radar chart, timeline score graph, topic/errors/mastery table, AI recommendations. Button: [Generate Targeted Task]
@@ -72,7 +75,7 @@ frontend/
 │   │   ├── teacher/           — Teacher-only components
 │   │   │   ├── TeacherDashboard.tsx   — Group summary (avg score, activity), top-5 weak topics, class progress chart, recent submissions awaiting override. Buttons: [+ Create Group] [+ Configure Task] [View All Submissions]
 │   │   │   ├── StudentGroups.tsx      — Group list (name, student count). Per group: student cards (name, avg score). Buttons: [+ New Group] [+ Add Student by Email] [Remove Student] [Delete Group]
-│   │   │   ├── ConfigureTask.tsx      — Task type, CEFR, grammar topic, domain, difficulty slider, target group selector (multi), due date picker, AI provider select. Buttons: [Generate Preview] [Deploy to Students] [Save as Template]
+│   │   │   ├── ConfigureTask.tsx      — AI Provider & Model selector, task type, CEFR, grammar topic, domain, target group selector (multi), due date picker. Buttons: [Preview] [Deploy to Students] [Save Template]
 │   │   │   ├── SubmissionsReview.tsx  — Filters: Group/Student/Task/Status. Table: Student|Task|AI Score|Status. Expandable row: AI feedback + student answer. Buttons per row: [Override Score] [Approve AI Grade] [Add Teacher Comment]
 │   │   │   └── ExportReports.tsx      — Group selector, date range picker, format (CSV/PDF). Buttons: [Generate Report] [Download Last]
 │   │   │
@@ -96,7 +99,7 @@ frontend/
 │   │
 │   ├── types/                 — TypeScript interfaces
 │   │   ├── user.ts            — User, Role, CefrLevel
-│   │   ├── task.ts            — Task, TaskQuestion, TaskParams, TaskType
+│   │   ├── task.ts            — Task, TaskQuestion, TaskParams (with provider & modelName), TaskType
 │   │   ├── submission.ts      — Submission, SubmissionResult, EssayScore
 │   │   ├── session.ts         — SessionState, AnswerFeedback
 │   │   ├── group.ts           — Group, GroupStudent
@@ -108,13 +111,14 @@ frontend/
 │   │   ├── formatDate.ts
 │   │   ├── cefrColors.ts      — Color mapping for CEFR badges
 │   │   ├── wordCount.ts       — Essay word counter
+│   │   ├── textSanitizer.ts   — Sanitizes task content and AI feedback to strip internal system prompt markers
 │   │   └── offlineSync.ts     — IndexedDB + Background Sync logic
 │   │
 │   └── pages/                 — Route-level page components
 │       ├── Landing.tsx        — Hero block, 6 feature cards, [Get Started] [Log In] [View Demo] buttons
 │       ├── StudentApp.tsx     — Layout wrapper for student routes
 │       ├── TeacherApp.tsx     — Layout wrapper for teacher routes
-│       ├── ProfilePage.tsx    — Avatar, name, email, CEFR level, AI Provider BYOK section (7 providers: OpenAI, Anthropic, Gemini, Groq, DeepSeek, Qwen, Kimi with AES-256-GCM encryption), notification prefs, display_alias for leaderboard. Buttons: [Save Changes] [Change Password] [Delete Account]
+│       ├── ProfilePage.tsx    — Avatar, name, email, CEFR level, AI Provider & Model BYOK section (7 providers: DeepSeek, Qwen, Kimi, OpenAI, Anthropic, Gemini, Groq with modern 2026 models & AES-256-GCM encryption)
 │       ├── SubscriptionPage.tsx — Free/Premium/Educator tier cards, current plan highlight, [Upgrade] buttons, payment stub
 │       └── NotFound.tsx
 │
