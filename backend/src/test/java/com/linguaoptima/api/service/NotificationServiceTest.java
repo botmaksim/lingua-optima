@@ -67,12 +67,40 @@ class NotificationServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: create sse emitter.
+     * @brief Verifies unit test scenario: create sse emitter and lifecycle callbacks.
      */
     @Test
-    void testCreateSseEmitter() {
+    @SuppressWarnings("unchecked")
+    void testCreateSseEmitter() throws Exception {
         SseEmitter emitter = notificationService.createSseEmitter(user.getId());
         assertNotNull(emitter);
+
+        SseEmitter mockEmitter = mock(SseEmitter.class);
+        doAnswer(inv -> {
+            Runnable r = inv.getArgument(0);
+            r.run();
+            return null;
+        }).when(mockEmitter).onCompletion(any(Runnable.class));
+        doAnswer(inv -> {
+            Runnable r = inv.getArgument(0);
+            r.run();
+            return null;
+        }).when(mockEmitter).onTimeout(any(Runnable.class));
+        doAnswer(inv -> {
+            java.util.function.Consumer<Throwable> c = inv.getArgument(0);
+            c.accept(new IOException("err"));
+            return null;
+        }).when(mockEmitter).onError(any());
+        doThrow(new IOException("Init send failed")).when(mockEmitter).send(any(SseEmitter.SseEventBuilder.class));
+
+        NotificationService customSvc = new NotificationService(notificationRepository, groupStudentRepository) {
+            @Override
+            protected SseEmitter newSseEmitter() {
+                return mockEmitter;
+            }
+        };
+        SseEmitter result = customSvc.createSseEmitter(user.getId());
+        assertSame(mockEmitter, result);
     }
 
     /**
@@ -81,13 +109,16 @@ class NotificationServiceTest {
     @Test
     @SuppressWarnings("unchecked")
     void testSendNotificationWithSseEmitterSuccessAndFailure() throws Exception {
+        SseEmitter mockEmitterGood = mock(SseEmitter.class);
         SseEmitter mockEmitterBad = mock(SseEmitter.class);
         doThrow(new IOException("Broken pipe")).when(mockEmitterBad).send(any(SseEmitter.SseEventBuilder.class));
 
         Map<UUID, List<SseEmitter>> emittersMap =
             (Map<UUID, List<SseEmitter>>) ReflectionTestUtils.getField(notificationService, "emitters");
         if (emittersMap != null) {
-            emittersMap.computeIfAbsent(user.getId(), k -> new CopyOnWriteArrayList<>()).add(mockEmitterBad);
+            List<SseEmitter> list = emittersMap.computeIfAbsent(user.getId(), k -> new CopyOnWriteArrayList<>());
+            list.add(mockEmitterGood);
+            list.add(mockEmitterBad);
         }
 
         Notification n = Notification.builder()
@@ -101,7 +132,10 @@ class NotificationServiceTest {
 
         Notification result = notificationService.send(user, "SSE test message", NotificationType.SYSTEM);
         assertNotNull(result);
+        verify(mockEmitterGood).send(any(SseEmitter.SseEventBuilder.class));
+        ReflectionTestUtils.invokeMethod(notificationService, "removeEmitter", user.getId(), mockEmitterGood);
     }
+
 
     /**
      * @brief Verifies unit test scenario: send notification.

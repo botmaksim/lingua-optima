@@ -80,5 +80,7 @@ class JwtServiceTest {
 
         JwtService fallbackJwt = new JwtService("   ");
         assertTrue(fallbackJwt.isTokenValid(fallbackJwt.generateAccessToken(testUserId, testEmail, testRole)));
+        JwtService nullJwt = new JwtService(null);
+        assertTrue(nullJwt.isTokenValid(nullJwt.generateAccessToken(testUserId, testEmail, testRole)));
     }
 }

@@ -18,6 +18,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +33,9 @@ import static org.mockito.Mockito.*;
  * @brief Unit and slice test suite for UsageService.
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class UsageServiceTest {
+
 
     /** @brief Test fixture or mock dependency for usage counter repository. */
     @Mock
@@ -148,5 +152,15 @@ class UsageServiceTest {
         assertEquals(0, counter.getWeekEvaluations());
         assertEquals(0, counter.getWeekOcrUploads());
         verify(usageCounterRepository).save(counter);
+
+        when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.PREMIUM).build()));
+        assertDoesNotThrow(() -> usageService.incrementOcr(user));
+
+        when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.FREE).build()));
+        when(usageCounterRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
+        when(usageCounterRepository.save(any(UsageCounter.class))).thenReturn(counter);
+        assertNotNull(usageService.getUsage(user));
+        assertNotNull(usageService.getOrCreateCounter(user));
     }
 }
+

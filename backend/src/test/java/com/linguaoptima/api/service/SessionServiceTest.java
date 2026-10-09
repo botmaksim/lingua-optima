@@ -331,4 +331,53 @@ class SessionServiceTest {
         AnswerFeedbackResponse res2 = sessionService.submitAnswer(sessionState.getId(), req, student);
         assertEquals(1, res2.getNewDifficulty());
     }
+
+    /**
+     * @brief Verifies unit test scenario: additional branches for missing assignment, forbidden access, and JSON fallbacks.
+     */
+    @Test
+    void testAdditionalSessionBranchesAndFallbacks() throws Exception {
+        UUID missingAssign = UUID.randomUUID();
+        when(taskAssignmentRepository.findById(missingAssign)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> sessionService.startSession(missingAssign, student));
+
+        User otherStudent = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
+        when(sessionStateRepository.findById(sessionState.getId())).thenReturn(Optional.of(sessionState));
+        assertThrows(ForbiddenException.class, () -> sessionService.getNextQuestion(sessionState.getId(), otherStudent));
+
+        TaskQuestion tq1 = TaskQuestion.builder().id(UUID.randomUUID()).task(task).questionText("Q1").correctAnswer("A").difficulty(2).build();
+        TaskQuestion tq2 = TaskQuestion.builder().id(UUID.randomUUID()).task(task).questionText("Q2").correctAnswer("B").difficulty(2).build();
+        sessionState.setAnswersJson("[{\"questionId\":\"" + tq1.getId() + "\"},{\"other\":\"val\"}]");
+        when(taskQuestionRepository.findByTaskIdAndDifficulty(task.getId(), 2)).thenReturn(List.of());
+        when(taskQuestionRepository.findByTaskIdOrderByQuestionOrder(task.getId())).thenReturn(List.of(tq1, tq2));
+
+        QuestionResponse nextQ = sessionService.getNextQuestion(sessionState.getId(), student);
+        assertEquals(tq2.getId(), nextQ.getId());
+
+        sessionState.setAnswersJson("");
+        assertNotNull(sessionService.getNextQuestion(sessionState.getId(), student));
+
+        sessionState.setAnswersJson("invalid-json");
+        assertNotNull(sessionService.getNextQuestion(sessionState.getId(), student));
+
+        sessionState.setStatus(SessionStatus.COMPLETED);
+        Submission existingSub = Submission.builder().id(UUID.randomUUID()).assignment(assignment).student(student).aiScore(85.0).build();
+        when(submissionRepository.findByAssignmentId(assignment.getId())).thenReturn(List.of(existingSub));
+        SubmissionResultResponse completedRes = sessionService.completeSession(sessionState.getId(), student);
+        assertEquals(85.0, completedRes.getScore());
+
+
+        sessionState.setStatus(SessionStatus.IN_PROGRESS);
+        sessionState.setCurrentQuestionIndex(0);
+        when(taskQuestionRepository.findById(tq1.getId())).thenReturn(Optional.of(tq1));
+        doThrow(new com.fasterxml.jackson.core.JsonProcessingException("Write fail") {}).when(objectMapper).writeValueAsString(any());
+        AnswerFeedbackResponse fb = sessionService.submitAnswer(
+            sessionState.getId(),
+            AnswerRequest.builder().questionId(tq1.getId()).answer("A").build(),
+            student
+        );
+        assertTrue(fb.isCorrect());
+        assertEquals("[]", sessionState.getAnswersJson());
+    }
 }
+

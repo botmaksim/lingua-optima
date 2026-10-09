@@ -151,5 +151,30 @@ class SubscriptionServiceTest {
         assertTrue(subscriptionService.isFeatureAllowed(user, "DEPLOY"));
         assertTrue(subscriptionService.isFeatureAllowed(user, "OVERRIDE"));
         assertTrue(subscriptionService.isFeatureAllowed(user, "EXPORT"));
+        assertTrue(subscriptionService.isFeatureAllowed(user, "UNLIMITED_EVALS"));
+        assertTrue(subscriptionService.isFeatureAllowed(user, "DEFAULT_FEATURE"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: auto-create missing subscription and upgrade to Educator tier.
+     */
+    @Test
+    void testGetOrCreateSubscriptionAndEducatorUpgrade() {
+        when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.empty());
+        Subscription created = Subscription.builder().id(UUID.randomUUID()).user(user).tier(SubscriptionTier.PREMIUM).build();
+        when(subscriptionRepository.save(any(Subscription.class))).thenReturn(created);
+        when(usageService.getUsage(user)).thenReturn(UsageResponse.builder().evaluationsRemaining(999).ocrRemaining(999).build());
+
+        SubscriptionResponse subRes = subscriptionService.getSubscription(user);
+        assertTrue(subRes.isUnlimited());
+
+        when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
+        when(paymentService.processPayment(eq(29.99), eq("tok-edu"))).thenReturn(
+            PaymentResultResponse.builder().success(true).transactionId("EDU-1").build()
+        );
+        PaymentResultResponse eduRes = subscriptionService.upgrade(user, SubscriptionTier.EDUCATOR, "tok-edu");
+        assertTrue(eduRes.isSuccess());
+        assertEquals(SubscriptionTier.EDUCATOR, subscription.getTier());
     }
 }
+

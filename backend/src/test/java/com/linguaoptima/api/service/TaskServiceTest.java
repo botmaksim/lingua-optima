@@ -299,4 +299,54 @@ class TaskServiceTest {
         assertNotNull(res);
         assertEquals("Practice exercise for " + CefrLevel.B1, res.getContent());
     }
+
+    /**
+     * @brief Verifies unit test scenario: default parameter fallbacks and non-teacher assignTask restriction.
+     */
+    @Test
+    void testDefaultParamsAndNonTeacherAssignThrows() {
+        TaskParamsRequest minimalReq = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .taskType(TaskType.GAP_FILL)
+            .grammarTopic(null)
+            .domain(null)
+            .difficulty(null)
+            .numberOfQuestions(0)
+            .build();
+
+        String jsonNoOptions = """
+            {
+              "content": "Fill in the blanks",
+              "questions": [
+                { "text": "She ___ to school.", "correctAnswer": "goes" }
+              ]
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), any())).thenReturn(jsonNoOptions);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        TaskResponse generated = taskService.generateTask(minimalReq, teacherUser);
+        assertEquals(DifficultyLevel.MEDIUM, generated.getDifficulty());
+
+        TaskParamsRequest withTopicAndDomain = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic("Passive Voice")
+            .domain("Academic")
+            .difficulty(DifficultyLevel.HARD)
+            .numberOfQuestions(4)
+            .build();
+
+        assertNotNull(taskService.previewTask(withTopicAndDomain, studentUser));
+        assertNotNull(taskService.saveAsTemplate(withTopicAndDomain, teacherUser));
+
+        AssignTaskRequest assignReq = AssignTaskRequest.builder().groupIds(List.of(UUID.randomUUID())).build();
+        assertThrows(ForbiddenException.class, () -> taskService.assignTask(UUID.randomUUID(), assignReq, studentUser));
+    }
 }
+

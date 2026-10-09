@@ -138,11 +138,24 @@ class GlobalExceptionHandlerTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: handle generic.
+     * @brief Verifies unit test scenario: handle generic and null message fallbacks.
      */
     @Test
     void testHandleGeneric() {
         ResponseEntity<ErrorResponse> res = handler.handleGeneric(new RuntimeException("Crash"));
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, res.getStatusCode());
+
+        assertEquals("Image is unclear, please try again.",
+            handler.handleOcrException(new OcrException(null)).getBody().getMessage());
+        assertEquals("Weekly evaluation limit reached.",
+            handler.handleQuotaExceeded(new QuotaExceededException(null)).getBody().getMessage());
+        assertEquals("AI service temporarily unavailable.",
+            handler.handleAIServiceException(new AIServiceException(null)).getBody().getMessage());
+        assertEquals("PAYMENT_FAILED",
+            handler.handlePaymentException(new PaymentException(null, "err")).getBody().getErrorCode());
+        assertEquals("Access denied",
+            handler.handleForbidden(new ForbiddenException(null)).getBody().getMessage());
+        assertEquals("An unexpected internal error occurred",
+            handler.handleGeneric(new RuntimeException((String) null)).getBody().getMessage());
     }
 }

@@ -45,12 +45,20 @@ public class NotificationService {
     private final Map<UUID, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
     /**
+     * @brief Instantiates a new Server-Sent Events emitter with a 1-hour timeout.
+     * @return Newly created SseEmitter instance.
+     */
+    protected SseEmitter newSseEmitter() {
+        return new SseEmitter(60 * 60 * 1000L);
+    }
+
+    /**
      * @brief Creates and registers a new Server-Sent Events emitter connection for real-time delivery.
      * @param userId Unique identifier of the subscribing user.
      * @return Configured SseEmitter with 1-hour connection lifetime.
      */
     public SseEmitter createSseEmitter(UUID userId) {
-        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L);
+        SseEmitter emitter = newSseEmitter();
         emitters.computeIfAbsent(userId, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
         emitter.onCompletion(() -> removeEmitter(userId, emitter));

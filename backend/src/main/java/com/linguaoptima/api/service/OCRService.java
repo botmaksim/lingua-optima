@@ -31,21 +31,30 @@ public class OCRService {
     private final ITesseract tesseract;
 
     /**
-     * @brief Default constructor initializing native Tesseract OCR engine.
+     * @brief Default constructor initializing native Tesseract OCR engine using environment configuration.
      */
     public OCRService() {
+        this(System.getenv("TESSDATA_PREFIX"));
+    }
+
+    /**
+     * @brief Constructor initializing native Tesseract OCR engine with an explicit tessdata directory path.
+     *
+     * @param configuredDatapath Optional path to the tessdata directory.
+     */
+    public OCRService(String configuredDatapath) {
         ITesseract instance = null;
         try {
             instance = new Tesseract();
             instance.setLanguage("eng");
-            String datapath = System.getenv("TESSDATA_PREFIX");
-            if (datapath != null && !datapath.isBlank()) {
-                instance.setDatapath(datapath);
+            if (configuredDatapath != null && !configuredDatapath.isBlank()) {
+                instance.setDatapath(configuredDatapath);
             } else {
                 for (String candidate : new String[]{
                     "/usr/share/tessdata",
                     "/usr/share/tesseract-ocr/5/tessdata",
-                    "/usr/share/tesseract-ocr/4.00/tessdata"
+                    "/usr/share/tesseract-ocr/4.00/tessdata",
+                    "/tmp"
                 }) {
                     if (new java.io.File(candidate).exists()) {
                         instance.setDatapath(candidate);

@@ -409,5 +409,43 @@ class AuthServiceTest {
         when(userRepository.findByEmail("none@lingua.com")).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> authService.forgotPassword(ForgotPasswordRequest.builder().email("none@lingua.com").build()));
     }
+
+    /**
+     * @brief Verifies unit test scenario: Redis null, rate-limit first attempt, Redis exceptions, and missing user on refresh.
+     */
+    @Test
+    void testRedisNullAndErrorBranches() {
+        AuthService noRedisAuth = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, null);
+        when(userRepository.existsByEmail(anyString())).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPass");
+        when(userRepository.save(any(User.class))).thenReturn(sampleUser);
+        when(jwtService.generateAccessToken(any(), any(), any())).thenReturn("acc");
+        when(jwtService.generateRefreshToken(any(), any())).thenReturn("ref");
+
+        TokenResponse regNoRole = noRedisAuth.register(
+            RegisterRequest.builder().email("norole@lingua.com").password("pass123").fullName("No Role").role(null).build()
+        );
+        assertNotNull(regNoRole);
+
+        when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(sampleUser));
+        when(passwordEncoder.matches("password123", "encodedPass")).thenReturn(true);
+        assertNotNull(noRedisAuth.login(LoginRequest.builder().email("student@lingua.com").password("password123").build()));
+
+        when(valueOperations.increment("rate_limit:student@lingua.com:auth")).thenReturn(1L);
+        doThrow(new RuntimeException("Redis write fail")).when(valueOperations).set(anyString(), anyString(), any());
+        assertNotNull(authService.login(LoginRequest.builder().email("student@lingua.com").password("password123").build()));
+
+        when(valueOperations.increment("rate_limit:student@lingua.com:auth")).thenThrow(new RuntimeException("Redis down"));
+        assertNotNull(authService.login(LoginRequest.builder().email("student@lingua.com").password("password123").build()));
+
+        String ref = "valid-ref-missing-user";
+        UUID missingUid = UUID.randomUUID();
+        when(jwtService.isTokenValid(ref)).thenReturn(true);
+        when(jwtService.extractUserId(ref)).thenReturn(missingUid);
+        when(valueOperations.get(anyString())).thenReturn(missingUid.toString());
+        when(userRepository.findById(missingUid)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> authService.refreshToken(ref));
+    }
 }
+
 

@@ -112,5 +112,11 @@ class LeaderboardServiceTest {
         when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), stranger.getId())).thenReturn(false);
 
         assertThrows(ForbiddenException.class, () -> leaderboardService.getGroupLeaderboard(group.getId(), stranger));
+
+        UUID missingGroup = UUID.randomUUID();
+        when(groupRepository.findById(missingGroup)).thenReturn(Optional.empty());
+        assertThrows(com.linguaoptima.api.exception.ResourceNotFoundException.class,
+            () -> leaderboardService.getGroupLeaderboard(missingGroup, teacher));
     }
 }
+

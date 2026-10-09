@@ -170,5 +170,10 @@ class UserServiceTest {
         verify(apiKeyRepository).delete(any(ApiKey.class));
         verify(progressRecordRepository).delete(any(ProgressRecord.class));
         verify(userRepository).deleteById(uid);
+
+        when(userRepository.findById(uid)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(sampleUser, UpdateUserRequest.builder().build()));
+        assertThrows(ResourceNotFoundException.class, () -> userService.changePassword(sampleUser, ChangePasswordRequest.builder().oldPassword("a").newPassword("b").build()));
     }
 }
+

@@ -96,12 +96,16 @@ class OCRServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: default constructor.
+     * @brief Verifies unit test scenario: default and datapath constructors.
      */
     @Test
     void testDefaultConstructor() {
         OCRService svc = new OCRService();
         assertNotNull(svc);
+        OCRService explicitPathSvc = new OCRService("/tmp");
+        assertNotNull(explicitPathSvc);
+        OCRService blankPathSvc = new OCRService("   ");
+        assertNotNull(blankPathSvc);
     }
 
     /**
@@ -109,7 +113,7 @@ class OCRServiceTest {
      */
     @Test
     void testNullTesseractThrows() {
-        OCRService svc = new OCRService(null);
+        OCRService svc = new OCRService((ITesseract) null);
         assertThrows(OcrException.class, () -> svc.extractText(sampleImageBytes));
     }
 
@@ -123,6 +127,20 @@ class OCRServiceTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: preprocess runtime exception handled by outer catch block.
+     */
+    @Test
+    void testPreprocessExceptionHandledByOuterCatch() {
+        OCRService failingPreprocessSvc = new OCRService(tesseract) {
+            @Override
+            public BufferedImage preprocess(BufferedImage image) {
+                throw new RuntimeException("Simulated imaging failure");
+            }
+        };
+        assertThrows(OcrException.class, () -> failingPreprocessSvc.extractText(sampleImageBytes));
+    }
+
+    /**
      * @brief Verifies unit test scenario: purge image zero retention.
      */
     @Test
@@ -132,5 +150,6 @@ class OCRServiceTest {
         assertEquals(0, bytes[0]);
         assertEquals(0, bytes[1]);
         assertEquals(0, bytes[2]);
+        ocrService.purgeImage(null);
     }
 }

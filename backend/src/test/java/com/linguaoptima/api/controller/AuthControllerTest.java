@@ -123,7 +123,22 @@ class AuthControllerTest {
         when(authService.refreshToken("cookieToken")).thenReturn(sampleToken);
         ResponseEntity<TokenResponse> entity = authController.refresh("cookieToken", null);
         assertEquals(HttpStatus.OK, entity.getStatusCode());
+
+        TokenResponse withPreGeneratedRefresh = TokenResponse.builder()
+            .accessToken("access456")
+            .refreshToken("pre-refresh-456")
+            .user(sampleToken.getUser())
+            .build();
+        when(authService.refreshToken("headerToken")).thenReturn(withPreGeneratedRefresh);
+        ResponseEntity<TokenResponse> entityFromHeader = authController.refresh(null, "headerToken");
+        assertEquals(HttpStatus.OK, entityFromHeader.getStatusCode());
+
+        when(authService.login(any())).thenReturn(withPreGeneratedRefresh);
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        authController.login(LoginRequest.builder().email("auth@lingua.com").password("pass").build(), res);
+        assertTrue(res.containsHeader("Set-Cookie"));
     }
+
 
     /**
      * @brief Verifies unit test scenario: logout.

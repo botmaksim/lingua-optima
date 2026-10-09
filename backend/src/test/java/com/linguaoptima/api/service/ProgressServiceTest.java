@@ -185,5 +185,19 @@ class ProgressServiceTest {
         assertEquals(1, created.getTotalAttempts());
         assertEquals(0, created.getErrorCount());
         assertEquals(1.0, created.getMasteryScore());
+
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "General Grammar"))
+            .thenReturn(Optional.empty());
+        ProgressRecord defaultTopic = progressService.updateFromSubmission(student, "  ", true);
+        assertEquals("General Grammar", defaultTopic.getGrammarTopic());
+
+        student.setCefrLevel(CefrLevel.C1);
+        student.setLevelUpSuggestedAt(null);
+        progressService.checkCefrLevelUp(student);
+
+        UUID emptyGroupId = UUID.randomUUID();
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(emptyGroupId)).thenReturn(List.of());
+        assertTrue(progressService.getGroupProgress(emptyGroupId).isEmpty());
     }
 }
+

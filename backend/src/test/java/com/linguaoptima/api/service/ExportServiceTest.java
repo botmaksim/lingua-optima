@@ -143,4 +143,23 @@ class ExportServiceTest {
         assertThrows(com.linguaoptima.api.exception.ResourceNotFoundException.class,
             () -> exportService.generateStudentReport(id, "csv", teacher));
     }
+
+    /**
+     * @brief Verifies unit test scenario: CSV and PDF generation failure handling when repository throws during iteration.
+     */
+    @Test
+    void testExportExceptionHandling() {
+        GroupStudent brokenGs = GroupStudent.builder().group(group).student(null).isActive(true).build();
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(brokenGs));
+
+        assertThrows(RuntimeException.class, () -> exportService.generateGroupReport(group.getId(), "csv", teacher));
+        assertThrows(RuntimeException.class, () -> exportService.generateGroupReport(group.getId(), "pdf", teacher));
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(progressRecordRepository.findByStudent(student)).thenThrow(new RuntimeException("DB read failed"));
+        assertThrows(RuntimeException.class, () -> exportService.generateStudentReport(student.getId(), "csv", teacher));
+        assertThrows(RuntimeException.class, () -> exportService.generateStudentReport(student.getId(), "pdf", teacher));
+    }
 }
+

@@ -75,7 +75,7 @@ public class TaskService {
             params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
             params.getDomain() != null ? params.getDomain() : "Daily Life",
             params.getTaskType().name(),
-            params.getDifficulty().name(),
+            params.getDifficulty() != null ? params.getDifficulty().name() : DifficultyLevel.MEDIUM.name(),
             params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5
         );
 
@@ -112,7 +112,7 @@ public class TaskService {
             params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
             params.getDomain() != null ? params.getDomain() : "Daily Life",
             params.getTaskType().name(),
-            params.getDifficulty().name(),
+            params.getDifficulty() != null ? params.getDifficulty().name() : DifficultyLevel.MEDIUM.name(),
             params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5
         );
 
@@ -140,7 +140,7 @@ public class TaskService {
             params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
             params.getDomain() != null ? params.getDomain() : "Daily Life",
             params.getTaskType().name(),
-            params.getDifficulty().name(),
+            params.getDifficulty() != null ? params.getDifficulty().name() : DifficultyLevel.MEDIUM.name(),
             params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5
         );
 
@@ -149,6 +149,7 @@ public class TaskService {
         Task saved = taskRepository.save(task);
         return TaskResponse.fromEntity(saved);
     }
+
 
     /**
      * @brief Assigns a task to all active students across one or more teacher groups.

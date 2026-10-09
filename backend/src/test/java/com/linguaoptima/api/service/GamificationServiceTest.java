@@ -104,7 +104,12 @@ class GamificationServiceTest {
 
         gamificationService.onSubmissionCompleted(user);
         assertEquals(5, user.getStreakCount());
+
+        user.setLastActiveDate(LocalDate.now().minusDays(3));
+        gamificationService.onSubmissionCompleted(user);
+        assertEquals(1, user.getStreakCount());
     }
+
 
     /**
      * @brief Verifies unit test scenario: apply daily streak check uses freeze token.

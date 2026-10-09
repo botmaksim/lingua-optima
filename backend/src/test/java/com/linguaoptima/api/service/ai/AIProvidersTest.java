@@ -108,4 +108,22 @@ class AIProvidersTest {
         String res = provider.complete("hello");
         assertEquals("Claude response", res);
     }
+
+    /**
+     * @brief Verifies unit test scenario: default constructors and non-2xx HTTP error branches for Gemini, OpenAI, and Anthropic.
+     */
+    @Test
+    void testProvidersDefaultConstructorsAndHttpErrors() {
+        GeminiProvider gemini = new GeminiProvider("gemini-key", restTemplate, objectMapper);
+        OpenAIProvider openai = new OpenAIProvider(restTemplate, objectMapper);
+        AnthropicProvider anthropic = new AnthropicProvider(restTemplate, objectMapper);
+
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenReturn(new ResponseEntity<>(HttpStatus.BAD_GATEWAY));
+
+        assertThrows(RuntimeException.class, () -> gemini.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> openai.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> anthropic.complete("prompt"));
+    }
 }
+

@@ -317,4 +317,33 @@ class AIBrokerServiceTest {
         String result = aiBrokerService.generateTaskContent("prompt", user);
         assertEquals("{\"recovered\": true}", result);
     }
+
+    /**
+     * @brief Verifies unit test scenario: Redis read/write/rate-limit exceptions and null Redis/user fallbacks.
+     */
+    @Test
+    void testRedisExceptionsAndNullUserBranches() throws Exception {
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.increment(anyString())).thenThrow(new RuntimeException("Redis inc error"));
+        when(valueOperations.get(anyString())).thenThrow(new RuntimeException("Redis get error"));
+        doThrow(new RuntimeException("Redis set error")).when(valueOperations).set(anyString(), anyString(), any());
+        when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of());
+        when(groqProvider.complete(anyString())).thenReturn("{\"ok\": true}");
+
+        String res = aiBrokerService.generateTaskContent("prompt", user);
+        assertEquals("{\"ok\": true}", res);
+
+        AIBrokerService noRedisBroker = new AIBrokerService(
+            groqProvider,
+            geminiProvider,
+            apiKeyRepository,
+            encryptionService,
+            pendingAiTaskRepository,
+            restTemplate,
+            objectMapper,
+            null
+        );
+        assertEquals("{\"ok\": true}", noRedisBroker.generateTaskContent("prompt", null));
+    }
 }
+

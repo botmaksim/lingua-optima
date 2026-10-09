@@ -73,9 +73,10 @@ class SchedulersTest {
     @Test
     void testNotificationScheduler() {
         User student = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
+        User teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
         ProgressRecord weak = ProgressRecord.builder().grammarTopic("Passive Voice").masteryScore(0.4).build();
 
-        when(userRepository.findAll()).thenReturn(List.of(student));
+        when(userRepository.findAll()).thenReturn(List.of(student, teacher));
         when(progressRecordRepository.findByStudentIdAndMasteryScoreLessThan(student.getId(), 0.6))
             .thenReturn(List.of(weak));
 
@@ -85,3 +86,4 @@ class SchedulersTest {
         verify(notificationService).send(eq(student), contains("Passive Voice"), eq(NotificationType.CONTEXTUAL));
     }
 }
+
