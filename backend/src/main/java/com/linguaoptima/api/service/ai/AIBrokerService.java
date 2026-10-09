@@ -16,6 +16,7 @@ import com.linguaoptima.api.repository.PendingAiTaskRepository;
 import com.linguaoptima.api.service.EncryptionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -52,6 +53,34 @@ public class AIBrokerService {
     private final ObjectMapper objectMapper;
     /** @brief Field representing string redis template in AIBrokerService. */
     private final StringRedisTemplate stringRedisTemplate;
+
+    /** @brief Configurable base URL for Groq API or Cloudflare proxy. */
+    @Value("${app.ai.groq.base-url:https://api.groq.com/openai/v1}")
+    private String groqBaseUrl = "https://api.groq.com/openai/v1";
+
+    /** @brief Configurable base URL for Gemini API or Cloudflare proxy. */
+    @Value("${app.ai.gemini.base-url:https://generativelanguage.googleapis.com}")
+    private String geminiBaseUrl = "https://generativelanguage.googleapis.com";
+
+    /** @brief Configurable base URL for OpenAI API or Cloudflare proxy. */
+    @Value("${app.ai.openai.base-url:https://api.openai.com/v1}")
+    private String openaiBaseUrl = "https://api.openai.com/v1";
+
+    /** @brief Configurable base URL for Anthropic API or Cloudflare proxy. */
+    @Value("${app.ai.anthropic.base-url:https://api.anthropic.com/v1}")
+    private String anthropicBaseUrl = "https://api.anthropic.com/v1";
+
+    /** @brief Configurable base URL for DeepSeek API or Cloudflare proxy. */
+    @Value("${app.ai.deepseek.base-url:https://api.deepseek.com}")
+    private String deepseekBaseUrl = "https://api.deepseek.com";
+
+    /** @brief Configurable base URL for Alibaba Qwen DashScope API or Cloudflare proxy. */
+    @Value("${app.ai.qwen.base-url:https://dashscope-intl.aliyuncs.com/compatible-mode/v1}")
+    private String qwenBaseUrl = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+
+    /** @brief Configurable base URL for Moonshot Kimi API or Cloudflare proxy. */
+    @Value("${app.ai.kimi.base-url:https://api.moonshot.cn/v1}")
+    private String kimiBaseUrl = "https://api.moonshot.cn/v1";
 
     /**
      * @brief Constructs an AIBrokerService with injected AI providers and repositories.
@@ -233,13 +262,13 @@ public class AIBrokerService {
         String modelName = Optional.ofNullable(user.getPreferredModel()).orElse(key.getModelName());
 
         return switch (key.getProvider()) {
-            case GROQ -> Optional.of((AIProvider) new GroqProvider(decryptedKey, "https://api.groq.com/openai/v1", modelName, restTemplate, objectMapper));
-            case GEMINI -> Optional.of((AIProvider) new GeminiProvider(decryptedKey, "https://generativelanguage.googleapis.com", modelName, restTemplate, objectMapper));
-            case OPENAI -> Optional.of((AIProvider) new OpenAIProvider(decryptedKey, "https://api.openai.com/v1", modelName, restTemplate, objectMapper));
-            case ANTHROPIC -> Optional.of((AIProvider) new AnthropicProvider(decryptedKey, "https://api.anthropic.com/v1", modelName, restTemplate, objectMapper));
-            case DEEPSEEK -> Optional.of((AIProvider) new DeepSeekProvider(decryptedKey, "https://api.deepseek.com", modelName, restTemplate, objectMapper));
-            case QWEN -> Optional.of((AIProvider) new QwenProvider(decryptedKey, "https://dashscope-intl.aliyuncs.com/compatible-mode/v1", modelName, restTemplate, objectMapper));
-            case KIMI -> Optional.of((AIProvider) new KimiProvider(decryptedKey, "https://api.moonshot.cn/v1", modelName, restTemplate, objectMapper));
+            case GROQ -> Optional.of((AIProvider) new GroqProvider(decryptedKey, groqBaseUrl, modelName, restTemplate, objectMapper));
+            case GEMINI -> Optional.of((AIProvider) new GeminiProvider(decryptedKey, geminiBaseUrl, modelName, restTemplate, objectMapper));
+            case OPENAI -> Optional.of((AIProvider) new OpenAIProvider(decryptedKey, openaiBaseUrl, modelName, restTemplate, objectMapper));
+            case ANTHROPIC -> Optional.of((AIProvider) new AnthropicProvider(decryptedKey, anthropicBaseUrl, modelName, restTemplate, objectMapper));
+            case DEEPSEEK -> Optional.of((AIProvider) new DeepSeekProvider(decryptedKey, deepseekBaseUrl, modelName, restTemplate, objectMapper));
+            case QWEN -> Optional.of((AIProvider) new QwenProvider(decryptedKey, qwenBaseUrl, modelName, restTemplate, objectMapper));
+            case KIMI -> Optional.of((AIProvider) new KimiProvider(decryptedKey, kimiBaseUrl, modelName, restTemplate, objectMapper));
         };
     }
 
