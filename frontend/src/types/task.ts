@@ -68,6 +68,22 @@ export interface Task {
   createdBy?: User;
   /** @brief Property representing created at in Task. */
   createdAt: string;
+  /** @brief Optional task assignment ID for the student. */
+  assignmentId?: string;
+  /** @brief Educator full name if assigned by a teacher. */
+  assignedByName?: string;
+  /** @brief Optional assignment due date. */
+  dueDate?: string;
+  /** @brief Current status of the student's assignment. */
+  assignmentStatus?: AssignmentStatus;
+  /** @brief Maximum allowed attempts (1 = single attempt default, 0 = unlimited). */
+  maxAttempts?: number;
+  /** @brief Number of submission attempts already used by the student. */
+  attemptsUsed?: number;
+  /** @brief Latest submission ID for direct review navigation. */
+  latestSubmissionId?: string;
+  /** @brief Flag indicating whether the student can still submit an attempt. */
+  canSubmit?: boolean;
 }
 
 /**

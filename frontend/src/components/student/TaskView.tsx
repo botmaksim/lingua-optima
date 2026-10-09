@@ -219,12 +219,33 @@ export const TaskView: React.FC = () => {
       )}
 
       <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
           <CefrBadge level={task.cefrLevel} size="md" />
           <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-primary">
             {task.type}
           </span>
           <span className="text-xs text-slate-400">· {task.domain}</span>
+          {task.assignedByName && (
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">
+              Assigned by {task.assignedByName}
+            </span>
+          )}
+          {task.maxAttempts === 1 && (
+            <span
+              className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                task.canSubmit === false
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'bg-amber-50 text-amber-700'
+              }`}
+            >
+              {task.canSubmit === false ? '1/1 Attempt Used' : '1 Attempt Allowed'}
+            </span>
+          )}
+          {task.maxAttempts === 0 && (
+            <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-sky-50 text-sky-700">
+              ∞ Unlimited Attempts
+            </span>
+          )}
         </div>
         <h1 className="text-xl font-black text-slate-900 tracking-tight">
           {task.grammarTopic || 'Grammar Practice'}
@@ -235,6 +256,31 @@ export const TaskView: React.FC = () => {
           </p>
         )}
       </div>
+
+      {task.canSubmit === false && (
+        <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start space-x-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-bold text-emerald-950">
+                Assignment Completed (1 of 1 Attempt Used)
+              </h3>
+              <p className="text-xs text-emerald-800 mt-0.5">
+                Your teacher configured this assignment for a single attempt. You can review your graded answers and AI analysis at any time.
+              </p>
+            </div>
+          </div>
+          {task.latestSubmissionId && (
+            <button
+              type="button"
+              onClick={() => navigate(`/student/review/${task.latestSubmissionId}`)}
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm flex-shrink-0"
+            >
+              View Graded Results
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="space-y-4">
         {questions.length === 0 ? (
@@ -264,12 +310,13 @@ export const TaskView: React.FC = () => {
                       <button
                         type="button"
                         key={optIdx}
+                        disabled={task.canSubmit === false}
                         onClick={() => handleSelectAnswer(q.id, opt)}
                         className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
                           isSelected
                             ? 'border-primary bg-indigo-50/60 text-primary font-semibold'
                             : 'border-slate-200 hover:border-slate-300 text-slate-700'
-                        }`}
+                        } disabled:opacity-60`}
                       >
                         <span>{opt}</span>
                         {isSelected && <CheckCircle2 className="w-4 h-4 text-primary" />}
@@ -280,10 +327,11 @@ export const TaskView: React.FC = () => {
               ) : (
                 <input
                   type="text"
+                  disabled={task.canSubmit === false}
                   placeholder="Type your answer here..."
                   value={answers[q.id] || ''}
                   onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
-                  className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60"
                 />
               )}
             </div>
@@ -295,7 +343,8 @@ export const TaskView: React.FC = () => {
         <button
           type="button"
           onClick={handleSaveDraft}
-          className="flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition"
+          disabled={task.canSubmit === false}
+          className="flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           <span>{saveSuccess ? 'Draft Saved!' : 'Save Draft'}</span>
@@ -304,7 +353,7 @@ export const TaskView: React.FC = () => {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={isSubmitting || task.canSubmit === false}
           className="flex-1 flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
         >
           {isSubmitting ? (
@@ -312,7 +361,7 @@ export const TaskView: React.FC = () => {
           ) : (
             <>
               <Send className="w-4 h-4" />
-              <span>Submit Answers</span>
+              <span>{task.canSubmit === false ? 'Attempt Already Submitted' : 'Submit Answers'}</span>
             </>
           )}
         </button>

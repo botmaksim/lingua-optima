@@ -59,6 +59,8 @@ public class TaskService {
     private final ObjectMapper objectMapper;
     /** @brief Field representing curriculum storage service for context injection. */
     private final CurriculumStorageService curriculumStorageService;
+    /** @brief Field representing submission repository for tracking student attempts. */
+    private final SubmissionRepository submissionRepository;
 
     /**
      * @brief Generates an educational task with AI, persists it, and creates an automatic assignment for students.
@@ -87,6 +89,8 @@ public class TaskService {
                 .student(user)
                 .assignedBy(user)
                 .status(AssignmentStatus.IN_PROGRESS)
+                .maxAttempts(0)
+                .attemptsUsed(0)
                 .createdAt(LocalDateTime.now())
                 .build();
             taskAssignmentRepository.save(selfAssignment);
@@ -193,6 +197,10 @@ public class TaskService {
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
 
+        int effectiveMaxAttempts = (request.getMaxAttempts() == null || request.getMaxAttempts() < 0)
+            ? 1
+            : request.getMaxAttempts();
+
         for (UUID groupId : request.getGroupIds()) {
             Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group not found: " + groupId));
@@ -210,6 +218,8 @@ public class TaskService {
                     .assignedBy(teacher)
                     .dueDate(request.getDueDate())
                     .status(AssignmentStatus.PENDING)
+                    .maxAttempts(effectiveMaxAttempts)
+                    .attemptsUsed(0)
                     .createdAt(LocalDateTime.now())
                     .build();
                 taskAssignmentRepository.save(assignment);
@@ -222,14 +232,14 @@ public class TaskService {
     }
 
     /**
-     * @brief Retrieves all tasks accessible to the specified user.
+     * @brief Retrieves all tasks accessible to the specified user with assignment and attempt metadata.
      * @param user User requesting accessible tasks.
      * @return List of TaskResponse DTOs.
      */
     @Transactional(readOnly = true)
     public List<TaskResponse> getTasksForUser(User user) {
         return taskRepository.findAllAccessibleForUser(user.getId()).stream()
-            .map(TaskResponse::fromEntity)
+            .map(task -> enrichTaskForUser(task, user))
             .collect(Collectors.toList());
     }
 
@@ -261,9 +271,57 @@ public class TaskService {
      */
     @Transactional(readOnly = true)
     public TaskResponse getTaskById(UUID taskId) {
+        return getTaskById(taskId, null);
+    }
+
+    /**
+     * @brief Retrieves a specific task by its unique identifier enriched with student assignment metadata.
+     * @param taskId Unique identifier of the task.
+     * @param user Optional user requesting the task to resolve assignment status and attempt limits.
+     * @return TaskResponse DTO containing full task details, questions, and assignment state.
+     * @throws ResourceNotFoundException if task cannot be found.
+     */
+    @Transactional(readOnly = true)
+    public TaskResponse getTaskById(UUID taskId, User user) {
         Task task = taskRepository.findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
-        return TaskResponse.fromEntity(task);
+        return enrichTaskForUser(task, user);
+    }
+
+    /**
+     * @brief Enriches a TaskResponse with student-specific assignment status, attempt limits, and latest submission ID.
+     * @param task The domain Task entity.
+     * @param user The student user (optional).
+     * @return Enriched TaskResponse DTO.
+     */
+    private TaskResponse enrichTaskForUser(Task task, User user) {
+        TaskResponse response = TaskResponse.fromEntity(task);
+        if (user != null) {
+            taskAssignmentRepository.findByStudentIdAndTaskId(user.getId(), task.getId())
+                .ifPresent(assignment -> {
+                    response.setAssignmentId(assignment.getId());
+                    if (assignment.getAssignedBy() != null && !assignment.getAssignedBy().getId().equals(user.getId())) {
+                        response.setAssignedByName(assignment.getAssignedBy().getFullName());
+                    }
+                    response.setDueDate(assignment.getDueDate());
+                    AssignmentStatus st = assignment.getStatus() != null ? assignment.getStatus() : AssignmentStatus.PENDING;
+                    response.setAssignmentStatus(st.name());
+                    int maxAtt = assignment.getMaxAttempts() != null ? assignment.getMaxAttempts() : 1;
+                    int usedAtt = assignment.getAttemptsUsed();
+                    if (usedAtt == 0 && (st == AssignmentStatus.SUBMITTED || st == AssignmentStatus.GRADED)) {
+                        usedAtt = 1;
+                    }
+                    response.setMaxAttempts(maxAtt);
+                    response.setAttemptsUsed(usedAtt);
+                    response.setCanSubmit(maxAtt <= 0 || usedAtt < maxAtt);
+                    if (submissionRepository != null) {
+                        submissionRepository.findByAssignmentId(assignment.getId()).stream()
+                            .max(Comparator.comparing(Submission::getSubmittedAt, Comparator.nullsFirst(Comparator.naturalOrder())))
+                            .ifPresent(sub -> response.setLatestSubmissionId(sub.getId()));
+                    }
+                });
+        }
+        return response;
     }
 
     /**

@@ -458,6 +458,7 @@ class SubmissionServiceTest {
             .id(UUID.randomUUID())
             .task(null)
             .student(student)
+            .maxAttempts(0)
             .build();
 
         when(taskAssignmentRepository.findById(detachedAssignment.getId())).thenReturn(Optional.of(detachedAssignment));
@@ -744,5 +745,56 @@ class SubmissionServiceTest {
         assertEquals(2, matchResp.getItems().size());
         assertFalse(matchResp.getItems().get(0).isCorrect());
         assertTrue(matchResp.getItems().get(1).isCorrect());
+    }
+
+    @Test
+    void testSubmissionAttemptLimitsEnforcement() {
+        Task task = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Conditionals")
+            .answerKey("[]")
+            .build();
+
+        // 1. Existing assignment via taskId with 1 attempt already used -> throws ForbiddenException
+        TaskAssignment exhaustedAssign = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(student)
+            .maxAttempts(1)
+            .attemptsUsed(1)
+            .status(AssignmentStatus.SUBMITTED)
+            .build();
+
+        when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), task.getId()))
+            .thenReturn(Optional.of(exhaustedAssign));
+
+        TextSubmissionRequest req = TextSubmissionRequest.builder()
+            .taskId(task.getId())
+            .text("Q1: answer")
+            .type("GRAMMAR")
+            .build();
+
+        assertThrows(ForbiddenException.class, () -> submissionService.submitText(req, student));
+
+        // 2. Unlimited attempts (maxAttempts = 0) or null maxAttempts succeeds even when attemptsUsed >= 1
+        exhaustedAssign.setMaxAttempts(0);
+        when(scoringService.scoreGrammarTask(anyString(), anyString(), eq(student)))
+            .thenReturn(Map.of("score", 80.0, "feedback", "Good"));
+        when(scoringService.extractScore(any())).thenReturn(80.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
+            Submission s = inv.getArgument(0);
+            s.setId(UUID.randomUUID());
+            return s;
+        });
+
+        SubmissionResultResponse unlimRes = submissionService.submitText(req, student);
+        assertNotNull(unlimRes);
+        assertEquals(2, exhaustedAssign.getAttemptsUsed());
+
+        exhaustedAssign.setMaxAttempts(null);
+        SubmissionResultResponse nullMaxRes = submissionService.submitText(req, student);
+        assertNotNull(nullMaxRes);
+        assertEquals(3, exhaustedAssign.getAttemptsUsed());
     }
 }

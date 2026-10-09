@@ -29,4 +29,7 @@ public class AssignTaskRequest {
 
     /** @brief Field representing due date in AssignTaskRequest. */
     private LocalDateTime dueDate;
+
+    /** @brief Maximum allowed attempts (1 = single attempt default, 0 = unlimited attempts). */
+    private Integer maxAttempts;
 }

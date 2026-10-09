@@ -98,8 +98,7 @@ public class SubmissionService {
             if (!assignment.getStudent().getId().equals(student.getId())) {
                 throw new ForbiddenException("Assignment does not belong to student.");
             }
-            assignment.setStatus(AssignmentStatus.SUBMITTED);
-            taskAssignmentRepository.save(assignment);
+            validateAndRecordAttempt(assignment);
 
             if (assignment.getTask() != null) {
                 answerKey = assignment.getTask().getAnswerKey();
@@ -110,16 +109,21 @@ public class SubmissionService {
             if (task != null) {
                 answerKey = task.getAnswerKey();
                 grammarTopic = task.getGrammarTopic();
-                assignment = taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), task.getId())
-                    .orElseGet(() -> taskAssignmentRepository.save(TaskAssignment.builder()
+                Optional<TaskAssignment> existingOpt = taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), task.getId());
+                if (existingOpt.isPresent()) {
+                    assignment = existingOpt.get();
+                    validateAndRecordAttempt(assignment);
+                } else {
+                    assignment = taskAssignmentRepository.save(TaskAssignment.builder()
                         .student(student)
                         .task(task)
                         .assignedBy(task.getCreatedBy() != null ? task.getCreatedBy() : student)
                         .status(AssignmentStatus.SUBMITTED)
+                        .maxAttempts(0)
+                        .attemptsUsed(1)
                         .createdAt(LocalDateTime.now())
-                        .build()));
-                assignment.setStatus(AssignmentStatus.SUBMITTED);
-                taskAssignmentRepository.save(assignment);
+                        .build());
+                }
             }
         }
 
@@ -196,8 +200,7 @@ public class SubmissionService {
             if (!assignment.getStudent().getId().equals(student.getId())) {
                 throw new ForbiddenException("Assignment does not belong to student.");
             }
-            assignment.setStatus(AssignmentStatus.SUBMITTED);
-            taskAssignmentRepository.save(assignment);
+            validateAndRecordAttempt(assignment);
 
             if (assignment.getTask() != null) {
                 answerKey = assignment.getTask().getAnswerKey();
@@ -230,6 +233,22 @@ public class SubmissionService {
         response.setRubric(scoring);
         enrichSubmissionResult(response, saved, scoring);
         return response;
+    }
+
+    /**
+     * @brief Verifies that the student has remaining attempts and records the new submission attempt.
+     * @param assignment The task assignment being submitted.
+     * @throws ForbiddenException if the maximum allowed attempts have already been exhausted.
+     */
+    private void validateAndRecordAttempt(TaskAssignment assignment) {
+        Integer maxAttempts = assignment.getMaxAttempts();
+        int used = assignment.getAttemptsUsed();
+        if (maxAttempts != null && maxAttempts > 0 && used >= maxAttempts) {
+            throw new ForbiddenException("Maximum attempts (" + maxAttempts + ") reached for this assigned task.");
+        }
+        assignment.setAttemptsUsed(used + 1);
+        assignment.setStatus(AssignmentStatus.SUBMITTED);
+        taskAssignmentRepository.save(assignment);
     }
 
     /**

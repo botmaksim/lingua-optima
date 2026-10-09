@@ -262,37 +262,88 @@ export const Dashboard: React.FC = () => {
                 </button>
               </div>
             ) : (
-              tasks.slice(0, 5).map((task) => (
-                <div
-                  key={task.id}
-                  onClick={() => {
-                    if (task.type === 'ESSAY') {
-                      navigate(`/student/essay/${task.id}`);
-                    } else {
-                      navigate(`/student/task/${task.id}`);
-                    }
-                  }}
-                  className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition cursor-pointer flex items-center justify-between group"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <CefrBadge level={task.cefrLevel} size="sm" />
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                        {task.type}
-                      </span>
-                      <span className="text-xs text-slate-400">· {task.domain}</span>
+              tasks.slice(0, 5).map((task) => {
+                const isCompletedSingleAttempt =
+                  task.canSubmit === false && Boolean(task.latestSubmissionId);
+                return (
+                  <div
+                    key={task.id}
+                    onClick={() => {
+                      if (isCompletedSingleAttempt && task.latestSubmissionId) {
+                        navigate(`/student/review/${task.latestSubmissionId}`);
+                      } else if (task.type === 'ESSAY') {
+                        navigate(`/student/essay/${task.id}`);
+                      } else {
+                        navigate(`/student/task/${task.id}`);
+                      }
+                    }}
+                    className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <CefrBadge level={task.cefrLevel} size="sm" />
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                          {task.type}
+                        </span>
+                        <span className="text-xs text-slate-400">· {task.domain}</span>
+                        {task.assignedByName && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700">
+                            Assigned by {task.assignedByName}
+                          </span>
+                        )}
+                        {task.maxAttempts === 1 && (
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                              task.canSubmit === false
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : 'bg-amber-50 text-amber-700'
+                            }`}
+                          >
+                            {task.canSubmit === false ? 'Completed (1/1 Attempt)' : '1 Attempt Only'}
+                          </span>
+                        )}
+                        {task.maxAttempts === 0 && task.assignedByName && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-sky-50 text-sky-700">
+                            ∞ Unlimited Attempts
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-800 group-hover:text-primary transition">
+                        {task.grammarTopic || 'General English Practice'}
+                      </h3>
                     </div>
-                    <h3 className="text-sm font-bold text-slate-800 group-hover:text-primary transition">
-                      {task.grammarTopic || 'General English Practice'}
-                    </h3>
-                  </div>
 
-                  <div className="flex items-center space-x-2 text-primary font-medium text-xs">
-                    <span className="hidden sm:inline">Start</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+                    <div className="flex items-center space-x-2">
+                      {!isCompletedSingleAttempt && task.latestSubmissionId && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/student/review/${task.latestSubmissionId}`);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition"
+                        >
+                          View Review
+                        </button>
+                      )}
+                      <div
+                        className={`flex items-center space-x-1.5 font-bold text-xs ${
+                          isCompletedSingleAttempt ? 'text-emerald-600' : 'text-primary'
+                        }`}
+                      >
+                        <span className="hidden sm:inline">
+                          {isCompletedSingleAttempt
+                            ? 'View Results'
+                            : (task.attemptsUsed ?? 0) > 0
+                            ? 'Practice Again'
+                            : 'Start'}
+                        </span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

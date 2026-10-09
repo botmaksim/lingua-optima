@@ -193,6 +193,31 @@ export const EssayEditor: React.FC = () => {
         </div>
       )}
 
+      {task?.canSubmit === false && (
+        <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start space-x-3">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-sm font-bold text-emerald-950">
+                Essay Assignment Completed (1 of 1 Attempt Used)
+              </h3>
+              <p className="text-xs text-emerald-800 mt-0.5">
+                Your teacher configured this essay assignment for a single attempt.
+              </p>
+            </div>
+          </div>
+          {task.latestSubmissionId && (
+            <button
+              type="button"
+              onClick={() => navigate(`/student/review/${task.latestSubmissionId}`)}
+              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm flex-shrink-0"
+            >
+              View Graded Results
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
         <div className="flex items-center justify-between text-xs font-medium border-b border-slate-100 pb-3">
           <div className="flex items-center space-x-2">
@@ -224,17 +249,19 @@ export const EssayEditor: React.FC = () => {
 
         <textarea
           rows={16}
+          disabled={task?.canSubmit === false}
           value={content}
           onChange={(e) => updateContent(e.target.value)}
           placeholder="Start writing your essay here... (Auto-saves every 30 seconds)"
-          className="w-full p-4 rounded-2xl border border-slate-200 text-slate-800 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y font-sans"
+          className="w-full p-4 rounded-2xl border border-slate-200 text-slate-800 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y font-sans disabled:opacity-60"
         />
 
         <div className="flex items-center justify-between pt-2">
           <button
             type="button"
             onClick={saveNow}
-            className="flex items-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition"
+            disabled={task?.canSubmit === false}
+            className="flex items-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             <span>Save Draft</span>
@@ -243,7 +270,7 @@ export const EssayEditor: React.FC = () => {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || task?.canSubmit === false}
             className="flex items-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
           >
             {isSubmitting ? (
@@ -251,7 +278,7 @@ export const EssayEditor: React.FC = () => {
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                <span>Submit for Scoring</span>
+                <span>{task?.canSubmit === false ? 'Attempt Already Submitted' : 'Submit for Scoring'}</span>
               </>
             )}
           </button>

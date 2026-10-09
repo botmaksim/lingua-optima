@@ -58,10 +58,10 @@ class TaskControllerTest {
     @Test
     void testGetTasksAndGetById() {
         when(taskService.getTasksForUser(user)).thenReturn(List.of(taskResponse));
-        when(taskService.getTaskById(taskResponse.getId())).thenReturn(taskResponse);
+        when(taskService.getTaskById(taskResponse.getId(), user)).thenReturn(taskResponse);
 
         assertEquals(HttpStatus.OK, taskController.getTasks(user).getStatusCode());
-        assertEquals(HttpStatus.OK, taskController.getTaskById(taskResponse.getId()).getStatusCode());
+        assertEquals(HttpStatus.OK, taskController.getTaskById(taskResponse.getId(), user).getStatusCode());
     }
 
     /**

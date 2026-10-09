@@ -68,6 +68,9 @@ class TaskServiceTest {
     /** @brief Test fixture or mock dependency for curriculum storage service. */
     @Mock
     private CurriculumStorageService curriculumStorageService;
+    /** @brief Test fixture or mock dependency for submission repository. */
+    @Mock
+    private SubmissionRepository submissionRepository;
 
     /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
@@ -686,6 +689,130 @@ class TaskServiceTest {
         assertNotNull(res);
         // Verify that curriculum context was NEVER resolved because Eco Mode was active
         verify(curriculumStorageService, never()).resolvePromptCurriculumContext(any(), any(), any(), any());
+    }
+
+    @Test
+    void testAssignTaskMaxAttemptsAndEnrichTaskForUser() {
+        UUID taskId = UUID.randomUUID();
+        UUID groupId = UUID.randomUUID();
+        Task task = Task.builder()
+            .id(taskId)
+            .type(TaskType.MCQ)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Conditionals")
+            .build();
+        Group group = Group.builder()
+            .id(groupId)
+            .name("B1 Group")
+            .teacher(teacherUser)
+            .build();
+        GroupStudent gs = GroupStudent.builder()
+            .group(group)
+            .student(studentUser)
+            .isActive(true)
+            .build();
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of(gs));
+
+        // 1. Negative maxAttempts defaults to 1
+        AssignTaskRequest negReq = AssignTaskRequest.builder()
+            .groupIds(List.of(groupId))
+            .maxAttempts(-5)
+            .build();
+        taskService.assignTask(taskId, negReq, teacherUser);
+
+        // 2. Explicit 0 (unlimited) maxAttempts
+        AssignTaskRequest unlimReq = AssignTaskRequest.builder()
+            .groupIds(List.of(groupId))
+            .maxAttempts(0)
+            .build();
+        taskService.assignTask(taskId, unlimReq, teacherUser);
+
+        // 3. Enrich task when assigned by teacher, 1 attempt used out of 1, with submissions
+        UUID assignId = UUID.randomUUID();
+        UUID latestSubId = UUID.randomUUID();
+        TaskAssignment teacherAssign = TaskAssignment.builder()
+            .id(assignId)
+            .task(task)
+            .student(studentUser)
+            .assignedBy(teacherUser)
+            .dueDate(LocalDateTime.now().plusDays(2))
+            .status(AssignmentStatus.SUBMITTED)
+            .maxAttempts(1)
+            .attemptsUsed(0) // legacy submitted row with 0 attemptsUsed -> coerced to 1
+            .build();
+
+        com.linguaoptima.api.domain.Submission subOld = com.linguaoptima.api.domain.Submission.builder()
+            .id(UUID.randomUUID())
+            .submittedAt(LocalDateTime.now().minusHours(2))
+            .build();
+        com.linguaoptima.api.domain.Submission subNew = com.linguaoptima.api.domain.Submission.builder()
+            .id(latestSubId)
+            .submittedAt(LocalDateTime.now())
+            .build();
+
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentUser.getId(), taskId))
+            .thenReturn(Optional.of(teacherAssign));
+        when(submissionRepository.findByAssignmentId(assignId))
+            .thenReturn(List.of(subOld, subNew));
+
+        TaskResponse enriched = taskService.getTaskById(taskId, studentUser);
+        assertEquals(assignId, enriched.getAssignmentId());
+        assertEquals("Teacher Alice", enriched.getAssignedByName());
+        assertEquals("SUBMITTED", enriched.getAssignmentStatus());
+        assertEquals(1, enriched.getMaxAttempts());
+        assertEquals(1, enriched.getAttemptsUsed());
+        assertFalse(enriched.getCanSubmit());
+        assertEquals(latestSubId, enriched.getLatestSubmissionId());
+
+        // 4. Enrich task when assigned by self, null status, null maxAttempts, GRADED status, and unlimited attempts
+        TaskAssignment selfAssign = TaskAssignment.builder()
+            .id(assignId)
+            .task(task)
+            .student(studentUser)
+            .assignedBy(studentUser)
+            .status(AssignmentStatus.GRADED)
+            .maxAttempts(null)
+            .attemptsUsed(0)
+            .build();
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentUser.getId(), taskId))
+            .thenReturn(Optional.of(selfAssign));
+        TaskResponse enrichedGraded = taskService.getTaskById(taskId, studentUser);
+        assertNull(enrichedGraded.getAssignedByName());
+        assertEquals(1, enrichedGraded.getAttemptsUsed());
+        assertFalse(enrichedGraded.getCanSubmit());
+
+        // 5. Enrich task with null assignedBy, null status, maxAttempts = 0 (unlimited), and attemptsUsed < maxAttempts
+        TaskAssignment unlimitedAssign = TaskAssignment.builder()
+            .id(assignId)
+            .task(task)
+            .student(studentUser)
+            .assignedBy(null)
+            .status(null)
+            .maxAttempts(0)
+            .attemptsUsed(2)
+            .build();
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentUser.getId(), taskId))
+            .thenReturn(Optional.of(unlimitedAssign));
+        TaskResponse enrichedUnlimited = taskService.getTaskById(taskId, studentUser);
+        assertEquals("PENDING", enrichedUnlimited.getAssignmentStatus());
+        assertTrue(enrichedUnlimited.getCanSubmit());
+
+        TaskAssignment pendingSingle = TaskAssignment.builder()
+            .id(assignId)
+            .task(task)
+            .student(studentUser)
+            .assignedBy(teacherUser)
+            .status(AssignmentStatus.PENDING)
+            .maxAttempts(1)
+            .attemptsUsed(0)
+            .build();
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentUser.getId(), taskId))
+            .thenReturn(Optional.of(pendingSingle));
+        TaskResponse enrichedPending = taskService.getTaskById(taskId, studentUser);
+        assertTrue(enrichedPending.getCanSubmit());
     }
 }
 

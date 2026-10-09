@@ -53,6 +53,16 @@ public class TaskAssignment {
     @Builder.Default
     private AssignmentStatus status = AssignmentStatus.PENDING;
 
+    /** @brief Maximum allowed attempts for the student (1 = single attempt default, 0 = unlimited). */
+    @Column(name = "max_attempts")
+    @Builder.Default
+    private Integer maxAttempts = 1;
+
+    /** @brief Number of submission attempts already completed by the student. */
+    @Column(name = "attempts_used", nullable = false)
+    @Builder.Default
+    private int attemptsUsed = 0;
+
     /** @brief Field representing created at in TaskAssignment. */
     @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default

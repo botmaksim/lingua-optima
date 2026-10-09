@@ -57,11 +57,15 @@ public class TaskController {
      * @brief Fetches full task metadata and questions by unique identifier.
      *
      * @param taskId Unique identifier of the task.
+     * @param user Authenticated user principal (optional).
      * @return HTTP 200 with TaskResponse.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTaskById(@PathVariable("id") UUID taskId) {
-        return ResponseEntity.ok(taskService.getTaskById(taskId));
+    public ResponseEntity<TaskResponse> getTaskById(
+        @PathVariable("id") UUID taskId,
+        @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(taskService.getTaskById(taskId, user));
     }
 
     /**

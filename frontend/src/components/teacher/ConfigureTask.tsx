@@ -138,6 +138,7 @@ export const ConfigureTask: React.FC = () => {
   const difficulty: DifficultyLevel = 'MEDIUM';
   const numberOfQuestions = 5;
   const [dueDate, setDueDate] = useState<string>('');
+  const [maxAttempts, setMaxAttempts] = useState<number>(1);
   const [provider, setProvider] = useState<AIProviderType>('GEMINI');
   const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
   const { models: providerModels, isLiveSynced } = useProviderModels(provider);
@@ -371,7 +372,7 @@ export const ConfigureTask: React.FC = () => {
 
     try {
       const task = await taskApi.generateTask(buildTaskParams());
-      await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined);
+      await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined, maxAttempts);
 
       setStatusMessage('Assignment deployed successfully to selected cohort groups!');
       setTimeout(() => navigate('/teacher/dashboard'), 1500);
@@ -826,17 +827,54 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
-          {/* Due Date */}
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Submission Due Date (Optional)
-            </label>
-            <input
-              type="datetime-local"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-            />
+          {/* Due Date & Attempt Limit */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Submission Due Date (Optional)
+              </label>
+              <input
+                type="datetime-local"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                Allowed Student Attempts
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMaxAttempts(1)}
+                  className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition ${
+                    maxAttempts === 1
+                      ? 'border-primary bg-indigo-50 text-primary shadow-sm'
+                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  1 Attempt (Default)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMaxAttempts(0)}
+                  className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition ${
+                    maxAttempts === 0
+                      ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-sm'
+                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  ∞ Unlimited
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                {maxAttempts === 1
+                  ? 'Single attempt: once submitted, students view their graded results.'
+                  : 'Unlimited attempts: students can retry this assignment for practice.'}
+              </p>
+            </div>
           </div>
 
           {/* Actions */}

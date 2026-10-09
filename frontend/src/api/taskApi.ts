@@ -41,13 +41,19 @@ export const taskApi = {
   },
 
   /**
-   * @brief Assigns a task to student groups with optional due date.
+   * @brief Assigns a task to student groups with optional due date and attempt limit.
    * @param taskId Unique identifier of the task.
    * @param groupIds Array of target group IDs.
    * @param dueDate Optional ISO deadline timestamp.
+   * @param maxAttempts Maximum allowed attempts (1 = single attempt default, 0 = unlimited).
    */
-  assignTask: async (taskId: string, groupIds: string[], dueDate?: string): Promise<void> => {
-    await axiosInstance.post(`/tasks/${taskId}/assign`, { groupIds, dueDate });
+  assignTask: async (
+    taskId: string,
+    groupIds: string[],
+    dueDate?: string,
+    maxAttempts: number = 1
+  ): Promise<void> => {
+    await axiosInstance.post(`/tasks/${taskId}/assign`, { groupIds, dueDate, maxAttempts });
   },
 
   /**

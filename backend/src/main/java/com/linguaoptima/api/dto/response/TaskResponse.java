@@ -46,6 +46,23 @@ public class TaskResponse {
     private boolean isTemplate;
     /** @brief Field representing created at in TaskResponse. */
     private LocalDateTime createdAt;
+    /** @brief Optional task assignment ID for the student. */
+    private UUID assignmentId;
+    /** @brief Full name of the educator who assigned the task, if applicable. */
+    private String assignedByName;
+    /** @brief Optional submission due date for an assigned task. */
+    private LocalDateTime dueDate;
+    /** @brief Current status of the student's assignment (PENDING, SUBMITTED, GRADED). */
+    private String assignmentStatus;
+    /** @brief Maximum allowed attempts (1 = single attempt, 0 = unlimited). */
+    private Integer maxAttempts;
+    /** @brief Number of attempts used by the student so far. */
+    private Integer attemptsUsed;
+    /** @brief Identifier of the student's most recent submission for this task. */
+    private UUID latestSubmissionId;
+    /** @brief Flag indicating whether the student is allowed to submit another attempt. */
+    @Builder.Default
+    private Boolean canSubmit = true;
     /** @brief Field representing questions in TaskResponse. */
     @Builder.Default
     private List<QuestionResponse> questions = new ArrayList<>();
