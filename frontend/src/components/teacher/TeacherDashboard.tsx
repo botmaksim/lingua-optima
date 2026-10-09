@@ -33,6 +33,41 @@ export const TeacherDashboard: React.FC = () => {
 
   const totalStudents = groups.reduce((acc, g) => acc + g.studentCount, 0);
 
+  const teacherTools = [
+    {
+      title: 'Student Cohort Groups',
+      description: 'Create class groups, enroll students by email, and inspect attendance and rosters.',
+      badge: 'Cohorts',
+      icon: Users,
+      bg: 'bg-sky-50 text-sky-600',
+      action: () => navigate('/teacher/groups'),
+    },
+    {
+      title: 'AI Task Configurator',
+      description: 'Configure and assign customized exercises across A1-C2 to specific cohorts with due dates.',
+      badge: 'Assignments',
+      icon: Sparkles,
+      bg: 'bg-indigo-50 text-primary',
+      action: () => navigate('/teacher/configure'),
+    },
+    {
+      title: 'Submissions & Grading',
+      description: 'Review student homework, override AI evaluation scores, and provide custom remarks.',
+      badge: 'Grading',
+      icon: CheckCircle,
+      bg: 'bg-emerald-50 text-emerald-600',
+      action: () => navigate('/teacher/submissions'),
+    },
+    {
+      title: 'Export Academic Reports',
+      description: 'Generate diagnostic gradebooks and cohort performance summaries in PDF or CSV formats.',
+      badge: 'PDF / CSV',
+      icon: FileText,
+      bg: 'bg-amber-50 text-amber-600',
+      action: () => navigate('/teacher/export'),
+    },
+  ];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       <div className="bg-gradient-to-r from-sky-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-sky-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -92,6 +127,53 @@ export const TeacherDashboard: React.FC = () => {
             <div className="text-2xl font-black text-slate-900">AI Scoring</div>
             <p className="text-xs text-slate-500 font-medium">Auto-Evaluation Active</p>
           </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
+            <Sparkles className="w-5 h-5 text-sky-600" />
+            <span>Educator Toolkit & Modules</span>
+          </h2>
+          <span className="text-xs text-slate-400 font-medium">All educator workflows</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {teacherTools.map((tool, idx) => {
+            const Icon = tool.icon;
+            return (
+              <div
+                key={idx}
+                onClick={tool.action}
+                className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:border-sky-200 hover:shadow-md transition cursor-pointer flex flex-col justify-between group"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-11 h-11 rounded-2xl ${tool.bg} flex items-center justify-center`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                      {tool.badge}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-sky-600 transition">
+                      {tool.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      {tool.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 mt-2 border-t border-slate-50 flex items-center justify-between text-xs font-semibold text-sky-600">
+                  <span>Open Tool</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 

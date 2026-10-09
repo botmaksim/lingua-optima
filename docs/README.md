@@ -595,22 +595,22 @@ erDiagram
 | `/` | Landing | Public | Landing page |
 | `/login` | LoginPage | Public | Sign In / Registration (Email + Google OAuth2) |
 | `/forgot-password` | ForgotPassword | Public | Password reset request page |
-| `/dashboard` | Dashboard | STUDENT | Student dashboard |
-| `/generate` | GenerateTask | STUDENT | Self-service AI task generator |
-| `/task/:id` | TaskView | STUDENT | Interactive task completion view |
-| `/session/:id` | AdaptiveSession | STUDENT | Computerized Adaptive Test (CAT) runner |
-| `/ocr` | OcrSubmit | STUDENT | Handwritten homework photo upload (OCR) |
-| `/essay/:id` | EssayEditor | STUDENT | Essay writing editor |
-| `/review/:id` | AIReview | STUDENT | Detailed AI grading and feedback view |
-| `/units` | MyUnits | STUDENT | Personal task and assignment library |
-| `/progress` | Progress | STUDENT | Grammar mastery and radar chart analytics |
-| `/leaderboard/:groupId` | GroupLeaderboard | STUDENT | Intra-group weekly leaderboard |
-| `/teacher` | TeacherDashboard | TEACHER | Educator portal overview |
-| `/teacher/groups` | StudentGroups | TEACHER | Student group management |
-| `/teacher/configure` | ConfigureTask | TEACHER | AI task configuration and deployment |
+| `/student` | Dashboard | STUDENT | Student dashboard with Learning Modules & Practice Modes grid |
+| `/student/generate` | GenerateTask | STUDENT | Self-service AI task generator (A1–C2, 7 AI providers) |
+| `/student/task/:taskId` | TaskView | STUDENT | Interactive task completion view |
+| `/student/session/:assignmentId?` | AdaptiveSession | STUDENT | Computerized Adaptive Test (CAT) runner & Diagnostic Hub |
+| `/student/ocr` | OcrSubmit | STUDENT | Handwritten homework photo upload (Zero-Retention RAM OCR) |
+| `/student/essay/:taskId?` | EssayEditor | STUDENT | Essay writing studio with live word count & auto-drafting |
+| `/student/review/:submissionId` | AIReview | STUDENT | Detailed AI grading and feedback view |
+| `/student/my-units` | MyUnits | STUDENT | Personal task and assignment library |
+| `/student/progress` | Progress | STUDENT | Grammar mastery, CEFR matrix, and radar chart analytics |
+| `/student/leaderboard` | GroupLeaderboard | STUDENT | Intra-cohort weekly leaderboard |
+| `/teacher` | TeacherDashboard | TEACHER | Educator portal overview with Educator Toolkit & Modules |
+| `/teacher/groups` | StudentGroups | TEACHER | Student group/cohort management |
+| `/teacher/configure` | ConfigureTask | TEACHER | AI task configuration and cohort deployment |
 | `/teacher/submissions` | SubmissionsReview | TEACHER | Student submission review and grade override |
 | `/teacher/export` | ExportReports | TEACHER | PDF and CSV report exports |
-| `/profile` | ProfilePage | Any | User profile, password, and BYOK API key settings |
+| `/profile` | ProfilePage | Any | User profile, 1-click Role Switcher, CEFR ladder, and BYOK API keys |
 | `/subscription` | SubscriptionPage | Any | Subscription plan and quota management |
 
 ---

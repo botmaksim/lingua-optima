@@ -17,10 +17,15 @@ import {
   Users,
   FileText,
   CreditCard,
+  Camera,
+  Zap,
+  GraduationCap,
   Menu,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useAuthStore } from '../../store/authStore';
+import { authApi } from '../../api/authApi';
 import { useUsage } from '../../hooks/useUsage';
 import { useNotificationStore } from '../../store/notificationStore';
 import { useUIStore } from '../../store/uiStore';
@@ -34,6 +39,7 @@ import { formatDate } from '../../utils/formatDate';
  */
 export const Navbar: React.FC = () => {
   const { user, isStudent, isTeacher, logout } = useAuth();
+  const { setUser } = useAuthStore();
   const { remainingEvaluations, isQuotaExceeded } = useUsage();
   const { notifications, unreadCount, fetchNotifications, markAsRead } = useNotificationStore();
   const { openUpgradeWall } = useUIStore();
@@ -43,6 +49,7 @@ export const Navbar: React.FC = () => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -58,9 +65,31 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
+  /**
+   * @brief Fast role toggle directly from navbar user menu.
+   */
+  const handleQuickRoleToggle = async () => {
+    if (!user || isSwitchingRole) return;
+    setIsSwitchingRole(true);
+    const nextRole = user.role === 'TEACHER' ? 'STUDENT' : 'TEACHER';
+    try {
+      const updated = await authApi.updateProfile({ role: nextRole });
+      setUser(updated);
+      setIsUserMenuOpen(false);
+      navigate(nextRole === 'TEACHER' ? '/teacher' : '/student');
+    } catch (err) {
+      console.error('Failed to switch role:', err);
+    } finally {
+      setIsSwitchingRole(false);
+    }
+  };
+
   const studentLinks = [
     { to: '/student', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/student/generate', label: 'New Task', icon: Sparkles },
+    { to: '/student/essay', label: 'Essay Studio', icon: FileText },
+    { to: '/student/ocr', label: 'Photo OCR', icon: Camera },
+    { to: '/student/session', label: 'Adaptive CAT', icon: Zap },
     { to: '/student/my-units', label: 'My Units', icon: BookOpen },
     { to: '/student/progress', label: 'Progress', icon: BarChart3 },
     { to: '/student/leaderboard', label: 'Leaderboard', icon: Users },
@@ -182,13 +211,30 @@ export const Navbar: React.FC = () => {
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 animate-in fade-in zoom-in-95 duration-150">
                     <div className="px-3 py-2 border-b border-slate-100">
-                      <p className="text-sm font-bold text-slate-900 truncate">{user.fullName}</p>
-                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-bold text-slate-900 truncate">{user.fullName}</p>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-50 text-primary uppercase">
+                          {user.role}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500 truncate mt-0.5">{user.email}</p>
                     </div>
 
                     <div className="py-1">
+                      <button
+                        onClick={handleQuickRoleToggle}
+                        disabled={isSwitchingRole}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-indigo-700 hover:bg-indigo-50/70 font-semibold transition"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <GraduationCap className="w-4 h-4 text-primary" />
+                          <span>{user.role === 'TEACHER' ? 'Switch to Student' : 'Switch to Educator'}</span>
+                        </div>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold">1-Click</span>
+                      </button>
+
                       <Link
                         to="/profile"
                         onClick={() => setIsUserMenuOpen(false)}

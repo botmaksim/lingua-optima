@@ -47,23 +47,23 @@ frontend/
 │   │
 │   ├── components/
 │   │   ├── common/            — Shared UI components
-│   │   │   ├── Navbar.tsx     — Logo, nav links (role-based), notifications bell + counter, avatar dropdown, logout. Shows remaining evals badge
+│   │   │   ├── Navbar.tsx     — Logo, complete nav links for all student/teacher options, notifications bell + counter, avatar dropdown with 1-click instant Role Switcher (Student ⇄ Teacher), remaining daily evaluations badge
 │   │   │   ├── Footer.tsx     — Privacy Policy, Terms of Service, Help Center, © Lingua Optima
 │   │   │   ├── ProtectedRoute.tsx — Checks auth + role, redirects to /login
 │   │   │   ├── RoleGuard.tsx  — Shows different content based on STUDENT/TEACHER role
 │   │   │   ├── UpgradeWall.tsx — Modal: 'Upgrade to continue' with [Upgrade to Premium] and [Use own API key] options
 │   │   │   ├── OfflineBanner.tsx — navigator.onLine indicator in Navbar
-│   │   │   ├── CefrBadge.tsx  — Colored badge showing B1/B2/C1 level
+│   │   │   ├── CefrBadge.tsx  — Colored badge showing full CEFR scale (A1, A2, B1, B2, C1, C2)
 │   │   │   ├── LoadingSpinner.tsx
 │   │   │   ├── ErrorBoundary.tsx
 │   │   │   ├── Toast.tsx      — Notification toast component
 │   │   │   └── ConfirmDialog.tsx
 │   │   │
 │   │   ├── student/           — Student-only components
-│   │   │   ├── Dashboard.tsx          — Streak counter, CEFR progress bar, active assignments list, recent tasks, grammar gaps. Buttons: [+ Generate New Task] [Submit Homework Photo]
-│   │   │   ├── GenerateTask.tsx       — AI Provider & Model selector (7 providers + modern 2026 models), CEFR level selector, grammar topic select, domain select, task type (MCQ/Gap-fill/Rewrite/Essay), difficulty & question slider. Buttons: [Generate Task] [Clear]
+│   │   │   ├── Dashboard.tsx          — Streak counter, CEFR progress bar, Learning Modules & Practice Modes grid (AI Generator, Essay Studio, Photo OCR, Adaptive CAT, My Units, Progress), active assignments with smart essay/grammar routing, grammar gaps
+│   │   │   ├── GenerateTask.tsx       — AI Provider & Model selector (7 providers + modern 2026 models), CEFR level selector (A1-C2), grammar topic select, domain select, task type (MCQ/Gap-fill/Rewrite/Essay), difficulty & question slider. Buttons: [Generate Task] [Clear]
 │   │   │   ├── TaskView.tsx           — Task title + CEFR badge, sanitized task instructions, questions list (MCQ radio/inputs). Buttons: [Submit Answers] [Save Draft] [← Back]
-│   │   │   ├── AdaptiveSession.tsx    — Single question at a time, difficulty indicator, progress bar, answer input. Handles resume from GET /sessions/active. Buttons: [Submit Answer] [Next]
+│   │   │   ├── AdaptiveSession.tsx    — Interactive CAT Diagnostic Hub (IRT calibration guide, task picker) + In-flight CAT test runner (single question, difficulty indicator, progress bar, answer feedback). Handles resume from GET /sessions/active
 │   │   │   ├── OcrSubmit.tsx          — Drag&drop zone / [Browse File] button, image preview, hint 'deleted after processing'. Buttons: [Analyse Photo] [Clear Photo]
 │   │   │   ├── EssayEditor.tsx        — Sanitized essay prompt, CEFR target badge, textarea (min 250 words), live word counter, auto-save to localStorage every 30s. Buttons: [Submit for Scoring] [Save Draft]
 │   │   │   ├── AIReview.tsx           — Original text (strikethrough red), corrected text (green highlights), tags [Rule] [Level] [Domain], essay rubric breakdown (TA/Coherence/LR/GR out of 10), overall score. Buttons: [Save to My Units] [Try Another Task] [Share Result]
@@ -73,7 +73,7 @@ frontend/
 │   │   │   └── LevelUpModal.tsx       — Dynamic progression modal across all 6 levels (A1→A2→B1→B2→C1→C2) with [Yes, level up] [Stay on current level] buttons
 │   │   │
 │   │   ├── teacher/           — Teacher-only components
-│   │   │   ├── TeacherDashboard.tsx   — Group summary (avg score, activity), top-5 weak topics, class progress chart, recent submissions awaiting override. Buttons: [+ Create Group] [+ Configure Task] [View All Submissions]
+│   │   │   ├── TeacherDashboard.tsx   — Educator Command Center: summary stats, Educator Toolkit & Modules grid (Cohorts, Configurator, Submissions, Reports), student groups list with quick actions
 │   │   │   ├── StudentGroups.tsx      — Group list (name, student count). Per group: student cards (name, avg score). Buttons: [+ New Group] [+ Add Student by Email] [Remove Student] [Delete Group]
 │   │   │   ├── ConfigureTask.tsx      — AI Provider & Model selector, task type, CEFR, grammar topic, domain, target group selector (multi), due date picker. Buttons: [Preview] [Deploy to Students] [Save Template]
 │   │   │   ├── SubmissionsReview.tsx  — Filters: Group/Student/Task/Status. Table: Student|Task|AI Score|Status. Expandable row: AI feedback + student answer. Buttons per row: [Override Score] [Approve AI Grade] [Add Teacher Comment]

@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Sparkles, Camera, ArrowRight, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Flame, Sparkles, Camera, ArrowRight, AlertCircle, CheckCircle, Clock, Zap, FileText, BookOpen, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { taskApi } from '../../api/taskApi';
 import { progressApi } from '../../api/progressApi';
@@ -55,6 +55,63 @@ export const Dashboard: React.FC = () => {
     return <LoadingSpinner size="lg" message="Loading your personalized dashboard..." />;
   }
 
+  const learningModules = [
+    {
+      title: 'AI Task Generator',
+      description: 'Generate customized exercises (MCQ, Fill-in-blanks) across A1-C2 with instant hints.',
+      badge: 'Interactive',
+      icon: Sparkles,
+      color: 'from-indigo-500 to-primary text-primary',
+      bgLight: 'bg-indigo-50/70',
+      action: () => navigate('/student/generate'),
+    },
+    {
+      title: 'Essay Studio',
+      description: 'Write academic essays evaluated by IELTS rubrics (Task, Coherence, Lexicon, Grammar).',
+      badge: 'IELTS Rubric',
+      icon: FileText,
+      color: 'from-sky-500 to-indigo-600 text-sky-600',
+      bgLight: 'bg-sky-50/70',
+      action: () => navigate('/student/essay'),
+    },
+    {
+      title: 'Photo Homework OCR',
+      description: 'Photograph handwritten homework. Zero-retention RAM OCR extracts text privately.',
+      badge: 'Zero-Retention',
+      icon: Camera,
+      color: 'from-emerald-500 to-teal-600 text-emerald-600',
+      bgLight: 'bg-emerald-50/70',
+      action: () => navigate('/student/ocr'),
+    },
+    {
+      title: 'Adaptive CAT Testing',
+      description: 'Computerized adaptive testing with dynamic difficulty (IRT) to pinpoint CEFR boundaries.',
+      badge: 'Dynamic IRT',
+      icon: Zap,
+      color: 'from-amber-500 to-orange-600 text-amber-600',
+      bgLight: 'bg-amber-50/70',
+      action: () => navigate('/student/session'),
+    },
+    {
+      title: 'My Units & Archive',
+      description: 'Search and review all your past exercises, AI grading comments, and teacher feedback.',
+      badge: 'History',
+      icon: BookOpen,
+      color: 'from-purple-500 to-indigo-600 text-purple-600',
+      bgLight: 'bg-purple-50/70',
+      action: () => navigate('/student/my-units'),
+    },
+    {
+      title: 'Grammar Mastery & Progress',
+      description: 'Examine your CEFR mastery breakdown, detect weak grammar topics, and view streaks.',
+      badge: 'Analytics',
+      icon: BarChart3,
+      color: 'from-rose-500 to-pink-600 text-rose-600',
+      bgLight: 'bg-rose-50/70',
+      action: () => navigate('/student/progress'),
+    },
+  ];
+
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {user?.levelUpSuggestedAt && <LevelUpModal />}
@@ -68,7 +125,7 @@ export const Dashboard: React.FC = () => {
             {user?.cefrLevel && <CefrBadge level={user.cefrLevel} size="md" className="bg-white/20 text-white border-white/30" />}
           </div>
           <p className="text-indigo-100 text-sm max-w-xl">
-            Continue your adaptive learning journey. Practice targeted exercises or upload handwritten homework for instant AI feedback.
+            Continue your adaptive learning journey across the full CEFR A1-C2 ladder. Practice targeted exercises or upload handwritten homework for instant AI feedback.
           </p>
         </div>
 
@@ -107,13 +164,13 @@ export const Dashboard: React.FC = () => {
             {user?.cefrLevel && <CefrBadge level={user.cefrLevel} size="sm" />}
           </div>
           <div className="text-xl font-bold text-slate-900 mb-1">
-            Level {user?.cefrLevel || 'B1'} Mastered
+            Level {user?.cefrLevel || 'A1'} Active
           </div>
           <div className="w-full bg-slate-100 rounded-full h-2 mt-3">
             <div
               className="bg-primary h-2 rounded-full transition-all duration-500"
               style={{
-                width: user?.cefrLevel === 'C1' ? '100%' : user?.cefrLevel === 'B2' ? '65%' : '35%',
+                width: user?.cefrLevel === 'C2' ? '100%' : user?.cefrLevel === 'C1' ? '85%' : user?.cefrLevel === 'B2' ? '65%' : user?.cefrLevel === 'B1' ? '45%' : user?.cefrLevel === 'A2' ? '30%' : '15%',
               }}
             />
           </div>
@@ -127,6 +184,53 @@ export const Dashboard: React.FC = () => {
             <div className="text-2xl font-black text-slate-900">{gaps.length} Topics</div>
             <p className="text-xs text-slate-500 font-medium">Areas Needing Attention (&lt;60%)</p>
           </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
+            <Sparkles className="w-5 h-5 text-indigo-500" />
+            <span>Learning Modules & Practice Modes</span>
+          </h2>
+          <span className="text-xs text-slate-400 font-medium">Choose a practice mode</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {learningModules.map((mod, idx) => {
+            const Icon = mod.icon;
+            return (
+              <div
+                key={idx}
+                onClick={mod.action}
+                className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition cursor-pointer flex flex-col justify-between group"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-11 h-11 rounded-2xl ${mod.bgLight} flex items-center justify-center`}>
+                      <Icon className={`w-5 h-5 ${mod.color.split(' ').pop()}`} />
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                      {mod.badge}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 group-hover:text-primary transition">
+                      {mod.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                      {mod.description}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="pt-4 mt-2 border-t border-slate-50 flex items-center justify-between text-xs font-semibold text-primary">
+                  <span>Open Module</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition" />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -161,7 +265,13 @@ export const Dashboard: React.FC = () => {
               tasks.slice(0, 5).map((task) => (
                 <div
                   key={task.id}
-                  onClick={() => navigate(`/student/task/${task.id}`)}
+                  onClick={() => {
+                    if (task.type === 'ESSAY') {
+                      navigate(`/student/essay/${task.id}`);
+                    } else {
+                      navigate(`/student/task/${task.id}`);
+                    }
+                  }}
                   className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition cursor-pointer flex items-center justify-between group"
                 >
                   <div className="space-y-1">
