@@ -36,7 +36,7 @@ interface Window {
   /** @brief Optional Google Identity Services namespace injected by accounts.google.com/gsi/client. */
   google?: {
     /** @brief Google accounts API container. */
-    accounts: {
+    accounts?: {
       /** @brief Google Identity Services ID token API. */
       id: {
         /** @brief Initializes the Google ID client with client ID and credential callback. */
@@ -48,6 +48,12 @@ interface Window {
         prompt: () => void;
       };
     };
+    /** @brief Google Translate element API. */
+    translate?: any;
   };
+  /** @brief Google translate initialization callback. */
+  googleTranslateElementInit?: () => void;
+  /** @brief Yandex translate widget namespace. */
+  ya?: any;
 }
 

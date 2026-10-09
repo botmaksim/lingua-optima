@@ -39,3 +39,24 @@ code, pre {
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
+
+/* External Google and Yandex Translate overlay styling */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+.goog-tooltip,
+#goog-gt-tt {
+  display: none !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}

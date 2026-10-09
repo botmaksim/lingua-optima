@@ -32,6 +32,7 @@ import { useNotificationStore } from '../../store/notificationStore';
 import { useUIStore } from '../../store/uiStore';
 import { CefrBadge } from './CefrBadge';
 import { OfflineBanner } from './OfflineBanner';
+import { TranslatorDropdown } from './TranslatorDropdown';
 import { formatDate } from '../../utils/formatDate';
 
 /**
@@ -250,7 +251,8 @@ export const Navbar: React.FC = () => {
           </div>
 
           {user ? (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <TranslatorDropdown />
               <button
                 onClick={() => isQuotaExceeded && openUpgradeWall()}
                 className={`hidden sm:flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition ${
@@ -382,7 +384,8 @@ export const Navbar: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <TranslatorDropdown />
               <Link
                 to="/login"
                 className="text-sm font-semibold text-slate-700 hover:text-primary transition px-3 py-2"

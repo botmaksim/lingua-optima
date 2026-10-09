@@ -13,6 +13,7 @@ Comprehensive documentation for the frontend application of **Lingua Optima** �
 5. **Real-Time Notifications:** Uses Server-Sent Events (SSE) to receive live notifications in real time.
 6. **Strictly Scoped `localStorage` Usage:** Used exclusively for essay drafts (auto-saved every 30 seconds), non-sensitive UI preferences, and storing the last selected CEFR level.
 7. **2-Step Email Registration:** When registering via email and password, the interface enforces a 2-step flow. First, user details are submitted to dispatch a 6-digit confirmation code via Gmail SMTP; second, the user enters the received code with a 60-second resend cooldown timer to complete account creation. Google OAuth2 registration provides seamless 1-click onboarding.
+8. **External Automated Translation Widget:** To avoid bloated or incomplete hardcoded translation dictionaries, a global `TranslatorDropdown` component in the Navbar enables on-page translation via official Google Translate and Yandex Translate widgets (with full language picker, RU/ES/DE/FR/ZH/AR/TR support, web proxy fallback links, and 1-click reversion back to original English).
 
 ## Complete File Structure
 
@@ -27,7 +28,7 @@ frontend/
 │   ├── main.tsx               — Entry point, React root
 │   ├── App.tsx                — Router setup, layout wrapper
 │   ├── vite-env.d.ts
-│   ├── index.css              — Tailwind imports + CSS variables
+│   ├── index.css              — Tailwind imports + CSS variables + translation overlay rules
 │   │
 │   ├── constants/             — Shared application constants
 │   │   └── aiModels.ts        — Up-to-date 2026 AI provider and model catalog (DeepSeek, Qwen, Kimi, Gemini, Groq, OpenAI, Anthropic)
@@ -48,7 +49,8 @@ frontend/
 │   │
 │   ├── components/
 │   │   ├── common/            — Shared UI components
-│   │   │   ├── Navbar.tsx     — Logo, streamlined primary navigation links + compact "More ▾" dropdown for secondary learning tools & educator actions, notifications bell + counter, avatar dropdown with 1-click instant Role Switcher (Student ⇄ Teacher), remaining daily evaluations badge
+│   │   │   ├── Navbar.tsx     — Logo, streamlined primary navigation links + compact "More ▾" dropdown for secondary learning tools & educator actions, notifications bell + counter, avatar dropdown with 1-click instant Role Switcher (Student ⇄ Teacher), remaining daily evaluations badge, and global TranslatorDropdown
+│   │   │   ├── TranslatorDropdown.tsx — Automated website translation menu integrating official Google Translate and Yandex Translate widgets with failover web proxies and English revert
 │   │   │   ├── Footer.tsx     — Privacy Policy, Terms of Service, Help Center, © Lingua Optima
 │   │   │   ├── ProtectedRoute.tsx — Checks auth + role, redirects to /login
 │   │   │   ├── RoleGuard.tsx  — Shows different content based on STUDENT/TEACHER role

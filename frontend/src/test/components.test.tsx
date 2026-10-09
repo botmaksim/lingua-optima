@@ -9,6 +9,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { Toast } from '../components/common/Toast';
 import { LoginPage } from '../components/auth/LoginPage';
+import { TranslatorDropdown } from '../components/common/TranslatorDropdown';
 import { useAuthStore } from '../store/authStore';
 
 describe('CefrBadge component', () => {
@@ -62,3 +63,22 @@ describe('LoginPage component', () => {
   });
 });
 
+describe('TranslatorDropdown component', () => {
+  it('renders dropdown toggle button with globe icon', () => {
+    render(<TranslatorDropdown />);
+    const button = screen.getByRole('button', { name: /translate page/i });
+    expect(button).toBeInTheDocument();
+    expect(screen.getByText('Translate')).toBeInTheDocument();
+  });
+
+  it('opens translation menu and displays Google and Yandex options', () => {
+    render(<TranslatorDropdown />);
+    const button = screen.getByRole('button', { name: /translate page/i });
+    fireEvent.click(button);
+
+    expect(screen.getByText('Translate Webpage')).toBeInTheDocument();
+    expect(screen.getByText('Google Translate')).toBeInTheDocument();
+    expect(screen.getByText('Yandex Translate')).toBeInTheDocument();
+    expect(screen.getAllByText(/Russian \(RU\)/i)).toHaveLength(2);
+  });
+});
