@@ -230,7 +230,7 @@ export const ProfilePage: React.FC = () => {
                     : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                 }`}>
                   {user.role === 'TEACHER' ? <School className="w-3 h-3 mr-1" /> : <GraduationCap className="w-3 h-3 mr-1" />}
-                  Role: {user.role === 'TEACHER' ? 'Educator (Преподаватель)' : 'Student (Ученик)'}
+                  Role: {user.role === 'TEACHER' ? 'Educator / Teacher' : 'Student / Learner'}
                 </span>
               </div>
             </div>
@@ -322,32 +322,32 @@ export const ProfilePage: React.FC = () => {
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
             <h4 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
               <School className="w-4 h-4 text-purple-600" />
-              <span>Роли и создание групп (Когорт)</span>
+              <span>Roles & Student Cohort Management</span>
             </h4>
             <p className="leading-relaxed">
-              • <strong>Смена роли:</strong> Любой пользователь может в один клик переключаться между режимами «Ученик» и «Преподаватель» выше.
+              • <strong>Role Switching:</strong> Any user can toggle between Student and Educator mode with a single click using the switch above.
             </p>
             <p className="leading-relaxed">
-              • <strong>Создание групп:</strong> Перейдите во вкладку <a href="/groups" className="text-primary font-bold hover:underline">Когорты (/groups)</a>, нажмите «Создать когорту», введите название (например, «IELTS 2026 Group A»).
+              • <strong>Creating Cohorts:</strong> Navigate to <a href="/groups" className="text-primary font-bold hover:underline">Cohorts (/groups)</a>, click "Create Cohort", and enter a class name (e.g. "IELTS 2026 Group A").
             </p>
             <p className="leading-relaxed">
-              • <strong>Назначение заданий:</strong> В конструкторе заданий выберите созданную когорту и нажмите «Deploy Task». Все студенты группы получат домашнее задание с дедлайном.
+              • <strong>Deploying Tasks:</strong> In the Task Configurator, select your target cohort and click "Deploy Task". All enrolled students will receive the assignment with deadline tracking.
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
             <h4 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>Шкала CEFR и стартовый уровень</span>
+              <span>CEFR Ladder & Placement</span>
             </h4>
             <p className="leading-relaxed">
-              • <strong>Полная шкала 6 уровней:</strong> A1 (Beginner) → A2 (Elementary) → B1 (Intermediate) → B2 (Upper-Intermediate) → C1 (Advanced) → C2 (Mastery).
+              • <strong>Complete 6-Level Scale:</strong> A1 (Beginner) → A2 (Elementary) → B1 (Intermediate) → B2 (Upper-Intermediate) → C1 (Advanced) → C2 (Mastery).
             </p>
             <p className="leading-relaxed">
-              • <strong>Почему A1 по умолчанию:</strong> Изначально платформа ориентировалась на экзамены уровня B1-C1. Теперь поддерживается полный путь с нуля (A1) с отдельным банком грамматических тем на каждом уровне.
+              • <strong>Adaptive Curriculum:</strong> The syllabus provides dedicated grammar topics across all proficiencies, from foundational A1 structures to C2 native-level discourse.
             </p>
             <p className="leading-relaxed">
-              • <strong>Level Up:</strong> При достижении &gt;85% мастерства по &gt;80% тем уровня система предложит продвижение на следующий уровень. Вы также можете переключить уровень вручную в любой момент.
+              • <strong>Automated Level-Up:</strong> Reaching &gt;85% mastery across &gt;80% of current syllabus topics triggers an automated promotion prompt. You can also adjust your target level manually at any time.
             </p>
           </div>
         </div>
