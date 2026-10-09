@@ -18,7 +18,7 @@ import {
   AI_PROVIDER_CATALOG,
   AIProviderType,
   getDefaultModelForProvider,
-  getModelsForProvider,
+  useProviderModels,
 } from '../../constants/aiModels';
 
 /**
@@ -39,6 +39,7 @@ export const ConfigureTask: React.FC = () => {
   const [dueDate, setDueDate] = useState<string>('');
   const [provider, setProvider] = useState<AIProviderType>('GEMINI');
   const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
+  const { models: providerModels, isLiveSynced } = useProviderModels(provider);
   const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
 
   const [previewTask, setPreviewTask] = useState<Task | null>(null);
@@ -223,15 +224,20 @@ export const ConfigureTask: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  AI Model
+                <label className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase mb-1">
+                  <span>AI Model</span>
+                  {isLiveSynced && (
+                    <span className="text-[10px] font-semibold text-emerald-600 lowercase">
+                      ● live vendor sync
+                    </span>
+                  )}
                 </label>
                 <select
                   value={modelName}
                   onChange={(e) => setModelName(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 font-medium text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                 >
-                  {getModelsForProvider(provider).map((m) => (
+                  {providerModels.map((m) => (
                     <option key={m.id} value={m.id}>
                       {m.label} ({m.badge})
                     </option>

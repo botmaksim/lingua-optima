@@ -1,6 +1,6 @@
 # 📚 Lingua Optima — Adaptive AI-Powered English Mastery Platform
 
-> **An interactive platform for mastering the English language (CEFR B1–C1)** featuring AI-driven task generation (Groq Llama 3.3 70B & Llama 4), essay evaluation aligned with IELTS/CEFR rubrics (Google Gemini 2.5 Flash & 3.0 Flash), multi-provider & multi-model BYOK routing (DeepSeek V3.2/R1, Alibaba Qwen 3, Moonshot Kimi K2, OpenAI GPT-5, Anthropic Claude Sonnet 4.6), handwritten homework recognition (Zero-Retention Tesseract OCR), and Computerized Adaptive Testing (CAT).
+> **An interactive platform for mastering the English language (CEFR B1–C1)** featuring AI-driven task generation (Groq Qwen 3.8 27B, GPT-OSS 120B & Llama 4), essay evaluation aligned with IELTS/CEFR rubrics (Google Gemini 3.8 Flash & Extended Thinking), multi-provider & multi-model BYOK routing with live vendor model synchronization (DeepSeek V4.1 Flash / V4 Pro, Alibaba Qwen 3.8 Max, Moonshot Kimi K3, OpenAI GPT-6 Astra / 6.1 Sol, Anthropic Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5), handwritten homework recognition (Zero-Retention Tesseract OCR), and Computerized Adaptive Testing (CAT).
 
 ---
 
@@ -16,8 +16,8 @@
 | **Master Architecture Overview** | [`docs/README.md`](./docs/README.md) | Full system specification, database ERD, complete REST API reference table, security architecture, and Redis key spaces |
 | **Backend Specification** | [`docs/BACKEND.md`](./docs/BACKEND.md) | Java 21 / Spring Boot 3 architecture, all controllers, services, repositories, DTOs, database migrations, and error handling |
 | **Frontend Specification** | [`docs/FRONTEND.md`](./docs/FRONTEND.md) | React 18 + TypeScript + Vite PWA architecture, components, Zustand stores, custom hooks, and routing |
-| **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Provider & model selection, Cloudflare Edge reverse-proxy, fallback chain (BYOK → Groq → Gemini), prompt leak sanitization, Zero-Retention RAM OCR pipeline, and CAT algorithm |
-| **Cloudflare Edge AI Proxy** | [`cloudflare-proxy/README.md`](./cloudflare-proxy/README.md) | Cloudflare Worker (`worker.js` / `ai-proxy.mybsu.online`) reverse-proxy architecture, route mapping for all 7 AI providers, and deployment guide |
+| **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Provider & model selection, live vendor model sync (`/models/:provider`), Cloudflare Edge reverse-proxy, fallback chain, prompt leak sanitization, Zero-Retention RAM OCR pipeline, and CAT algorithm |
+| **Cloudflare Edge AI Proxy** | [`cloudflare-proxy/README.md`](./cloudflare-proxy/README.md) | Cloudflare Worker (`worker.js` / `ai-proxy.mybsu.online`) reverse-proxy architecture, live vendor docs model scraper, route mapping for all 7 AI providers, and deployment guide |
 | **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, multi-stage Dockerfiles, Nginx, Cloudflare Tunnel & Edge Worker topology, GitHub Actions CI/CD, and `.env` configuration |
 | **Interactive Presentation** | [`docs/presentation.html`](./docs/presentation.html) | Interactive Pitch Deck and visual architecture walkthrough (opens directly in any browser) |
 | **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Automatically generated Doxygen documentation covering all packages, classes, methods, and types |
@@ -28,7 +28,7 @@
 ## 🚀 Core Capabilities & Architectural Principles
 
 1. **6 Core Modules**:
-   - **Self-Service Task Generator** — AI generation of exercises (`MCQ`, `GAP_FILL`, `REWRITE`, `ESSAY`) across 36 CEFR grammar topics (B1, B2, C1) with per-task **AI Provider & Model Selection** (DeepSeek V3.2/R1, Qwen 3 235B/QwQ, Kimi K2, Gemini 2.5/3.0, Groq Llama 3.3/4, GPT-5/4.1, Claude Sonnet/Opus 4.6).
+   - **Self-Service Task Generator** — AI generation of exercises (`MCQ`, `GAP_FILL`, `REWRITE`, `ESSAY`) across 36 CEFR grammar topics (B1, B2, C1) with per-task **AI Provider & Model Selection** synced live from vendor websites (DeepSeek V4.1 Flash / V4 Pro, Qwen 3.8 Max / Flash, Kimi K3 / K2.7, Gemini 3.8 Flash / Extended Thinking, Groq Qwen 3.8 27B / GPT-OSS 120B / Llama 4, GPT-6 Astra / 6.1 Sol / Luna, Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5).
    - **Zero-Retention Homework OCR** — handwritten homework photo recognition processed strictly in RAM with immediate byte-array zeroing (`Arrays.fill(bytes, (byte) 0)`).
    - **AI Essay Scoring** — automated essay grading across 4 rubric criteria (*Task Achievement*, *Coherence & Cohesion*, *Lexical Resource*, *Grammatical Range & Accuracy*).
    - **Computerized Adaptive Testing (CAT)** — real-time question difficulty adjustment (scale 1–5) and difficulty-weighted mastery score calculation.
@@ -39,7 +39,7 @@
    - **Dual Authentication (Email + Google OAuth2)** — supports classic email and password sign-in/registration (`POST /api/auth/login`, `POST /api/auth/register`) as well as one-click sign-in via **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) with ID token verification (`email_verified`, `aud`) via the Google `tokeninfo` API and automatic profile provisioning on first login.
    - **In-Memory Access JWT (15 min)** + **HttpOnly Strict Refresh Cookie (30 days)** backed by SHA-256 session token hashes in Redis.
    - **AES-256-GCM Encryption & Multi-Model BYOK** for user-supplied API keys (`provider` + `model_name`, 12-byte random IV + 128-bit authentication tag).
-   - **Cloudflare Edge AI Reverse-Proxy & Geo-Unrestricted Routing** (`cloudflare-proxy/worker.js`) — routes Western AI API traffic through Cloudflare Edge (`*_BASE_URL`) to bypass regional GeoIP restrictions while supporting direct low-latency Chinese providers (`DEEPSEEK`, `QWEN`, `KIMI`).
+   - **Cloudflare Edge AI Reverse-Proxy & Live Vendor Model Sync** (`cloudflare-proxy/worker.js` at `https://ai-proxy.mybsu.online`) — routes Western AI API traffic through Cloudflare Edge (`*_BASE_URL`) to bypass regional GeoIP restrictions, supports direct low-latency Chinese providers (`DEEPSEEK`, `QWEN`, `KIMI`), and dynamically scrapes official vendor documentation (`/models/:provider`) so the UI always displays the latest models.
    - **Strict AI Prompt Sanitization** (`TaskService`, `ScoringService`, `textSanitizer.ts`) — prevents internal system instructions or rubric prompts from ever leaking into student-facing task content or feedback.
    - **Private Group Leaderboard** — no global public leaderboard; rankings are computed strictly within a teacher's student group using anonymized aliases (`displayAlias`).
    - **Soft Delete in Groups** (`is_active = false`, `removed_at`) — when a student is removed from a group, their past submissions are hidden from the teacher, and if re-added later, their historical submissions are seamlessly restored.

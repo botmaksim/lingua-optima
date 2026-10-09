@@ -8,8 +8,9 @@ Cloudflare Worker исполняется на глобальной сети Clou
 
 ## 🎯 Поддерживаемые маршруты
 
-| Маршрут прокси | Целевой оригинальный API | Переменная в `.env` |
+| Маршрут прокси | Целевой оригинальный API / Функция | Переменная в `.env` / Использование |
 | :--- | :--- | :--- |
+| `https://ai-proxy.mybsu.online/models/:provider` | **Live-парсинг актуальных моделей с сайтов компаний** (`ai.google.dev`, `console.groq.com`, `docs.anthropic.com`, `api-docs.deepseek.com` и др.) | Используется фронтендом (`useProviderModels`) для автообновления списка моделей |
 | `https://<твой-домен>/groq/*` | `https://api.groq.com/*` | `GROQ_BASE_URL=https://<твой-домен>/groq/openai/v1` |
 | `https://<твой-домен>/gemini/*` | `https://generativelanguage.googleapis.com/*` | `GEMINI_BASE_URL=https://<твой-домен>/gemini` |
 | `https://<твой-домен>/openai/*` | `https://api.openai.com/*` | `OPENAI_BASE_URL=https://<твой-домен>/openai/v1` |

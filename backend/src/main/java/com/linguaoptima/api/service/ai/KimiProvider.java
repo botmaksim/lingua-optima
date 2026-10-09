@@ -1,6 +1,6 @@
 /**
  * @file KimiProvider.java
- * @brief Moonshot AI Kimi API provider integration supporting BYOK user keys and moonshot-v1-8k inference.
+ * @brief Moonshot AI Kimi API provider integration supporting BYOK user keys and Kimi K3 / K2.7 inference.
  */
 package com.linguaoptima.api.service.ai;
 
@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @brief Moonshot AI Kimi API provider integration supporting BYOK user keys and Kimi K2 / 128k inference.
+ * @brief Moonshot AI Kimi API provider integration supporting BYOK user keys and Kimi K3 / K2.7 inference.
  */
 @Component
 public class KimiProvider implements AIProvider {
 
     /** @brief Default Kimi model identifier. */
-    public static final String DEFAULT_MODEL = "kimi-k2-0711-preview";
+    public static final String DEFAULT_MODEL = "kimi-k3";
 
     /** @brief Field representing api key in KimiProvider. */
     private final String apiKey;

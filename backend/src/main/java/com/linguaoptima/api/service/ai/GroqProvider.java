@@ -1,6 +1,6 @@
 /**
  * @file GroqProvider.java
- * @brief Ultra-low-latency Groq LPU inference provider using Llama 3.1 models.
+ * @brief Ultra-low-latency Groq LPU inference provider using Qwen 3.8 27B, GPT-OSS 120B, and Llama 4 models.
  */
 package com.linguaoptima.api.service.ai;
 
@@ -18,14 +18,14 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @brief Ultra-low-latency Groq LPU inference provider using Llama 3.3 / Llama 4 models.
+ * @brief Ultra-low-latency Groq LPU inference provider using Qwen 3.8 27B, GPT-OSS 120B, and Llama 4 models.
  */
 @Slf4j
 @Component
 public class GroqProvider implements AIProvider {
 
     /** @brief Default Groq model identifier. */
-    public static final String DEFAULT_MODEL = "llama-3.3-70b-versatile";
+    public static final String DEFAULT_MODEL = "qwen/qwen3.8-27b";
 
     /** @brief Field representing api key in GroqProvider. */
     private final String apiKey;

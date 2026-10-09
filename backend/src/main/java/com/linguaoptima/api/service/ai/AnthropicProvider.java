@@ -1,6 +1,6 @@
 /**
  * @file AnthropicProvider.java
- * @brief Anthropic Claude API provider integration supporting BYOK user keys and claude-3-5-sonnet.
+ * @brief Anthropic Claude API provider integration supporting BYOK user keys and Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5 inference.
  */
 package com.linguaoptima.api.service.ai;
 
@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @brief Anthropic Claude API provider integration supporting BYOK user keys and Claude 4.6 / 3.7 inference.
+ * @brief Anthropic Claude API provider integration supporting BYOK user keys and Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5 inference.
  */
 @Component
 public class AnthropicProvider implements AIProvider {
 
     /** @brief Default Anthropic model identifier. */
-    public static final String DEFAULT_MODEL = "claude-sonnet-4-6";
+    public static final String DEFAULT_MODEL = "claude-sonnet-5-5";
 
     /** @brief Field representing api key in AnthropicProvider. */
     private final String apiKey;

@@ -13,7 +13,7 @@ import {
   AI_PROVIDER_CATALOG,
   AIProviderType,
   getDefaultModelForProvider,
-  getModelsForProvider,
+  useProviderModels,
 } from '../constants/aiModels';
 
 /**
@@ -27,6 +27,7 @@ export const ProfilePage: React.FC = () => {
 
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType>('DEEPSEEK');
   const [selectedModel, setSelectedModel] = useState<string>(getDefaultModelForProvider('DEEPSEEK'));
+  const { models: providerModels, isLiveSynced } = useProviderModels(selectedProvider);
   const [rawKey, setRawKey] = useState('');
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keyMessage, setKeyMessage] = useState<string | null>(null);
@@ -168,15 +169,20 @@ export const ProfilePage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
-                AI Model
+              <label className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase mb-1">
+                <span>AI Model</span>
+                {isLiveSynced && (
+                  <span className="text-[10px] font-semibold text-emerald-600 lowercase">
+                    ● live vendor sync
+                  </span>
+                )}
               </label>
               <select
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
-                {getModelsForProvider(selectedProvider).map((m) => (
+                {providerModels.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.label} — {m.badge}
                   </option>

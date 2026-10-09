@@ -1,6 +1,6 @@
 /**
  * @file DeepSeekProvider.java
- * @brief DeepSeek API provider integration supporting BYOK user keys and deepseek-chat (DeepSeek-V3) inference.
+ * @brief DeepSeek API provider integration supporting BYOK user keys and DeepSeek V4.1 Flash / V4 Pro inference.
  */
 package com.linguaoptima.api.service.ai;
 
@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @brief DeepSeek API provider integration supporting BYOK user keys and DeepSeek-V3.2 / R1 inference.
+ * @brief DeepSeek API provider integration supporting BYOK user keys and DeepSeek V4.1 Flash / V4 Pro inference.
  */
 @Component
 public class DeepSeekProvider implements AIProvider {
 
     /** @brief Default DeepSeek model identifier. */
-    public static final String DEFAULT_MODEL = "deepseek-chat";
+    public static final String DEFAULT_MODEL = "deepseek-flash";
 
     /** @brief Field representing api key in DeepSeekProvider. */
     private final String apiKey;

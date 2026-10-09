@@ -676,12 +676,12 @@ flowchart TD
 
 | Task | Primary Provider | Free-Tier Limit | Fallback Chain |
 |---|---|---|---|
-| Task Generation | Groq (Llama 3.3 70B / Llama 4, proxied via Cloudflare) | 14,400 req/day | → Gemini → retry → queue |
-| Essay Scoring | Gemini 2.5 Flash / 3.0 Flash (direct or proxied) | 1,500 req/day | → Groq → retry → queue |
+| Task Generation | Groq (Qwen 3.8 27B / GPT-OSS 120B / Llama 4, proxied via Cloudflare) | 14,400 req/day | → Gemini → retry → queue |
+| Essay Scoring | Gemini 3.8 Flash / 3.8 Extended Thinking (proxied via Cloudflare) | 1,500 req/day | → Groq → retry → queue |
 | Homework OCR | Tesseract (tess4j, local in-memory) | Unlimited | `OcrException` → HTTP 422 |
-| User's Own Key (BYOK & Model Selector) | **7 Providers + Multi-Model Selection**:<br/>• OpenAI (GPT-5, GPT-4.1, o4-mini, o3)<br/>• Anthropic (Claude Sonnet 4.6, Opus 4.6)<br/>• DeepSeek (V3.2 / R1 - no geo-block)<br/>• Alibaba Qwen (Qwen 3 235B / QwQ Plus - no geo-block)<br/>• Moonshot Kimi (Kimi K2 / Thinking - no geo-block)<br/>• Groq (Llama 3.3 70B / Llama 4)<br/>• Gemini (2.5 Flash / 2.5 Pro / 3.0) | Per user's plan | Key failure → HTTP 402 |
+| User's Own Key (BYOK & Live Model Selector) | **7 Providers + Live Vendor Model Sync (`/models/:provider`)**:<br/>• Google Gemini (`gemini-3.8-flash`, `gemini-3.8-live-extended-thinking`, `gemini-3.7-flash`, `gemini-3.6-flash`)<br/>• OpenAI (`gpt-6-astra`, `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-sol`, `o4-mini`)<br/>• Anthropic (`claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`)<br/>• DeepSeek (`deepseek-flash` V4.1, `deepseek-v4-pro` - no geo-block)<br/>• Alibaba Qwen (`qwen3.8-max`, `qwen3.8-flash`, `qwen3.8-27b` - no geo-block)<br/>• Moonshot Kimi (`kimi-k3`, `kimi-k2.7-code` - no geo-block)<br/>• Groq (`qwen/qwen3.8-27b`, `openai/gpt-oss-120b`, `llama-4-maverick`) | Per user's plan | Key failure → HTTP 402 |
 
-> 🌐 **Cloudflare Edge AI Proxy**: To bypass regional IP restrictions (e.g. Cloudflare GeoIP blocks affecting Groq or regional bans in RU/BY), all outgoing AI requests can be routed through an edge reverse-proxy (`ai-proxy.mybsu.online` or `*.workers.dev`) defined in `cloudflare-proxy/worker.js`. Parameters are fully configurable via `.env` (`GROQ_BASE_URL`, `DEEPSEEK_BASE_URL`, etc.). Chinese providers (DeepSeek, Qwen, Kimi) work directly without restrictions.
+> 🌐 **Cloudflare Edge AI Proxy & Live Model Sync**: To bypass regional IP restrictions (e.g. Cloudflare GeoIP blocks affecting Groq or regional bans in RU/BY) and keep model lists up to date with official vendor documentation, all outgoing AI requests and model catalog lookups (`/models/:provider`) are routed through our Cloudflare Worker (`https://ai-proxy.mybsu.online`, `cloudflare-proxy/worker.js`). Chinese providers (DeepSeek, Qwen, Kimi) work directly without restrictions.
 
 ### Fallback Chain
 

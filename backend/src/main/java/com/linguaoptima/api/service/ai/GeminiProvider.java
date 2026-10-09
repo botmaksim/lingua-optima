@@ -1,6 +1,6 @@
 /**
  * @file GeminiProvider.java
- * @brief Google Gemini API provider utilizing gemini-1.5-flash for essay evaluations and fallback generation.
+ * @brief Google Gemini API provider utilizing Gemini 3.8 Flash and Gemini 3.x models for essay evaluations and generation.
  */
 package com.linguaoptima.api.service.ai;
 
@@ -18,14 +18,14 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @brief Google Gemini API provider utilizing Gemini 2.5 / 3.x models for essay evaluations and generation.
+ * @brief Google Gemini API provider utilizing Gemini 3.8 Flash and Gemini 3.x models for essay evaluations and generation.
  */
 @Slf4j
 @Component
 public class GeminiProvider implements AIProvider {
 
     /** @brief Default Gemini model identifier. */
-    public static final String DEFAULT_MODEL = "gemini-2.5-flash";
+    public static final String DEFAULT_MODEL = "gemini-3.8-flash";
 
     /** @brief Field representing api key in GeminiProvider. */
     private final String apiKey;

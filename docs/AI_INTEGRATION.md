@@ -8,30 +8,35 @@ This document describes the artificial intelligence and OCR integration architec
 The platform leverages external AI APIs. We do not use self-hosted models or fine-tuning ($0 infrastructure budget).
 
 ## AI Provider Strategy
-- **Task Generation (grammar exercises):** Groq API → Llama 3.3 70B Versatile / Llama 4 Maverick (free tier: 14,400 req/day, proxied via Cloudflare Edge to bypass Cloudflare GeoIP restrictions).
-- **Essay Scoring + Grammar Check:** Google Gemini 2.5 Flash / Gemini 3.0 Flash (free tier: 1,500 req/day, direct or proxied).
+- **Task Generation (grammar exercises):** Groq API → Qwen 3.8 27B / OpenAI GPT-OSS 120B / Llama 4 Maverick (free tier: 14,400 req/day, proxied via Cloudflare Edge to bypass Cloudflare GeoIP restrictions).
+- **Essay Scoring + Grammar Check:** Google Gemini 3.8 Flash / Gemini 3.8 Extended Thinking / Gemini 3.6 Flash (free tier: 1,500 req/day, routed via Cloudflare Edge proxy).
 - **OCR:** Tesseract via `tess4j` (local in-memory zero-retention execution inside Java container).
-- **User's own key & Per-Task Provider + Model Selection (BYOK):** Supports 7 distinct providers and customizable modern models:
-  - **Western Providers:** OpenAI (`gpt-5`, `gpt-5-mini`, `gpt-4.1`, `gpt-4.1-mini`, `o4-mini`, `o3`), Anthropic (`claude-sonnet-4-6`, `claude-opus-4-6`, `claude-3-7-sonnet-latest`), Groq (`llama-3.3-70b-versatile`, `llama-4-maverick`, `llama-4-scout`, `deepseek-r1-distill-llama-70b`), Google Gemini (`gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-3-flash-preview`, `gemini-3.1-pro-preview`).
+- **User's own key & Per-Task Provider + Model Selection (BYOK + Live Vendor Sync):** Supports 7 distinct providers and customizable October 2026 models synced live from official vendor documentation via `https://ai-proxy.mybsu.online/models/:provider`:
+  - **Western Providers:**
+    - **Google Gemini:** `gemini-3.8-flash`, `gemini-3.8-live-extended-thinking`, `gemini-3.8-live`, `gemini-3.7-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, `gemini-3.1-pro-preview`, `gemini-2.5-pro`, `gemini-2.5-flash`.
+    - **OpenAI:** `gpt-6-astra`, `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-sol`, `gpt-5.6-luna`, `o4-mini`, `o3`.
+    - **Anthropic Claude:** `claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`, `claude-opus-5`, `claude-sonnet-5`, `claude-sonnet-4-6`.
+    - **Groq LPU Cloud:** `qwen/qwen3.8-27b`, `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, `qwen/qwen3.6-27b`, `meta-llama/llama-4-maverick-17b-128e-instruct`, `meta-llama/llama-4-scout-17b-16e-instruct`, `moonshotai/kimi-k2-instruct`, `llama-3.3-70b-versatile`.
   - **Chinese Providers (No Geo-blocks for RU/BY):**
-    - **DeepSeek** (`deepseek-chat` / DeepSeek V3.2 & `deepseek-reasoner` / R1): Direct access without VPN from RU/BY, state-of-the-art reasoning, ultra-low cost (~$0.14/1M tokens).
-    - **Alibaba Qwen (DashScope)** (`qwen3-235b-a22b`, `qwen3-32b`, `qwq-plus`, `qwen-max-latest`, `qwen-plus-latest`): Full OpenAI compatibility, high throughput.
-    - **Moonshot Kimi** (`kimi-k2-0711-preview`, `kimi-latest`, `kimi-thinking-preview`, `moonshot-v1-128k`): Exceptional long-context and 1T MoE comprehension.
+    - **DeepSeek:** `deepseek-flash` (DeepSeek V4.1 Flash, 1M context), `deepseek-v4-pro` (DeepSeek V4 Pro, 1M reasoning), `deepseek-chat`, `deepseek-reasoner`.
+    - **Alibaba Qwen (DashScope):** `qwen3.8-max`, `qwen3.8-flash`, `qwen3.8-omni-flash`, `qwen3.8-27b`, `qwen3.7-max`, `qwen3.7-plus`, `qwen3.6-plus`, `qwen-max`.
+    - **Moonshot Kimi:** `kimi-k3` (2.8T Flagship, 1M context), `kimi-k2.7-code` (256K reasoning), `kimi-k2.7-code-highspeed` (180 tok/s), `kimi-k2.6`.
 
 ---
 
-## 1. Cloudflare Edge Reverse-Proxy Architecture
+## 1. Cloudflare Edge Reverse-Proxy & Live Vendor Model Sync Architecture
 
-To guarantee high availability and bypass regional geo-blocking (e.g. Cloudflare GeoIP blocks affecting Groq in certain countries or host IP restrictions on OpenAI/Anthropic), Lingua Optima integrates a **dedicated Cloudflare Worker reverse-proxy** (`cloudflare-proxy/worker.js` bound to `ai-proxy.mybsu.online` or `*.workers.dev`).
+To guarantee high availability, bypass regional geo-blocking (e.g. Cloudflare GeoIP blocks affecting Groq in certain countries or host IP restrictions on OpenAI/Anthropic), and dynamically discover newly released models from official company documentation (`ai.google.dev`, `console.groq.com`, `docs.anthropic.com`, `api-docs.deepseek.com`, etc.), Lingua Optima integrates a **dedicated Cloudflare Worker reverse-proxy** (`cloudflare-proxy/worker.js` bound to `https://ai-proxy.mybsu.online` and `https://lingua-optima-ai-proxy.maksimmon2008.workers.dev`).
 
 ### Proxy Routing Table
 
-| Local Provider Route | Upstream Provider API | .env Parameter | Default Value |
+| Local Provider Route | Upstream Provider API / Function | .env Parameter | Default Value |
 | :--- | :--- | :--- | :--- |
-| `https://ai-proxy.mybsu.online/groq/*` | `https://api.groq.com/*` | `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` |
-| `https://ai-proxy.mybsu.online/gemini/*` | `https://generativelanguage.googleapis.com/*` | `GEMINI_BASE_URL` | `https://generativelanguage.googleapis.com` |
-| `https://ai-proxy.mybsu.online/openai/*` | `https://api.openai.com/*` | `OPENAI_BASE_URL` | `https://api.openai.com/v1` |
-| `https://ai-proxy.mybsu.online/anthropic/*` | `https://api.anthropic.com/*` | `ANTHROPIC_BASE_URL` | `https://api.anthropic.com/v1` |
+| `https://ai-proxy.mybsu.online/models/:provider` | Live vendor docs scraper (`ai.google.dev`, `console.groq.com`, `docs.anthropic.com`, etc.) | `AI_PROXY_MODELS_ENDPOINT` | `https://ai-proxy.mybsu.online/models` |
+| `https://ai-proxy.mybsu.online/groq/*` | `https://api.groq.com/*` | `GROQ_BASE_URL` | `https://ai-proxy.mybsu.online/groq/openai/v1` |
+| `https://ai-proxy.mybsu.online/gemini/*` | `https://generativelanguage.googleapis.com/*` | `GEMINI_BASE_URL` | `https://ai-proxy.mybsu.online/gemini` |
+| `https://ai-proxy.mybsu.online/openai/*` | `https://api.openai.com/*` | `OPENAI_BASE_URL` | `https://ai-proxy.mybsu.online/openai/v1` |
+| `https://ai-proxy.mybsu.online/anthropic/*` | `https://api.anthropic.com/*` | `ANTHROPIC_BASE_URL` | `https://ai-proxy.mybsu.online/anthropic/v1` |
 | `https://ai-proxy.mybsu.online/deepseek/*` | `https://api.deepseek.com/*` | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` |
 | `https://ai-proxy.mybsu.online/qwen/*` | `https://dashscope-intl.aliyuncs.com/*` | `QWEN_BASE_URL` | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` |
 | `https://ai-proxy.mybsu.online/kimi/*` | `https://api.moonshot.cn/*` | `KIMI_BASE_URL` | `https://api.moonshot.cn/v1` |
@@ -40,7 +45,8 @@ To guarantee high availability and bypass regional geo-blocking (e.g. Cloudflare
 
 1. **Origin IP Sanitization:** The Cloudflare Worker explicitly strips origin client headers (`cf-connecting-ip`, `x-real-ip`, `x-forwarded-for`).
 2. **Egress IP Geolocation:** Outbound requests originate from Cloudflare's US/EU data center edge IPs.
-3. **Zero Retention:** The proxy does not log request payloads or API keys; transactions stream ephemerally through RAM.
+3. **Live Vendor Docs Scraping (`/models/:provider`):** Fetches official model documentation pages with Cloudflare Edge caching (`cacheTtl: 3600`) and merges newly released model IDs into the catalog.
+4. **Zero Retention:** The proxy does not log request payloads or API keys; transactions stream ephemerally through RAM.
 
 ```mermaid
 flowchart LR

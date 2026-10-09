@@ -1,6 +1,6 @@
 /**
  * @file OpenAIProvider.java
- * @brief OpenAI API provider integration supporting BYOK user keys and gpt-4o-mini inference.
+ * @brief OpenAI API provider integration supporting BYOK user keys and GPT-6 Astra / GPT-6.1 Sol / GPT-6 Luna inference.
  */
 package com.linguaoptima.api.service.ai;
 
@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @brief OpenAI API provider integration supporting BYOK user keys and GPT-4.1 / GPT-5 inference.
+ * @brief OpenAI API provider integration supporting BYOK user keys and GPT-6 Astra / GPT-6.1 Sol / GPT-6 Luna inference.
  */
 @Component
 public class OpenAIProvider implements AIProvider {
 
     /** @brief Default OpenAI model identifier. */
-    public static final String DEFAULT_MODEL = "gpt-4.1-mini";
+    public static final String DEFAULT_MODEL = "gpt-6.1-sol";
 
     /** @brief Field representing api key in OpenAIProvider. */
     private final String apiKey;

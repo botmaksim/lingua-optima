@@ -1,6 +1,6 @@
 /**
  * @file QwenProvider.java
- * @brief Alibaba Cloud Qwen (DashScope) API provider integration supporting BYOK user keys and qwen-plus inference.
+ * @brief Alibaba Cloud Qwen (DashScope) API provider integration supporting BYOK user keys and Qwen 3.8 Max / Flash inference.
  */
 package com.linguaoptima.api.service.ai;
 
@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * @brief Alibaba Cloud Qwen (DashScope) API provider integration supporting BYOK user keys and Qwen 3 / Qwen-Max inference.
+ * @brief Alibaba Cloud Qwen (DashScope) API provider integration supporting BYOK user keys and Qwen 3.8 Max / Flash inference.
  */
 @Component
 public class QwenProvider implements AIProvider {
 
     /** @brief Default Qwen model identifier. */
-    public static final String DEFAULT_MODEL = "qwen3-235b-a22b";
+    public static final String DEFAULT_MODEL = "qwen3.8-max";
 
     /** @brief Field representing api key in QwenProvider. */
     private final String apiKey;
