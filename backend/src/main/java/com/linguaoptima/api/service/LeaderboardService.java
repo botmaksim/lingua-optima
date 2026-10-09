@@ -22,9 +22,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Leaderboard Service:
- * STRICT ARCHITECTURAL RULE: NO GLOBAL LEADERBOARD.
- * Only group-level leaderboards for active students within a teacher's group.
+ * @file LeaderboardService.java
+ * @brief Class-scoped student leaderboard service.
+ *
+ * Implements privacy-preserving competitive ranking strictly scoped within individual teacher groups.
+ * In accordance with architectural safety rules, global leaderboards across unaffiliated users are prohibited.
  */
 @Slf4j
 @Service
@@ -35,12 +37,19 @@ public class LeaderboardService {
     private final GroupStudentRepository groupStudentRepository;
     private final SubmissionRepository submissionRepository;
 
+    /**
+     * @brief Computes weekly leaderboard rankings for active students within a designated group.
+     * @param groupId Unique identifier of the group.
+     * @param currentUser Authenticated user (must be the group's educator or an active student member).
+     * @return Ordered list of LeaderboardEntryResponse DTOs sorted descending by weekly score.
+     * @throws ResourceNotFoundException if group is not found.
+     * @throws ForbiddenException if caller is neither the educator nor an active student of the group.
+     */
     @Transactional(readOnly = true)
     public List<LeaderboardEntryResponse> getGroupLeaderboard(UUID groupId, User currentUser) {
         Group group = groupRepository.findById(groupId)
             .orElseThrow(() -> new ResourceNotFoundException("Group not found: " + groupId));
 
-        // Security check: Must be teacher of group or active student in group
         boolean isTeacher = group.getTeacher().getId().equals(currentUser.getId());
         boolean isMember = groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(groupId, currentUser.getId());
 
@@ -48,14 +57,12 @@ public class LeaderboardService {
             throw new ForbiddenException("Access denied: You are neither the teacher nor an active student of this group.");
         }
 
-        // Submissions since start of current week (Monday 00:00)
         LocalDateTime startOfWeek = LocalDateTime.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
             .withHour(0).withMinute(0).withSecond(0).withNano(0);
 
         List<Submission> weeklySubmissions = submissionRepository.findActiveGroupSubmissionsSince(groupId, startOfWeek);
         List<GroupStudent> activeStudents = groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId);
 
-        // Map scores
         Map<UUID, Double> scoresByStudent = new HashMap<>();
         Map<UUID, User> userMap = new HashMap<>();
 
@@ -72,7 +79,6 @@ public class LeaderboardService {
             }
         }
 
-        // Sort descending by score
         List<Map.Entry<UUID, Double>> sorted = scoresByStudent.entrySet().stream()
             .sorted(Map.Entry.<UUID, Double>comparingByValue().reversed())
             .toList();

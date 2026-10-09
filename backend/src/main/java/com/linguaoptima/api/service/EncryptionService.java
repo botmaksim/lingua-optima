@@ -14,16 +14,25 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
- * AES-256-GCM Encryption Service for securing user API keys at rest.
+ * @file EncryptionService.java
+ * @brief Authenticated symmetric encryption service using AES-256-GCM.
+ *
+ * Employs 12-byte initialization vectors and 128-bit authentication tags to ensure
+ * confidentiality and cryptographic integrity of user credentials at rest.
  */
 @Service
 public class EncryptionService {
 
     private static final String ALGORITHM = "AES/GCM/NoPadding";
-    private static final int GCM_TAG_LENGTH = 128; // bits
-    private static final int IV_LENGTH = 12; // bytes
+    private static final int GCM_TAG_LENGTH = 128;
+    private static final int IV_LENGTH = 12;
     private final SecretKey secretKey;
 
+    /**
+     * @brief Constructs an EncryptionService instance initializing a 256-bit AES secret key.
+     * @param secretKeyString Configured master encryption secret string from application properties.
+     * @throws IllegalStateException if key initialization fails.
+     */
     public EncryptionService(@Value("${app.encryption.key:lingua-optima-default-secure-key-32b}") String secretKeyString) {
         try {
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
@@ -34,6 +43,11 @@ public class EncryptionService {
         }
     }
 
+    /**
+     * @brief Encrypts plaintext into a Base64-encoded string containing both IV and ciphertext.
+     * @param plainText The plaintext string to encrypt.
+     * @return Base64-encoded payload (12-byte IV + ciphertext with GCM tag), or null if input is null.
+     */
     public String encrypt(String plainText) {
         if (plainText == null) return null;
         try {
@@ -56,6 +70,11 @@ public class EncryptionService {
         }
     }
 
+    /**
+     * @brief Decrypts a Base64-encoded string containing IV and ciphertext.
+     * @param encryptedText Base64-encoded payload containing 12-byte IV and ciphertext.
+     * @return Decrypted plaintext string, or null if input is null.
+     */
     public String decrypt(String encryptedText) {
         if (encryptedText == null) return null;
         try {

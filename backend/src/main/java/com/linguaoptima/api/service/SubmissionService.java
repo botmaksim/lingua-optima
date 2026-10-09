@@ -29,6 +29,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * @file SubmissionService.java
+ * @brief Service responsible for student homework submissions, OCR processing, and teacher grading overrides.
+ *
+ * Implements strict Zero-Retention OCR architecture: uploaded images are processed in-memory
+ * and instantly discarded, ensuring no image binary data or biometric photos are persisted.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,6 +51,14 @@ public class SubmissionService {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @brief Evaluates and saves a written text or essay submission using AI.
+     * @param request Submission request containing text content, optional assignment ID, and type.
+     * @param student The student submitting the homework.
+     * @return SubmissionResultResponse DTO containing AI evaluation, score, and rubric.
+     * @throws ResourceNotFoundException if assignment does not exist.
+     * @throws ForbiddenException if assignment does not belong to the student.
+     */
     @Transactional
     public SubmissionResultResponse submitText(TextSubmissionRequest request, User student) {
         usageService.incrementEvaluation(student);
@@ -92,7 +107,6 @@ public class SubmissionService {
 
         Submission saved = submissionRepository.save(submission);
 
-        // Update progress and streaks
         boolean passed = score != null && score >= 70.0;
         progressService.updateFromSubmission(student, grammarTopic, passed);
         gamificationService.onSubmissionCompleted(student);
@@ -102,6 +116,20 @@ public class SubmissionService {
         return response;
     }
 
+    /**
+     * @brief Processes an uploaded homework photo via in-memory OCR and scores the extracted text.
+     *
+     * In accordance with Zero-Retention OCR design, the uploaded image bytes are passed
+     * directly to OCR and immediately garbage collected; only the recognized text is stored.
+     *
+     * @param file The multipart image file containing handwritten or printed text.
+     * @param assignmentId Optional task assignment identifier.
+     * @param student The student submitting the photo.
+     * @return SubmissionResultResponse DTO containing extracted text and grading results.
+     * @throws OcrException if image reading or text recognition fails.
+     * @throws ResourceNotFoundException if assignment is not found.
+     * @throws ForbiddenException if assignment does not belong to the student.
+     */
     @Transactional
     public SubmissionResultResponse submitImage(MultipartFile file, UUID assignmentId, User student) {
         usageService.incrementOcr(student);
@@ -114,7 +142,6 @@ public class SubmissionService {
             throw new OcrException("Failed to read image file.", e);
         }
 
-        // ZERO-RETENTION OCR: Process bytes in memory, then nullify
         String extractedText = ocrService.extractText(imageBytes);
 
         TaskAssignment assignment = null;
@@ -144,7 +171,7 @@ public class SubmissionService {
             .assignment(assignment)
             .student(student)
             .submissionType(SubmissionType.IMAGE)
-            .studentText(extractedText) // Text only, NEVER the photo bytes
+            .studentText(extractedText)
             .aiScore(score)
             .aiFeedback(feedback)
             .providerUsed("TESSERACT_OCR+AI")
@@ -162,6 +189,15 @@ public class SubmissionService {
         return response;
     }
 
+    /**
+     * @brief Allows an educator to override an AI-generated score with manual grade and commentary.
+     * @param submissionId Unique identifier of the student submission.
+     * @param request Payload containing teacher override score and comment.
+     * @param teacher Educator executing the score override.
+     * @return SubmissionResultResponse DTO reflecting the updated score.
+     * @throws ForbiddenException if caller is not an educator or administrator.
+     * @throws ResourceNotFoundException if submission is not found.
+     */
     @Transactional
     public SubmissionResultResponse overrideScore(UUID submissionId, OverrideRequest request, User teacher) {
         if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
@@ -187,6 +223,11 @@ public class SubmissionService {
         return SubmissionResultResponse.fromEntity(saved);
     }
 
+    /**
+     * @brief Retrieves submission history for the specified student.
+     * @param student The student whose submission history is requested.
+     * @return List of SubmissionResultResponse DTOs ordered by submission date descending.
+     */
     @Transactional(readOnly = true)
     public List<SubmissionResultResponse> getMySubmissions(User student) {
         return submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId()).stream()
@@ -194,6 +235,14 @@ public class SubmissionService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * @brief Retrieves a specific submission by identifier, ensuring authorization access control.
+     * @param submissionId Unique identifier of the submission.
+     * @param user User requesting to view the submission.
+     * @return SubmissionResultResponse DTO containing full submission details.
+     * @throws ResourceNotFoundException if submission does not exist.
+     * @throws ForbiddenException if user is neither the submitting student nor an educator.
+     */
     @Transactional(readOnly = true)
     public SubmissionResultResponse getSubmissionById(UUID submissionId, User user) {
         Submission submission = submissionRepository.findById(submissionId)

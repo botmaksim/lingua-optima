@@ -25,6 +25,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * @file GroupService.java
+ * @brief Educator student group management service.
+ *
+ * Supports creating classes, enrolling students, soft-deleting memberships with history preservation,
+ * and computing class-wide performance analytics.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,6 +43,12 @@ public class GroupService {
     private final SubmissionRepository submissionRepository;
     private final NotificationService notificationService;
 
+    /**
+     * @brief Creates a new student group owned by the requesting educator.
+     * @param request Group creation payload containing the class name.
+     * @param teacher The educator creating the group.
+     * @return GroupResponse DTO representing the newly created group.
+     */
     @Transactional
     public GroupResponse createGroup(CreateGroupRequest request, User teacher) {
         Group group = Group.builder()
@@ -47,6 +60,11 @@ public class GroupService {
         return mapToGroupResponse(saved);
     }
 
+    /**
+     * @brief Retrieves all active groups owned by the specified educator.
+     * @param teacher Educator whose groups are queried.
+     * @return List of GroupResponse DTOs.
+     */
     @Transactional(readOnly = true)
     public List<GroupResponse> getGroupsForTeacher(User teacher) {
         return groupRepository.findByTeacher(teacher).stream()
@@ -54,12 +72,28 @@ public class GroupService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * @brief Retrieves detailed group information including student rosters and aggregate score.
+     * @param groupId Unique identifier of the group.
+     * @param teacher Educator requesting group details.
+     * @return GroupResponse DTO with active member roster.
+     * @throws ForbiddenException if educator is not the owner of the group.
+     * @throws ResourceNotFoundException if group is not found.
+     */
     @Transactional(readOnly = true)
     public GroupResponse getGroupDetails(UUID groupId, User teacher) {
         Group group = getGroupAndVerifyTeacher(groupId, teacher);
         return mapToGroupResponse(group);
     }
 
+    /**
+     * @brief Enrolls a student into a group by email, restoring historical membership if previously removed.
+     * @param groupId Unique identifier of the group.
+     * @param studentEmail Email address of the student to enroll.
+     * @param teacher Educator performing enrollment.
+     * @throws ResourceNotFoundException if student email does not exist in the system.
+     * @throws ForbiddenException if educator does not own group or group capacity (200) is exceeded.
+     */
     @Transactional
     public void addStudent(UUID groupId, String studentEmail, User teacher) {
         Group group = getGroupAndVerifyTeacher(groupId, teacher);
@@ -70,14 +104,12 @@ public class GroupService {
         if (existing.isPresent()) {
             GroupStudent gs = existing.get();
             if (!gs.isActive()) {
-                // RESTORE HISTORY: Reactivate soft-deleted student
                 gs.setActive(true);
                 gs.setRemovedAt(null);
                 groupStudentRepository.save(gs);
                 log.info("Student {} reactivated in group {}", studentEmail, group.getName());
             }
         } else {
-            // Check educator capacity (up to 200 students per group)
             int count = groupStudentRepository.countByGroupIdAndIsActiveTrue(groupId);
             if (count >= 200) {
                 throw new ForbiddenException("Group student limit reached (max 200 students).");
@@ -98,19 +130,30 @@ public class GroupService {
             NotificationType.SYSTEM);
     }
 
+    /**
+     * @brief Soft-deletes a student membership from a group while preserving their submission history.
+     * @param groupId Unique identifier of the group.
+     * @param studentId Unique identifier of the student.
+     * @param teacher Educator executing student removal.
+     * @throws ResourceNotFoundException if student is not a registered member of the group.
+     */
     @Transactional
     public void removeStudent(UUID groupId, UUID studentId, User teacher) {
         Group group = getGroupAndVerifyTeacher(groupId, teacher);
         GroupStudent gs = groupStudentRepository.findByGroupIdAndStudentId(groupId, studentId)
             .orElseThrow(() -> new ResourceNotFoundException("Student is not a member of this group."));
 
-        // SOFT DELETE: Mark inactive, set removed_at. Submissions remain in DB but are excluded from teacher views
         gs.setActive(false);
         gs.setRemovedAt(LocalDateTime.now());
         groupStudentRepository.save(gs);
         log.info("Student {} soft-deleted from group {}", studentId, group.getName());
     }
 
+    /**
+     * @brief Deletes an entire group owned by the educator.
+     * @param groupId Unique identifier of the group.
+     * @param teacher Educator deleting the group.
+     */
     @Transactional
     public void deleteGroup(UUID groupId, User teacher) {
         Group group = getGroupAndVerifyTeacher(groupId, teacher);
@@ -118,6 +161,14 @@ public class GroupService {
         log.info("Group {} deleted by teacher {}", groupId, teacher.getEmail());
     }
 
+    /**
+     * @brief Verifies that a group exists and is owned by the specified educator.
+     * @param groupId Unique identifier of the group.
+     * @param teacher Educator checking ownership.
+     * @return Validated Group entity.
+     * @throws ResourceNotFoundException if group is not found.
+     * @throws ForbiddenException if teacher is not the owner.
+     */
     public Group getGroupAndVerifyTeacher(UUID groupId, User teacher) {
         Group group = groupRepository.findById(groupId)
             .orElseThrow(() -> new ResourceNotFoundException("Group not found: " + groupId));
@@ -127,6 +178,11 @@ public class GroupService {
         return group;
     }
 
+    /**
+     * @brief Transforms a Group entity into a GroupResponse DTO with active roster and average score.
+     * @param group Group entity to transform.
+     * @return Formatted GroupResponse DTO.
+     */
     private GroupResponse mapToGroupResponse(Group group) {
         List<GroupStudent> activeMembers = groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId());
         List<UserResponse> studentResponses = activeMembers.stream()

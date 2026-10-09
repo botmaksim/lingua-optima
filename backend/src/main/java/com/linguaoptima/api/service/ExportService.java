@@ -28,6 +28,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file ExportService.java
+ * @brief Report generation service exporting student and class performance to CSV and PDF formats.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,6 +43,15 @@ public class ExportService {
     private final ProgressRecordRepository progressRecordRepository;
     private final UserRepository userRepository;
 
+    /**
+     * @brief Generates an export report for a group in either CSV or PDF format.
+     * @param groupId Unique identifier of the group.
+     * @param format Desired export format ("csv" or "pdf").
+     * @param teacher Educator requesting the report.
+     * @return Byte array containing raw report file bytes.
+     * @throws ResourceNotFoundException if group is not found.
+     * @throws ForbiddenException if teacher does not own the group.
+     */
     @Transactional(readOnly = true)
     public byte[] generateGroupReport(UUID groupId, String format, User teacher) {
         Group group = groupRepository.findById(groupId)
@@ -57,6 +70,14 @@ public class ExportService {
         }
     }
 
+    /**
+     * @brief Generates a detailed progress report for an individual student in CSV or PDF format.
+     * @param studentId Unique identifier of the student.
+     * @param format Desired export format ("csv" or "pdf").
+     * @param teacher Educator requesting the student report.
+     * @return Byte array of the generated report.
+     * @throws ResourceNotFoundException if student is not found.
+     */
     @Transactional(readOnly = true)
     public byte[] generateStudentReport(UUID studentId, String format, User teacher) {
         User student = userRepository.findById(studentId)
@@ -72,6 +93,12 @@ public class ExportService {
         }
     }
 
+    /**
+     * @brief Generates CSV bytes for a group roster.
+     * @param group Target Group entity.
+     * @param students List of enrolled GroupStudent entities.
+     * @return UTF-8 byte array of the CSV document.
+     */
     private byte[] generateGroupCsv(Group group, List<GroupStudent> students) {
         StringWriter sw = new StringWriter();
         try (CSVWriter writer = new CSVWriter(sw)) {
@@ -93,6 +120,12 @@ public class ExportService {
         return sw.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    /**
+     * @brief Generates PDF bytes for a group roster and performance table.
+     * @param group Target Group entity.
+     * @param students List of enrolled GroupStudent entities.
+     * @return Byte array of the rendered PDF document.
+     */
     private byte[] generateGroupPdf(Group group, List<GroupStudent> students) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
@@ -128,6 +161,12 @@ public class ExportService {
         return baos.toByteArray();
     }
 
+    /**
+     * @brief Generates CSV bytes detailing topic mastery metrics for an individual student.
+     * @param student Target student user.
+     * @param records List of ProgressRecord entities.
+     * @return UTF-8 byte array of the CSV document.
+     */
     private byte[] generateStudentCsv(User student, List<ProgressRecord> records) {
         StringWriter sw = new StringWriter();
         try (CSVWriter writer = new CSVWriter(sw)) {
@@ -148,6 +187,13 @@ public class ExportService {
         return sw.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    /**
+     * @brief Generates PDF bytes with progress tables and submissions overview for a student.
+     * @param student Target student user.
+     * @param records List of ProgressRecord entities.
+     * @param submissions List of recent Submission entities.
+     * @return Byte array of the rendered PDF document.
+     */
     private byte[] generateStudentPdf(User student, List<ProgressRecord> records, List<Submission> submissions) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {

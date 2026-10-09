@@ -12,6 +12,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @file GeminiProvider.java
+ * @brief Google Gemini API provider utilizing gemini-1.5-flash for essay evaluations and fallback generation.
+ */
 @Slf4j
 @Component
 public class GeminiProvider implements AIProvider {
@@ -20,6 +24,12 @@ public class GeminiProvider implements AIProvider {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @brief Constructs a GeminiProvider with injected API key and HTTP client components.
+     * @param apiKey Configured Gemini API key.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
     @Autowired
     public GeminiProvider(
         @Value("${app.ai.gemini.api-key:dummy-gemini-key}") String apiKey,
@@ -31,11 +41,21 @@ public class GeminiProvider implements AIProvider {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * @brief Returns provider identifier name "GEMINI".
+     * @return "GEMINI" string.
+     */
     @Override
     public String getProviderName() {
         return "GEMINI";
     }
 
+    /**
+     * @brief Sends content generation request to Google Gemini API using gemini-1.5-flash.
+     * @param prompt Input prompt text.
+     * @return Generated model candidate text.
+     * @throws Exception if HTTP exchange fails or non-2xx status code is returned.
+     */
     @Override
     public String complete(String prompt) throws Exception {
         String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;

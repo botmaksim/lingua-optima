@@ -24,6 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * @file NotificationService.java
+ * @brief Real-time Server-Sent Events (SSE) notification delivery and persistence service.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,8 +38,13 @@ public class NotificationService {
 
     private final Map<UUID, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
+    /**
+     * @brief Creates and registers a new Server-Sent Events emitter connection for real-time delivery.
+     * @param userId Unique identifier of the subscribing user.
+     * @return Configured SseEmitter with 1-hour connection lifetime.
+     */
     public SseEmitter createSseEmitter(UUID userId) {
-        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 1 hour timeout
+        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L);
         emitters.computeIfAbsent(userId, k -> new CopyOnWriteArrayList<>()).add(emitter);
 
         emitter.onCompletion(() -> removeEmitter(userId, emitter));
@@ -51,6 +60,11 @@ public class NotificationService {
         return emitter;
     }
 
+    /**
+     * @brief Cleans up and detaches an inactive or terminated SSE emitter instance.
+     * @param userId Unique identifier of the user.
+     * @param emitter The emitter instance to remove.
+     */
     private void removeEmitter(UUID userId, SseEmitter emitter) {
         List<SseEmitter> userEmitters = emitters.get(userId);
         if (userEmitters != null) {
@@ -61,6 +75,13 @@ public class NotificationService {
         }
     }
 
+    /**
+     * @brief Persists a notification to the database and broadcasts it immediately to active SSE connections.
+     * @param user Recipient user entity.
+     * @param message Text payload of the notification.
+     * @param type Notification category type (SYSTEM, TASK, GRADE, CONTEXTUAL).
+     * @return Saved Notification entity.
+     */
     @Transactional
     public Notification send(User user, String message, NotificationType type) {
         Notification notification = notificationRepository.save(Notification.builder()
@@ -71,7 +92,6 @@ public class NotificationService {
             .createdAt(LocalDateTime.now())
             .build());
 
-        // Emit SSE to active client connections
         List<SseEmitter> userEmitters = emitters.get(user.getId());
         if (userEmitters != null) {
             NotificationResponse response = NotificationResponse.fromEntity(notification);
@@ -87,6 +107,12 @@ public class NotificationService {
         return notification;
     }
 
+    /**
+     * @brief Broadcasts a notification to all active enrolled students within a specified group.
+     * @param group Target student group.
+     * @param message Notification message string.
+     * @param type Notification category type.
+     */
     @Transactional
     public void sendToGroup(Group group, String message, NotificationType type) {
         List<GroupStudent> activeStudents = groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId());
@@ -95,11 +121,21 @@ public class NotificationService {
         }
     }
 
+    /**
+     * @brief Returns count of unread notifications for the specified user.
+     * @param userId Unique identifier of the user.
+     * @return Number of unread notifications.
+     */
     @Transactional(readOnly = true)
     public int getUnreadCount(UUID userId) {
         return notificationRepository.countByUserIdAndIsReadFalse(userId);
     }
 
+    /**
+     * @brief Retrieves all notifications for the specified user ordered by timestamp descending.
+     * @param userId Unique identifier of the user.
+     * @return List of NotificationResponse DTOs.
+     */
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotifications(UUID userId) {
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
@@ -107,6 +143,12 @@ public class NotificationService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * @brief Marks a specific notification as read after verifying ownership.
+     * @param notificationId Unique identifier of the notification.
+     * @param user Authenticated user marking the notification.
+     * @throws ResourceNotFoundException if notification does not exist or does not belong to user.
+     */
     @Transactional
     public void markAsRead(UUID notificationId, User user) {
         Notification notification = notificationRepository.findById(notificationId)

@@ -9,6 +9,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @file AnthropicProvider.java
+ * @brief Anthropic Claude API provider integration supporting BYOK user keys and claude-3-5-sonnet.
+ */
 @Component
 public class AnthropicProvider implements AIProvider {
 
@@ -16,21 +20,42 @@ public class AnthropicProvider implements AIProvider {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @brief Constructs an AnthropicProvider with default dummy credentials.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
     public AnthropicProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this("dummy-claude-key", restTemplate, objectMapper);
     }
 
+    /**
+     * @brief Constructs an AnthropicProvider with explicit API key.
+     * @param apiKey Anthropic API secret key.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
     public AnthropicProvider(String apiKey, RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.apiKey = apiKey;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * @brief Returns provider identifier name "ANTHROPIC".
+     * @return "ANTHROPIC" string.
+     */
     @Override
     public String getProviderName() {
         return "ANTHROPIC";
     }
 
+    /**
+     * @brief Sends message completion request to Anthropic API using claude-3-5-sonnet-20241022.
+     * @param prompt Input prompt text.
+     * @return Model completion text.
+     * @throws Exception if HTTP exchange fails or non-2xx status code is returned.
+     */
     @Override
     public String complete(String prompt) throws Exception {
         String url = "https://api.anthropic.com/v1/messages";

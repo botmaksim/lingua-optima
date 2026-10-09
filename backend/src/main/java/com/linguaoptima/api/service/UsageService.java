@@ -15,17 +15,36 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+/**
+ * @file UsageService.java
+ * @brief Quota tracking and enforcement service for free-tier users.
+ *
+ * Enforces weekly caps (10 evaluations, 3 OCR uploads) on FREE tier accounts,
+ * permitting unlimited evaluations and uploads for PREMIUM and EDUCATOR subscribers.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsageService {
 
+    /**
+     * @brief Weekly evaluation limit for FREE tier users.
+     */
     public static final int FREE_EVAL_LIMIT = 10;
+
+    /**
+     * @brief Weekly OCR upload limit for FREE tier users.
+     */
     public static final int FREE_OCR_LIMIT = 3;
 
     private final UsageCounterRepository usageCounterRepository;
     private final SubscriptionRepository subscriptionRepository;
 
+    /**
+     * @brief Retrieves existing usage counter or initializes a new one.
+     * @param user User whose counter is requested.
+     * @return UsageCounter entity.
+     */
     @Transactional
     public UsageCounter getOrCreateCounter(User user) {
         return usageCounterRepository.findByUserId(user.getId())
@@ -37,17 +56,27 @@ public class UsageService {
                 .build()));
     }
 
+    /**
+     * @brief Resolves active subscription tier for a user.
+     * @param user User whose tier is queried.
+     * @return SubscriptionTier enum value.
+     */
     public SubscriptionTier getUserTier(User user) {
         return subscriptionRepository.findByUserId(user.getId())
             .map(Subscription::getTier)
             .orElse(SubscriptionTier.FREE);
     }
 
+    /**
+     * @brief Increments evaluation counter for free-tier users, enforcing weekly cap.
+     * @param user Authenticated user initiating evaluation.
+     * @throws QuotaExceededException if free user has exhausted weekly evaluation limit.
+     */
     @Transactional
     public void incrementEvaluation(User user) {
         SubscriptionTier tier = getUserTier(user);
         if (tier != SubscriptionTier.FREE) {
-            return; // Unlimited for PREMIUM and EDUCATOR
+            return;
         }
 
         UsageCounter counter = getOrCreateCounter(user);
@@ -58,11 +87,16 @@ public class UsageService {
         usageCounterRepository.save(counter);
     }
 
+    /**
+     * @brief Increments OCR upload counter for free-tier users, enforcing weekly cap.
+     * @param user Authenticated user initiating OCR upload.
+     * @throws QuotaExceededException if free user has exhausted weekly OCR upload limit.
+     */
     @Transactional
     public void incrementOcr(User user) {
         SubscriptionTier tier = getUserTier(user);
         if (tier != SubscriptionTier.FREE) {
-            return; // Unlimited
+            return;
         }
 
         UsageCounter counter = getOrCreateCounter(user);
@@ -73,6 +107,11 @@ public class UsageService {
         usageCounterRepository.save(counter);
     }
 
+    /**
+     * @brief Retrieves current weekly usage metrics and remaining quotas.
+     * @param user User querying usage.
+     * @return UsageResponse DTO containing usage statistics and quota limits.
+     */
     @Transactional(readOnly = true)
     public UsageResponse getUsage(User user) {
         SubscriptionTier tier = getUserTier(user);
@@ -109,6 +148,9 @@ public class UsageService {
         }
     }
 
+    /**
+     * @brief Resets all weekly counters across all users to zero.
+     */
     @Transactional
     public void resetWeeklyCounters() {
         log.info("Resetting all weekly usage counters for all users");

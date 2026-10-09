@@ -26,6 +26,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * @file TaskService.java
+ * @brief Service responsible for AI-powered educational task generation, template management, and task assignments.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -41,6 +45,14 @@ public class TaskService {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @brief Generates an educational task with AI, persists it, and creates an automatic assignment for students.
+     * @param params Generation parameters including CEFR level, grammar topic, task type, and question count.
+     * @param user User initiating the generation request.
+     * @return TaskResponse DTO containing task questions and metadata.
+     * @throws ForbiddenException if user tier does not allow requested CEFR level.
+     * @throws com.linguaoptima.api.exception.QuotaExceededException if free weekly quota is exhausted.
+     */
     @Transactional
     public TaskResponse generateTask(TaskParamsRequest params, User user) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
@@ -59,12 +71,11 @@ public class TaskService {
         Task task = parseAndBuildTask(rawJson, params, user, false);
         Task savedTask = taskRepository.save(task);
 
-        // Self-Service Rule: Automatically assign task to student
         if (user.getRole() == Role.STUDENT) {
             TaskAssignment selfAssignment = TaskAssignment.builder()
                 .task(savedTask)
                 .student(user)
-                .assignedBy(user) // self-assignment
+                .assignedBy(user)
                 .status(AssignmentStatus.IN_PROGRESS)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -75,6 +86,12 @@ public class TaskService {
         return TaskResponse.fromEntity(savedTask);
     }
 
+    /**
+     * @brief Generates a transient task preview without persisting records in the database.
+     * @param params Generation parameters.
+     * @param user User requesting the preview.
+     * @return TaskResponse DTO containing preview questions.
+     */
     public TaskResponse previewTask(TaskParamsRequest params, User user) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
 
@@ -93,6 +110,13 @@ public class TaskService {
         return TaskResponse.fromEntity(task);
     }
 
+    /**
+     * @brief Generates and persists a task marked as a reusable educator template.
+     * @param params Generation parameters.
+     * @param teacher Educator creating the template.
+     * @return TaskResponse DTO of the saved template task.
+     * @throws ForbiddenException if caller does not possess educator or administrator privileges.
+     */
     @Transactional
     public TaskResponse saveAsTemplate(TaskParamsRequest params, User teacher) {
         if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
@@ -114,6 +138,14 @@ public class TaskService {
         return TaskResponse.fromEntity(saved);
     }
 
+    /**
+     * @brief Assigns a task to all active students across one or more teacher groups.
+     * @param taskId Unique identifier of the task.
+     * @param request Assignment details including group IDs and optional due date.
+     * @param teacher Educator assigning the task.
+     * @throws ForbiddenException if caller is not an educator or does not own the target group.
+     * @throws ResourceNotFoundException if task or target group does not exist.
+     */
     @Transactional
     public void assignTask(UUID taskId, AssignTaskRequest request, User teacher) {
         if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
@@ -151,6 +183,11 @@ public class TaskService {
         }
     }
 
+    /**
+     * @brief Retrieves all tasks accessible to the specified user.
+     * @param user User requesting accessible tasks.
+     * @return List of TaskResponse DTOs.
+     */
     @Transactional(readOnly = true)
     public List<TaskResponse> getTasksForUser(User user) {
         return taskRepository.findAllAccessibleForUser(user.getId()).stream()
@@ -158,6 +195,12 @@ public class TaskService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * @brief Retrieves a specific task by its unique identifier.
+     * @param taskId Unique identifier of the task.
+     * @return TaskResponse DTO containing full task details and questions.
+     * @throws ResourceNotFoundException if task cannot be found.
+     */
     @Transactional(readOnly = true)
     public TaskResponse getTaskById(UUID taskId) {
         Task task = taskRepository.findById(taskId)
@@ -165,6 +208,14 @@ public class TaskService {
         return TaskResponse.fromEntity(task);
     }
 
+    /**
+     * @brief Parses AI-generated JSON into structured Task and TaskQuestion entities.
+     * @param rawJson Raw JSON string returned from AI model.
+     * @param params Generation request parameters.
+     * @param user User initiating the generation.
+     * @param isTemplate Flag indicating if the task is an educator template.
+     * @return Populated Task entity.
+     */
     private Task parseAndBuildTask(String rawJson, TaskParamsRequest params, User user, boolean isTemplate) {
         Task task = Task.builder()
             .type(params.getTaskType())

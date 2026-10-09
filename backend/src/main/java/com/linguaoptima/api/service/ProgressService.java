@@ -2,7 +2,6 @@ package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.ProgressRecord;
-import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.NotificationType;
@@ -20,6 +19,10 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * @file ProgressService.java
+ * @brief Service managing student topic mastery, knowledge gap tracking, and CEFR level-up workflows.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +33,13 @@ public class ProgressService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
+    /**
+     * @brief Updates topic mastery record based on a student submission answer and evaluates level-up readiness.
+     * @param student The student completing the exercise.
+     * @param grammarTopic Grammar topic or skill category.
+     * @param isCorrect Whether the answer or submission was evaluated as correct/passed.
+     * @return Updated ProgressRecord entity.
+     */
     @Transactional
     public ProgressRecord updateFromSubmission(User student, String grammarTopic, boolean isCorrect) {
         final String topic = (grammarTopic == null || grammarTopic.isBlank()) ? "General Grammar" : grammarTopic;
@@ -58,13 +68,16 @@ public class ProgressService {
         return saved;
     }
 
+    /**
+     * @brief Checks if student has achieved 85%+ mastery across 80%+ of CEFR level topics and triggers level-up notification.
+     * @param student The student whose progress is being evaluated.
+     */
     @Transactional
     public void checkCefrLevelUp(User student) {
         if (student.getCefrLevel() == CefrLevel.C1) {
-            return; // Highest level
+            return;
         }
 
-        // 7-day cooldown check
         if (student.getLevelUpSuggestedAt() != null &&
             student.getLevelUpSuggestedAt().isAfter(LocalDateTime.now().minusDays(7))) {
             return;
@@ -86,7 +99,7 @@ public class ProgressService {
         }
 
         double ratio = (double) masteredCount / levelTopics.size();
-        if (ratio >= 0.80) { // 80%+ topics mastered at 85%+
+        if (ratio >= 0.80) {
             student.setLevelUpSuggestedAt(LocalDateTime.now());
             userRepository.save(student);
 
@@ -98,6 +111,10 @@ public class ProgressService {
         }
     }
 
+    /**
+     * @brief Confirms student acceptance of a suggested CEFR level upgrade.
+     * @param student Authenticated student accepting the upgrade.
+     */
     @Transactional
     public void confirmLevelUp(User student) {
         CefrLevel next = student.getCefrLevel().getNextLevel();
@@ -109,6 +126,11 @@ public class ProgressService {
             NotificationType.SYSTEM);
     }
 
+    /**
+     * @brief Retrieves all topic progress records for the specified student.
+     * @param studentId Unique identifier of the student.
+     * @return List of ProgressResponse DTOs.
+     */
     @Transactional(readOnly = true)
     public List<ProgressResponse> getProgressForStudent(UUID studentId) {
         return progressRecordRepository.findByStudentId(studentId).stream()
@@ -116,6 +138,11 @@ public class ProgressService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * @brief Retrieves knowledge gaps (topics with mastery below 60%) for the specified student.
+     * @param studentId Unique identifier of the student.
+     * @return List of ProgressResponse DTOs representing deficient topics.
+     */
     @Transactional(readOnly = true)
     public List<ProgressResponse> getGapsForStudent(UUID studentId) {
         return progressRecordRepository.findByStudentIdAndMasteryScoreLessThan(studentId, 0.6).stream()
@@ -123,6 +150,11 @@ public class ProgressService {
             .collect(Collectors.toList());
     }
 
+    /**
+     * @brief Aggregates progress metrics across all active students within a class group.
+     * @param groupId Unique identifier of the group.
+     * @return Aggregated list of ProgressResponse DTOs per topic.
+     */
     @Transactional(readOnly = true)
     public List<ProgressResponse> getGroupProgress(UUID groupId) {
         List<GroupStudent> activeStudents = groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId);

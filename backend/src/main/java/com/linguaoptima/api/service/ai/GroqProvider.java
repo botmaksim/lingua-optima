@@ -12,6 +12,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @file GroqProvider.java
+ * @brief Ultra-low-latency Groq LPU inference provider using Llama 3.1 models.
+ */
 @Slf4j
 @Component
 public class GroqProvider implements AIProvider {
@@ -20,6 +24,12 @@ public class GroqProvider implements AIProvider {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @brief Constructs a GroqProvider with injected API key and HTTP client components.
+     * @param apiKey Configured Groq API key.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
     @Autowired
     public GroqProvider(
         @Value("${app.ai.groq.api-key:dummy-groq-key}") String apiKey,
@@ -31,11 +41,21 @@ public class GroqProvider implements AIProvider {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * @brief Returns provider identifier name "GROQ".
+     * @return "GROQ" string.
+     */
     @Override
     public String getProviderName() {
         return "GROQ";
     }
 
+    /**
+     * @brief Sends chat completion request to Groq API using llama-3.1-70b-versatile.
+     * @param prompt User prompt text.
+     * @return Model completion text content.
+     * @throws Exception if HTTP exchange fails or non-2xx status code is received.
+     */
     @Override
     public String complete(String prompt) throws Exception {
         String url = "https://api.groq.com/openai/v1/chat/completions";

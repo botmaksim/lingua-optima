@@ -16,6 +16,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+/**
+ * @file SubscriptionService.java
+ * @brief Subscription lifecycle and access tier enforcement service.
+ *
+ * Enforces tier restrictions across FREE, PREMIUM, and EDUCATOR tiers, including
+ * C1 CEFR content gating, feature permissions, and payment upgrades.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -25,6 +32,11 @@ public class SubscriptionService {
     private final PaymentService paymentService;
     private final UsageService usageService;
 
+    /**
+     * @brief Retrieves active user subscription or initializes a FREE tier subscription if none exists.
+     * @param user User whose subscription is requested.
+     * @return Existing or newly created Subscription entity.
+     */
     @Transactional
     public Subscription getOrCreateSubscription(User user) {
         return subscriptionRepository.findByUserId(user.getId())
@@ -35,6 +47,11 @@ public class SubscriptionService {
                 .build()));
     }
 
+    /**
+     * @brief Computes subscription details and remaining quotas for the specified user.
+     * @param user Authenticated user querying their subscription.
+     * @return SubscriptionResponse DTO containing tier, expiration date, and quota remaining.
+     */
     @Transactional(readOnly = true)
     public SubscriptionResponse getSubscription(User user) {
         Subscription subscription = getOrCreateSubscription(user);
@@ -49,6 +66,13 @@ public class SubscriptionService {
             .build();
     }
 
+    /**
+     * @brief Upgrades user subscription tier upon successful payment verification.
+     * @param user Authenticated user requesting the upgrade.
+     * @param targetTier Desired subscription tier (PREMIUM or EDUCATOR).
+     * @param paymentToken Payment processing token.
+     * @return PaymentResultResponse DTO containing transaction status and identifiers.
+     */
     @Transactional
     public PaymentResultResponse upgrade(User user, SubscriptionTier targetTier, String paymentToken) {
         if (targetTier == SubscriptionTier.FREE) {
@@ -73,6 +97,10 @@ public class SubscriptionService {
         return paymentResult;
     }
 
+    /**
+     * @brief Downgrades user subscription to the FREE tier and removes expiry restrictions.
+     * @param user User requesting downgrade.
+     */
     @Transactional
     public void downgrade(User user) {
         Subscription subscription = getOrCreateSubscription(user);
@@ -82,6 +110,12 @@ public class SubscriptionService {
         log.info("User {} downgraded to FREE tier", user.getEmail());
     }
 
+    /**
+     * @brief Verifies whether user tier grants access to requested CEFR level (e.g. C1 requires paid tier).
+     * @param user Authenticated user requesting task content.
+     * @param requestedLevel Requested CEFR proficiency level.
+     * @throws ForbiddenException if C1 content is requested by a FREE tier user.
+     */
     public void validateCefrLevelAccess(User user, CefrLevel requestedLevel) {
         Subscription subscription = getOrCreateSubscription(user);
         if (requestedLevel == CefrLevel.C1 && subscription.getTier() == SubscriptionTier.FREE) {
@@ -89,6 +123,12 @@ public class SubscriptionService {
         }
     }
 
+    /**
+     * @brief Evaluates whether a designated platform feature is permitted for user's active tier.
+     * @param user Authenticated user.
+     * @param feature Feature identifier name (DEPLOY, OVERRIDE, EXPORT, API_KEYS, UNLIMITED_EVALS, UNLIMITED_OCR, C1_LEVEL).
+     * @return True if permitted, false otherwise.
+     */
     public boolean isFeatureAllowed(User user, String feature) {
         Subscription subscription = getOrCreateSubscription(user);
         SubscriptionTier tier = subscription.getTier();

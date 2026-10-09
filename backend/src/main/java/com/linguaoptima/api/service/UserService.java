@@ -15,6 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+/**
+ * @file UserService.java
+ * @brief User profile management and GDPR account lifecycle service.
+ *
+ * Provides operations to retrieve current user details, update profile fields,
+ * change account passwords, and execute complete GDPR-compliant cascade deletions.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +37,12 @@ public class UserService {
     private final SessionStateRepository sessionStateRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * @brief Retrieves fresh user profile details for the authenticated user.
+     * @param user Authenticated user principal.
+     * @return UserResponse DTO containing updated profile data.
+     * @throws ResourceNotFoundException if the user record does not exist in the database.
+     */
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(User user) {
         User fresh = userRepository.findById(user.getId())
@@ -37,6 +50,13 @@ public class UserService {
         return UserResponse.fromEntity(fresh);
     }
 
+    /**
+     * @brief Updates user profile fields such as full name, display alias, and CEFR level.
+     * @param user Authenticated user principal.
+     * @param request Update payload with optional fields.
+     * @return UserResponse DTO reflecting the updated profile state.
+     * @throws ResourceNotFoundException if the user record does not exist.
+     */
     @Transactional
     public UserResponse updateUser(User user, UpdateUserRequest request) {
         User existing = userRepository.findById(user.getId())
@@ -56,6 +76,13 @@ public class UserService {
         return UserResponse.fromEntity(saved);
     }
 
+    /**
+     * @brief Changes the account password after verifying the existing password credentials.
+     * @param user Authenticated user principal.
+     * @param request Password change payload containing old and new passwords.
+     * @throws ResourceNotFoundException if the user record does not exist.
+     * @throws ForbiddenException if the current password does not match the stored hash.
+     */
     @Transactional
     public void changePassword(User user, ChangePasswordRequest request) {
         User existing = userRepository.findById(user.getId())
@@ -71,15 +98,19 @@ public class UserService {
     }
 
     /**
-     * GDPR Cascade Deletion:
-     * Removes all PII, API keys, progress records, notifications, subscriptions, and memberships.
+     * @brief Executes GDPR-compliant cascade deletion for the authenticated user.
+     *
+     * In accordance with privacy and data protection regulations, permanently removes
+     * all associated personal data including BYOK API keys, progress history, notifications,
+     * subscriptions, usage counters, group memberships, and active adaptive sessions.
+     *
+     * @param user Authenticated user principal requesting deletion.
      */
     @Transactional
     public void deleteAccount(User user) {
         UUID uid = user.getId();
         log.info("Executing GDPR account deletion for user {}", uid);
 
-        // Remove related user data
         apiKeyRepository.findAllByUserId(uid).forEach(apiKeyRepository::delete);
         progressRecordRepository.findByStudentId(uid).forEach(progressRecordRepository::delete);
         notificationRepository.findByUserIdOrderByCreatedAtDesc(uid).forEach(notificationRepository::delete);

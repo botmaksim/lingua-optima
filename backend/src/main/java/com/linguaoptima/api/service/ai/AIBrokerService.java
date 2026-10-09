@@ -22,6 +22,13 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @file AIBrokerService.java
+ * @brief Multi-provider AI broker and fallback orchestration service.
+ *
+ * Implements intelligent model routing between primary (Groq/Gemini) and fallback models,
+ * custom BYOK user key routing, response caching via Redis, and asynchronous retry queueing.
+ */
 @Slf4j
 @Service
 public class AIBrokerService {
@@ -35,6 +42,17 @@ public class AIBrokerService {
     private final ObjectMapper objectMapper;
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * @brief Constructs an AIBrokerService with injected AI providers and repositories.
+     * @param groqProvider Default fast Groq provider.
+     * @param geminiProvider Multimodal Gemini provider.
+     * @param apiKeyRepository BYOK key repository.
+     * @param encryptionService Decryption service for BYOK credentials.
+     * @param pendingAiTaskRepository Repository for queuing failed inference tasks.
+     * @param restTemplate HTTP client for dynamic provider instantiation.
+     * @param objectMapper Jackson JSON mapper.
+     * @param stringRedisTemplate Optional Redis template for response caching.
+     */
     @Autowired
     public AIBrokerService(
         GroqProvider groqProvider,
@@ -56,6 +74,12 @@ public class AIBrokerService {
         this.stringRedisTemplate = stringRedisTemplate;
     }
 
+    /**
+     * @brief Generates task content via AI with 1-hour Redis caching and fallback protection.
+     * @param prompt Task generation prompt.
+     * @param user User initiating the generation.
+     * @return Raw JSON response containing generated questions and metadata.
+     */
     public String generateTaskContent(String prompt, User user) {
         checkUserRateLimit(user);
 
@@ -91,9 +115,14 @@ public class AIBrokerService {
         return result;
     }
 
+    /**
+     * @brief Evaluates and grades student essay using Gemini (fallback Groq), without caching.
+     * @param prompt Essay evaluation rubric prompt.
+     * @param user Authenticated student.
+     * @return AI evaluation JSON string.
+     */
     public String scoreEssay(String prompt, User user) {
         checkUserRateLimit(user);
-        // NO CACHING: Essay scoring is strictly unique per essay
         AIProvider customProvider = getUserCustomProvider(user).orElse(null);
         if (customProvider != null) {
             return executeWithUserKey(customProvider, prompt);
@@ -101,6 +130,12 @@ public class AIBrokerService {
         return executeWithFallback(geminiProvider, groqProvider, prompt, user, "ESSAY_SCORING");
     }
 
+    /**
+     * @brief Checks and scores grammar exercises using Groq (fallback Gemini).
+     * @param prompt Grammar evaluation prompt.
+     * @param user Authenticated student.
+     * @return AI evaluation JSON string.
+     */
     public String checkGrammar(String prompt, User user) {
         checkUserRateLimit(user);
         AIProvider customProvider = getUserCustomProvider(user).orElse(null);
@@ -110,6 +145,13 @@ public class AIBrokerService {
         return executeWithFallback(groqProvider, geminiProvider, prompt, user, "GRAMMAR_CHECK");
     }
 
+    /**
+     * @brief Executes inference using a user's decrypted custom BYOK key.
+     * @param provider Configured AI provider instance.
+     * @param prompt Prompt string.
+     * @return AI response string.
+     * @throws PaymentException if user's API key is rejected by the third-party provider.
+     */
     private String executeWithUserKey(AIProvider provider, String prompt) {
         try {
             return provider.complete(prompt);
@@ -119,6 +161,16 @@ public class AIBrokerService {
         }
     }
 
+    /**
+     * @brief Executes inference with automatic fallback between primary and secondary providers.
+     * @param primary Preferred primary provider.
+     * @param secondary Fallback secondary provider.
+     * @param prompt Input prompt.
+     * @param user User initiating the request.
+     * @param taskType Task category identifier for queue tracking.
+     * @return AI response string.
+     * @throws AIServiceException if all providers fail, after enqueuing for background processing.
+     */
     private String executeWithFallback(AIProvider primary, AIProvider secondary, String prompt, User user, String taskType) {
         try {
             log.info("Attempting primary AI provider: {}", primary.getProviderName());
@@ -148,6 +200,11 @@ public class AIBrokerService {
         }
     }
 
+    /**
+     * @brief Resolves custom BYOK provider configured for the user if available.
+     * @param user User requesting AI generation.
+     * @return Optional containing AIProvider, or empty if standard system keys are to be used.
+     */
     private Optional<AIProvider> getUserCustomProvider(User user) {
         if (user == null || user.getId() == null) {
             return Optional.empty();
@@ -168,6 +225,11 @@ public class AIBrokerService {
         };
     }
 
+    /**
+     * @brief Checks daily burst limits on AI requests per user in Redis (max 500 requests/day).
+     * @param user Authenticated user.
+     * @throws QuotaExceededException if daily request ceiling is breached.
+     */
     private void checkUserRateLimit(User user) {
         if (user == null || user.getId() == null || stringRedisTemplate == null) {
             return;
@@ -178,7 +240,7 @@ public class AIBrokerService {
             if (count != null && count == 1L) {
                 stringRedisTemplate.expire(rateLimitKey, Duration.ofHours(24));
             }
-            if (count != null && count > 500L) { // Daily burst ceiling
+            if (count != null && count > 500L) {
                 throw new QuotaExceededException("Daily AI request limit reached. Please try again later.");
             }
         } catch (QuotaExceededException e) {
@@ -188,6 +250,11 @@ public class AIBrokerService {
         }
     }
 
+    /**
+     * @brief Computes SHA-256 hash string for prompt caching.
+     * @param text Prompt string to hash.
+     * @return Hexadecimal SHA-256 string.
+     */
     private String sha256(String text) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

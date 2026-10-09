@@ -9,6 +9,10 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @file OpenAIProvider.java
+ * @brief OpenAI API provider integration supporting BYOK user keys and gpt-4o-mini inference.
+ */
 @Component
 public class OpenAIProvider implements AIProvider {
 
@@ -16,21 +20,42 @@ public class OpenAIProvider implements AIProvider {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @brief Constructs an OpenAIProvider with default dummy credentials.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
     public OpenAIProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this("dummy-openai-key", restTemplate, objectMapper);
     }
 
+    /**
+     * @brief Constructs an OpenAIProvider with explicit API key.
+     * @param apiKey OpenAI API secret key.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
     public OpenAIProvider(String apiKey, RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.apiKey = apiKey;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * @brief Returns provider identifier name "OPENAI".
+     * @return "OPENAI" string.
+     */
     @Override
     public String getProviderName() {
         return "OPENAI";
     }
 
+    /**
+     * @brief Sends chat completion request to OpenAI API using gpt-4o-mini.
+     * @param prompt Input prompt text.
+     * @return Model response text.
+     * @throws Exception if HTTP exchange fails or non-2xx status code is returned.
+     */
     @Override
     public String complete(String prompt) throws Exception {
         String url = "https://api.openai.com/v1/chat/completions";

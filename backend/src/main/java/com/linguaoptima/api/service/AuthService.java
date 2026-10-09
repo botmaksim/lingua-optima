@@ -14,7 +14,6 @@ import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.exception.UnauthorizedException;
 import com.linguaoptima.api.repository.SubscriptionRepository;
 import com.linguaoptima.api.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -29,6 +28,13 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file AuthService.java
+ * @brief Authentication and user onboarding service.
+ *
+ * Handles account registration, credential authentication, JWT token refresh,
+ * Redis session persistence, logout revocation, and rate limiting for authentication attempts.
+ */
 @Slf4j
 @Service
 public class AuthService {
@@ -39,6 +45,14 @@ public class AuthService {
     private final JwtService jwtService;
     private final StringRedisTemplate stringRedisTemplate;
 
+    /**
+     * @brief Constructs an AuthService instance with injected repositories, encoders, and services.
+     * @param userRepository Repository for user entities.
+     * @param subscriptionRepository Repository for subscription tier entities.
+     * @param passwordEncoder BCrypt password encoder for secure hashing.
+     * @param jwtService Service for creating and validating JWT tokens.
+     * @param stringRedisTemplate Optional Redis template for session token storage and rate limiting.
+     */
     public AuthService(
             UserRepository userRepository,
             SubscriptionRepository subscriptionRepository,
@@ -53,6 +67,12 @@ public class AuthService {
         this.stringRedisTemplate = stringRedisTemplate;
     }
 
+    /**
+     * @brief Registers a new user account and assigns initial subscription tier.
+     * @param request Registration payload containing email, password, full name, and requested role.
+     * @return TokenResponse containing access token and user profile information.
+     * @throws IllegalArgumentException if the email is already registered in the system.
+     */
     @Transactional
     public TokenResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -71,7 +91,6 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        // Auto-assign FREE subscription (or EDUCATOR if registered as teacher)
         SubscriptionTier initialTier = (role == Role.TEACHER) ? SubscriptionTier.EDUCATOR : SubscriptionTier.FREE;
         subscriptionRepository.save(Subscription.builder()
             .user(savedUser)
@@ -89,6 +108,13 @@ public class AuthService {
             .build();
     }
 
+    /**
+     * @brief Authenticates a user with email and password and issues JWT access and refresh tokens.
+     * @param request Login credentials payload.
+     * @return TokenResponse containing access token and user profile information.
+     * @throws BadCredentialsException if the email is not found or the password hash does not match.
+     * @throws QuotaExceededException if rate limit of 10 attempts per 15 minutes is exceeded.
+     */
     @Transactional(readOnly = true)
     public TokenResponse login(LoginRequest request) {
         String email = request.getEmail().toLowerCase().trim();
@@ -111,6 +137,13 @@ public class AuthService {
             .build();
     }
 
+    /**
+     * @brief Issues a new access token using a valid refresh token.
+     * @param refreshToken The active refresh token presented by the client.
+     * @return TokenResponse containing a fresh access token and user profile details.
+     * @throws UnauthorizedException if the refresh token is missing, expired, or revoked in Redis.
+     * @throws ResourceNotFoundException if the user associated with the token cannot be found.
+     */
     public TokenResponse refreshToken(String refreshToken) {
         if (refreshToken == null || !jwtService.isTokenValid(refreshToken)) {
             throw new UnauthorizedException("Invalid or expired refresh token");
@@ -119,7 +152,6 @@ public class AuthService {
         UUID userId = jwtService.extractUserId(refreshToken);
         String email = jwtService.extractEmail(refreshToken);
 
-        // Verify token against Redis store
         String tokenHash = hashToken(refreshToken);
         String redisKey = "refresh_token:" + tokenHash;
         if (stringRedisTemplate != null) {
@@ -139,6 +171,10 @@ public class AuthService {
             .build();
     }
 
+    /**
+     * @brief Revokes a specific refresh token upon user logout.
+     * @param refreshToken The refresh token string to revoke from Redis.
+     */
     public void logout(String refreshToken) {
         if (refreshToken != null && stringRedisTemplate != null) {
             String tokenHash = hashToken(refreshToken);
@@ -146,6 +182,10 @@ public class AuthService {
         }
     }
 
+    /**
+     * @brief Revokes all active refresh tokens for the specified user across all client devices.
+     * @param user The user whose active sessions should be invalidated.
+     */
     public void logoutAll(User user) {
         if (stringRedisTemplate != null && user != null) {
             String pattern = "refresh_tokens:" + user.getId() + ":*";
@@ -156,12 +196,22 @@ public class AuthService {
         }
     }
 
+    /**
+     * @brief Initiates a password reset flow for the provided email address.
+     * @param request Password reset payload containing user email.
+     * @throws ResourceNotFoundException if no user is registered with the provided email.
+     */
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
             .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
         log.info("Password reset request processed for email: {}", user.getEmail());
     }
 
+    /**
+     * @brief Enforces authentication rate limits per email address using Redis sliding counters.
+     * @param email The target email address being checked.
+     * @throws QuotaExceededException if more than 10 attempts occur within a 15-minute window.
+     */
     private void checkAuthRateLimit(String email) {
         if (stringRedisTemplate == null) return;
         try {
@@ -180,6 +230,11 @@ public class AuthService {
         }
     }
 
+    /**
+     * @brief Stores an active refresh token in Redis with a 30-day expiration time.
+     * @param userId Unique identifier of the user.
+     * @param refreshToken The raw refresh token string to hash and store.
+     */
     private void saveRefreshTokenInRedis(UUID userId, String refreshToken) {
         if (stringRedisTemplate == null) return;
         try {
@@ -190,6 +245,11 @@ public class AuthService {
         }
     }
 
+    /**
+     * @brief Calculates a cryptographic SHA-256 hash of a token string for safe key indexing.
+     * @param token The raw token string to hash.
+     * @return Hexadecimal representation of the SHA-256 digest.
+     */
     private String hashToken(String token) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

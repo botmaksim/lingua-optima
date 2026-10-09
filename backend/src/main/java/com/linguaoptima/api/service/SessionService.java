@@ -21,6 +21,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.*;
 
+/**
+ * @file SessionService.java
+ * @brief Manages interactive Computerized Adaptive Testing (CAT) sessions for students.
+ *
+ * Implements Item Response Theory / CAT logic where question difficulty dynamically adjusts
+ * between levels 1 and 4 based on student performance, tracking answers and computing
+ * weighted mastery upon completion.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -34,6 +42,14 @@ public class SessionService {
     private final GamificationService gamificationService;
     private final ObjectMapper objectMapper;
 
+    /**
+     * @brief Initiates a new adaptive testing session for a student's task assignment.
+     * @param assignmentId Unique identifier of the task assignment.
+     * @param student The student initiating the session.
+     * @return Newly initialized SessionState entity.
+     * @throws ResourceNotFoundException if assignment does not exist.
+     * @throws ForbiddenException if assignment does not belong to the requesting student.
+     */
     @Transactional
     public SessionState startSession(UUID assignmentId, User student) {
         TaskAssignment assignment = taskAssignmentRepository.findById(assignmentId)
@@ -50,7 +66,7 @@ public class SessionService {
             .assignment(assignment)
             .student(student)
             .currentQuestionIndex(0)
-            .currentDifficulty(2) // Initial: MEDIUM = 2
+            .currentDifficulty(2)
             .answersJson("[]")
             .status(SessionStatus.IN_PROGRESS)
             .startedAt(LocalDateTime.now())
@@ -60,12 +76,24 @@ public class SessionService {
         return sessionStateRepository.save(state);
     }
 
+    /**
+     * @brief Retrieves the current active adaptive session for a student if one exists.
+     * @param student The student whose active session is queried.
+     * @return Optional containing the active SessionState, or empty if none.
+     */
     @Transactional(readOnly = true)
     public Optional<SessionState> getActiveSession(User student) {
         return sessionStateRepository.findFirstByStudentIdAndStatusOrderByStartedAtDesc(
             student.getId(), SessionStatus.IN_PROGRESS);
     }
 
+    /**
+     * @brief Determines and returns the next adaptive question matched to current session difficulty.
+     * @param sessionId Unique identifier of the adaptive session.
+     * @param student The student requesting the question.
+     * @return QuestionResponse DTO containing the question and available options.
+     * @throws ResourceNotFoundException if session or questions cannot be found.
+     */
     @Transactional(readOnly = true)
     public QuestionResponse getNextQuestion(UUID sessionId, User student) {
         SessionState session = getSessionAndVerify(sessionId, student);
@@ -82,7 +110,6 @@ public class SessionService {
             throw new ResourceNotFoundException("No questions available for this task.");
         }
 
-        // Pick next question not yet answered
         List<Map<String, Object>> recordedAnswers = parseAnswers(session.getAnswersJson());
         Set<UUID> answeredIds = new HashSet<>();
         for (Map<String, Object> ans : recordedAnswers) {
@@ -98,6 +125,14 @@ public class SessionService {
         return QuestionResponse.fromEntity(nextQ);
     }
 
+    /**
+     * @brief Evaluates an answer submission, adjusts CAT difficulty level, updates progress, and records state.
+     * @param sessionId Unique identifier of the active session.
+     * @param request Student's submitted answer payload.
+     * @param student Authenticated student answering the question.
+     * @return AnswerFeedbackResponse DTO indicating correctness, next difficulty, and completion status.
+     * @throws ResourceNotFoundException if session or question cannot be found.
+     */
     @Transactional
     public AnswerFeedbackResponse submitAnswer(UUID sessionId, AnswerRequest request, User student) {
         SessionState session = getSessionAndVerify(sessionId, student);
@@ -107,17 +142,14 @@ public class SessionService {
 
         boolean isCorrect = question.getCorrectAnswer().trim().equalsIgnoreCase(request.getAnswer().trim());
 
-        // CAT Algorithm: Adjust difficulty
         int oldDiff = session.getCurrentDifficulty();
         int newDiff = isCorrect ? Math.min(oldDiff + 1, 4) : Math.max(oldDiff - 1, 1);
         session.setCurrentDifficulty(newDiff);
         session.setCurrentQuestionIndex(session.getCurrentQuestionIndex() + 1);
         session.setLastActiveAt(LocalDateTime.now());
 
-        // Update topic mastery
         progressService.updateFromSubmission(student, question.getGrammarRule(), isCorrect);
 
-        // Record answer
         List<Map<String, Object>> answers = parseAnswers(session.getAnswersJson());
         answers.add(Map.of(
             "questionId", question.getId().toString(),
@@ -149,6 +181,12 @@ public class SessionService {
             .build();
     }
 
+    /**
+     * @brief Concludes an active session manually, computing final score and saving submission record.
+     * @param sessionId Unique identifier of the adaptive session.
+     * @param student Authenticated student completing the session.
+     * @return SubmissionResultResponse DTO reflecting the final graded result.
+     */
     @Transactional
     public SubmissionResultResponse completeSession(UUID sessionId, User student) {
         SessionState session = getSessionAndVerify(sessionId, student);
@@ -175,8 +213,14 @@ public class SessionService {
         return SubmissionResultResponse.fromEntity(sub);
     }
 
+    /**
+     * @brief Internal helper to compute difficulty-weighted mastery score and update gamification streak.
+     * @param session Adaptive session state entity.
+     * @param student The student being evaluated.
+     * @param answers Parsed list of all recorded answers in the session.
+     * @return Rounded mastery score between 0.0 and 1.0.
+     */
     private double completeSessionInternal(SessionState session, User student, List<Map<String, Object>> answers) {
-        // Mastery score formula: (sum of correctly_answered_difficulty_levels) / (sum of all_difficulty_levels)
         int correctDiffSum = 0;
         int totalDiffSum = 0;
 
@@ -211,6 +255,14 @@ public class SessionService {
         return roundedScore;
     }
 
+    /**
+     * @brief Validates session existence and verifies that it belongs to the authenticated student.
+     * @param sessionId Unique identifier of the session.
+     * @param student The student requesting session access.
+     * @return Validated SessionState entity.
+     * @throws ResourceNotFoundException if session is not found.
+     * @throws ForbiddenException if session belongs to another user.
+     */
     private SessionState getSessionAndVerify(UUID sessionId, User student) {
         SessionState session = sessionStateRepository.findById(sessionId)
             .orElseThrow(() -> new ResourceNotFoundException("Session not found: " + sessionId));
@@ -220,6 +272,11 @@ public class SessionService {
         return session;
     }
 
+    /**
+     * @brief Deserializes session answers JSON string into structured answer maps.
+     * @param json Serialized JSON array of answer maps.
+     * @return List of answer maps.
+     */
     private List<Map<String, Object>> parseAnswers(String json) {
         if (json == null || json.isBlank()) return new ArrayList<>();
         try {
@@ -229,6 +286,11 @@ public class SessionService {
         }
     }
 
+    /**
+     * @brief Serializes a list of answer maps into JSON string.
+     * @param answers List of answer maps to serialize.
+     * @return JSON array string representation.
+     */
     private String writeAnswers(List<Map<String, Object>> answers) {
         try {
             return objectMapper.writeValueAsString(answers);
