@@ -21,8 +21,18 @@ export const LevelUpModal: React.FC = () => {
 
   if (!isOpen || !user) return null;
 
-  const currentLevel = user.cefrLevel;
-  const nextLevel = (currentLevel === 'B1' ? 'B2' : 'C1') as CefrLevel;
+  const NEXT_LEVEL_MAP: Record<CefrLevel, CefrLevel> = {
+    A1: 'A2',
+    A2: 'B1',
+    B1: 'B2',
+    B2: 'C1',
+    C1: 'C2',
+    C2: 'C2',
+  };
+
+  const currentLevel: CefrLevel = user?.cefrLevel || 'A1';
+  if (currentLevel === 'C2') return null;
+  const nextLevel = NEXT_LEVEL_MAP[currentLevel] || 'A2';
 
   /**
    * @brief Event handler or helper executing handle confirm.

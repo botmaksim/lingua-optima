@@ -23,8 +23,25 @@ import {
 } from '../../constants/aiModels';
 
 const CEFR_TOPICS: Record<CefrLevel, string[]> = {
+  A1: [
+    'Present Simple (to be & common verbs)',
+    'Articles (a, an, the) & Demonstratives',
+    'Basic Prepositions of Place & Time (in, at, on)',
+    "Can / Can't for Ability & Permission",
+    "Possessive Adjectives & Possessive 's",
+    'Imperatives & Basic Question Formation',
+  ],
+  A2: [
+    'Past Simple (Regular & Irregular Verbs)',
+    "Future with 'Going to' vs 'Will'",
+    'Comparative and Superlative Adjectives',
+    'Countable vs Uncountable Nouns (some, any, much, many)',
+    'Have to & Must (Basic Rules)',
+    'Present Continuous for Future Arrangements',
+  ],
   B1: [
     'Present Perfect vs Past Simple',
+    'Past Continuous',
     'Conditionals (First & Second)',
     'Modal Verbs of Obligation',
     'Passive Voice (Basic)',
@@ -34,18 +51,27 @@ const CEFR_TOPICS: Record<CefrLevel, string[]> = {
   B2: [
     'Third & Mixed Conditionals',
     'Passive Voice (Advanced & Causative)',
+    'Reported Speech',
+    'Wish & If Only Structures',
+    'Modal Verbs of Deduction',
     'Inversion for Emphasis',
     'Participle Clauses',
-    'Subjunctive & Wish Structures',
-    'Advanced Modal Verbs',
   ],
   C1: [
+    'Advanced Inversion & Fronting',
+    'Subjunctive Mood',
     'Cleft Sentences',
-    'Inversion with Negative Adverbials',
     'Complex Gerunds & Infinitives',
-    'Advanced Subjunctive',
     'Discourse Markers & Nuance',
     'Ellipsis & Substitution',
+  ],
+  C2: [
+    'Stylistic Inversion & Rhetorical Fronting',
+    'Subtle Modal Nuances & Speculative Stance',
+    'Complex Cleft Constructions & Focalization',
+    'Idiomatic Phrasal Collocations & Register Shifts',
+    'Advanced Ellipsis, Substitution & Cohesive Ties',
+    'Figurative Language & Lexical Precision',
   ],
 };
 
@@ -61,8 +87,10 @@ export const GenerateTask: React.FC = () => {
   const { openUpgradeWall } = useUIStore();
   const navigate = useNavigate();
 
-  const [cefrLevel, setCefrLevel] = useState<CefrLevel>(user?.cefrLevel || 'B1');
-  const [grammarTopic, setGrammarTopic] = useState<string>(CEFR_TOPICS[cefrLevel][0]);
+  const [cefrLevel, setCefrLevel] = useState<CefrLevel>(user?.cefrLevel || 'A1');
+  const [grammarTopic, setGrammarTopic] = useState<string>(
+    CEFR_TOPICS[user?.cefrLevel || 'A1']?.[0] || CEFR_TOPICS.A1[0]
+  );
   const [domain, setDomain] = useState<string>(DOMAINS[0]);
   const [taskType, setTaskType] = useState<TaskType>('MCQ');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('MEDIUM');
@@ -237,19 +265,19 @@ export const GenerateTask: React.FC = () => {
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Target CEFR Level
           </label>
-          <div className="grid grid-cols-3 gap-3">
-            {(['B1', 'B2', 'C1'] as CefrLevel[]).map((level) => (
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => (
               <button
                 type="button"
                 key={level}
                 onClick={() => handleCefrChange(level)}
-                className={`py-3 px-4 rounded-2xl border text-sm font-bold flex items-center justify-center space-x-2 transition ${
+                className={`py-2.5 px-3 rounded-2xl border text-xs sm:text-sm font-bold flex items-center justify-center space-x-1.5 transition ${
                   cefrLevel === level
                     ? 'border-primary bg-indigo-50/50 text-primary shadow-sm'
                     : 'border-slate-200 hover:border-slate-300 text-slate-600'
                 }`}
               >
-                <span>Level</span>
+                <span>{level}</span>
                 <CefrBadge level={level} size="sm" />
               </button>
             ))}

@@ -276,13 +276,13 @@ export const ConfigureTask: React.FC = () => {
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               CEFR Level
             </label>
-            <div className="grid grid-cols-3 gap-2">
-              {(['B1', 'B2', 'C1'] as CefrLevel[]).map((level) => (
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => (
                 <button
                   type="button"
                   key={level}
                   onClick={() => setCefrLevel(level)}
-                  className={`py-2.5 rounded-xl border text-xs font-bold flex items-center justify-center space-x-2 transition ${
+                  className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center space-x-1.5 transition ${
                     cefrLevel === level
                       ? 'border-primary bg-indigo-50 text-primary'
                       : 'border-slate-200 text-slate-600 hover:border-slate-300'

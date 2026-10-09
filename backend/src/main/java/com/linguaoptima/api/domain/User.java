@@ -66,7 +66,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "cefr_level", nullable = false)
     @Builder.Default
-    private CefrLevel cefrLevel = CefrLevel.B1;
+    private CefrLevel cefrLevel = CefrLevel.A1;
 
     /**
      * @brief Privacy-preserving alias displayed on intra-group leaderboards.
@@ -130,7 +130,7 @@ public class User {
             createdAt = LocalDateTime.now();
         }
         if (cefrLevel == null) {
-            cefrLevel = CefrLevel.B1;
+            cefrLevel = CefrLevel.A1;
         }
         if (displayAlias == null || displayAlias.isBlank()) {
             displayAlias = "Linguist #" + (id != null ? id.toString().substring(0, 8) : "Learner");

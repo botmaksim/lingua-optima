@@ -81,7 +81,7 @@ public class ProgressService {
      */
     @Transactional
     public void checkCefrLevelUp(User student) {
-        if (student.getCefrLevel() == CefrLevel.C1) {
+        if (student.getCefrLevel() == CefrLevel.C2) {
             return;
         }
 

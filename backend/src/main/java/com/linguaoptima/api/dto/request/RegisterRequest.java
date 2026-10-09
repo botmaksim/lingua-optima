@@ -4,6 +4,7 @@
  */
 package com.linguaoptima.api.dto.request;
 
+import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -40,4 +41,7 @@ public class RegisterRequest {
     /** @brief Field representing role in RegisterRequest. */
     @NotNull(message = "Role is required")
     private Role role;
+
+    /** @brief Optional initial CEFR proficiency level (defaults to A1). */
+    private CefrLevel cefrLevel;
 }

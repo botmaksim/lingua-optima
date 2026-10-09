@@ -117,22 +117,22 @@ public class SubscriptionService {
     }
 
     /**
-     * @brief Verifies whether user tier grants access to requested CEFR level (e.g. C1 requires paid tier).
+     * @brief Verifies whether user tier grants access to requested CEFR level (e.g. C1/C2 requires paid tier).
      * @param user Authenticated user requesting task content.
      * @param requestedLevel Requested CEFR proficiency level.
-     * @throws ForbiddenException if C1 content is requested by a FREE tier user.
+     * @throws ForbiddenException if C1 or C2 content is requested by a FREE tier user.
      */
     public void validateCefrLevelAccess(User user, CefrLevel requestedLevel) {
         Subscription subscription = getOrCreateSubscription(user);
-        if (requestedLevel == CefrLevel.C1 && subscription.getTier() == SubscriptionTier.FREE) {
-            throw new ForbiddenException("C1 CEFR level requires PREMIUM or EDUCATOR tier.");
+        if ((requestedLevel == CefrLevel.C1 || requestedLevel == CefrLevel.C2) && subscription.getTier() == SubscriptionTier.FREE) {
+            throw new ForbiddenException("C1 and C2 CEFR levels require PREMIUM or EDUCATOR tier.");
         }
     }
 
     /**
      * @brief Evaluates whether a designated platform feature is permitted for user's active tier.
      * @param user Authenticated user.
-     * @param feature Feature identifier name (DEPLOY, OVERRIDE, EXPORT, API_KEYS, UNLIMITED_EVALS, UNLIMITED_OCR, C1_LEVEL).
+     * @param feature Feature identifier name (DEPLOY, OVERRIDE, EXPORT, API_KEYS, UNLIMITED_EVALS, UNLIMITED_OCR, C1_LEVEL, C2_LEVEL).
      * @return True if permitted, false otherwise.
      */
     public boolean isFeatureAllowed(User user, String feature) {
@@ -141,7 +141,7 @@ public class SubscriptionService {
 
         return switch (feature.toUpperCase()) {
             case "DEPLOY", "OVERRIDE", "EXPORT", "API_KEYS" -> tier == SubscriptionTier.EDUCATOR;
-            case "UNLIMITED_EVALS", "UNLIMITED_OCR", "C1_LEVEL" -> tier != SubscriptionTier.FREE;
+            case "UNLIMITED_EVALS", "UNLIMITED_OCR", "C1_LEVEL", "C2_LEVEL" -> tier != SubscriptionTier.FREE;
             default -> true;
         };
     }

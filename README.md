@@ -1,6 +1,6 @@
 # 📚 Lingua Optima — Adaptive AI-Powered English Mastery Platform
 
-> **An interactive platform for mastering the English language (CEFR B1–C1)** featuring AI-driven task generation (Groq Qwen 3.8 27B, GPT-OSS 120B & Llama 4), essay evaluation aligned with IELTS/CEFR rubrics (Google Gemini 3.8 Flash & Extended Thinking), multi-provider & multi-model BYOK routing with live vendor model synchronization (DeepSeek V4.1 Flash / V4 Pro, Alibaba Qwen 3.8 Max, Moonshot Kimi K3, OpenAI GPT-6 Astra / 6.1 Sol, Anthropic Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5), handwritten homework recognition (Zero-Retention Tesseract OCR), and Computerized Adaptive Testing (CAT).
+> **An interactive platform for mastering the English language (CEFR A1–C2)** featuring AI-driven task generation (Groq Qwen 3.8 27B, GPT-OSS 120B & Llama 4), essay evaluation aligned with IELTS/CEFR rubrics (Google Gemini 3.8 Flash & Extended Thinking), multi-provider & multi-model BYOK routing with live vendor model synchronization (DeepSeek V4.1 Flash / V4 Pro, Alibaba Qwen 3.8 Max, Moonshot Kimi K3, OpenAI GPT-6 Astra / 6.1 Sol, Anthropic Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5), handwritten homework recognition (Zero-Retention Tesseract OCR), and Computerized Adaptive Testing (CAT).
 
 ---
 
@@ -28,12 +28,13 @@
 ## 🚀 Core Capabilities & Architectural Principles
 
 1. **6 Core Modules**:
-   - **Self-Service Task Generator** — AI generation of exercises (`MCQ`, `GAP_FILL`, `REWRITE`, `ESSAY`) across 36 CEFR grammar topics (B1, B2, C1) with per-task **AI Provider & Model Selection** synced live from vendor websites (DeepSeek V4.1 Flash / V4 Pro, Qwen 3.8 Max / Flash, Kimi K3 / K2.7, Gemini 3.8 Flash / Extended Thinking, Groq Qwen 3.8 27B / GPT-OSS 120B / Llama 4, GPT-6 Astra / 6.1 Sol / Luna, Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5).
+   - **Self-Service Task Generator** — AI generation of exercises (`MCQ`, `GAP_FILL`, `REWRITE`, `ESSAY`) across 38+ CEFR grammar topics spanning the complete 6-level ladder (**A1 Beginner**, **A2 Elementary**, **B1 Intermediate**, **B2 Upper-Intermediate**, **C1 Advanced**, **C2 Mastery**) with per-task **AI Provider & Model Selection** synced live from vendor websites (DeepSeek V4.1 Flash / V4 Pro, Qwen 3.8 Max / Flash, Kimi K3 / K2.7, Gemini 3.8 Flash / Extended Thinking, Groq Qwen 3.8 27B / GPT-OSS 120B / Llama 4, GPT-6 Astra / 6.1 Sol / Luna, Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5).
    - **Zero-Retention Homework OCR** — handwritten homework photo recognition processed strictly in RAM with immediate byte-array zeroing (`Arrays.fill(bytes, (byte) 0)`).
    - **AI Essay Scoring** — automated essay grading across 4 rubric criteria (*Task Achievement*, *Coherence & Cohesion*, *Lexical Resource*, *Grammatical Range & Accuracy*).
    - **Computerized Adaptive Testing (CAT)** — real-time question difficulty adjustment (scale 1–5) and difficulty-weighted mastery score calculation.
-   - **Progress & Gap Analytics** — topic mastery radar charts, weak-spot identification (`masteryScore < 60%`) and automated CEFR level-up recommendations (`>= 80%` across all topics in the current level).
-   - **Educator Portal** — student group management (up to 200 students per group), task deployment with AI model customization, manual AI grade adjustments (*Teacher Override*), and **PDF / CSV** report exports.
+   - **Progress & Gap Analytics** — topic mastery radar charts, weak-spot identification (`masteryScore < 60%`), baseline start at A1, and automated CEFR level-up recommendations (`>= 85%` mastery across `>= 80%` of syllabus topics).
+   - **Educator Portal & Cohort Management** — student group/cohort management (up to 200 students per group, join codes, email invitations), task deployment with AI model customization, manual AI grade adjustments (*Teacher Override*), and **PDF / CSV** report exports.
+   - **Self-Service Role Switching** — instant switching between Student and Educator modes via Profile (`PUT /api/users/me`), allowing users to both learn and teach.
 
 2. **Security, Authentication & Privacy (Security by Design)**:
    - **Dual Authentication (Email + Google OAuth2)** — supports classic email and password sign-in/registration (`POST /api/auth/login`, `POST /api/auth/register`) as well as one-click sign-in via **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) with ID token verification (`email_verified`, `aud`) via the Google `tokeninfo` API and automatic profile provisioning on first login.

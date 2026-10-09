@@ -6,6 +6,7 @@ package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
 import com.linguaoptima.api.domain.User;
+import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubscriptionTier;
 import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
@@ -130,6 +131,7 @@ class AuthServiceTest {
             .password("password123")
             .fullName("Jane Teacher")
             .role(Role.TEACHER)
+            .cefrLevel(CefrLevel.C1)
             .build();
 
         User teacher = User.builder()

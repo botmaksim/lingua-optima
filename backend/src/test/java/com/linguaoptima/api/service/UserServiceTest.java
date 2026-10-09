@@ -115,6 +115,7 @@ class UserServiceTest {
             .fullName("New Name")
             .displayAlias("Polyglot")
             .cefrLevel(CefrLevel.B2)
+            .role(Role.TEACHER)
             .build();
 
         when(userRepository.findById(sampleUser.getId())).thenReturn(Optional.of(sampleUser));
@@ -124,25 +125,30 @@ class UserServiceTest {
         assertEquals("New Name", res.getFullName());
         assertEquals("Polyglot", res.getDisplayAlias());
         assertEquals(CefrLevel.B2, res.getCefrLevel());
+        assertEquals(Role.TEACHER, res.getRole());
 
         UpdateUserRequest blankAndNullReq = UpdateUserRequest.builder()
             .fullName("   ")
             .displayAlias("   ")
             .cefrLevel(null)
+            .role(null)
             .build();
         UserResponse preserved1 = userService.updateUser(sampleUser, blankAndNullReq);
         assertEquals("New Name", preserved1.getFullName());
         assertEquals("Polyglot", preserved1.getDisplayAlias());
         assertEquals(CefrLevel.B2, preserved1.getCefrLevel());
+        assertEquals(Role.TEACHER, preserved1.getRole());
 
         UpdateUserRequest allNullReq = UpdateUserRequest.builder()
             .fullName(null)
             .displayAlias(null)
             .cefrLevel(null)
+            .role(null)
             .build();
         UserResponse preserved2 = userService.updateUser(sampleUser, allNullReq);
         assertEquals("New Name", preserved2.getFullName());
         assertEquals("Polyglot", preserved2.getDisplayAlias());
+        assertEquals(Role.TEACHER, preserved2.getRole());
     }
 
     /**

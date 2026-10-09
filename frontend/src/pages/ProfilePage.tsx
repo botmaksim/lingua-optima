@@ -4,11 +4,26 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Key, ShieldCheck, Trash2, CheckCircle2, Cpu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Key,
+  ShieldCheck,
+  Trash2,
+  CheckCircle2,
+  Cpu,
+  GraduationCap,
+  School,
+  BookOpen,
+  Sparkles,
+  HelpCircle,
+  ArrowRight,
+} from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { authApi } from '../api/authApi';
 import { apiKeyApi, ApiKeyItem } from '../api/apiKeyApi';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { CefrLevel, Role } from '../types/user';
 import {
   AI_PROVIDER_CATALOG,
   AIProviderType,
@@ -16,12 +31,22 @@ import {
   useProviderModels,
 } from '../constants/aiModels';
 
+const CEFR_LEVEL_METADATA: Record<CefrLevel, { title: string; desc: string }> = {
+  A1: { title: 'Beginner', desc: 'Basic vocabulary, simple present structures, and fundamental everyday expressions.' },
+  A2: { title: 'Elementary', desc: 'Past simple, basic future plans, everyday social exchanges and routines.' },
+  B1: { title: 'Intermediate', desc: 'Present perfect, conditionals, narrative tenses, and standard communication.' },
+  B2: { title: 'Upper-Intermediate', desc: 'Complex conditionals, passive nuances, argumentative fluency, and deduction.' },
+  C1: { title: 'Advanced', desc: 'Inversion, cleft clauses, stylistic subtleties, and sophisticated discourse.' },
+  C2: { title: 'Mastery', desc: 'Native-equivalent idiomatic precision, rhetorical fronting, and effortless subtlety.' },
+};
+
 /**
  * @brief User profile page component.
  * @return React component element.
  */
 export const ProfilePage: React.FC = () => {
-  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const { user, setUser } = useAuthStore();
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,6 +56,49 @@ export const ProfilePage: React.FC = () => {
   const [rawKey, setRawKey] = useState('');
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keyMessage, setKeyMessage] = useState<string | null>(null);
+
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
+
+  /**
+   * @brief Switches the authenticated user's role between STUDENT and TEACHER.
+   */
+  const handleToggleRole = async () => {
+    if (!user) return;
+    const nextRole: Role = user.role === 'TEACHER' ? 'STUDENT' : 'TEACHER';
+    setIsUpdatingProfile(true);
+    setProfileMessage(null);
+    try {
+      const updated = await authApi.updateProfile({ role: nextRole });
+      setUser(updated);
+      setProfileMessage(`Switched role to ${nextRole === 'TEACHER' ? 'Educator / Teacher' : 'Student'} mode.`);
+      setTimeout(() => setProfileMessage(null), 4000);
+    } catch (err: any) {
+      setProfileMessage(err.response?.data?.message || 'Failed to switch role.');
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  /**
+   * @brief Updates the user's target CEFR proficiency level across the A1-C2 ladder.
+   * @param level Selected CEFR level.
+   */
+  const handleSelectCefrLevel = async (level: CefrLevel) => {
+    if (!user || user.cefrLevel === level) return;
+    setIsUpdatingProfile(true);
+    setProfileMessage(null);
+    try {
+      const updated = await authApi.updateProfile({ cefrLevel: level });
+      setUser(updated);
+      setProfileMessage(`Proficiency level successfully updated to ${level} (${CEFR_LEVEL_METADATA[level].title}).`);
+      setTimeout(() => setProfileMessage(null), 3500);
+    } catch (err: any) {
+      setProfileMessage(err.response?.data?.message || 'Failed to update CEFR level.');
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
 
   /**
    * @brief Event handler updating selected AI provider and its default model.
@@ -106,20 +174,152 @@ export const ProfilePage: React.FC = () => {
         </p>
       </div>
 
+      {profileMessage && (
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs sm:text-sm font-semibold flex items-center space-x-2 animate-in fade-in duration-200">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          <span>{profileMessage}</span>
+        </div>
+      )}
+
+      {/* Account Info and Role Switcher Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white font-black text-2xl flex items-center justify-center shadow-md shadow-indigo-100">
-            {user.fullName.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <h2 className="text-lg font-bold text-slate-900">{user.fullName}</h2>
-              {user.cefrLevel && <CefrBadge level={user.cefrLevel} size="sm" />}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white font-black text-2xl flex items-center justify-center shadow-md shadow-indigo-100">
+              {user.fullName.charAt(0).toUpperCase()}
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 uppercase mt-2 inline-block">
-              Role: {user.role}
-            </span>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h2 className="text-lg font-bold text-slate-900">{user.fullName}</h2>
+                {user.cefrLevel && <CefrBadge level={user.cefrLevel} size="sm" />}
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
+              <div className="flex items-center space-x-2 mt-2">
+                <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider flex items-center space-x-1 ${
+                  user.role === 'TEACHER'
+                    ? 'bg-purple-100 text-purple-800 border border-purple-200'
+                    : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                }`}>
+                  {user.role === 'TEACHER' ? <School className="w-3 h-3 mr-1" /> : <GraduationCap className="w-3 h-3 mr-1" />}
+                  Role: {user.role === 'TEACHER' ? 'Educator (Преподаватель)' : 'Student (Ученик)'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <button
+              onClick={handleToggleRole}
+              disabled={isUpdatingProfile}
+              className="py-2.5 px-4 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition flex items-center justify-center space-x-2 disabled:opacity-50"
+            >
+              {user.role === 'TEACHER' ? (
+                <>
+                  <GraduationCap className="w-4 h-4 text-emerald-600" />
+                  <span>Switch to Student Mode</span>
+                </>
+              ) : (
+                <>
+                  <School className="w-4 h-4 text-purple-600" />
+                  <span>Switch to Teacher Mode</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => navigate(user.role === 'TEACHER' ? '/teacher' : '/student')}
+              className="py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm"
+            >
+              <span>{user.role === 'TEACHER' ? 'Teacher Hub' : 'Practice Tasks'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* CEFR Level Ladder Selector */}
+        <div className="pt-4 border-t border-slate-100 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 flex items-center space-x-2">
+                <BookOpen className="w-4 h-4 text-primary" />
+                <span>Target CEFR Proficiency Level</span>
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Current level is <strong>{user.cefrLevel || 'A1'}</strong>. Select any level to update your practice syllabus.
+              </p>
+            </div>
+            {user.cefrLevel && <CefrBadge level={user.cefrLevel} size="md" />}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
+            {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => {
+              const isSelected = user.cefrLevel === level;
+              const meta = CEFR_LEVEL_METADATA[level];
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => handleSelectCefrLevel(level)}
+                  disabled={isUpdatingProfile}
+                  className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between space-y-1.5 ${
+                    isSelected
+                      ? 'border-primary bg-indigo-50/60 ring-2 ring-primary/20 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50'
+                  } disabled:opacity-50`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-base font-black text-slate-900">{level}</span>
+                    <CefrBadge level={level} size="sm" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-slate-700 leading-tight">{meta.title}</p>
+                    <p className="text-[10px] text-slate-400 line-clamp-2 mt-0.5">{meta.desc}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Guide: Roles, Groups, and CEFR */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-5">
+        <div className="flex items-center space-x-2">
+          <HelpCircle className="w-5 h-5 text-accent" />
+          <h2 className="text-lg font-bold text-slate-900">Platform Guide: Roles, Groups, & CEFR</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-600">
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <h4 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
+              <School className="w-4 h-4 text-purple-600" />
+              <span>Роли и создание групп (Когорт)</span>
+            </h4>
+            <p className="leading-relaxed">
+              • <strong>Смена роли:</strong> Любой пользователь может в один клик переключаться между режимами «Ученик» и «Преподаватель» выше.
+            </p>
+            <p className="leading-relaxed">
+              • <strong>Создание групп:</strong> Перейдите во вкладку <a href="/groups" className="text-primary font-bold hover:underline">Когорты (/groups)</a>, нажмите «Создать когорту», введите название (например, «IELTS 2026 Group A»).
+            </p>
+            <p className="leading-relaxed">
+              • <strong>Назначение заданий:</strong> В конструкторе заданий выберите созданную когорту и нажмите «Deploy Task». Все студенты группы получат домашнее задание с дедлайном.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <h4 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>Шкала CEFR и стартовый уровень</span>
+            </h4>
+            <p className="leading-relaxed">
+              • <strong>Полная шкала 6 уровней:</strong> A1 (Beginner) → A2 (Elementary) → B1 (Intermediate) → B2 (Upper-Intermediate) → C1 (Advanced) → C2 (Mastery).
+            </p>
+            <p className="leading-relaxed">
+              • <strong>Почему A1 по умолчанию:</strong> Изначально платформа ориентировалась на экзамены уровня B1-C1. Теперь поддерживается полный путь с нуля (A1) с отдельным банком грамматических тем на каждом уровне.
+            </p>
+            <p className="leading-relaxed">
+              • <strong>Level Up:</strong> При достижении &gt;85% мастерства по &gt;80% тем уровня система предложит продвижение на следующий уровень. Вы также можете переключить уровень вручную в любой момент.
+            </p>
           </div>
         </div>
       </div>

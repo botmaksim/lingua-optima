@@ -4,7 +4,7 @@
  */
 
 import { axiosInstance, setAccessToken } from './axiosInstance';
-import { AuthResponse } from '../types/user';
+import { AuthResponse, User, CefrLevel, Role } from '../types/user';
 
 /**
  * @brief Exported const for auth api.
@@ -28,10 +28,23 @@ export const authApi = {
    * @param password Password.
    * @param fullName Full legal name.
    * @param role User role ('STUDENT' or 'TEACHER').
+   * @param cefrLevel Optional initial CEFR proficiency level.
    * @return Promise resolving to AuthResponse.
    */
-  register: async (email: string, password: string, fullName: string, role: string): Promise<AuthResponse> => {
-    const res = await axiosInstance.post<AuthResponse>('/auth/register', { email, password, fullName, role });
+  register: async (
+    email: string,
+    password: string,
+    fullName: string,
+    role: string,
+    cefrLevel?: CefrLevel
+  ): Promise<AuthResponse> => {
+    const res = await axiosInstance.post<AuthResponse>('/auth/register', {
+      email,
+      password,
+      fullName,
+      role,
+      cefrLevel,
+    });
     setAccessToken(res.data.accessToken);
     return res.data;
   },
@@ -47,7 +60,6 @@ export const authApi = {
     setAccessToken(res.data.accessToken);
     return res.data;
   },
-
 
   /**
    * @brief Exchanges valid HttpOnly cookie refresh token for a new access token.
@@ -73,17 +85,33 @@ export const authApi = {
   /**
    * @brief Requests password reset email dispatch.
    * @param email User account email.
+   * @param redirectUrl Optional redirect URL.
    */
-  forgotPassword: async (email: string): Promise<void> => {
-    await axiosInstance.post('/auth/forgot-password', { email });
+  forgotPassword: async (email: string, redirectUrl?: string): Promise<void> => {
+    await axiosInstance.post('/auth/forgot-password', { email, redirectUrl });
   },
 
   /**
    * @brief Retrieves latest user profile details.
    * @return Promise resolving to user profile object.
    */
-  getMe: async () => {
-    const res = await axiosInstance.get('/users/me');
+  getMe: async (): Promise<User> => {
+    const res = await axiosInstance.get<User>('/users/me');
+    return res.data;
+  },
+
+  /**
+   * @brief Updates user profile details including full name, display alias, CEFR level, or role.
+   * @param data Object with optional fullName, displayAlias, cefrLevel, role.
+   * @return Promise resolving to updated user profile.
+   */
+  updateProfile: async (data: {
+    fullName?: string;
+    displayAlias?: string;
+    cefrLevel?: CefrLevel;
+    role?: Role;
+  }): Promise<User> => {
+    const res = await axiosInstance.put<User>('/users/me', data);
     return res.data;
   },
 };

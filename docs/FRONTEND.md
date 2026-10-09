@@ -70,7 +70,7 @@ frontend/
 │   │   │   ├── MyUnits.tsx            — Filters: CEFR/Topic/Domain/Date. Task cards with name/date/score/type. Buttons per card: [Retry Task] [Delete]
 │   │   │   ├── Progress.tsx           — Grammar mastery radar chart, timeline score graph, topic/errors/mastery table, AI recommendations. Button: [Generate Targeted Task]
 │   │   │   ├── GroupLeaderboard.tsx   — Group-only leaderboard (teacher assigns group). Shows rank, display_alias (auto 'Linguist #ID' or custom), weekly score. NO global leaderboard.
-│   │   │   └── LevelUpModal.tsx       — 'You mastered B1! Ready for B2?' with [Yes, level up] [Stay on B1] buttons
+│   │   │   └── LevelUpModal.tsx       — Dynamic progression modal across all 6 levels (A1→A2→B1→B2→C1→C2) with [Yes, level up] [Stay on current level] buttons
 │   │   │
 │   │   ├── teacher/           — Teacher-only components
 │   │   │   ├── TeacherDashboard.tsx   — Group summary (avg score, activity), top-5 weak topics, class progress chart, recent submissions awaiting override. Buttons: [+ Create Group] [+ Configure Task] [View All Submissions]
@@ -98,7 +98,7 @@ frontend/
 │   │   └── uiStore.ts         — Theme, sidebar collapsed, etc.
 │   │
 │   ├── types/                 — TypeScript interfaces
-│   │   ├── user.ts            — User, Role, CefrLevel
+│   │   ├── user.ts            — User, Role ('STUDENT' | 'TEACHER' | 'ADMIN'), CefrLevel ('A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2')
 │   │   ├── task.ts            — Task, TaskQuestion, TaskParams (with provider & modelName), TaskType
 │   │   ├── submission.ts      — Submission, SubmissionResult, EssayScore
 │   │   ├── session.ts         — SessionState, AnswerFeedback
@@ -109,7 +109,7 @@ frontend/
 │   │
 │   ├── utils/                 — Utility functions
 │   │   ├── formatDate.ts
-│   │   ├── cefrColors.ts      — Color mapping for CEFR badges
+│   │   ├── cefrColors.ts      — Color mapping for CEFR badges (A1 teal, A2 cyan, B1 emerald, B2 sky, C1 purple, C2 amber)
 │   │   ├── wordCount.ts       — Essay word counter
 │   │   ├── textSanitizer.ts   — Sanitizes task content and AI feedback to strip internal system prompt markers
 │   │   └── offlineSync.ts     — IndexedDB + Background Sync logic
@@ -118,7 +118,7 @@ frontend/
 │       ├── Landing.tsx        — Hero block, 6 feature cards, [Get Started] [Log In] [View Demo] buttons
 │       ├── StudentApp.tsx     — Layout wrapper for student routes
 │       ├── TeacherApp.tsx     — Layout wrapper for teacher routes
-│       ├── ProfilePage.tsx    — Avatar, name, email, CEFR level, AI Provider & Model BYOK section (7 providers: DeepSeek, Qwen, Kimi, OpenAI, Anthropic, Gemini, Groq with modern 2026 models & AES-256-GCM encryption)
+│       ├── ProfilePage.tsx    — Avatar, name, email, role toggle (Student ⇄ Educator), 6-level CEFR selector (A1–C2), platform FAQ guide, AI Provider & Model BYOK section (7 providers: DeepSeek, Qwen, Kimi, OpenAI, Anthropic, Gemini, Groq with modern 2026 models & AES-256-GCM encryption)
 │       ├── SubscriptionPage.tsx — Free/Premium/Educator tier cards, current plan highlight, [Upgrade] buttons, payment stub
 │       └── NotFound.tsx
 │

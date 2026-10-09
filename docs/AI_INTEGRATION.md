@@ -335,14 +335,29 @@ flowchart TD
 
 ---
 
-## 8. CEFR Auto-Leveling
+## 8. CEFR Ladder & Auto-Leveling
 
-The system automatically recommends advancing to the next CEFR proficiency level when a student demonstrates consistent mastery.
+Lingua Optima implements the full 6-tier Common European Framework of Reference for Languages (CEFR) scale:
 
-- **Trigger:** Evaluated automatically after each completed submission.
-- **Condition:** Triggered when all grammar topics in the student's current CEFR level reach `mastery >= 80%`.
-- **Action:** Dispatches a `"Ready to level up?"` notification. If the student accepts, their profile is upgraded (`UPDATE users SET cefr_level = next`).
-- **Cooldown:** If the student declines or dismisses the prompt, the recommendation is suppressed for 7 days.
+```
+[A1: Beginner] ➔ [A2: Elementary] ➔ [B1: Intermediate] ➔ [B2: Upper-Intermediate] ➔ [C1: Advanced] ➔ [C2: Mastery]
+```
+
+### Why Start at A1 vs B1?
+Earlier iterations focused primarily on advanced Cambridge/IELTS test preparation (B1–C1 baseline). The system now supports complete language acquisition starting from absolute fundamentals (**A1 Beginner**):
+- **A1 Beginner:** Present simple, basic articles, demonstratives, everyday prepositions of time/place, basic imperatives.
+- **A2 Elementary:** Past simple regular/irregular verbs, going to vs will, comparative/superlative, countability rules.
+- **B1 Intermediate:** Present perfect vs past simple, first/second conditionals, defining relative clauses, used to & would.
+- **B2 Upper-Intermediate:** Third & mixed conditionals, passive causative, reported speech, wish clauses, modal deduction.
+- **C1 Advanced:** Negative inversion, fronting, cleft sentences, subjunctive mood, nuanced discourse markers.
+- **C2 Mastery:** Rhetorical fronting, stylistic inversion, idiomatic register shifts, subtle modal stances, complex cohesive ties.
+
+### Progression Mechanism:
+- **Trigger:** Evaluated automatically after each completed submission via `ProgressService.checkCefrLevelUp(student)`.
+- **Condition:** Triggered when the student achieves `>= 85%` mastery score across at least `80%` of the canonical syllabus topics for their current level.
+- **Action:** Sends a contextual `"Ready to level up to [Next Level]?"` notification and displays the `LevelUpModal`. Upon confirmation, advances user's CEFR level (`A1→A2`, `A2→B1`, `B1→B2`, `B2→C1`, `C1→C2`).
+- **Cooldown:** If dismissed, suppressed for 7 days.
+- **Manual Adjustment:** Students and teachers can also manually adjust their active CEFR level at any time in the Profile page.
 
 ---
 

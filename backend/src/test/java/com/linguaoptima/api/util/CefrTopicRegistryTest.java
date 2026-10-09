@@ -21,17 +21,15 @@ class CefrTopicRegistryTest {
      */
     @Test
     void testCefrTopics() {
-        List<String> b1 = CefrTopicRegistry.getTopicsForLevel(CefrLevel.B1);
-        assertNotNull(b1);
-        assertFalse(b1.isEmpty());
+        for (CefrLevel level : CefrLevel.values()) {
+            List<String> topics = CefrTopicRegistry.getTopicsForLevel(level);
+            assertNotNull(topics);
+            assertFalse(topics.isEmpty());
+        }
 
-        List<String> b2 = CefrTopicRegistry.getTopicsForLevel(CefrLevel.B2);
-        assertNotNull(b2);
-        assertFalse(b2.isEmpty());
-
-        List<String> c1 = CefrTopicRegistry.getTopicsForLevel(CefrLevel.C1);
-        assertNotNull(c1);
-        assertFalse(c1.isEmpty());
+        List<String> nullTopics = CefrTopicRegistry.getTopicsForLevel(null);
+        assertNotNull(nullTopics);
+        assertTrue(nullTopics.isEmpty());
 
         List<String> domains = CefrTopicRegistry.getCommonDomains();
         assertNotNull(domains);

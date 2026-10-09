@@ -85,6 +85,9 @@ public class UserService {
         if (request.getCefrLevel() != null) {
             existing.setCefrLevel(request.getCefrLevel());
         }
+        if (request.getRole() != null) {
+            existing.setRole(request.getRole());
+        }
 
         User saved = userRepository.save(existing);
         return UserResponse.fromEntity(saved);

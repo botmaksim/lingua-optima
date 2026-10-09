@@ -6,6 +6,7 @@ package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
 import com.linguaoptima.api.domain.User;
+import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubscriptionTier;
 import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
@@ -117,12 +118,14 @@ public class AuthService {
         }
 
         Role role = request.getRole() != null ? request.getRole() : Role.STUDENT;
+        CefrLevel cefrLevel = request.getCefrLevel() != null ? request.getCefrLevel() : CefrLevel.A1;
 
         User user = User.builder()
             .email(request.getEmail().toLowerCase().trim())
             .passwordHash(passwordEncoder.encode(request.getPassword()))
             .fullName(request.getFullName().trim())
             .role(role)
+            .cefrLevel(cefrLevel)
             .createdAt(LocalDateTime.now())
             .build();
 

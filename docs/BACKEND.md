@@ -22,8 +22,8 @@ This is a comprehensive guide to the server-side (Backend) architecture of the L
 2. **Soft delete from group.** When a student is removed from a group, the teacher can NO LONGER view their historical submissions (they are hidden from group queries). However, if the student is later re-added to the same group, their submission history is RESTORED and becomes visible again. Soft deletion is implemented via the `group_students` table columns `is_active` and `removed_at`.
 3. **Payment is a MOCK STUB.** All surrounding billing logic operates end-to-end (error handling infrastructure, subscription tiers, upgrades/downgrades), while the actual payment processor (`PaymentService` stub) always returns a successful status (`success`). This is designed for testing. Error codes (`PAYMENT_FAILED`, `CARD_DECLINED`, `INSUFFICIENT_FUNDS`, `EXPIRED_CARD`, `NETWORK_ERROR`, `PROVIDER_ERROR`) are fully supported by the exception and response pipeline, though the stub never returns them in normal execution.
 4. **Subscription tiers:**
-    - `FREE`: 10 evaluations/week, 3 OCR uploads/week.
-    - `PREMIUM`: unlimited evaluations and OCR uploads, all CEFR levels, priority queue.
+    - `FREE`: 10 evaluations/week, 3 OCR uploads/week, CEFR levels A1–B2.
+    - `PREMIUM`: unlimited evaluations and OCR uploads, all CEFR levels (A1–C2), priority queue.
     - `EDUCATOR`: everything in Premium + student groups up to 200 members, task deployment, manual grade overrides, report exports, and API key access.
 5. **Self-service tasks:** When a student independently generates a task for themselves, the system automatically creates a `TaskAssignment` entity with the `assigned_by` field pointing to the student themselves (self-assignment).
 6. **Session resume:** `GET /api/sessions/active` returns the user's current unfinished adaptive testing session (if one exists).

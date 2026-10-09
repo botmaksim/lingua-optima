@@ -191,7 +191,7 @@ class ProgressServiceTest {
         ProgressRecord defaultTopic = progressService.updateFromSubmission(student, "  ", true);
         assertEquals("General Grammar", defaultTopic.getGrammarTopic());
 
-        student.setCefrLevel(CefrLevel.C1);
+        student.setCefrLevel(CefrLevel.C2);
         student.setLevelUpSuggestedAt(null);
         progressService.checkCefrLevelUp(student);
 

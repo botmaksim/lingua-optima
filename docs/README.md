@@ -38,7 +38,7 @@
 
 ## 1. Project Overview {#sec1}
 
-**Lingua Optima** is an English language learning platform (CEFR levels B1–C1) where:
+**Lingua Optima** is an English language learning platform (full CEFR scale: A1, A2, B1, B2, C1, C2) where:
 
 - **Students** independently generate exercises via AI, upload photos of handwritten homework (OCR), write essays, and receive instant diagnostic feedback
 - **Teachers** create and deploy assignments to student groups, inspect analytics, override AI grades, and export progress reports
@@ -711,7 +711,7 @@ flowchart TD
 |---|---|---|---|
 | AI evaluations | 10 / week | Unlimited | Unlimited |
 | OCR image uploads | 3 / week | Unlimited | Unlimited |
-| CEFR levels | B1, B2 | B1, B2, C1 | B1, B2, C1 |
+| CEFR levels | A1, A2, B1, B2 | All (A1–C2) | All (A1–C2) |
 | Full progress analytics | No | Yes | Yes |
 | Student groups | — | — | Up to 200 students |
 | Task deployment | — | — | Yes |

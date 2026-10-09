@@ -26,6 +26,16 @@ describe('wordCount utility', () => {
 });
 
 describe('cefrColors utility', () => {
+  it('returns appropriate teal classes for A1', () => {
+    const classes = getCefrBadgeClasses('A1');
+    expect(classes).toContain('teal');
+  });
+
+  it('returns appropriate cyan classes for A2', () => {
+    const classes = getCefrBadgeClasses('A2');
+    expect(classes).toContain('cyan');
+  });
+
   it('returns appropriate emerald classes for B1', () => {
     const classes = getCefrBadgeClasses('B1');
     expect(classes).toContain('emerald');
@@ -41,8 +51,13 @@ describe('cefrColors utility', () => {
     expect(classes).toContain('purple');
   });
 
+  it('returns appropriate amber classes for C2', () => {
+    const classes = getCefrBadgeClasses('C2');
+    expect(classes).toContain('amber');
+  });
+
   it('returns fallback slate classes for unknown levels', () => {
-    const classes = getCefrBadgeClasses('A1' as unknown as CefrLevel);
+    const classes = getCefrBadgeClasses('UNKNOWN' as unknown as CefrLevel);
     expect(classes).toContain('slate');
   });
 });

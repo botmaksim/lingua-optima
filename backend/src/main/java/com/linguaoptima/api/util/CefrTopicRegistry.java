@@ -1,6 +1,6 @@
 /**
  * @file CefrTopicRegistry.java
- * @brief Static registry mapping CEFR proficiency levels (B1, B2, C1) to syllabus grammar topics and contexts.
+ * @brief Static registry mapping full CEFR proficiency levels (A1, A2, B1, B2, C1, C2) to syllabus grammar topics and contexts.
  */
 package com.linguaoptima.api.util;
 
@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @brief Static registry mapping CEFR proficiency levels (B1, B2, C1) to syllabus grammar topics and contexts.
+ * @brief Static registry mapping CEFR proficiency levels (A1 to C2) to syllabus grammar topics and contexts.
  */
 public final class CefrTopicRegistry {
 
@@ -18,6 +18,22 @@ public final class CefrTopicRegistry {
 
     /** @brief Constant or enum value representing cefr grammar topics in CefrTopicRegistry. */
     private static final Map<CefrLevel, List<String>> CEFR_GRAMMAR_TOPICS = Map.of(
+        CefrLevel.A1, List.of(
+            "Present Simple (to be & common verbs)",
+            "Articles (a, an, the) & Demonstratives",
+            "Basic Prepositions of Place & Time (in, at, on)",
+            "Can / Can't for Ability & Permission",
+            "Possessive Adjectives & Possessive 's",
+            "Imperatives & Basic Question Formation"
+        ),
+        CefrLevel.A2, List.of(
+            "Past Simple (Regular & Irregular Verbs)",
+            "Future with 'Going to' vs 'Will'",
+            "Comparative and Superlative Adjectives",
+            "Countable vs Uncountable Nouns (some, any, much, many)",
+            "Have to & Must (Basic Rules)",
+            "Present Continuous for Future Arrangements"
+        ),
         CefrLevel.B1, List.of(
             "Present Perfect vs Past Simple",
             "Past Continuous",
@@ -47,6 +63,14 @@ public final class CefrTopicRegistry {
             "Advanced Discourse Markers",
             "Nuanced Modal Idioms",
             "Hypothetical Meaning & Unreal Past"
+        ),
+        CefrLevel.C2, List.of(
+            "Stylistic Inversion & Rhetorical Fronting",
+            "Subtle Modal Nuances & Speculative Stance",
+            "Complex Cleft Constructions & Focalization",
+            "Idiomatic Phrasal Collocations & Register Shifts",
+            "Advanced Ellipsis, Substitution & Cohesive Ties",
+            "Figurative Language & Lexical Precision"
         )
     );
 

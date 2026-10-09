@@ -129,13 +129,17 @@ class SubscriptionServiceTest {
     void testValidateCefrLevelAccess() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
 
+        assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.A1));
+        assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.A2));
         assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.B1));
         assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.B2));
 
         assertThrows(ForbiddenException.class, () -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.C1));
+        assertThrows(ForbiddenException.class, () -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.C2));
 
         subscription.setTier(SubscriptionTier.PREMIUM);
         assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.C1));
+        assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.C2));
     }
 
     /**
@@ -146,12 +150,16 @@ class SubscriptionServiceTest {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
         assertFalse(subscriptionService.isFeatureAllowed(user, "DEPLOY"));
         assertFalse(subscriptionService.isFeatureAllowed(user, "UNLIMITED_EVALS"));
+        assertFalse(subscriptionService.isFeatureAllowed(user, "C1_LEVEL"));
+        assertFalse(subscriptionService.isFeatureAllowed(user, "C2_LEVEL"));
 
         subscription.setTier(SubscriptionTier.EDUCATOR);
         assertTrue(subscriptionService.isFeatureAllowed(user, "DEPLOY"));
         assertTrue(subscriptionService.isFeatureAllowed(user, "OVERRIDE"));
         assertTrue(subscriptionService.isFeatureAllowed(user, "EXPORT"));
         assertTrue(subscriptionService.isFeatureAllowed(user, "UNLIMITED_EVALS"));
+        assertTrue(subscriptionService.isFeatureAllowed(user, "C1_LEVEL"));
+        assertTrue(subscriptionService.isFeatureAllowed(user, "C2_LEVEL"));
         assertTrue(subscriptionService.isFeatureAllowed(user, "DEFAULT_FEATURE"));
     }
 
