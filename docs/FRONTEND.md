@@ -47,7 +47,7 @@ frontend/
 │   │
 │   ├── components/
 │   │   ├── common/            — Shared UI components
-│   │   │   ├── Navbar.tsx     — Logo, complete nav links for all student/teacher options, notifications bell + counter, avatar dropdown with 1-click instant Role Switcher (Student ⇄ Teacher), remaining daily evaluations badge
+│   │   │   ├── Navbar.tsx     — Logo, streamlined primary navigation links + compact "More ▾" dropdown for secondary learning tools & educator actions, notifications bell + counter, avatar dropdown with 1-click instant Role Switcher (Student ⇄ Teacher), remaining daily evaluations badge
 │   │   │   ├── Footer.tsx     — Privacy Policy, Terms of Service, Help Center, © Lingua Optima
 │   │   │   ├── ProtectedRoute.tsx — Checks auth + role, redirects to /login
 │   │   │   ├── RoleGuard.tsx  — Shows different content based on STUDENT/TEACHER role
