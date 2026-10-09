@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 import { notificationApi } from '../api/notificationApi';
+import { authApi } from '../api/authApi';
 
 /**
  * @brief React hook subscribing to real-time notification push events when authenticated.
@@ -26,9 +27,14 @@ export const useSSE = () => {
         (notification) => {
           addNotification(notification);
         },
-        () => {
+        async () => {
           if (eventSource) {
             eventSource.close();
+          }
+          try {
+            await authApi.refreshToken();
+          } catch {
+            // Refresh token may be absent or user logged out
           }
           reconnectTimeout = setTimeout(connect, 5000);
         }
