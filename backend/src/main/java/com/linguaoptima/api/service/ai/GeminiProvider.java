@@ -25,26 +25,41 @@ public class GeminiProvider implements AIProvider {
 
     /** @brief Field representing api key in GeminiProvider. */
     private final String apiKey;
+    /** @brief Field representing base url in GeminiProvider. */
+    private final String baseUrl;
     /** @brief Field representing rest template in GeminiProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in GeminiProvider. */
     private final ObjectMapper objectMapper;
 
     /**
-     * @brief Constructs a GeminiProvider with injected API key and HTTP client components.
+     * @brief Constructs a GeminiProvider with injected API key, base URL, and HTTP client components.
      * @param apiKey Configured Gemini API key.
+     * @param baseUrl Configured Gemini API base URL.
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
     @Autowired
     public GeminiProvider(
         @Value("${app.ai.gemini.api-key:dummy-gemini-key}") String apiKey,
+        @Value("${app.ai.gemini.base-url:https://generativelanguage.googleapis.com}") String baseUrl,
         RestTemplate restTemplate,
         ObjectMapper objectMapper
     ) {
         this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * @brief Constructs a GeminiProvider for BYOK user keys with default API base URL.
+     * @param apiKey User-supplied Gemini API key.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public GeminiProvider(String apiKey, RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this(apiKey, "https://generativelanguage.googleapis.com", restTemplate, objectMapper);
     }
 
     /**
@@ -57,14 +72,14 @@ public class GeminiProvider implements AIProvider {
     }
 
     /**
-     * @brief Sends content generation request to Google Gemini API using gemini-1.5-flash.
+     * @brief Sends content generation request to Google Gemini API using gemini-flash-latest.
      * @param prompt Input prompt text.
      * @return Generated model candidate text.
      * @throws Exception if HTTP exchange fails or non-2xx status code is returned.
      */
     @Override
     public String complete(String prompt) throws Exception {
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" + apiKey;
+        String url = baseUrl.replaceAll("/+$", "") + "/v1beta/models/gemini-flash-latest:generateContent?key=" + apiKey;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

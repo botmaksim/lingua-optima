@@ -25,26 +25,41 @@ public class GroqProvider implements AIProvider {
 
     /** @brief Field representing api key in GroqProvider. */
     private final String apiKey;
+    /** @brief Field representing base url in GroqProvider. */
+    private final String baseUrl;
     /** @brief Field representing rest template in GroqProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in GroqProvider. */
     private final ObjectMapper objectMapper;
 
     /**
-     * @brief Constructs a GroqProvider with injected API key and HTTP client components.
+     * @brief Constructs a GroqProvider with injected API key, base URL, and HTTP client components.
      * @param apiKey Configured Groq API key.
+     * @param baseUrl Configured Groq API base URL.
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
     @Autowired
     public GroqProvider(
         @Value("${app.ai.groq.api-key:dummy-groq-key}") String apiKey,
+        @Value("${app.ai.groq.base-url:https://api.groq.com/openai/v1}") String baseUrl,
         RestTemplate restTemplate,
         ObjectMapper objectMapper
     ) {
         this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+    }
+
+    /**
+     * @brief Constructs a GroqProvider for BYOK user keys with default API base URL.
+     * @param apiKey User-supplied Groq API key.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public GroqProvider(String apiKey, RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this(apiKey, "https://api.groq.com/openai/v1", restTemplate, objectMapper);
     }
 
     /**
@@ -64,7 +79,7 @@ public class GroqProvider implements AIProvider {
      */
     @Override
     public String complete(String prompt) throws Exception {
-        String url = "https://api.groq.com/openai/v1/chat/completions";
+        String url = baseUrl.replaceAll("/+$", "") + "/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

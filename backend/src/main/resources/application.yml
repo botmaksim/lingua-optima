@@ -50,8 +50,14 @@ app:
   ai:
     groq:
       api-key: ${GROQ_API_KEY:mock-groq-key}
+      base-url: ${GROQ_BASE_URL:https://api.groq.com/openai/v1}
     gemini:
       api-key: ${GEMINI_API_KEY:mock-gemini-key}
+      base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+    openai:
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+    anthropic:
+      base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com/v1}
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:*,https://*}
 

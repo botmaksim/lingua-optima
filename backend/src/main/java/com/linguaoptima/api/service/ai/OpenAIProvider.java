@@ -7,6 +7,7 @@ package com.linguaoptima.api.service.ai;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -22,31 +23,50 @@ public class OpenAIProvider implements AIProvider {
 
     /** @brief Field representing api key in OpenAIProvider. */
     private final String apiKey;
+    /** @brief Field representing base url in OpenAIProvider. */
+    private final String baseUrl;
     /** @brief Field representing rest template in OpenAIProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in OpenAIProvider. */
     private final ObjectMapper objectMapper;
 
     /**
-     * @brief Constructs an OpenAIProvider with default dummy credentials.
+     * @brief Constructs an OpenAIProvider with injected API key, base URL, and HTTP client components.
+     * @param apiKey Configured OpenAI API key.
+     * @param baseUrl Configured OpenAI API base URL.
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
     @Autowired
-    public OpenAIProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this("dummy-openai-key", restTemplate, objectMapper);
+    public OpenAIProvider(
+        @Value("${app.ai.openai.api-key:dummy-openai-key}") String apiKey,
+        @Value("${app.ai.openai.base-url:https://api.openai.com/v1}") String baseUrl,
+        RestTemplate restTemplate,
+        ObjectMapper objectMapper
+    ) {
+        this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
     /**
-     * @brief Constructs an OpenAIProvider with explicit API key.
-     * @param apiKey OpenAI API secret key.
+     * @brief Constructs an OpenAIProvider for BYOK user keys with default API base URL.
+     * @param apiKey User-supplied OpenAI API key.
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
     public OpenAIProvider(String apiKey, RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.apiKey = apiKey;
-        this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
+        this(apiKey, "https://api.openai.com/v1", restTemplate, objectMapper);
+    }
+
+    /**
+     * @brief Constructs an OpenAIProvider with default dummy credentials.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public OpenAIProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this("dummy-openai-key", "https://api.openai.com/v1", restTemplate, objectMapper);
     }
 
     /**
@@ -66,7 +86,7 @@ public class OpenAIProvider implements AIProvider {
      */
     @Override
     public String complete(String prompt) throws Exception {
-        String url = "https://api.openai.com/v1/chat/completions";
+        String url = baseUrl.replaceAll("/+$", "") + "/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

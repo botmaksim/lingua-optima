@@ -1,0 +1,8 @@
+name = "lingua-optima-ai-proxy"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+
+# Optional: bind to custom domain route under your zone (mybsu.online)
+# routes = [
+#   { pattern = "ai-proxy.mybsu.online/*", zone_name = "mybsu.online" }
+# ]

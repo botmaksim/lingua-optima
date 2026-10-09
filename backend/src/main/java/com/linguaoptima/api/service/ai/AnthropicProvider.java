@@ -7,6 +7,7 @@ package com.linguaoptima.api.service.ai;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -22,31 +23,50 @@ public class AnthropicProvider implements AIProvider {
 
     /** @brief Field representing api key in AnthropicProvider. */
     private final String apiKey;
+    /** @brief Field representing base url in AnthropicProvider. */
+    private final String baseUrl;
     /** @brief Field representing rest template in AnthropicProvider. */
     private final RestTemplate restTemplate;
     /** @brief Field representing object mapper in AnthropicProvider. */
     private final ObjectMapper objectMapper;
 
     /**
-     * @brief Constructs an AnthropicProvider with default dummy credentials.
+     * @brief Constructs an AnthropicProvider with injected API key, base URL, and HTTP client components.
+     * @param apiKey Configured Anthropic API key.
+     * @param baseUrl Configured Anthropic API base URL.
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
     @Autowired
-    public AnthropicProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this("dummy-claude-key", restTemplate, objectMapper);
+    public AnthropicProvider(
+        @Value("${app.ai.anthropic.api-key:dummy-claude-key}") String apiKey,
+        @Value("${app.ai.anthropic.base-url:https://api.anthropic.com/v1}") String baseUrl,
+        RestTemplate restTemplate,
+        ObjectMapper objectMapper
+    ) {
+        this.apiKey = apiKey;
+        this.baseUrl = baseUrl;
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }
 
     /**
-     * @brief Constructs an AnthropicProvider with explicit API key.
-     * @param apiKey Anthropic API secret key.
+     * @brief Constructs an AnthropicProvider for BYOK user keys with default API base URL.
+     * @param apiKey User-supplied Anthropic API key.
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
     public AnthropicProvider(String apiKey, RestTemplate restTemplate, ObjectMapper objectMapper) {
-        this.apiKey = apiKey;
-        this.restTemplate = restTemplate;
-        this.objectMapper = objectMapper;
+        this(apiKey, "https://api.anthropic.com/v1", restTemplate, objectMapper);
+    }
+
+    /**
+     * @brief Constructs an AnthropicProvider with default dummy credentials.
+     * @param restTemplate RestTemplate HTTP client.
+     * @param objectMapper Jackson JSON mapper.
+     */
+    public AnthropicProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
+        this("dummy-claude-key", "https://api.anthropic.com/v1", restTemplate, objectMapper);
     }
 
     /**
@@ -66,7 +86,7 @@ public class AnthropicProvider implements AIProvider {
      */
     @Override
     public String complete(String prompt) throws Exception {
-        String url = "https://api.anthropic.com/v1/messages";
+        String url = baseUrl.replaceAll("/+$", "") + "/messages";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
