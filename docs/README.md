@@ -1,75 +1,75 @@
-# 📚 Lingua Optima — Полная документация
+# 📚 Lingua Optima — Complete Documentation
 
-> AI-платформа для изучения английского языка. Генерация заданий, проверка эссе, OCR домашних работ, адаптивное тестирование.  
-> 📊 **Интерактивная презентация проекта**: [Открыть презентацию (presentation.html)](presentation.html)
+> AI-powered platform for English language mastery. Task generation, essay evaluation, homework OCR, and computerized adaptive testing.  
+> 📊 **Interactive Project Presentation**: [Open Presentation (presentation.html)](presentation.html)
 
 
-### 🗂 Все файлы документации
+### 🗂 All Documentation Files
 
-| Раздел документации | Ссылка | Описание |
+| Documentation Section | Link | Description |
 |---|---|---|
-| **Главный обзор (README)** | [README.md](./README.md) | Архитектура, стек, БД, API, Безопасность |
-| **Backend Specification** | [BACKEND.md](./BACKEND.md) | Все контроллеры, сервисы, репозитории, DTO, миграции, ошибки |
-| **Frontend Specification** | [FRONTEND.md](./FRONTEND.md) | React-компоненты, Zustand-сторы, хуки, роутинг, дизайн-система |
-| **AI & OCR Integration** | [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Fallback-цепочка (Groq, Gemini, BYOK), промпты, Zero-Retention OCR, CAT |
-| **DevOps & Deployment** | [DEVOPS.md](./DEVOPS.md) | Docker Compose, Nginx, CI/CD, переменные окружения `.env`, мониторинг |
-| **Интерактивная презентация** | [presentation.html](presentation.html) | Полная интерактивная презентация проекта (Pitch Deck & Architecture) |
-| **Doxygen API Reference** | [generated/html/index.html](./generated/html/index.html) | Скомпилированная Doxygen-документация по всем классам и методам |
+| **Main Overview (README)** | [README.md](./README.md) | Architecture, tech stack, database, REST API, and security |
+| **Backend Specification** | [BACKEND.md](./BACKEND.md) | All controllers, services, repositories, DTOs, migrations, and exceptions |
+| **Frontend Specification** | [FRONTEND.md](./FRONTEND.md) | React components, Zustand stores, hooks, routing, and design system |
+| **AI & OCR Integration** | [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Fallback chain (Groq, Gemini, BYOK), prompts, Zero-Retention OCR, and CAT |
+| **DevOps & Deployment** | [DEVOPS.md](./DEVOPS.md) | Docker Compose, Nginx, CI/CD, `.env` environment variables, and monitoring |
+| **Interactive Presentation** | [presentation.html](presentation.html) | Full interactive project presentation (Pitch Deck & Architecture) |
+| **Doxygen API Reference** | [index.html](index.html) | Compiled Doxygen documentation covering all classes and methods |
 
 ---
 
-## Оглавление
+## Table of Contents
 
-1. [Обзор проекта](#sec1)
-2. [Ключевые решения](#sec2)
-3. [Технологический стек](#sec3)
-4. [Архитектура системы](#sec4)
-5. [Файловая структура проекта](#sec5)
-6. [База данных (ERD)](#sec6)
-7. [REST API — Полная таблица](#sec7)
-8. [Frontend — Страницы и Навигация](#sec8)
-9. [Backend — Слои и Классы](#sec9)
-10. [AI — Провайдеры и Промпты](#sec10)
-11. [Подписки и Оплата (Stub)](#sec11)
-12. [Безопасность](#sec12)
-13. [DevOps и Деплой](#sec13)
+1. [Project Overview](#sec1)
+2. [Key Architectural Decisions](#sec2)
+3. [Technology Stack](#sec3)
+4. [System Architecture](#sec4)
+5. [Project File Structure](#sec5)
+6. [Database (ERD)](#sec6)
+7. [REST API — Complete Reference Table](#sec7)
+8. [Frontend — Pages & Navigation](#sec8)
+9. [Backend — Layers & Classes](#sec9)
+10. [AI — Providers & Prompts](#sec10)
+11. [Subscriptions & Billing (Stub)](#sec11)
+12. [Security](#sec12)
+13. [DevOps & Deployment](#sec13)
 
 ---
 
-## 1. Обзор проекта {#sec1}
+## 1. Project Overview {#sec1}
 
-**Lingua Optima** — платформа для изучения английского языка (уровни B1–C1 по CEFR), в которой:
+**Lingua Optima** is an English language learning platform (CEFR levels B1–C1) where:
 
-- **Студенты** самостоятельно генерируют задания через AI, загружают фото домашних работ (OCR), пишут эссе и получают мгновенную обратную связь
-- **Преподаватели** создают и деплоят задания группам, видят аналитику, корректируют AI-оценки, экспортируют отчёты
+- **Students** independently generate exercises via AI, upload photos of handwritten homework (OCR), write essays, and receive instant diagnostic feedback
+- **Teachers** create and deploy assignments to student groups, inspect analytics, override AI grades, and export progress reports
 
-### 6 основных компонентов (из презентации)
+### 6 Core Components (from the Presentation)
 
-| # | Компонент | Описание |
+| # | Component | Description |
 |---|---|---|
-| 1 | Self-Service Task Generator | Генерация заданий через Llama 3.1 (Groq API) |
-| 2 | Homework OCR Check | Загрузка фото → Tesseract OCR → AI проверка |
-| 3 | AI Essay Scoring | Оценка по рубрике: TA, Coherence, LR, GR |
-| 4 | Adaptive Tests | CAT-алгоритм: сложность подстраивается в реальном времени |
-| 5 | Progress Dashboard | Трекинг грамматических пробелов, radar-чарт |
-| 6 | Educator Portal | Деплой заданий, override оценок, экспорт |
+| 1 | Self-Service Task Generator | Exercise generation via Llama 3.1 (Groq API) |
+| 2 | Homework OCR Check | Photo upload → Tesseract OCR → AI grammar evaluation |
+| 3 | AI Essay Scoring | Rubric-based grading: Task Achievement, Coherence, Lexical Resource, Grammatical Range |
+| 4 | Adaptive Tests | CAT algorithm: question difficulty adapts in real time |
+| 5 | Progress Dashboard | Grammar gap tracking and mastery radar chart |
+| 6 | Educator Portal | Task deployment, grade overrides, and report exports |
 
 ---
 
-## 2. Ключевые решения {#sec2}
+## 2. Key Architectural Decisions {#sec2}
 
-| Вопрос | Решение | Обоснование |
+| Topic | Decision | Rationale |
 |---|---|---|
-| Лидерборд | **Только внутри группы** (нет глобального) | Приватность, фокус на группу учителя |
-| Удаление студента из группы | **Soft delete** (`is_active=false`). Работы скрыты. При повторном добавлении — **восстанавливаются** | Учитель не теряет историю при возврате студента |
-| Оплата | **Заглушка** — полная инфраструктура ошибок, но stub всегда одобряет | Для тестов; реальные платежи требуют юридической подготовки |
-| AI провайдер | **Комбо:** Groq (задания) + Gemini (эссе) + Tesseract (OCR). Всё бесплатно | Бюджет $0 |
-| Self-service задания | Автоматический self-assignment (`assigned_by = student`) | Унифицирует flow для студенческих и учительских заданий |
-| Хранение изображений | **Zero-Retention OCR** — фото только в RAM, никогда не на диск | GDPR, биометрия рукописи |
+| Leaderboard | **Group-only** (no global leaderboard) | Protects student privacy and focuses on the teacher's classroom group |
+| Removing a student from a group | **Soft delete** (`is_active=false`). Submissions are hidden. When re-added, history is **restored** | Teachers do not lose historical records if a student returns to the group |
+| Billing / Payments | **Stub** — full error handling infrastructure, while the stub always approves | Designed for testing; real payment processing requires legal and PCI compliance setup |
+| AI Provider Strategy | **Combo:** Groq (tasks) + Gemini (essays) + Tesseract (OCR). 100% free tier | $0 operational budget |
+| Self-service tasks | Automatic self-assignment (`assigned_by = student`) | Unifies the execution and grading flow for both student-created and teacher-assigned tasks |
+| Image Storage | **Zero-Retention OCR** — photos exist strictly in RAM and are never written to disk | GDPR compliance and handwriting biometric privacy |
 
 ---
 
-## 3. Технологический стек {#sec3}
+## 3. Technology Stack {#sec3}
 
 ```mermaid
 flowchart LR
@@ -108,16 +108,16 @@ flowchart LR
 
 ---
 
-## 4. Архитектура системы {#sec4}
+## 4. System Architecture {#sec4}
 
 ```mermaid
 flowchart TD
     Client["Browser (React PWA)"]
     
     subgraph Backend ["Java Spring Boot"]
-        Controllers["11 REST Controllers"]
-        Services["18 Services"]
-        Repos["11 Repositories"]
+        Controllers["12 REST Controllers"]
+        Services["20 Services"]
+        Repos["12 Repositories"]
         Schedulers["3 @Scheduled CRON"]
     end
 
@@ -128,8 +128,8 @@ flowchart TD
     end
 
     subgraph Infra ["Infrastructure"]
-        PG[("PostgreSQL\n14 таблиц")]
-        RD[("Redis\n6 key spaces")]
+        PG[("PostgreSQL\n14 tables")]
+        RD[("Redis\n5 key spaces")]
         TESS["Tesseract OCR\n(in Docker)"]
     end
 
@@ -147,21 +147,21 @@ flowchart TD
 
 ---
 
-## 5. Файловая структура проекта {#sec5}
+## 5. Project File Structure {#sec5}
 
-```
+```text
 lingua_optima/
-├── presentation.html                  — Оригинальная презентация
 ├── docker-compose.yml                 — PostgreSQL + Redis + Backend + Frontend
-├── .env.example                       — Переменные окружения
+├── .env.example                       — Environment variables template
 ├── .github/workflows/ci.yml           — CI/CD pipeline
 │
-├── docs/                              — Документация
-│   ├── README.md                      — Мастер-документ (ЭТОТ ФАЙЛ)
-│   ├── BACKEND.md                     — Детали бэкенда
-│   ├── FRONTEND.md                    — Детали фронтенда
-│   ├── AI_INTEGRATION.md             — AI провайдеры, промпты, OCR
-│   └── DEVOPS.md                      — Docker, CI/CD, деплой
+├── docs/                              — Documentation
+│   ├── presentation.html              — Interactive project presentation
+│   ├── README.md                      — Master document (THIS FILE)
+│   ├── BACKEND.md                     — Backend specification
+│   ├── FRONTEND.md                    — Frontend specification
+│   ├── AI_INTEGRATION.md              — AI providers, prompts, OCR, and CAT
+│   └── DEVOPS.md                      — Docker, CI/CD, and deployment
 │
 ├── backend/                           — Java Spring Boot 3
 │   ├── build.gradle
@@ -169,32 +169,35 @@ lingua_optima/
 │   ├── src/main/java/com/linguaoptima/api/
 │   │   ├── LinguaOptimaApplication.java
 │   │   │
-│   │   ├── config/                          ── Конфигурация
+│   │   ├── config/                          ── Configuration
 │   │   │   ├── SecurityConfig.java          — Filter chain, CORS, JWT filter
-│   │   │   ├── JwtAuthenticationFilter.java — Извлечение Bearer → SecurityContext
-│   │   │   ├── RedisConfig.java             — RedisTemplate, сериализаторы
-│   │   │   ├── CorsConfig.java              — Allowed origins
+│   │   │   ├── JwtAuthenticationFilter.java — Bearer token extraction → SecurityContext
+│   │   │   ├── RedisConfig.java             — RedisTemplate and serializers
+│   │   │   ├── CorsConfig.java              — Allowed origins configuration
 │   │   │   ├── SchedulingConfig.java        — @EnableScheduling
-│   │   │   └── WebConfig.java               — Multipart limit 10MB
+│   │   │   └── WebConfig.java               — Multipart upload limit (10MB)
 │   │   │
 │   │   ├── controller/                      ── REST API
-│   │   │   ├── AuthController.java          — /register, /login, /refresh, /logout, /logout-all, /forgot-password
+│   │   │   ├── AuthController.java          — /register, /login, /google, /refresh, /logout, /logout-all, /forgot-password
 │   │   │   ├── UserController.java          — /me (GET, PUT, DELETE), /me/password
 │   │   │   ├── TaskController.java          — /generate, /preview, /{id}/assign, /template
 │   │   │   ├── SessionController.java       — /start, /active, /{id}/next-question, /{id}/answer, /{id}/complete
 │   │   │   ├── SubmissionController.java    — /text, /image, /{id}, /my, /{id}/override
-│   │   │   ├── GroupController.java         — CRUD группы + студенты
+│   │   │   ├── GroupController.java         — Group CRUD + student membership management
 │   │   │   ├── ProgressController.java      — /me, /student/{id}, /group/{id}
-│   │   │   ├── NotificationController.java  — /stream (SSE), /{id}/read
+│   │   │   ├── NotificationController.java  — /stream (SSE), /unread-count, /{id}/read
 │   │   │   ├── SubscriptionController.java  — /me, /upgrade, /downgrade, /usage
-│   │   │   ├── ApiKeyController.java        — CRUD AI-ключей
-│   │   │   ├── LeaderboardController.java   — /group/{groupId} (ТОЛЬКО группа!)
+│   │   │   ├── ApiKeyController.java        — User AI key CRUD
+│   │   │   ├── LeaderboardController.java   — /group/{groupId} (Group-only!)
 │   │   │   └── ExportController.java        — /report/group/{id}, /report/student/{id}
 │   │   │
 │   │   ├── dto/
-│   │   │   ├── request/                     ── 12 Request DTO
+│   │   │   ├── request/                     ── 14 Request DTOs
 │   │   │   │   ├── RegisterRequest.java     — email, password, fullName, role
 │   │   │   │   ├── LoginRequest.java        — email, password
+│   │   │   │   ├── GoogleAuthRequest.java   — credential, role
+│   │   │   │   ├── ForgotPasswordRequest.java — email
+│   │   │   │   ├── UpdateProfileRequest.java — fullName, displayAlias, cefrLevel
 │   │   │   │   ├── TaskParamsRequest.java   — cefrLevel, grammarTopic, domain, taskType, difficulty
 │   │   │   │   ├── AssignTaskRequest.java   — groupIds[], dueDate
 │   │   │   │   ├── TextSubmissionRequest.java — text, assignmentId, type
@@ -206,7 +209,7 @@ lingua_optima/
 │   │   │   │   ├── UpgradeRequest.java      — targetTier, paymentToken (stub)
 │   │   │   │   └── ChangePasswordRequest.java — oldPassword, newPassword
 │   │   │   │
-│   │   │   └── response/                   ── 14 Response DTO
+│   │   │   └── response/                    ── 14 Response DTOs
 │   │   │       ├── TokenResponse.java       — accessToken, user info
 │   │   │       ├── UserResponse.java        — id, email, fullName, role, cefrLevel, displayAlias, streakCount
 │   │   │       ├── TaskResponse.java        — id, type, cefrLevel, content, questions
@@ -223,68 +226,68 @@ lingua_optima/
 │   │   │       └── ErrorResponse.java       — status, message, timestamp, errors[]
 │   │   │
 │   │   ├── domain/                          ── JPA Entities
-│   │   │   ├── User.java                    — Роли, CEFR, streaks, displayAlias
-│   │   │   ├── ApiKey.java                  — Зашифрованные AI-ключи
-│   │   │   ├── Task.java                    — Задания (тип, контент, ключ)
-│   │   │   ├── TaskQuestion.java            — Вопросы для CAT
-│   │   │   ├── TaskAssignment.java          — Назначение задания студенту
-│   │   │   ├── SessionState.java            — Состояние адаптивной сессии
-│   │   │   ├── Submission.java              — Результат (AI + override)
-│   │   │   ├── ProgressRecord.java          — Mastery по теме
-│   │   │   ├── Group.java                   — Группы студентов (soft delete)
-│   │   │   ├── Notification.java            — Уведомления
-│   │   │   ├── Subscription.java            — FREE/PREMIUM/EDUCATOR
-│   │   │   ├── UsageCounter.java            — Еженедельные счётчики
-│   │   │   └── enums/                       — 10 enum-классов
+│   │   │   ├── User.java                    — Roles, CEFR level, streaks, displayAlias
+│   │   │   ├── ApiKey.java                  — Encrypted BYOK AI keys
+│   │   │   ├── Task.java                    — Tasks (type, content, answer key)
+│   │   │   ├── TaskQuestion.java            — Questions for CAT sessions
+│   │   │   ├── TaskAssignment.java          — Assignment of a task to a student
+│   │   │   ├── SessionState.java            — Adaptive testing session state
+│   │   │   ├── Submission.java              — Submission result (AI score + teacher override)
+│   │   │   ├── ProgressRecord.java          — Topic mastery tracking
+│   │   │   ├── Group.java                   — Student groups (with soft delete)
+│   │   │   ├── Notification.java            — User notifications
+│   │   │   ├── Subscription.java            — FREE / PREMIUM / EDUCATOR tiers
+│   │   │   ├── UsageCounter.java            — Weekly quota counters
+│   │   │   └── enums/                       — 10 domain enumeration types
 │   │   │
-│   │   ├── repository/                      ── 11 Spring Data JPA Repositories
+│   │   ├── repository/                      ── 12 Spring Data JPA Repositories
 │   │   │
-│   │   ├── service/                         ── Бизнес-логика
-│   │   │   ├── AuthService.java             — Регистрация, вход, JWT refresh
-│   │   │   ├── JwtService.java              — Генерация/валидация JWT
-│   │   │   ├── UserService.java             — Профиль, смена пароля, GDPR удаление
-│   │   │   ├── TaskService.java             — Генерация через AI, деплой
-│   │   │   ├── SessionService.java          — CAT адаптивный алгоритм
-│   │   │   ├── SubmissionService.java       — Отправка текста/фото
-│   │   │   ├── ScoringService.java          — Оценка грамматики и эссе
-│   │   │   ├── OCRService.java              — Tesseract, Zero-Retention
-│   │   │   ├── ProgressService.java         — Mastery, CEFR auto-leveling
-│   │   │   ├── GroupService.java            — Группы, soft delete студентов
-│   │   │   ├── NotificationService.java     — SSE, push
-│   │   │   ├── GamificationService.java     — Streaks, freeze tokens
-│   │   │   ├── SubscriptionService.java     — Тарифы, проверка квот
-│   │   │   ├── PaymentService.java          — ЗАГЛУШКА (всегда success)
-│   │   │   ├── UsageService.java            — Счётчики, лимиты
-│   │   │   ├── ExportService.java           — PDF/CSV генерация
-│   │   │   ├── ApiKeyService.java           — AES-256 шифрование ключей
-│   │   │   ├── EncryptionService.java       — AES-256-GCM
-│   │   │   ├── LeaderboardService.java      — Рейтинг внутри группы
+│   │   ├── service/                         ── Business Logic Layer
+│   │   │   ├── AuthService.java             — Registration, login, Google OAuth2, JWT refresh
+│   │   │   ├── JwtService.java              — JWT generation and validation
+│   │   │   ├── UserService.java             — Profile management, password change, GDPR deletion
+│   │   │   ├── TaskService.java             — AI task generation and group deployment
+│   │   │   ├── SessionService.java          — CAT adaptive testing algorithm
+│   │   │   ├── SubmissionService.java       — Text and OCR image submission processing
+│   │   │   ├── ScoringService.java          — Grammar and essay rubric evaluation
+│   │   │   ├── OCRService.java              — Tesseract OCR with Zero-Retention RAM wiping
+│   │   │   ├── ProgressService.java         — Mastery calculation and CEFR auto-leveling
+│   │   │   ├── GroupService.java            — Group management and student soft deletion
+│   │   │   ├── NotificationService.java     — Real-time SSE push notifications
+│   │   │   ├── GamificationService.java     — Daily streaks and freeze tokens
+│   │   │   ├── SubscriptionService.java     — Subscription tiers and quota enforcement
+│   │   │   ├── PaymentService.java          — Payment STUB (always approves)
+│   │   │   ├── UsageService.java            — Weekly usage counters and limits
+│   │   │   ├── ExportService.java           — PDF and CSV report generation
+│   │   │   ├── ApiKeyService.java           — User AI key management
+│   │   │   ├── EncryptionService.java       — AES-256-GCM authenticated encryption
+│   │   │   ├── LeaderboardService.java      — Privacy-preserving intra-group leaderboard
 │   │   │   └── ai/
-│   │   │       ├── AIBrokerService.java     — Маршрутизация: выбор провайдера, fallback
-│   │   │       ├── AIProvider.java          — Интерфейс: complete(prompt) → String
+│   │   │       ├── AIBrokerService.java     — Provider routing, caching, and fallback chain
+│   │   │       ├── AIProvider.java          — Provider interface: complete(prompt) → String
 │   │   │       ├── GroqProvider.java        — Llama 3.1 70B (free tier)
 │   │   │       ├── GeminiProvider.java      — Gemini 1.5 Flash (free tier)
-│   │   │       ├── OpenAIProvider.java      — Для пользовательских ключей
-│   │   │       └── AnthropicProvider.java   — Для пользовательских ключей
+│   │   │       ├── OpenAIProvider.java      — For user-supplied BYOK keys
+│   │   │       └── AnthropicProvider.java   — For user-supplied BYOK keys
 │   │   │
-│   │   ├── scheduler/                       ── CRON-задачи
-│   │   │   ├── StreakScheduler.java          — 01:00 ежедневно: проверка стриков
-│   │   │   ├── UsageResetScheduler.java     — 00:00 понедельник: сброс счётчиков
-│   │   │   └── NotificationScheduler.java   — 09:00 ежедневно: контекстные уведомления
+│   │   ├── scheduler/                       ── Scheduled CRON Jobs
+│   │   │   ├── StreakScheduler.java          — 01:00 daily: streak verification
+│   │   │   ├── UsageResetScheduler.java     — 00:00 Monday: weekly quota counter reset
+│   │   │   └── NotificationScheduler.java   — 09:00 daily: contextual grammar notifications
 │   │   │
-│   │   ├── exception/                       ── Обработка ошибок
-│   │   │   ├── GlobalExceptionHandler.java  — @ControllerAdvice
-│   │   │   ├── OcrException.java            — 422: «Фото нечёткое»
-│   │   │   ├── AIServiceException.java      — 503: «AI недоступен»
-│   │   │   ├── QuotaExceededException.java  — 429: «Лимит исчерпан»
-│   │   │   ├── PaymentException.java        — 402: ошибки оплаты
-│   │   │   ├── ResourceNotFoundException.java — 404
-│   │   │   ├── UnauthorizedException.java   — 401
-│   │   │   └── ForbiddenException.java      — 403
+│   │   ├── exception/                       ── Exception Handling
+│   │   │   ├── GlobalExceptionHandler.java  — @ControllerAdvice global handler
+│   │   │   ├── OcrException.java            — 422: "Image is blurry or unreadable"
+│   │   │   ├── AIServiceException.java      — 503: "AI provider unavailable"
+│   │   │   ├── QuotaExceededException.java  — 429: "Weekly quota exceeded"
+│   │   │   ├── PaymentException.java        — 402: Payment processing errors
+│   │   │   ├── ResourceNotFoundException.java — 404: Resource not found
+│   │   │   ├── UnauthorizedException.java   — 401: Unauthorized
+│   │   │   └── ForbiddenException.java      — 403: Forbidden
 │   │   │
 │   │   └── util/
-│   │       ├── PromptTemplates.java         — Шаблоны промптов для AI
-│   │       └── CefrTopicRegistry.java       — Маппинг CEFR → темы
+│   │       ├── PromptTemplates.java         — Structured AI prompt templates
+│   │       └── CefrTopicRegistry.java       — CEFR level to grammar topic mapping
 │   │
 │   └── src/main/resources/
 │       ├── application.yml
@@ -295,15 +298,15 @@ lingua_optima/
     ├── package.json
     ├── Dockerfile
     ├── vite.config.ts
-    ├── tailwind.config.ts              — Цвета, шрифты
+    ├── tailwind.config.ts              — Color palette and typography
     ├── public/
     │   ├── manifest.json               — PWA manifest
     │   └── sw.js                       — Service Worker
     └── src/
         ├── main.tsx
-        ├── App.tsx                     — Router + Layout
-        ├── api/                        — 12 API-модулей (axios)
-        │   ├── axiosInstance.ts        — Interceptors, silent JWT refresh
+        ├── App.tsx                     — Router and application layout
+        ├── api/                        — 12 Axios API client modules
+        │   ├── axiosInstance.ts        — Interceptors and silent JWT refresh
         │   ├── authApi.ts
         │   ├── taskApi.ts
         │   ├── sessionApi.ts
@@ -316,30 +319,30 @@ lingua_optima/
         │   ├── exportApi.ts
         │   └── leaderboardApi.ts
         ├── components/
-        │   ├── common/                 — 10 общих компонентов
-        │   │   ├── Navbar.tsx          — Logo, навигация, уведомления, аватар, остаток evals
+        │   ├── common/                 — 10 shared UI components
+        │   │   ├── Navbar.tsx          — Logo, navigation, notifications, avatar, remaining evals
         │   │   ├── Footer.tsx          — Privacy, Terms, Help
         │   │   ├── ProtectedRoute.tsx
         │   │   ├── RoleGuard.tsx
-        │   │   ├── UpgradeWall.tsx     — Модалка при исчерпании лимита
+        │   │   ├── UpgradeWall.tsx     — Modal displayed when weekly quota is reached
         │   │   ├── OfflineBanner.tsx
         │   │   ├── CefrBadge.tsx
         │   │   ├── LoadingSpinner.tsx
         │   │   ├── Toast.tsx
         │   │   └── ConfirmDialog.tsx
-        │   ├── student/                — 12 студенческих компонентов
+        │   ├── student/                — 11 student components
         │   │   ├── Dashboard.tsx
         │   │   ├── GenerateTask.tsx
         │   │   ├── TaskView.tsx
-        │   │   ├── AdaptiveSession.tsx — CAT + resume session
+        │   │   ├── AdaptiveSession.tsx — CAT session + interrupted session resume
         │   │   ├── OcrSubmit.tsx
         │   │   ├── EssayEditor.tsx
         │   │   ├── AIReview.tsx
         │   │   ├── MyUnits.tsx
         │   │   ├── Progress.tsx
-        │   │   ├── GroupLeaderboard.tsx — Только внутри группы!
+        │   │   ├── GroupLeaderboard.tsx — Intra-group leaderboard only!
         │   │   └── LevelUpModal.tsx
-        │   ├── teacher/                — 5 учительских компонентов
+        │   ├── teacher/                — 5 educator components
         │   │   ├── TeacherDashboard.tsx
         │   │   ├── StudentGroups.tsx
         │   │   ├── ConfigureTask.tsx
@@ -348,16 +351,16 @@ lingua_optima/
         │   └── auth/
         │       ├── LoginPage.tsx
         │       └── ForgotPassword.tsx
-        ├── hooks/                      — 6 кастомных хуков
-        ├── store/                      — 4 Zustand store
-        ├── types/                      — 8 TypeScript интерфейсов
-        ├── utils/                      — Утилиты
-        └── pages/                      — 6 route-level страниц
+        ├── hooks/                      — 6 custom React hooks
+        ├── store/                      — 4 Zustand state stores
+        ├── types/                      — 8 TypeScript type definition modules
+        ├── utils/                      — Helper utilities
+        └── pages/                      — 6 route-level page wrappers
 ```
 
 ---
 
-## 6. База данных (ERD) {#sec6}
+## 6. Database (ERD) {#sec6}
 
 ```mermaid
 erDiagram
@@ -449,7 +452,7 @@ erDiagram
         bigint assignment_id FK
         bigint student_id FK
         varchar submission_type "TEXT|IMAGE"
-        text student_text "только текст, НЕ фото"
+        text student_text "extracted text only, NEVER image bytes"
         float ai_score
         text ai_feedback
         float override_score "nullable"
@@ -512,106 +515,93 @@ erDiagram
 
 ---
 
-## 7. REST API {#sec7}
+## 7. REST API — Complete Reference Table {#sec7}
 
-| Метод | Путь | Роль | Описание |
-|---|---|---|---|
-| **Auth** | | | |
-| POST | `/api/auth/register` | Public | Регистрация по Email и паролю |
-| POST | `/api/auth/login` | Public | Вход по Email и паролю → JWT |
-| POST | `/api/auth/google` | Public | Вход / регистрация через Google OAuth2 ID Token → JWT |
-| POST | `/api/auth/refresh` | Cookie | Обновление access token |
-
-| POST | `/api/auth/logout` | Any | Выход (удаление refresh из Redis) |
-| DELETE | `/api/auth/logout-all` | Any | Выход со всех устройств |
-| POST | `/api/auth/forgot-password` | Public | Запрос сброса пароля |
-| **User** | | | |
-| GET | `/api/users/me` | Any | Текущий профиль |
-| PUT | `/api/users/me` | Any | Обновление профиля |
-| PUT | `/api/users/me/password` | Any | Смена пароля |
-| DELETE | `/api/users/me` | Any | Удаление аккаунта (GDPR) |
-| **Tasks** | | | |
-| POST | `/api/tasks/generate` | Any | Генерация задания через AI |
-| POST | `/api/tasks/preview` | Any | Preview без сохранения |
-| GET | `/api/tasks` | Any | Список заданий |
-| GET | `/api/tasks/{id}` | Any | Получить задание |
-| POST | `/api/tasks/{id}/assign` | TEACHER | Назначить группам |
-| POST | `/api/tasks/template` | TEACHER | Сохранить как шаблон |
-| **Sessions (CAT)** | | | |
-| POST | `/api/sessions/start` | STUDENT | Начать адаптивный тест |
-| GET | `/api/sessions/active` | STUDENT | Резюм прерванной сессии |
-| GET | `/api/sessions/{id}/next-question` | STUDENT | Следующий вопрос |
-| POST | `/api/sessions/{id}/answer` | STUDENT | Отправить ответ |
-| POST | `/api/sessions/{id}/complete` | STUDENT | Завершить тест |
-| **Submissions** | | | |
-| POST | `/api/submissions/text` | STUDENT | Отправить текст/эссе |
-| POST | `/api/submissions/image` | STUDENT | Загрузить фото (OCR) |
-| GET | `/api/submissions/my` | STUDENT | Мои результаты |
-| GET | `/api/submissions/{id}` | Any | Конкретный результат |
-| PUT | `/api/submissions/{id}/override` | TEACHER | Корректировка оценки |
-| **Groups** | | | |
-| GET | `/api/groups` | TEACHER | Список групп |
-| POST | `/api/groups` | TEACHER | Создать группу |
-| POST | `/api/groups/{id}/students` | TEACHER | Добавить студента (или реактивировать) |
-| DELETE | `/api/groups/{id}/students/{uid}` | TEACHER | Убрать студента (soft delete) |
-| DELETE | `/api/groups/{id}` | TEACHER | Удалить группу |
-| **Progress** | | | |
-| GET | `/api/progress/me` | STUDENT | Мой прогресс |
-| GET | `/api/progress/student/{id}` | TEACHER | Прогресс студента |
-| GET | `/api/progress/group/{id}` | TEACHER | Прогресс группы |
-| **Leaderboard** | | | |
-| GET | `/api/leaderboard/group/{id}` | Any (в группе) | Рейтинг внутри группы |
-| **Notifications** | | | |
-| GET | `/api/notifications/stream` | Any | SSE соединение |
-| GET | `/api/notifications/unread-count` | Any | Кол-во непрочитанных |
-| PATCH | `/api/notifications/{id}/read` | Any | Пометить прочитанным |
-| **Subscriptions** | | | |
-| GET | `/api/subscriptions/me` | Any | Текущий тариф |
-| POST | `/api/subscriptions/upgrade` | Any | Повышение тарифа (stub) |
-| POST | `/api/subscriptions/downgrade` | Any | Понижение тарифа |
-| GET | `/api/subscriptions/usage` | Any | Остаток evaluations |
-| **API Keys** | | | |
-| GET | `/api/api-keys` | Any | Список ключей |
-| POST | `/api/api-keys` | Any | Добавить ключ |
-| DELETE | `/api/api-keys/{id}` | Any | Удалить ключ |
-| **Export** | | | |
-| GET | `/api/export/report/group/{id}` | TEACHER | Отчёт по группе |
-| GET | `/api/export/report/student/{id}` | TEACHER | Отчёт по студенту |
+| Module | Method | Path | Role | Description |
+|---|---|---|---|---|
+| **Auth** | POST | `/api/auth/register` | Public | Register a new account with email and password |
+| **Auth** | POST | `/api/auth/login` | Public | Authenticate with email and password → returns JWT |
+| **Auth** | POST | `/api/auth/google` | Public | Sign in or register via Google OAuth2 ID Token → returns JWT |
+| **Auth** | POST | `/api/auth/refresh` | Cookie | Rotate and refresh the short-lived access token |
+| **Auth** | POST | `/api/auth/logout` | Any | Log out and revoke the refresh token in Redis |
+| **Auth** | DELETE | `/api/auth/logout-all` | Any | Log out from all active devices |
+| **Auth** | POST | `/api/auth/forgot-password` | Public | Request a password reset link |
+| **User** | GET | `/api/users/me` | Any | Retrieve the current authenticated user's profile |
+| **User** | PUT | `/api/users/me` | Any | Update user profile details |
+| **User** | PUT | `/api/users/me/password` | Any | Change account password |
+| **User** | DELETE | `/api/users/me` | Any | Delete account and anonymize data (GDPR Right to Erasure) |
+| **Tasks** | POST | `/api/tasks/generate` | Any | Generate a new exercise via AI |
+| **Tasks** | POST | `/api/tasks/preview` | Any | Preview an AI-generated task without saving |
+| **Tasks** | GET | `/api/tasks` | Any | List accessible tasks and assignments |
+| **Tasks** | GET | `/api/tasks/{id}` | Any | Retrieve a specific task by ID |
+| **Tasks** | POST | `/api/tasks/{id}/assign` | TEACHER | Assign a task to one or more student groups |
+| **Tasks** | POST | `/api/tasks/template` | TEACHER | Save a task as a reusable template |
+| **Sessions (CAT)** | POST | `/api/sessions/start` | STUDENT | Start a new Computerized Adaptive Test session |
+| **Sessions (CAT)** | GET | `/api/sessions/active` | STUDENT | Resume an interrupted adaptive session |
+| **Sessions (CAT)** | GET | `/api/sessions/{id}/next-question` | STUDENT | Fetch the next adaptive question |
+| **Sessions (CAT)** | POST | `/api/sessions/{id}/answer` | STUDENT | Submit an answer and adjust difficulty |
+| **Sessions (CAT)** | POST | `/api/sessions/{id}/complete` | STUDENT | Complete the adaptive test and compute mastery |
+| **Submissions** | POST | `/api/submissions/text` | STUDENT | Submit text or an essay for AI evaluation |
+| **Submissions** | POST | `/api/submissions/image` | STUDENT | Upload a handwritten homework photo for OCR + AI grading |
+| **Submissions** | GET | `/api/submissions/my` | STUDENT | List the current student's submissions |
+| **Submissions** | GET | `/api/submissions/{id}` | Any | Retrieve detailed grading results for a submission |
+| **Submissions** | PUT | `/api/submissions/{id}/override` | TEACHER | Override the AI score and attach teacher feedback |
+| **Groups** | GET | `/api/groups` | TEACHER | List the teacher's student groups |
+| **Groups** | POST | `/api/groups` | TEACHER | Create a new student group |
+| **Groups** | POST | `/api/groups/{id}/students` | TEACHER | Add a student to a group (or reactivate a soft-deleted student) |
+| **Groups** | DELETE | `/api/groups/{id}/students/{uid}` | TEACHER | Remove a student from a group (soft delete) |
+| **Groups** | DELETE | `/api/groups/{id}` | TEACHER | Delete a student group |
+| **Progress** | GET | `/api/progress/me` | STUDENT | Retrieve the current student's grammar mastery analytics |
+| **Progress** | GET | `/api/progress/student/{id}` | TEACHER | Retrieve a specific student's progress analytics |
+| **Progress** | GET | `/api/progress/group/{id}` | TEACHER | Retrieve aggregated progress analytics for a group |
+| **Leaderboard** | GET | `/api/leaderboard/group/{id}` | Any (in group) | Retrieve the weekly anonymized ranking within a group |
+| **Notifications** | GET | `/api/notifications/stream` | Any | Establish a real-time Server-Sent Events (SSE) stream |
+| **Notifications** | GET | `/api/notifications/unread-count` | Any | Retrieve the count of unread notifications |
+| **Notifications** | PATCH | `/api/notifications/{id}/read` | Any | Mark a notification as read |
+| **Subscriptions** | GET | `/api/subscriptions/me` | Any | Retrieve the current subscription tier and status |
+| **Subscriptions** | POST | `/api/subscriptions/upgrade` | Any | Upgrade subscription tier (via payment stub) |
+| **Subscriptions** | POST | `/api/subscriptions/downgrade` | Any | Downgrade subscription tier |
+| **Subscriptions** | GET | `/api/subscriptions/usage` | Any | Retrieve remaining weekly evaluations and OCR uploads |
+| **API Keys** | GET | `/api/api-keys` | Any | List configured BYOK AI provider keys (masked) |
+| **API Keys** | POST | `/api/api-keys` | Any | Store and encrypt a new BYOK AI provider key |
+| **API Keys** | DELETE | `/api/api-keys/{id}` | Any | Delete a stored API key |
+| **Export** | GET | `/api/export/report/group/{id}` | TEACHER | Export a group performance report (PDF/CSV) |
+| **Export** | GET | `/api/export/report/student/{id}` | TEACHER | Export an individual student performance report (PDF/CSV) |
 
 ---
 
-## 8. Frontend {#sec8}
+## 8. Frontend — Pages & Navigation {#sec8}
 
 ### Routing
 
-| Путь | Компонент | Роль | Описание |
+| Path | Component | Role | Description |
 |---|---|---|---|
-| `/` | Landing | Public | Главная страница |
-| `/login` | LoginPage | Public | Вход / Регистрация |
-| `/forgot-password` | ForgotPassword | Public | Сброс пароля |
-| `/dashboard` | Dashboard | STUDENT | Дашборд студента |
-| `/generate` | GenerateTask | STUDENT | Генерация задания |
-| `/task/:id` | TaskView | STUDENT | Выполнение задания |
-| `/session/:id` | AdaptiveSession | STUDENT | CAT тест |
-| `/ocr` | OcrSubmit | STUDENT | Загрузка фото |
-| `/essay/:id` | EssayEditor | STUDENT | Написание эссе |
-| `/review/:id` | AIReview | STUDENT | Результат AI проверки |
-| `/units` | MyUnits | STUDENT | Библиотека заданий |
-| `/progress` | Progress | STUDENT | Мой прогресс |
-| `/leaderboard/:groupId` | GroupLeaderboard | STUDENT | Рейтинг группы |
-| `/teacher` | TeacherDashboard | TEACHER | Панель учителя |
-| `/teacher/groups` | StudentGroups | TEACHER | Управление группами |
-| `/teacher/configure` | ConfigureTask | TEACHER | Создание задания |
-| `/teacher/submissions` | SubmissionsReview | TEACHER | Проверка работ |
-| `/teacher/export` | ExportReports | TEACHER | Экспорт отчётов |
-| `/profile` | ProfilePage | Any | Профиль и настройки |
-| `/subscription` | SubscriptionPage | Any | Управление подпиской |
+| `/` | Landing | Public | Landing page |
+| `/login` | LoginPage | Public | Sign In / Registration (Email + Google OAuth2) |
+| `/forgot-password` | ForgotPassword | Public | Password reset request page |
+| `/dashboard` | Dashboard | STUDENT | Student dashboard |
+| `/generate` | GenerateTask | STUDENT | Self-service AI task generator |
+| `/task/:id` | TaskView | STUDENT | Interactive task completion view |
+| `/session/:id` | AdaptiveSession | STUDENT | Computerized Adaptive Test (CAT) runner |
+| `/ocr` | OcrSubmit | STUDENT | Handwritten homework photo upload (OCR) |
+| `/essay/:id` | EssayEditor | STUDENT | Essay writing editor |
+| `/review/:id` | AIReview | STUDENT | Detailed AI grading and feedback view |
+| `/units` | MyUnits | STUDENT | Personal task and assignment library |
+| `/progress` | Progress | STUDENT | Grammar mastery and radar chart analytics |
+| `/leaderboard/:groupId` | GroupLeaderboard | STUDENT | Intra-group weekly leaderboard |
+| `/teacher` | TeacherDashboard | TEACHER | Educator portal overview |
+| `/teacher/groups` | StudentGroups | TEACHER | Student group management |
+| `/teacher/configure` | ConfigureTask | TEACHER | AI task configuration and deployment |
+| `/teacher/submissions` | SubmissionsReview | TEACHER | Student submission review and grade override |
+| `/teacher/export` | ExportReports | TEACHER | PDF and CSV report exports |
+| `/profile` | ProfilePage | Any | User profile, password, and BYOK API key settings |
+| `/subscription` | SubscriptionPage | Any | Subscription plan and quota management |
 
 ---
 
-## 9. Backend {#sec9}
+## 9. Backend — Layers & Classes {#sec9}
 
-### Слои и зависимости
+### Layers & Dependencies
 
 ```mermaid
 flowchart TD
@@ -654,121 +644,121 @@ flowchart TD
     Controllers --> Services
 ```
 
-### CRON-задачи
+### Scheduled CRON Jobs
 
-| Класс | Cron | Описание |
+| Class | Cron Expression | Description |
 |---|---|---|
-| `StreakScheduler` | `0 0 1 * * *` (01:00 ежедневно) | Проверка `last_active_date`. Freeze token или сброс streak |
-| `UsageResetScheduler` | `0 0 0 * * MON` (00:00 понедельник) | Сброс `week_evaluations` и `week_ocr_uploads` |
-| `NotificationScheduler` | `0 0 9 * * *` (09:00 ежедневно) | Контекстные push: «Вы ошибались в Passive Voice» |
+| `StreakScheduler` | `0 0 1 * * *` (01:00 daily) | Checks `last_active_date`; consumes a freeze token or resets the streak |
+| `UsageResetScheduler` | `0 0 0 * * MON` (00:00 Monday) | Resets `week_evaluations` and `week_ocr_uploads` counters |
+| `NotificationScheduler` | `0 0 9 * * *` (09:00 daily) | Sends contextual study reminders (e.g., "Practice recommended for Passive Voice") |
 
 ---
 
-## 10. AI {#sec10}
+## 10. AI — Providers & Prompts {#sec10}
 
-### Провайдеры
+### Providers
 
-| Задача | Провайдер | Лимит (free) | Fallback |
+| Task | Primary Provider | Free-Tier Limit | Fallback Chain |
 |---|---|---|---|
-| Генерация заданий | Groq (Llama 3.1 70B) | 14 400 req/day | → Gemini → retry → queue |
-| Оценка эссе | Gemini 1.5 Flash | 1 500 req/day | → Groq → retry → queue |
-| OCR | Tesseract (tess4j, локально) | ∞ | OcrException → 422 |
-| Свой ключ | OpenAI / Anthropic / Groq / Gemini | По лимиту юзера | Ошибка ключа → 402 |
+| Task Generation | Groq (Llama 3.1 70B) | 14,400 req/day | → Gemini → retry → queue |
+| Essay Scoring | Gemini 1.5 Flash | 1,500 req/day | → Groq → retry → queue |
+| Homework OCR | Tesseract (tess4j, local) | Unlimited | `OcrException` → HTTP 422 |
+| User's Own Key (BYOK) | OpenAI / Anthropic / Groq / Gemini | Per user's provider plan | Key failure → HTTP 402 |
 
 ### Fallback Chain
 
 ```mermaid
 flowchart TD
-    REQ["AI Request"] --> OWN{Свой ключ?}
-    OWN -->|Да| USER_PROV["User's Provider"]
-    USER_PROV -->|OK| DONE["✅ Результат"]
-    USER_PROV -->|Ошибка| ERR402["402: Проверьте ключ"]
+    REQ["AI Request"] --> OWN{"Own API Key?"}
+    OWN -->|Yes| USER_PROV["User's Provider"]
+    USER_PROV -->|OK| DONE["✅ Result Returned"]
+    USER_PROV -->|Error| ERR402["402: Check API Key"]
 
-    OWN -->|Нет| P1["1. Groq"]
+    OWN -->|No| P1["1. Groq"]
     P1 -->|OK| DONE
     P1 -->|429/5xx| P2["2. Gemini"]
     P2 -->|OK| DONE
     P2 -->|Fail| P3["3. Retry Groq (60s)"]
     P3 -->|OK| DONE
-    P3 -->|Fail| QUEUE["202: Запрос в очереди"]
+    P3 -->|Fail| QUEUE["202: Request Queued"]
 ```
 
 ---
 
-## 11. Подписки {#sec11}
+## 11. Subscriptions & Billing (Stub) {#sec11}
 
-### Тарифы
+### Plans
 
-| | FREE | PREMIUM | EDUCATOR |
+| Feature | FREE | PREMIUM | EDUCATOR |
 |---|---|---|---|
-| AI evaluations | 10/неделя | ∞ | ∞ |
-| OCR загрузки | 3/неделя | ∞ | ∞ |
-| CEFR уровни | B1, B2 | B1, B2, C1 | B1, B2, C1 |
-| Прогресс (полный) | ✗ | ✓ | ✓ |
-| Группы | — | — | до 200 студентов |
-| Deploy заданий | — | — | ✓ |
-| Override оценок | — | — | ✓ |
-| Экспорт отчётов | — | — | ✓ |
-| API доступ | — | — | ✓ |
+| AI evaluations | 10 / week | Unlimited | Unlimited |
+| OCR image uploads | 3 / week | Unlimited | Unlimited |
+| CEFR levels | B1, B2 | B1, B2, C1 | B1, B2, C1 |
+| Full progress analytics | No | Yes | Yes |
+| Student groups | — | — | Up to 200 students |
+| Task deployment | — | — | Yes |
+| Grade overrides | — | — | Yes |
+| Report exports | — | — | Yes |
+| API key integration | — | — | Yes |
 
-### Заглушка оплаты
+### Payment Stub
 
-`PaymentService.processPayment()` **всегда** возвращает `{success: true, transactionId: "STUB-xxx"}`.
+`PaymentService.processPayment()` **always** returns `{success: true, transactionId: "STUB-xxx"}`.
 
-Инфраструктура ошибок полностью готова:
+The error-handling infrastructure is fully implemented:
 
-| Код ошибки | HTTP | Когда |
+| Error Code | HTTP Status | Trigger Condition |
 |---|---|---|
-| `PAYMENT_FAILED` | 402 | Общая ошибка |
-| `CARD_DECLINED` | 402 | Карта отклонена |
-| `INSUFFICIENT_FUNDS` | 402 | Недостаточно средств |
-| `EXPIRED_CARD` | 402 | Срок карты истёк |
-| `NETWORK_ERROR` | 503 | Ошибка сети платёжной системы |
-| `PROVIDER_ERROR` | 503 | Ошибка на стороне провайдера |
+| `PAYMENT_FAILED` | 402 | Generic payment failure |
+| `CARD_DECLINED` | 402 | Card declined by issuer |
+| `INSUFFICIENT_FUNDS` | 402 | Insufficient funds |
+| `EXPIRED_CARD` | 402 | Payment card has expired |
+| `NETWORK_ERROR` | 503 | Payment gateway network timeout |
+| `PROVIDER_ERROR` | 503 | Upstream payment provider error |
 
-Stub никогда не вернёт эти ошибки, но фронтенд и `GlobalExceptionHandler` готовы их обработать.
+While the stub never throws these errors during normal operation, both the frontend and `GlobalExceptionHandler` are fully equipped to handle them.
 
 ---
 
-## 12. Безопасность {#sec12}
+## 12. Security {#sec12}
 
-| Угроза | Защита |
+| Threat | Mitigation |
 |---|---|
-| XSS | Access JWT в JS memory (не localStorage). React auto-escape. CSP headers |
-| CSRF | SameSite=Strict на refresh cookie |
-| Утечка API ключей | AES-256-GCM шифрование, расшифровка только в RAM на время вызова |
-| Биометрия | Zero-Retention OCR: byte[] → process → null → GC |
-| Перебор паролей | BCrypt(12), rate limit: 10 попыток / 15 мин (Redis) |
-| Изоляция данных | RBAC: учитель видит только своих студентов (группы + `is_active`) |
-| GDPR | DELETE /users/me: анонимизация submissions, удаление PII |
+| XSS | Access JWT stored exclusively in JS memory (never in `localStorage`). React auto-escaping and strict CSP headers |
+| CSRF | `SameSite=Strict` attribute enforced on the HttpOnly refresh cookie |
+| API Key Leakage | AES-256-GCM authenticated encryption; keys are decrypted strictly in RAM for the duration of the outbound request |
+| Biometric Privacy | Zero-Retention OCR: `byte[]` processed in RAM → explicitly zeroed (`0x00`) in `finally` → garbage collected |
+| Brute-Force Attacks | BCrypt(12) password hashing and Redis rate limiting (10 attempts / 15 minutes) |
+| Multi-Tenant Data Isolation | Role-Based Access Control (RBAC): teachers can only view active students (`is_active = true`) in their own groups |
+| GDPR Compliance | `DELETE /api/users/me`: full erasure of personal data (PII) and anonymization of historical submissions |
 
 ### Redis Key Space
 
-| Ключ | Тип | TTL | Назначение |
+| Key Pattern | Type | TTL | Purpose |
 |---|---|---|---|
-| `refresh_tokens:{userId}:{device}` | STRING | 30 дней | Hash refresh-токена |
-| `rate_limit:{userId}:ai` | STRING | 24 часа | Счётчик AI-запросов |
-| `rate_limit:{userId}:auth` | STRING | 15 мин | Попытки входа |
-| `ai_cache:{sha256(prompt)}` | STRING | 1 час | Кеш одинаковых промптов |
-| `notifications:{userId}` | LIST | 7 дней | Pending push для SSE |
+| `refresh_tokens:{userId}:{device}` | STRING | 30 days | SHA-256 hash of the active refresh token |
+| `rate_limit:{userId}:ai` | STRING | 24 hours | Daily per-user AI request counter |
+| `rate_limit:{userId}:auth` | STRING | 15 minutes | Authentication attempt rate limiter |
+| `ai_cache:{sha256(prompt)}` | STRING | 1 hour | Content-addressable cache for identical task prompts |
+| `notifications:{userId}` | LIST | 7 days | Pending notification queue for SSE delivery |
 
 ---
 
-## 13. DevOps {#sec13}
+## 13. DevOps & Deployment {#sec13}
 
-### Локальный запуск
+### Local Development Startup
 
 ```bash
-# 1. Поднять БД
+# 1. Start PostgreSQL and Redis containers
 docker compose up -d db redis
 
-# 2. Backend
+# 2. Start Backend API
 cd backend && ./gradlew bootRun
 
-# 3. Frontend
+# 3. Start Frontend dev server
 cd frontend && npm install && npm run dev
 
-# Доступ: localhost:5173 (front), localhost:8080 (API)
+# Endpoints: http://localhost:5173 (Frontend), http://localhost:8080 (Backend API)
 ```
 
 ### Docker Compose (Production)
@@ -777,18 +767,18 @@ cd frontend && npm install && npm run dev
 docker compose up --build
 ```
 
-Сервисы: `backend` (Java + Tesseract), `frontend` (Nginx), `db` (PostgreSQL), `redis`.
+Services: `backend` (Java 21 + Tesseract OCR), `frontend` (Nginx PWA), `db` (PostgreSQL 16), `redis` (Redis 7).
 
 ---
 
-## 📎 Документация проекта и интерактивные материалы
+## 📎 Project Documentation & Interactive Materials
 
-| Документ | Формат | Описание |
+| Document | Format | Description |
 |---|---|---|
-| [Интерактивная презентация проекта (Pitch Deck)](presentation.html) | HTML | Интерактивная презентация концепции, бизнес-модели, UI/UX и архитектуры |
-| [README.md (Главный документ)](./README.md) | Markdown | Мастер-индекс, общее руководство и сводная спецификация |
-| [BACKEND.md](./BACKEND.md) | Markdown | Детальное описание всех Java-классов, полная API-таблица, ERD, Redis, CRON, exceptions |
-| [FRONTEND.md](./FRONTEND.md) | Markdown | Компоненты, хуки, Zustand-хранилища, роутинг, PWA, дизайн-система |
-| [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Markdown | Провайдеры, промпты, fallback-цепочка, кеширование, OCR pipeline, CAT алгоритм |
-| [DEVOPS.md](./DEVOPS.md) | Markdown | Docker, Dockerfile, CI/CD, Flyway-миграции, мониторинг, security checklist |
-| [Doxygen Generated API Reference](./generated/html/index.html) | HTML (Doxygen) | Автоматически скомпилированная Doxygen-документация всех классов и функций |
+| [Interactive Project Presentation (Pitch Deck)](presentation.html) | HTML | Interactive presentation of the concept, business model, UI/UX, and system architecture |
+| [README.md (Main Document)](./README.md) | Markdown | Master index, general guide, and consolidated system specification |
+| [BACKEND.md](./BACKEND.md) | Markdown | Detailed breakdown of all Java classes, complete REST API table, ERD, Redis, CRON jobs, and exceptions |
+| [FRONTEND.md](./FRONTEND.md) | Markdown | React components, custom hooks, Zustand stores, routing, PWA, and design system |
+| [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Markdown | AI providers, prompt templates, fallback chain, caching, OCR pipeline, and CAT algorithm |
+| [DEVOPS.md](./DEVOPS.md) | Markdown | Docker Compose, Dockerfiles, CI/CD, Flyway migrations, monitoring, and security checklist |
+| [Doxygen Generated API Reference](index.html) | HTML (Doxygen) | Automatically compiled Doxygen reference for all packages, classes, and functions |

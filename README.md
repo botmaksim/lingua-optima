@@ -1,68 +1,66 @@
 # 📚 Lingua Optima — Adaptive AI-Powered English Mastery Platform
 
-> **Интерактивная платформа для изучения английского языка (CEFR B1–C1)** с генерацией заданий через ИИ (Groq Llama 3.1 70B), проверкой эссе по рубрике IELTS/CEFR (Google Gemini 1.5 Flash), распознаванием рукописных домашних работ (Zero-Retention Tesseract OCR) и компьютерным адаптивным тестированием (CAT).
+> **An interactive platform for mastering the English language (CEFR B1–C1)** featuring AI-driven task generation (Groq Llama 3.1 70B), essay evaluation aligned with IELTS/CEFR rubrics (Google Gemini 1.5 Flash), handwritten homework recognition (Zero-Retention Tesseract OCR), and Computerized Adaptive Testing (CAT).
 
 ---
 
-## 🎬 Интерактивная презентация и Документация
+## 🎬 Interactive Presentation & Documentation
 
-> 📊 **[Открыть интерактивную презентацию проекта (`docs/presentation.html`)](./docs/presentation.html)**  
-> 📘 **[Открыть скомпилированную Doxygen документацию (`docs/generated/html/index.html`)](./docs/generated/html/index.html)**
+> 📊 **[Open the Interactive Project Presentation (`docs/presentation.html`)](./docs/presentation.html)**  
+> 📘 **[Open the Compiled Doxygen Documentation (`docs/generated/html/index.html`)](./docs/generated/html/index.html)**
 
-### 🗂 Полный навигатор по документации проекта
+### 🗂 Complete Documentation Navigator
 
-| Документ | Ссылка | Описание |
+| Document | Link | Description |
 |---|---|---|
-| **Главный архитектурный обзор** | [`docs/README.md`](./docs/README.md) | Полная спецификация системы, ERD базы данных, сводная таблица REST API, безопасность, Redis |
-| **Backend Specification** | [`docs/BACKEND.md`](./docs/BACKEND.md) | Архитектура Java 21 / Spring Boot 3, все контроллеры, сервисы, репозитории, DTO, миграции и обработка ошибок |
-| **Frontend Specification** | [`docs/FRONTEND.md`](./docs/FRONTEND.md) | Архитектура React 18 + TypeScript + Vite PWA, компоненты, Zustand-сторы, кастомные хуки, маршрутизация |
-| **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Цепочка провайдеров (BYOK → Groq → Gemini), промпт-инжиниринг, Zero-Retention OCR в RAM, алгоритм CAT |
-| **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, мультистейдж Dockerfiles, Nginx, GitHub Actions CI/CD, конфигурация `.env` |
-| **Интерактивная презентация** | [`docs/presentation.html`](./docs/presentation.html) | Интерактивный Pitch Deck и визуализация архитектуры платформы (открывается в любом браузере) |
-| **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Автоматически сгенерированная документация Doxygen по всем пакетам, классам, методам и типам |
-
-
----
-
-## 🚀 Ключевые возможности и архитектурные принципы
-
-1. **6 ключевых модулей**:
-   - **Self-Service Task Generator** — генерация упражнений (`MCQ`, `GAP_FILL`, `REWRITE`, `ESSAY`) по 36 грамматическим темам CEFR (B1, B2, C1).
-   - **Zero-Retention Homework OCR** — распознавание фото рукописных работ строго в оперативной памяти (RAM) с немедленным занулением байтового массива (`Arrays.fill(bytes, (byte) 0)`).
-   - **AI Essay Scoring** — оценка эссе по 4 критериям (*Task Achievement*, *Coherence & Cohesion*, *Lexical Resource*, *Grammatical Range & Accuracy*).
-   - **Computerized Adaptive Testing (CAT)** — динамическая подстройка сложности вопросов (шкала 1–5) в реальном времени и расчёт mastery score по весам сложности.
-   - **Progress & Gap Analytics** — радар-чарты освоения тем, выявление пробелов (`masteryScore < 60%`) и автоматическая рекомендация повышения уровня CEFR (`>= 80%` по всем темам уровня).
-   - **Educator Portal** — управление учебными группами (до 200 студентов), деплой заданий, ручная корректировка AI-оценок (*Teacher Override*) и экспорт отчётов в **PDF / CSV**.
-
-2. **Безопасность, аутентификация и приватность (Security by Design)**:
-   - **Двойная аутентификация (Email + Google OAuth2)** — поддержка классического входа/регистрации по электронной почте и паролю (`POST /api/auth/login`, `POST /api/auth/register`) и быстрого входа через **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) с проверкой ID-токена (`email_verified`, `aud`) через Google `tokeninfo` API и автоматическим созданием профиля при первом входе.
-   - **In-Memory Access JWT (15 мин)** + **HttpOnly Strict Refresh Cookie (30 дней)** с хранением SHA-256 хешей сессий в Redis.
-   - **AES-256-GCM шифрование** пользовательских BYOK API-ключей (12-байтный случайный IV + 128-битный тег аутентификации).
-   - **Приватный групповой лидерборд** — отсутствие глобального лидерборда; рейтинг рассчитывается только внутри учебной группы преподавателя под псевдонимами (`displayAlias`).
-   - **Soft Delete в группах** (`is_active = false`, `removed_at`) — при удалении студента из группы его старые работы скрываются от учителя, а при повторном добавлении история полностью восстанавливается.
-   - **GDPR Right to Erasure** (`DELETE /api/users/me`) — полное удаление PII и анонимизация истории отправок.
+| **Master Architecture Overview** | [`docs/README.md`](./docs/README.md) | Full system specification, database ERD, complete REST API reference table, security architecture, and Redis key spaces |
+| **Backend Specification** | [`docs/BACKEND.md`](./docs/BACKEND.md) | Java 21 / Spring Boot 3 architecture, all controllers, services, repositories, DTOs, database migrations, and error handling |
+| **Frontend Specification** | [`docs/FRONTEND.md`](./docs/FRONTEND.md) | React 18 + TypeScript + Vite PWA architecture, components, Zustand stores, custom hooks, and routing |
+| **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Provider fallback chain (BYOK → Groq → Gemini), prompt engineering, Zero-Retention RAM OCR pipeline, and CAT algorithm |
+| **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, multi-stage Dockerfiles, Nginx, GitHub Actions CI/CD, and `.env` configuration |
+| **Interactive Presentation** | [`docs/presentation.html`](./docs/presentation.html) | Interactive Pitch Deck and visual architecture walkthrough (opens directly in any browser) |
+| **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Automatically generated Doxygen documentation covering all packages, classes, methods, and types |
 
 ---
 
-## ⚙️ Конфигурация переменных окружения (`.env`)
+## 🚀 Core Capabilities & Architectural Principles
 
-В корне проекта расположен шаблон [`.env.example`](./.env.example) и рабочий файл `.env` (добавлен в `.gitignore`). Все переменные подтягиваются автоматически как в **Backend** (`spring.config.import` в `application.yml`), так и в **Frontend** (`envDir: '..'` в `vite.config.ts`) и **Docker Compose**:
+1. **6 Core Modules**:
+   - **Self-Service Task Generator** — AI generation of exercises (`MCQ`, `GAP_FILL`, `REWRITE`, `ESSAY`) across 36 CEFR grammar topics (B1, B2, C1).
+   - **Zero-Retention Homework OCR** — handwritten homework photo recognition processed strictly in RAM with immediate byte-array zeroing (`Arrays.fill(bytes, (byte) 0)`).
+   - **AI Essay Scoring** — automated essay grading across 4 rubric criteria (*Task Achievement*, *Coherence & Cohesion*, *Lexical Resource*, *Grammatical Range & Accuracy*).
+   - **Computerized Adaptive Testing (CAT)** — real-time question difficulty adjustment (scale 1–5) and difficulty-weighted mastery score calculation.
+   - **Progress & Gap Analytics** — topic mastery radar charts, weak-spot identification (`masteryScore < 60%`), and automated CEFR level-up recommendations (`>= 80%` across all topics in the current level).
+   - **Educator Portal** — student group management (up to 200 students per group), task deployment, manual AI grade adjustments (*Teacher Override*), and **PDF / CSV** report exports.
+
+2. **Security, Authentication & Privacy (Security by Design)**:
+   - **Dual Authentication (Email + Google OAuth2)** — supports classic email and password sign-in/registration (`POST /api/auth/login`, `POST /api/auth/register`) as well as one-click sign-in via **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) with ID token verification (`email_verified`, `aud`) via the Google `tokeninfo` API and automatic profile provisioning on first login.
+   - **In-Memory Access JWT (15 min)** + **HttpOnly Strict Refresh Cookie (30 days)** backed by SHA-256 session token hashes in Redis.
+   - **AES-256-GCM Encryption** for user-supplied BYOK API keys (12-byte random IV + 128-bit authentication tag).
+   - **Private Group Leaderboard** — no global public leaderboard; rankings are computed strictly within a teacher's student group using anonymized aliases (`displayAlias`).
+   - **Soft Delete in Groups** (`is_active = false`, `removed_at`) — when a student is removed from a group, their past submissions are hidden from the teacher, and if re-added later, their historical submissions are seamlessly restored.
+   - **GDPR Right to Erasure** (`DELETE /api/users/me`) — complete erasure of PII and anonymization of historical submissions.
+
+---
+
+## ⚙️ Environment Variables Configuration (`.env`)
+
+The repository root contains the template [`.env.example`](./.env.example) and the active `.env` file (excluded via `.gitignore`). All variables are automatically loaded by the **Backend** (`spring.config.import` in `application.yml`), the **Frontend** (`envDir: '..'` in `vite.config.ts`), and **Docker Compose**:
 
 - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
 - `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
 - `SPRING_REDIS_HOST`, `SPRING_REDIS_PORT`, `REDIS_HOST`, `REDIS_PORT`
 - `SERVER_PORT`, `CORS_ORIGINS`, `VITE_API_URL`
 - `JWT_SECRET`, `ENCRYPTION_KEY`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_GOOGLE_CLIENT_ID` *(для входа через Google OAuth2 укажите ваш OAuth 2.0 Client ID из Google Cloud Console в `GOOGLE_CLIENT_ID` и `VITE_GOOGLE_CLIENT_ID`, а также секрет в `GOOGLE_CLIENT_SECRET`)*
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_GOOGLE_CLIENT_ID` *(to enable Google OAuth2 login, set your OAuth 2.0 Client ID from the Google Cloud Console in `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID`, and the secret in `GOOGLE_CLIENT_SECRET`)*
 - `GROQ_API_KEY`, `GEMINI_API_KEY`
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
 
-
 ---
 
-## 🛠 Быстрый старт и сборка
+## 🛠 Quick Start & Build
 
-### 1. Запуск через Docker Compose
+### 1. Run via Docker Compose
 ```bash
 docker compose up --build -d
 ```
@@ -70,21 +68,21 @@ docker compose up --build -d
 - **Backend API (Spring Boot)**: `http://localhost:8080/api`
 - **Adminer (DB UI)**: `http://localhost:8081`
 
-### 2. Локальная разработка и тестирование
+### 2. Local Development & Testing
 ```bash
-# Backend: запуск 222 юнит-тестов и проверка покрытия JaCoCo (100.00% instructions, 100.00% branches, 100.00% lines, 100.00% methods, 100.00% classes)
+# Backend: run 222 unit tests and verify JaCoCo coverage (100.00% instructions, 100.00% branches, 100.00% lines, 100.00% methods, 100.00% classes)
 cd backend && ./gradlew test jacocoTestCoverageVerification
 
-# Frontend: запуск Vitest тестов и production-сборка
+# Frontend: run Vitest unit tests and production build
 cd frontend && npm install && npm test && npm run build
 ```
 
-### 3. Компиляция документации (Doxygen & Javadoc)
+### 3. Documentation Compilation (Doxygen & Javadoc)
 ```bash
-# Генерация полной HTML-документации (Backend + Frontend + Markdown + Presentation)
+# Generate full HTML documentation (Backend + Frontend + Markdown + Presentation)
 doxygen Doxyfile
 
-# Генерация Javadoc для Backend
+# Generate Javadoc for Backend
 cd backend && ./gradlew javadoc
 ```
-Скомпилированная документация сохраняется в `docs/generated/html/index.html` (папка `docs/generated/` добавлена в `.gitignore`).
+Compiled documentation is saved to `docs/generated/html/index.html` (the `docs/generated/` directory is listed in `.gitignore`).

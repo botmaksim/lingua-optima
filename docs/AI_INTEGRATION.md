@@ -1,29 +1,29 @@
-# Lingua Optima: Интеграция ИИ (AI Integration)
+# Lingua Optima: AI Integration Documentation
 
-> 📚 **Навигация по документации**: [Главный обзор (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Открыть презентацию (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](./generated/html/index.html)
+> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
 
-Данный документ описывает архитектуру интеграции искусственного интеллекта для образовательной платформы Lingua Optima.
+This document describes the artificial intelligence and OCR integration architecture for the Lingua Optima educational platform.
 
-## Контекст
-Платформа использует внешние AI API. Мы не используем self-hosted модели и fine-tuning (бюджет $0).
+## Context
+The platform leverages external AI APIs. We do not use self-hosted models or fine-tuning ($0 infrastructure budget).
 
 ## AI Provider Strategy
 - **Task Generation (grammar exercises):** Groq API → Llama 3.1 70B (free tier: 14,400 req/day)
 - **Essay Scoring + Grammar Check:** Google Gemini 1.5 Flash (free tier: 1,500 req/day)
-- **OCR:** Tesseract via `tess4j` (local, внутри Java Docker контейнера)
-- **User's own key:** Если пользователь предоставляет свой API ключ (OpenAI/Anthropic/Groq/Gemini), система использует его вместо системных ключей.
+- **OCR:** Tesseract via `tess4j` (local execution inside the Java Docker container)
+- **User's own key (BYOK):** If a user provides their own API key (`OpenAI`, `Anthropic`, `Groq`, or `Gemini`), the system uses it instead of the system-level keys.
 
 ---
 
-## 1. Архитектура AIBrokerService
+## 1. AIBrokerService Architecture
 
-Основным компонентом для взаимодействия с LLM является `AIBrokerService`. Он использует интерфейс `AIProvider` с единым методом `complete(String prompt): String`.
+The central component for interacting with Large Language Models is `AIBrokerService`. It relies on the `AIProvider` interface exposing a single unified method `complete(String prompt): String`.
 
-Доступны 4 реализации: `GroqProvider`, `GeminiProvider`, `OpenAIProvider`, `AnthropicProvider`.
+Four provider implementations are available: `GroqProvider`, `GeminiProvider`, `OpenAIProvider`, and `AnthropicProvider`.
 
-**Логика выбора провайдера:**
-1. Есть пользовательский ключ? → Используем провайдер пользователя.
-2. Нет ключа? → Используем системный дефолт (Groq для задач, Gemini для эссе).
+**Provider Selection Logic:**
+1. Does the user have a custom API key configured? → Route to the user's configured provider.
+2. No custom key? → Route to the system default provider (Groq for task generation, Gemini for essay scoring).
 
 ```mermaid
 classDiagram
@@ -69,14 +69,14 @@ classDiagram
 
 ---
 
-## 2. Fallback Chain (Цепочка отказоустойчивости)
+## 2. Fallback Chain (Resilience Pipeline)
 
-Критически важный механизм для бесперебойной работы бесплатных тарифов.
+A critical resilience mechanism ensuring uninterrupted service on free-tier API quotas.
 
-**Логика:**
-- Groq падает (429/5xx) → пробуем Gemini.
-- Gemini падает → ждем 60s и пробуем Groq снова.
-- Все падают → добавляем задачу в БД (таблица `pending_ai_tasks`) → возвращаем `202 Accepted` с сообщением "Your request is queued".
+**Execution Logic:**
+- Groq fails (HTTP 429 / 5xx) → automatically fall back to Gemini.
+- Gemini fails → wait 60s and retry Groq once more.
+- All providers fail → persist the request in the database (`pending_ai_tasks` table) → return `202 Accepted` with the message `"Your request is queued"`.
 
 ```mermaid
 sequenceDiagram
@@ -117,7 +117,7 @@ sequenceDiagram
 
 ## 3. Prompt Templates
 
-Точные шаблоны промптов для различных задач.
+Exact structured prompt templates used across AI evaluation workflows.
 
 ### Task Generation (Grammar Exercises)
 ```json
@@ -145,15 +145,15 @@ sequenceDiagram
 
 ---
 
-## 4. Стратегия кэширования (Caching Strategy)
+## 4. Caching Strategy
 
-Для оптимизации использования бесплатных API применяется кэширование.
+To optimize usage of free-tier LLM APIs, content-addressable caching is applied.
 
-- **Redis key:** `ai_cache:{sha256(prompt)}` → хранит JSON response.
+- **Redis key:** `ai_cache:{sha256(prompt)}` → stores the serialized JSON response.
 - **TTL:** 1 hour.
-- **Правила кэширования:**
-  - Кэшируем: **Task Generation** (одинаковые параметры порождают идентичные задачи, что приемлемо для разных пользователей).
-  - НЕ кэшируем: **Essay Scoring** (каждое эссе уникально, оценка должна быть индивидуальной).
+- **Caching Rules:**
+  - **Cached:** **Task Generation** (identical parameters produce reusable exercises suitable across different users).
+  - **NOT Cached:** **Essay Scoring** (every student essay is unique and requires individualized evaluation).
 
 ```mermaid
 flowchart TD
@@ -167,28 +167,28 @@ flowchart TD
 
 ---
 
-## 5. Rate Limiting (Ограничение запросов)
+## 5. Rate Limiting
 
-Управление лимитами состоит из нескольких уровней:
+Rate limiting and quota enforcement operate across multiple tiers:
 
-- **Per-user limit (Redis):** Хранится в ключе `rate_limit:{userId}:ai`, представляет собой счетчик с `TTL=24h`.
-- **Ограничения бесплатного тарифа (PostgreSQL):** Пользователям на free tier доступно только 10 проверок (evaluations) в неделю. Отслеживается через таблицу `usage_counters` в БД, а не в Redis.
-- **System-level limits:** Системные квоты Groq и Gemini отслеживаются отдельно для предотвращения глобального бана.
-- **Реакция на превышение лимита:** При достижении квоты выбрасывается `QuotaExceededException`, которое транслируется в HTTP код `429 Too Many Requests` и вызывает отображение `UpgradeWall` на frontend-е.
+- **Per-user limit (Redis):** Stored under the key `rate_limit:{userId}:ai` as an atomic counter with `TTL = 24h`.
+- **Free-tier weekly limits (PostgreSQL):** Users on the `FREE` tier receive 10 AI evaluations and 3 OCR uploads per week. Tracked persistently via the `usage_counters` table in PostgreSQL rather than volatile Redis keys.
+- **System-level limits:** Global quotas for Groq and Gemini are monitored to prevent upstream rate-limit bans.
+- **Quota Exceeded Behavior:** When a user's quota is exhausted, `QuotaExceededException` is thrown, translated into HTTP `429 Too Many Requests`, and triggers the `UpgradeWall` modal on the frontend.
 
 ---
 
 ## 6. OCR Pipeline (Tesseract)
 
-OCR для распознавания выполненных письменных работ.
+Optical Character Recognition pipeline for grading handwritten homework photos.
 
-- **Библиотека:** `tess4j` (Java wrapper для Tesseract).
-- **Архитектура:** НЕ микросервис на Python. Модуль интегрирован непосредственно в единый Java Docker контейнер.
-- **Image Preprocessing:** Конвертация в grayscale, улучшение контрастности (contrast enhancement).
-- **Zero-Retention policy:** Изображение хранится как `byte[]` в RAM → обрабатывается → ссылка обнуляется (`null`) → очищается Garbage Collector-ом (GC).
-- **Обработка ошибок:** Выбрасывается `OcrException` с понятными пользователю сообщениями (например, "Изображение размыто", "Слишком темно", "Неподдерживаемый формат").
-- **Поддерживаемые форматы:** JPEG, PNG.
-- **Максимальный размер файла:** 10MB.
+- **Library:** `tess4j` (Java JNA wrapper for native Tesseract OCR).
+- **Architecture:** NOT a separate Python microservice. The OCR engine is integrated directly inside the single Java backend container.
+- **Image Preprocessing:** Grayscale conversion and contrast enhancement prior to recognition.
+- **Zero-Retention Policy:** Uploaded image bytes are held strictly as a `byte[]` buffer in RAM → processed → explicitly overwritten with zeros (`Arrays.fill(bytes, (byte) 0)`) inside a `finally` block → reclaimed by the Garbage Collector (GC).
+- **Error Handling:** Throws `OcrException` with clear, user-facing diagnostics (e.g., `"Image is blurry"`, `"Image is too dark"`, `"Unsupported image format"`).
+- **Supported Formats:** JPEG, PNG.
+- **Maximum File Size:** 10MB.
 
 ```mermaid
 sequenceDiagram
@@ -203,7 +203,7 @@ sequenceDiagram
     ImageProcessor-->>OCRService: Processed byte[]
     OCRService->>Tesseract: doOCR(byte[])
     Tesseract-->>OCRService: Extracted Text
-    Note over OCRService: Set byte[] = null<br/>Zero-Retention / GC
+    Note over OCRService: Zero-fill byte[] in RAM<br/>Zero-Retention / GC
     OCRService-->>User: Text Result
 ```
 
@@ -211,12 +211,12 @@ sequenceDiagram
 
 ## 7. Adaptive Algorithm (CAT)
 
-Компьютерное адаптивное тестирование (Computer Adaptive Testing) для автоматической подстройки сложности вопросов под уровень пользователя.
+Computerized Adaptive Testing (CAT) dynamically adjusts question difficulty in real time to match the learner's proficiency level.
 
 - **Initial difficulty:** MEDIUM (2)
-- **Correct answer:** difficulty += 1 (максимум 4 = EXPERT)
-- **Wrong answer:** difficulty -= 1 (минимум 1 = EASY), ошибка записывается для соответствующего топика грамматики.
-- **Завершение сессии:** После 10 вопросов сессия завершается и рассчитывается взвешенный балл.
+- **Correct answer:** `difficulty += 1` (capped at maximum 4 = EXPERT)
+- **Wrong answer:** `difficulty -= 1` (floored at minimum 1 = EASY), and an error is recorded for the corresponding grammar topic.
+- **Session completion:** After 10 questions, the session concludes and a difficulty-weighted mastery score is calculated.
 - **Mastery score formula:** `(sum of correctly_answered_difficulty_levels) / (sum of all_difficulty_levels)`
 
 ```mermaid
@@ -236,23 +236,23 @@ flowchart TD
 
 ---
 
-## 8. CEFR Auto-Leveling (Автоматическое повышение уровня)
+## 8. CEFR Auto-Leveling
 
-Система может автоматически предлагать пользователю повысить уровень владения языком.
+The system automatically recommends advancing to the next CEFR proficiency level when a student demonstrates consistent mastery.
 
-- **Trigger:** Срабатывает после каждого отправленного задания (submission).
-- **Check:** Условие выполняется, если 80%+ грамматических топиков текущего уровня CEFR имеют показатель `mastery >= 0.85`.
-- **Action:** Отправляется уведомление "Ready to level up?". Если пользователь подтверждает, выполняется запрос: `UPDATE users SET cefr_level = next`.
-- **Cooldown:** Если пользователь отказался, предложение не повторяется в течение 7 дней.
+- **Trigger:** Evaluated automatically after each completed submission.
+- **Condition:** Triggered when all grammar topics in the student's current CEFR level reach `mastery >= 80%`.
+- **Action:** Dispatches a `"Ready to level up?"` notification. If the student accepts, their profile is upgraded (`UPDATE users SET cefr_level = next`).
+- **Cooldown:** If the student declines or dismisses the prompt, the recommendation is suppressed for 7 days.
 
 ---
 
-## 9. Детали рубрикатора эссе (Essay Rubric Details)
+## 9. Essay Rubric Details
 
-Оценка эссе базируется на стандартах IELTS/Cambridge assessment. Каждый критерий оценивается по шкале 0-10.
+Essay evaluation is modeled after official IELTS and Cambridge English assessment standards. Each criterion is scored on a 0–10 scale:
 
-- **Task Achievement (0-10):** Насколько полно эссе раскрывает заданную тему?
-- **Coherence & Cohesion (0-10):** Логика повествования, разбиение на абзацы, использование слов-связок (linking words).
-- **Lexical Resource (0-10):** Разнообразие словарного запаса, его точность и соответствие заявленному уровню CEFR.
-- **Grammatical Range & Accuracy (0-10):** Разнообразие грамматических конструкций и частота ошибок.
-- **Overall Score:** Взвешенное среднее по всем критериям оценки.
+- **Task Achievement (0–10):** How thoroughly and accurately does the essay address the prompt?
+- **Coherence & Cohesion (0–10):** Logical progression of ideas, paragraphing, and effective use of cohesive devices (linking words).
+- **Lexical Resource (0–10):** Breadth, precision, and register appropriateness of vocabulary relative to the target CEFR level.
+- **Grammatical Range & Accuracy (0–10):** Variety of complex syntactic structures and error-free sentence production.
+- **Overall Score:** Weighted average across all four rubric criteria.

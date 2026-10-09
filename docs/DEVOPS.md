@@ -1,22 +1,22 @@
 # Lingua Optima: DevOps & Deployment Documentation
 
-> 📚 **Навигация по документации**: [Главный обзор (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Открыть презентацию (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](./generated/html/index.html)
+> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
 
-В данном документе описывается архитектура развертывания, процессы CI/CD, инфраструктура Docker, а также политики безопасности и мониторинга для платформы Lingua Optima.
+This document describes the deployment architecture, CI/CD pipelines, Docker container infrastructure, and security and monitoring policies for the Lingua Optima platform.
 
 ## Tech Stack
 - Java 21 + Spring Boot 3 (backend)
 - React + TypeScript + Vite (frontend)
 - PostgreSQL 16
 - Redis 7
-- Tesseract OCR (tess4j inside Java container)
+- Tesseract OCR (`tess4j` inside the Java container)
 - Docker + Docker Compose
 
 ---
 
 ## 1. Docker Architecture
 
-Ниже представлен полный файл `docker-compose.yml` для локального развертывания всех сервисов.
+Below is the complete `docker-compose.yml` configuration for deploying all platform services locally.
 
 ```yaml
 version: '3.8'
@@ -118,7 +118,7 @@ networks:
 
 ## 2. Dockerfile for Backend
 
-Backend приложение использует multi-stage сборку. Во втором stage устанавливается пакет `tesseract-ocr` для работы библиотеки tess4j.
+The backend application uses a multi-stage Docker build. In the second stage, the native `tesseract-ocr` package and English traineddata are installed for `tess4j`.
 
 ```dockerfile
 # Stage 1: Build
@@ -131,7 +131,7 @@ RUN gradle build --no-daemon -x test
 # Stage 2: Run
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-# Устанавливаем Tesseract OCR и английский языковой пакет
+# Install Tesseract OCR and the English language pack
 RUN apk add --no-cache tesseract-ocr tesseract-ocr-eng
 COPY --from=build /app/build/libs/*.jar app.jar
 EXPOSE 8080
@@ -142,7 +142,7 @@ ENTRYPOINT ["java", "-jar", "app.jar"]
 
 ## 3. Dockerfile for Frontend
 
-Frontend использует Vite и собирается в статические файлы, которые затем раздаются через Nginx.
+The frontend uses Vite to compile static production assets, which are then served via Nginx.
 
 ```dockerfile
 # Stage 1: Build
@@ -155,15 +155,15 @@ RUN npm run build
 
 # Stage 2: Serve
 FROM nginx:alpine
-# Копируем собранные файлы в директорию nginx
+# Copy compiled assets to the Nginx html directory
 COPY --from=build /app/dist /usr/share/nginx/html
-# Копируем конфигурацию nginx для корректного роутинга SPA
+# Copy custom Nginx configuration for Single-Page Application (SPA) routing
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-*Пример `nginx.conf` (для роутинга SPA):*
+*Example `nginx.conf` (for SPA routing):*
 ```nginx
 server {
     listen 80;
@@ -179,42 +179,41 @@ server {
 
 ## 4. Environment Variables
 
-Таблица всех используемых переменных окружения:
+Complete reference table of all environment variables used across the system:
 
 ### Backend
 | Variable | Description |
 |---|---|
-| `DB_URL` | URL подключения к PostgreSQL (e.g. `jdbc:postgresql://db:5432/lingua_optima`) |
-| `DB_USER` | Пользователь базы данных |
-| `DB_PASS` | Пароль базы данных |
-| `REDIS_HOST` | Хост сервера Redis |
-| `JWT_SECRET` | Секретный ключ для подписи JWT токенов |
-| `GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID из Google Cloud Console для проверки `aud` в ID-токене |
-| `GOOGLE_CLIENT_SECRET` | OAuth 2.0 Client Secret из Google Cloud Console |
-| `GROQ_API_KEY` | API ключ для Groq (LLM) |
-| `GEMINI_API_KEY` | API ключ для Google Gemini (Multimodal AI) |
-| `ENCRYPTION_KEY` | AES-256-GCM ключ шифрования для API ключей пользователей |
-| `CORS_ORIGINS` | Разрешенные origin'ы для CORS (e.g. `http://localhost:5173`) |
+| `DB_URL` | PostgreSQL JDBC connection URL (e.g. `jdbc:postgresql://db:5432/lingua_optima`) |
+| `DB_USER` | Database username |
+| `DB_PASS` | Database password |
+| `REDIS_HOST` | Redis server hostname |
+| `JWT_SECRET` | Secret key used for signing and verifying JWT tokens |
+| `GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID from Google Cloud Console used to verify the `aud` claim in Google ID tokens |
+| `GOOGLE_CLIENT_SECRET` | OAuth 2.0 Client Secret from Google Cloud Console |
+| `GROQ_API_KEY` | API key for Groq (Llama 3.1 LLM) |
+| `GEMINI_API_KEY` | API key for Google Gemini (Multimodal & Essay AI) |
+| `ENCRYPTION_KEY` | AES-256-GCM encryption key used to protect user-supplied API keys at rest |
+| `CORS_ORIGINS` | Allowed origins for Cross-Origin Resource Sharing (e.g. `http://localhost:5173`) |
 
 ### Frontend
 | Variable | Description |
 |---|---|
-| `VITE_API_URL` | URL для API backend (e.g. `http://localhost:8080` или `/api`) |
-| `VITE_GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID для кнопки входа через Google Identity Services |
-
+| `VITE_API_URL` | Base URL for the backend REST API (e.g. `http://localhost:8080` or `/api`) |
+| `VITE_GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID for the Google Identity Services sign-in button |
 
 ### PostgreSQL
 | Variable | Description |
 |---|---|
-| `POSTGRES_USER` | Суперпользователь СУБД |
-| `POSTGRES_PASSWORD` | Пароль суперпользователя |
-| `POSTGRES_DB` | Название создаваемой базы данных |
+| `POSTGRES_USER` | Database superuser name |
+| `POSTGRES_PASSWORD` | Database superuser password |
+| `POSTGRES_DB` | Name of the database created on initialization |
 
 ---
 
 ## 5. CI/CD Pipeline
 
-Конфигурация GitHub Actions (`.github/workflows/ci.yml`):
+GitHub Actions workflow configuration (`.github/workflows/ci.yml`):
 
 ```yaml
 name: CI/CD Pipeline
@@ -294,32 +293,32 @@ jobs:
 
 ```mermaid
 flowchart TD
-    subgraph Client [Client Side]
-        Browser[Web Browser]
+    subgraph Client ["Client Side"]
+        Browser["Web Browser"]
     end
 
-    subgraph Prod [Production Environment]
-        LB[Load Balancer / Nginx Reverse Proxy with SSL]
+    subgraph Prod ["Production Environment"]
+        LB["Load Balancer / Nginx Reverse Proxy with SSL"]
         
-        subgraph Services [Docker Swarm / Kubernetes / EC2]
-            Frontend[Frontend React App Container]
-            Backend[Backend Java Spring Boot Container]
+        subgraph Services ["Docker Swarm / Kubernetes / EC2"]
+            Frontend["Frontend React App Container"]
+            Backend["Backend Java Spring Boot Container"]
         end
         
-        subgraph Data [Data Tier]
-            DB[(PostgreSQL 16)]
-            Cache[(Redis 7)]
+        subgraph Data ["Data Tier"]
+            DB[("PostgreSQL 16")]
+            Cache[("Redis 7")]
         end
     end
 
-    subgraph External [External Services]
-        Groq[Groq API]
-        Gemini[Google Gemini API]
+    subgraph External ["External Services"]
+        Groq["Groq API"]
+        Gemini["Google Gemini API"]
     end
 
     Browser -- HTTPS --> LB
-    LB -- Route / --> Frontend
-    LB -- Route /api --> Backend
+    LB -- "Route /" --> Frontend
+    LB -- "Route /api" --> Backend
     Backend -- JDBC --> DB
     Backend -- TCP --> Cache
     Backend -- HTTPS --> Groq
@@ -335,72 +334,70 @@ flowchart TD
 
 ## 7. Database Migrations
 
-Для управления схемой БД используется **Flyway**, интегрированный в Spring Boot. Все миграции должны лежать в `backend/src/main/resources/db/migration/`.
+Database schema versioning is managed via **Flyway**, integrated directly into Spring Boot. All migration scripts reside in `backend/src/main/resources/db/migration/`.
 
-**Naming convention:** `V<Version>__<Description>.sql` (обратите внимание на два нижних подчеркивания).
+**Naming convention:** `V<Version>__<Description>.sql` (note the double underscore separator).
 
-### Список миграций
-- `V1__create_users.sql` — Создание таблицы пользователей и их настроек.
-- `V2__create_user_api_keys.sql` — Таблица для хранения зашифрованных API ключей пользователей.
-- `V3__create_materials.sql` — Таблица учебных материалов (тексты, аудио).
-- `V4__create_exercises.sql` — Таблица упражнений и заданий (генерируемых AI).
-- `V5__create_user_progress.sql` — Таблица статистики, истории прогресса и результатов.
-- `V6__create_vocabulary.sql` — Личный словарь пользователя и флэшкарточки.
+### Migration Scripts
+- `V1__init_schema.sql` — Initial schema creation (users, groups, tasks, questions, assignments, sessions, submissions, progress records, notifications, subscriptions, usage counters, API keys).
+- `V2__seed_data.sql` — Default seed data for development and template tasks.
+- `V3__seed_c1_templates.sql` — Advanced C1 grammar and essay template tasks.
+- `V4__create_pending_ai_tasks.sql` — Queue table (`pending_ai_tasks`) for deferred AI requests when external providers are rate-limited.
 
 ---
 
 ## 8. Monitoring & Logging
 
-- **Spring Boot Actuator:** Настроены endpoints для проверки здоровья системы (`/actuator/health`), сбора метрик (`/actuator/metrics`) и получения информации (`/actuator/info`).
-- **Structured JSON Logging:** В production используется Logback с конфигурацией для вывода логов в формате JSON. Это упрощает парсинг логов системами вроде ELK (Elasticsearch, Logstash, Kibana) или Loki.
+- **Spring Boot Actuator:** Exposes operational endpoints for health checks (`/actuator/health`), metrics collection (`/actuator/metrics`), and build information (`/actuator/info`).
+- **Structured JSON Logging:** In production, Logback outputs structured JSON logs to streamline ingestion and indexing in centralized log aggregation stacks such as ELK (Elasticsearch, Logstash, Kibana) or Grafana Loki.
 - **Key metrics to monitor:**
-  - AI response time (латентность ответов от Groq/Gemini)
-  - OCR processing time (время распознавания текста в tess4j)
-  - Active sessions (количество активных JWT токенов / WebSocket соединений)
-  - Error rates (количество HTTP 5xx ответов и исключений в логах)
+  - AI response time (request latency for Groq and Gemini calls)
+  - OCR processing time (image preprocessing and text extraction duration in `tess4j`)
+  - Active sessions (active JWT sessions and open SSE notification streams)
+  - Error rates (frequency of HTTP 5xx responses and unhandled exceptions)
 
 ---
 
 ## 9. Security Checklist
 
-- [x] **HTTPS only in production:** Весь трафик между клиентом и балансировщиком должен быть зашифрован TLS.
-- [x] **CORS whitelist:** Только доверенные origin-адреса допускаются для кросс-доменных запросов к API.
-- [x] **Rate limiting (Redis):** Ограничение частоты запросов для защиты от DDoS и брутфорс атак (через bucket4j + Redis).
-- [x] **SQL injection prevention:** Использование JPA / Hibernate с параметризованными запросами.
-- [x] **XSS prevention:** Механизмы React по автоматическому эскейпингу данных + строгие Content Security Policy (CSP) заголовки.
-- [x] **JWT in memory:** Хранение токенов аутентификации в памяти (или HttpOnly куках), отказ от использования незащищенного `localStorage`.
-- [x] **API keys encrypted at rest:** API ключи пользователей шифруются в базе данных с использованием AES-256-GCM.
-- [x] **Zero-Retention OCR:** Изображения, загружаемые для OCR, обрабатываются только в оперативной памяти и нигде не сохраняются на диск.
-- [x] **GDPR - delete account cascade:** Полное удаление всех связанных данных при удалении аккаунта пользователя.
+- [x] **HTTPS only in production:** All traffic between clients and the load balancer is encrypted via TLS.
+- [x] **CORS whitelist:** Only trusted origins are permitted to perform cross-origin API requests.
+- [x] **Rate limiting (Redis):** Request rate limiting protects authentication and AI endpoints against brute-force and DoS attacks.
+- [x] **SQL injection prevention:** Parameterized queries enforced via Spring Data JPA / Hibernate.
+- [x] **XSS prevention:** React automatic output escaping combined with strict Content Security Policy (CSP) headers.
+- [x] **JWT in memory:** Access tokens are held exclusively in JS memory (and refresh tokens in `HttpOnly` cookies), avoiding insecure `localStorage` token persistence.
+- [x] **API keys encrypted at rest:** User-supplied BYOK API keys are encrypted in PostgreSQL using AES-256-GCM.
+- [x] **Zero-Retention OCR:** Homework images uploaded for OCR are processed strictly in RAM and immediately zeroed out (`0x00`), never touching disk storage.
+- [x] **GDPR - delete account cascade:** Complete erasure of PII and anonymization of historical records upon account deletion.
 
 ---
 
 ## 10. Local Development Setup
 
-Пошаговая инструкция для локального запуска проекта.
+Step-by-step guide to running the project locally:
 
-1. **Prerequisites:** Убедитесь, что у вас установлены Java 21, Node.js 20 и Docker (с Docker Compose).
-2. **Clone repo:** Склонируйте репозиторий.
+1. **Prerequisites:** Ensure Java 21, Node.js 20, and Docker (with Docker Compose) are installed.
+2. **Clone repo:** Clone the project repository.
    ```bash
    git clone <repo-url> lingua_optima
    cd lingua_optima
    ```
-3. **Запуск инфраструктуры:** Поднимите локально PostgreSQL и Redis.
+3. **Start infrastructure:** Launch PostgreSQL and Redis in the background.
    ```bash
    docker compose up db redis -d
    ```
-4. **Backend:** Запустите Spring Boot приложение.
+4. **Backend:** Start the Spring Boot application.
    ```bash
    cd backend
    ./gradlew bootRun
    ```
-5. **Frontend:** Запустите Vite development server в новом терминале.
+5. **Frontend:** Start the Vite development server in a separate terminal.
    ```bash
    cd frontend
    npm install
    npm run dev
    ```
-6. **Access:** Откройте приложение:
+6. **Access:** Open the application in your browser:
    - Frontend: `http://localhost:5173`
    - Backend API: `http://localhost:8080`
 
@@ -410,11 +407,12 @@ flowchart TD
 
 ```text
 lingua_optima/
-├── backend/           — Java Spring Boot
-├── frontend/          — React + TypeScript
-├── docker-compose.yml — All services
-├── docs/              — Documentation
-│   ├── README.md      — Master index
+├── backend/                — Java 21 + Spring Boot 3
+├── frontend/               — React 18 + TypeScript + Vite
+├── docker-compose.yml      — All services orchestration
+├── docs/                   — Documentation & presentation
+│   ├── presentation.html   — Interactive pitch deck
+│   ├── README.md           — Master index
 │   ├── BACKEND.md
 │   ├── FRONTEND.md
 │   ├── AI_INTEGRATION.md
@@ -423,6 +421,5 @@ lingua_optima/
 │   └── workflows/
 │       └── ci.yml
 ├── .env.example
-├── .gitignore
-└── presentation.html  — Original pitch deck
+└── .gitignore
 ```

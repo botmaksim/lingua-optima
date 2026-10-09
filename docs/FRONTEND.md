@@ -1,19 +1,19 @@
 # Lingua Optima: Frontend Documentation
 
-> 📚 **Навигация по документации**: [Главный обзор (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Открыть презентацию (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](./generated/html/index.html)
+> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
 
-Документация по фронтенд-части проекта **Lingua Optima** — платформы для изучения английского языка с использованием AI.
+Comprehensive documentation for the frontend application of **Lingua Optima** — an AI-powered English language mastery platform.
 
-## Ключевые архитектурные решения (KEY DESIGN DECISIONS)
+## Key Design Decisions
 
-1. **Отсутствие глобального лидерборда.** Доступен только лидерборд на уровне учебной группы (внутри группы студентов конкретного преподавателя).
-2. **Хранение токенов:** Access JWT хранится исключительно в памяти JS (НЕ в `localStorage`). Refresh token хранится в безопасной `HttpOnly` cookie.
-3. **PWA (Progressive Web App):** Использование Service Worker для кэширования, `IndexedDB` для сохранения черновиков локально и Background Sync для отложенной отправки заданий при отсутствии интернета.
-4. **Axios Interceptor:** Реализовано "тихое" обновление JWT — перехватчик отлавливает ошибки 401, обновляет токен в фоне и повторяет исходный запрос без прерывания пользовательского опыта.
-5. **Real-time уведомления:** Используется технология SSE (Server-Sent Events) для получения уведомлений в реальном времени.
-6. **Ограниченное использование `localStorage`:** Применяется только для черновиков эссе (автосохранение каждые 30 секунд), пользовательских настроек UI и хранения последнего выбранного уровня CEFR.
+1. **No Global Leaderboard.** Only a group-level leaderboard is provided (strictly scoped within a specific teacher's student group).
+2. **Token Storage:** The short-lived Access JWT is stored exclusively in JavaScript memory (NEVER in `localStorage`). The Refresh token is stored in a secure `HttpOnly` cookie.
+3. **PWA (Progressive Web App):** Uses a Service Worker for asset and API caching, `IndexedDB` for persisting local drafts, and Background Sync for deferred submission delivery when offline.
+4. **Axios Interceptor:** Implements silent JWT refresh — the response interceptor catches HTTP 401 errors, refreshes the access token in the background, and transparently retries the original request without interrupting the user experience.
+5. **Real-Time Notifications:** Uses Server-Sent Events (SSE) to receive live notifications in real time.
+6. **Strictly Scoped `localStorage` Usage:** Used exclusively for essay drafts (auto-saved every 30 seconds), non-sensitive UI preferences, and storing the last selected CEFR level.
 
-## Полная структура файлов (COMPLETE FILE STRUCTURE)
+## Complete File Structure
 
 ```text
 frontend/
@@ -30,7 +30,7 @@ frontend/
 │   │
 │   ├── api/                   — HTTP layer (all backend communication)
 │   │   ├── axiosInstance.ts   — Base axios config, JWT interceptor (silent refresh), error handling
-│   │   ├── authApi.ts         — login(), register(), refresh(), logout()
+│   │   ├── authApi.ts         — login(), register(), googleLogin(), refresh(), logout()
 │   │   ├── taskApi.ts         — generateTask(), getTasks(), assignTask(), previewTask()
 │   │   ├── sessionApi.ts      — startSession(), getNextQuestion(), submitAnswer(), completeSession(), getActiveSession()
 │   │   ├── submissionApi.ts   — submitText(), submitImage(), getSubmissions(), overrideScore()
@@ -125,7 +125,7 @@ frontend/
 └── .env.example               — VITE_API_URL=http://localhost:8080/api
 ```
 
-## Диаграмма взаимодействия компонентов (COMPONENT INTERACTION DIAGRAM)
+## Component Interaction Diagram
 
 ```mermaid
 flowchart TD
@@ -160,7 +160,7 @@ flowchart TD
     Configure -.-> taskApi
 ```
 
-## Диаграмма управления состоянием (STATE MANAGEMENT DIAGRAM)
+## State Management Diagram
 
 ```mermaid
 flowchart LR
@@ -184,33 +184,33 @@ flowchart LR
     NotificationSSE[useSSE.ts] -->|Writes new notifications| notificationStore
 ```
 
-## Таблица маршрутизации (ROUTING TABLE)
+## Routing Table
 
 | Path | Component | Role Required | Description |
 |------|-----------|---------------|-------------|
-| `/` | `Landing.tsx` | *None* | Главная страница для неавторизованных пользователей. |
-| `/login` | `LoginPage.tsx` | *None* | Страница входа и регистрации. |
-| `/student/*` | `StudentApp.tsx` | `STUDENT` | Основной портал для студентов (Dashboard, Tasks, Progress). |
-| `/teacher/*` | `TeacherApp.tsx` | `TEACHER` | Основной портал для преподавателей (Groups, Submissions, Config). |
-| `/profile` | `ProfilePage.tsx` | `STUDENT`, `TEACHER` | Управление профилем, настройка API-ключей и предпочтений. |
-| `/subscription` | `SubscriptionPage.tsx` | `STUDENT`, `TEACHER` | Управление подпиской и лимитами использования. |
-| `*` | `NotFound.tsx` | *None* | Страница 404. |
+| `/` | `Landing.tsx` | *None* | Public landing page for unauthenticated visitors. |
+| `/login` | `LoginPage.tsx` | *None* | Sign-in and registration page (Email/Password + Google OAuth2). |
+| `/student/*` | `StudentApp.tsx` | `STUDENT` | Primary student workspace (Dashboard, Tasks, CAT Sessions, Progress). |
+| `/teacher/*` | `TeacherApp.tsx` | `TEACHER` | Primary educator portal (Groups, Submissions Review, Task Deployment). |
+| `/profile` | `ProfilePage.tsx` | `STUDENT`, `TEACHER` | Profile management, BYOK API key configuration, and preferences. |
+| `/subscription` | `SubscriptionPage.tsx` | `STUDENT`, `TEACHER` | Subscription plan management and weekly quota monitoring. |
+| `*` | `NotFound.tsx` | *None* | 404 Not Found fallback page. |
 
-## Детали PWA (PWA DETAILS)
+## PWA Details
 
-В приложении реализована полноценная поддержка PWA для обеспечения плавного пользовательского опыта при нестабильном соединении:
+The application implements full Progressive Web App (PWA) support to ensure a resilient user experience on unstable network connections:
 
-- **Service Worker:** Использует кэширующие стратегии (Cache First для статики, Network First для критичных API запросов).
-- **IndexedDB:** Применяется для локального хранения структуры заданий и ответов на них. Схема базы данных содержит таблицы для `drafts` и `offline_submissions`.
-- **Background Sync:** Встроенная функциональность Service Worker, которая позволяет откладывать сетевые запросы (например, отправку эссе) до момента восстановления связи. Пользователь получает уведомление о том, что данные будут отправлены позже.
+- **Service Worker:** Employs hybrid caching strategies (*Cache First* for static assets and fonts, *Network First* for critical dynamic API calls).
+- **IndexedDB:** Used for local persistence of active task structures and draft responses. The client database schema includes object stores for `drafts` and `offline_submissions`.
+- **Background Sync:** Built-in Service Worker capability that queues outbound submissions (such as essay submissions) while offline and automatically replays them once connectivity is restored, notifying the user that their work has been queued for synchronization.
 
-## Дизайн-система (DESIGN SYSTEM)
+## Design System
 
-- **Цвета (Colors):**
-  - **Primary:** `#4F46E5` (Используется для основных кнопок, активных элементов и брендинга)
-  - **Accent:** `#0284C7` (Используется для выделения второстепенных действий и ссылок)
-  - **Surface:** `#F8FAFC` (Фоновые цвета карточек и панелей)
-- **Типографика (Typography):**
-  - **UI (Заголовки, текст):** `Inter`
-  - **Data (Код, данные, таблицы):** `JetBrains Mono`
-- **Доступность:** Все цветовые контрасты и размеры шрифтов соответствуют стандарту **WCAG AA**.
+- **Colors:**
+  - **Primary:** `#4F46E5` (Used for primary action buttons, active navigation states, and brand accents)
+  - **Accent:** `#0284C7` (Used for secondary interactive actions and links)
+  - **Surface:** `#F8FAFC` (Background color for cards, panels, and workspaces)
+- **Typography:**
+  - **UI (Headings & Body Text):** `Inter`
+  - **Data (Code, Metrics & Tables):** `JetBrains Mono`
+- **Accessibility:** All color contrast ratios and font sizes conform to the **WCAG AA** accessibility standard.

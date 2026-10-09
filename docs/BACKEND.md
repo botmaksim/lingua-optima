@@ -1,10 +1,10 @@
 # Lingua Optima: Backend Documentation
 
-> 📚 **Навигация по документации**: [Главный обзор (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Открыть презентацию (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](./generated/html/index.html)
+> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
 
-Это подробное руководство по серверной части (Backend) платформы Lingua Optima — сервиса для изучения английского языка с использованием ИИ.
+This is a comprehensive guide to the server-side (Backend) architecture of the Lingua Optima platform — an AI-powered English language mastery service.
 
-## Технологический стек (Tech Stack)
+## Tech Stack
 - **Java 21**
 - **Spring Boot 3**
 - **Spring Security (JWT)**
@@ -14,27 +14,27 @@
 
 ---
 
-## Ключевые архитектурные решения (Key Design Decisions)
+## Key Design Decisions
 
-> **ВАЖНО:** Данные решения являются обязательными к исполнению.
+> **IMPORTANT:** The following architectural decisions are strictly enforced across the system.
 
-1. **NO global leaderboard.** Предусмотрен только групповой лидерборд внутри группы конкретного преподавателя.
-2. **Soft delete from group.** При удалении студента из группы, преподаватель больше НЕ МОЖЕТ видеть его старые ответы (они скрываются). Однако при повторном добавлении студента в ту же группу его история ВОССТАНАВЛИВАЕТСЯ и снова становится видимой. Используется soft delete: таблица `group_students` содержит поля `is_active` и `removed_at`.
-3. **Payment is a MOCK STUB.** Вся внешняя логика работает (обработка ошибок, уровни подписки, апгрейд/даунгрейд), но реальный обработчик платежей (stub) всегда возвращает успешный статус (success). Это сделано для тестирования. Поддерживаются коды ошибок (`PAYMENT_FAILED`, `CARD_DECLINED`, `INSUFFICIENT_FUNDS`, `EXPIRED_CARD`, `NETWORK_ERROR`), но stub их никогда не возвращает на практике.
-4. **Subscription tiers (Уровни подписки):**
-    - `FREE`: 10 evals/week, 3 OCR/week.
-    - `PREMIUM`: без ограничений, все уровни CEFR, приоритетная очередь.
-    - `EDUCATOR`: всё из Premium + группы до 200 человек, deploy, ручное изменение оценок (override), экспорт отчетов, доступ к API.
-5. **Self-service tasks:** Когда студент самостоятельно генерирует себе задание, система автоматически создает сущность `TaskAssignment` с полем `assigned_by`, указывающим на самого студента (self-assignment).
-6. **Session resume:** `GET /sessions/active` возвращает текущую незавершенную сессию пользователя (если она существует).
-7. **OCR error handling:** Исключение `OcrException` преобразуется в HTTP 422 с понятным для пользователя сообщением.
-8. **Zero-Retention OCR:** Байты изображений обрабатываются исключительно в оперативной памяти (RAM) и никогда не сохраняются на диск.
-9. **AI keys encryption:** Пользовательские ключи для ИИ-сервисов шифруются алгоритмом AES-256-GCM перед сохранением в базу данных.
-10. **JWT configuration:** Access token действует 15 минут. Refresh token действует 30 дней (хранится в HttpOnly cookie), а его хеш дополнительно сохраняется в Redis для возможности инвалидации.
+1. **NO global leaderboard.** Only an intra-group leaderboard within a specific teacher's student group is provided.
+2. **Soft delete from group.** When a student is removed from a group, the teacher can NO LONGER view their historical submissions (they are hidden from group queries). However, if the student is later re-added to the same group, their submission history is RESTORED and becomes visible again. Soft deletion is implemented via the `group_students` table columns `is_active` and `removed_at`.
+3. **Payment is a MOCK STUB.** All surrounding billing logic operates end-to-end (error handling infrastructure, subscription tiers, upgrades/downgrades), while the actual payment processor (`PaymentService` stub) always returns a successful status (`success`). This is designed for testing. Error codes (`PAYMENT_FAILED`, `CARD_DECLINED`, `INSUFFICIENT_FUNDS`, `EXPIRED_CARD`, `NETWORK_ERROR`, `PROVIDER_ERROR`) are fully supported by the exception and response pipeline, though the stub never returns them in normal execution.
+4. **Subscription tiers:**
+    - `FREE`: 10 evaluations/week, 3 OCR uploads/week.
+    - `PREMIUM`: unlimited evaluations and OCR uploads, all CEFR levels, priority queue.
+    - `EDUCATOR`: everything in Premium + student groups up to 200 members, task deployment, manual grade overrides, report exports, and API key access.
+5. **Self-service tasks:** When a student independently generates a task for themselves, the system automatically creates a `TaskAssignment` entity with the `assigned_by` field pointing to the student themselves (self-assignment).
+6. **Session resume:** `GET /api/sessions/active` returns the user's current unfinished adaptive testing session (if one exists).
+7. **OCR error handling:** `OcrException` is translated into an HTTP 422 response with a clear, user-friendly diagnostic message.
+8. **Zero-Retention OCR:** Uploaded image bytes are processed exclusively in volatile memory (RAM) and are never persisted to disk.
+9. **AI keys encryption:** User-supplied BYOK AI provider keys are encrypted using AES-256-GCM before being persisted to the database.
+10. **JWT configuration:** The access token is valid for 15 minutes. The refresh token is valid for 30 days (stored in an `HttpOnly` cookie), and its SHA-256 hash is stored in Redis to support immediate server-side revocation.
 
 ---
 
-## Полная структура файлов (Complete File Structure)
+## Complete File Structure
 
 ```text
 backend/
@@ -53,7 +53,7 @@ backend/
 │   │   └── WebConfig.java             — Multipart file size limit (10MB)
 │   │
 │   ├── controller/
-│   │   ├── AuthController.java        — POST /register, /login, /refresh, /logout, /logout-all, /forgot-password
+│   │   ├── AuthController.java        — POST /register, /login, /google, /refresh, /logout, /logout-all, /forgot-password
 │   │   ├── UserController.java        — GET /me, PUT /me, PUT /me/password, DELETE /me (GDPR)
 │   │   ├── TaskController.java        — POST /generate, /preview, /{id}/assign, /template; GET / (list), /{id}
 │   │   ├── SessionController.java     — POST /start; GET /active, /{id}/next-question; POST /{id}/answer, /{id}/complete
@@ -70,6 +70,7 @@ backend/
 │   │   ├── request/
 │   │   │   ├── RegisterRequest.java    — email, password, fullName, role
 │   │   │   ├── LoginRequest.java       — email, password
+│   │   │   ├── GoogleAuthRequest.java  — credential, role
 │   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty
 │   │   │   ├── AssignTaskRequest.java  — groupIds[], dueDate
 │   │   │   ├── TextSubmissionRequest.java — text, assignmentId, type (GRAMMAR/ESSAY)
@@ -107,7 +108,7 @@ backend/
 │   │   ├── SessionState.java          — id, assignment, student, currentQuestionIndex, currentDifficulty, answersJson, status (IN_PROGRESS/COMPLETED), startedAt, lastActiveAt
 │   │   ├── Submission.java            — id, assignment, student, submissionType (TEXT/IMAGE), studentText, aiScore, aiFeedback, overrideScore, teacherComment, providerUsed, submittedAt
 │   │   ├── ProgressRecord.java        — id, student, grammarTopic, totalAttempts, errorCount, masteryScore, updatedAt
-│   │   ├── Group.java                 — id, name, teacher, createdAt. @ManyToMany students
+│   │   ├── Group.java                 — id, name, teacher, createdAt, groupStudents
 │   │   ├── Notification.java          — id, user, message, type (TASK/GRADE/SYSTEM/CONTEXTUAL), isRead, createdAt
 │   │   ├── Subscription.java          — id, user, tier (FREE/PREMIUM/EDUCATOR), expiresAt, createdAt
 │   │   ├── UsageCounter.java          — id, user, weekEvaluations, weekOcrUploads, weekResetAt
@@ -138,22 +139,22 @@ backend/
 │   │   └── UsageCounterRepository.java — findByUser()
 │   │
 │   ├── service/
-│   │   ├── AuthService.java           — register(), login(), refreshToken(), logout(), logoutAll(), forgotPassword(), resetPassword()
+│   │   ├── AuthService.java           — register(), login(), googleLogin(), refreshToken(), logout(), logoutAll(), forgotPassword()
 │   │   ├── JwtService.java            — generateToken(15min), generateRefreshToken(30d), extractEmail(), isTokenValid()
 │   │   ├── UserService.java           — getCurrentUser(), updateUser(), changePassword(), deleteAccount() (GDPR cascade)
 │   │   ├── TaskService.java           — generateTask() (calls AIBroker), previewTask() (no save), assignTask() (creates TaskAssignments + notifications), saveAsTemplate(), getTasksForUser()
 │   │   ├── SessionService.java        — startSession() (creates SessionState), getNextQuestion() (CAT algorithm: adjusts difficulty), submitAnswer(), completeSession() (→ creates Submission), getActiveSession()
 │   │   ├── SubmissionService.java     — submitText(), submitImage() (calls OCR then Scoring), overrideScore()
 │   │   ├── ScoringService.java        — scoreGrammarTask() (compares with answerKey via AI), scoreEssay() (rubric: TA, Coherence, LR, GR)
-│   │   ├── OCRService.java            — extractText(byte[]) via Tesseract (tess4j), purgeImage(). Throws OcrException on failure.
+│   │   ├── OCRService.java            — extractText(byte[]) via Tesseract (tess4j), zero-retention RAM wipe. Throws OcrException on failure.
 │   │   ├── ProgressService.java       — updateFromSubmission(), updateFromOverride(), getGapsForStudent(), getGroupProgress(), checkCefrLevelUp()
 │   │   ├── GroupService.java          — createGroup(), addStudent() (checks if student was previously in group and reactivates them), removeStudent() (SOFT DELETE: sets is_active=false, removed_at=now()), deleteGroup()
 │   │   ├── NotificationService.java   — send(), sendToGroup(), getUnreadCount(), markAsRead(), SSE emitter management
 │   │   ├── GamificationService.java   — onSubmissionCompleted() (streak +1, freeze token every 7 days), applyDailyStreakCheck() (called by scheduler)
 │   │   ├── SubscriptionService.java   — getSubscription(), upgrade() (calls PaymentService), downgrade(), checkQuota(), isFeatureAllowed()
-│   │   ├── PaymentService.java        — processPayment() — STUB: always returns success. Has full PaymentResult with transactionId, error handling infrastructure. Returns PaymentResult with all fields but success=true always.
+│   │   ├── PaymentService.java        — processPayment() — STUB: always returns success. Has full PaymentResult with transactionId and error handling infrastructure.
 │   │   ├── UsageService.java          — incrementEvaluation(), incrementOcr(), getRemainingUsage(), resetWeeklyCounters() (called by scheduler)
-│   │   ├── ExportService.java         — generateGroupReport(format), generateStudentReport(format) — PDF via iText, CSV via OpenCSV. Streamed, not persisted.
+│   │   ├── ExportService.java         — generateGroupReport(format), generateStudentReport(format) — PDF via OpenPDF, CSV via OpenCSV. Streamed, not persisted.
 │   │   ├── ApiKeyService.java         — saveKey(encrypt), getDecryptedKey(), deleteKey()
 │   │   ├── EncryptionService.java     — encrypt(AES-256-GCM), decrypt(). Key from env variable.
 │   │   ├── LeaderboardService.java    — getGroupLeaderboard(groupId) — queries submissions within group for current week, returns ranked list
@@ -190,16 +191,16 @@ backend/
 │   └── application-prod.yml
 │
 └── src/test/java/com/linguaoptima/api/
-    ├── controller/                    — @WebMvcTest for each controller
-    ├── service/                       — Unit tests with mocks
-    └── integration/                   — @SpringBootTest with Testcontainers
+    ├── controller/                    — Controller unit tests
+    ├── scheduler/                     — Scheduler unit tests
+    └── service/                       — Service unit tests with 100% coverage
 ```
 
 ---
 
-## 1. Layer Architecture (Архитектура слоев)
+## 1. Layer Architecture
 
-Диаграмма, показывающая взаимодействие основных компонентов системы и внешних сервисов.
+Diagram illustrating the interaction between core backend layers and external services.
 
 ```mermaid
 flowchart TD
@@ -235,68 +236,67 @@ flowchart TD
 
 ---
 
-## 2. Complete REST API (Полный список REST API)
+## 2. Complete REST API
 
-Таблица всех конечных точек системы, требуемых ролей и ожидаемых данных.
+Reference table of all backend endpoints, required roles, request payloads, and response types.
 
 | Controller | Method | Path | Auth | Role | Request Body | Response | Description |
 |---|---|---|---|---|---|---|---|
-| **Auth** | POST | `/api/auth/register` | No | ALL | `RegisterRequest` | `TokenResponse` | Регистрация нового пользователя по Email и паролю |
-| | POST | `/api/auth/login` | No | ALL | `LoginRequest` | `TokenResponse` | Авторизация по Email и паролю и выдача токенов |
-| | POST | `/api/auth/google` | No | ALL | `GoogleAuthRequest` | `TokenResponse` | Авторизация / авторегистрация через Google OAuth2 ID Token |
-| | POST | `/api/auth/refresh` | No | ALL | (Refresh Cookie) | `TokenResponse` | Обновление access-токена |
-
-| | POST | `/api/auth/logout` | Yes | ALL | | 200 OK | Выход с текущего устройства |
-| | POST | `/api/auth/logout-all` | Yes | ALL | | 200 OK | Выход со всех устройств |
-| | POST | `/api/auth/forgot-password` | No | ALL | `ForgotPasswordRequest` | 200 OK | Сброс пароля |
-| **User** | GET | `/api/users/me` | Yes | ALL | | `UserResponse` | Получение профиля текущего пользователя |
-| | PUT | `/api/users/me` | Yes | ALL | `UserResponse` | `UserResponse` | Обновление профиля |
-| | PUT | `/api/users/me/password` | Yes | ALL | `ChangePasswordRequest` | 200 OK | Смена пароля |
-| | DELETE | `/api/users/me` | Yes | ALL | | 204 No Content | Удаление аккаунта (GDPR) |
-| **Task** | GET | `/api/tasks` | Yes | ALL | | `List<TaskResponse>` | Список заданий пользователя |
-| | GET | `/api/tasks/{id}` | Yes | ALL | | `TaskResponse` | Детали задания |
-| | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Генерация нового задания (сохраняется) |
-| | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Предпросмотр задания (без сохранения) |
-| | POST | `/api/tasks/template` | Yes | TEACHER | `TaskParamsRequest` | `TaskResponse` | Сохранение задания как шаблона |
-| | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Назначение задания группам |
-| **Session**| POST | `/api/sessions/start` | Yes | STUDENT | `TaskAssignment` ID | `SessionState` | Начало выполнения задания |
-| | GET | `/api/sessions/active` | Yes | STUDENT | | `SessionState` | Получение активной сессии (resume) |
-| | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT | | `QuestionResponse` | Следующий вопрос (CAT алгоритм) |
-| | POST | `/api/sessions/{id}/answer` | Yes | STUDENT | `AnswerRequest` | `AnswerFeedbackResponse` | Отправка ответа на текущий вопрос |
-| | POST | `/api/sessions/{id}/complete` | Yes | STUDENT | | `SubmissionResultResponse` | Завершение сессии |
-| **Submissions**| POST | `/api/submissions/text` | Yes | STUDENT | `TextSubmissionRequest` | `SubmissionResultResponse` | Отправка текста (написание эссе) |
-| | POST | `/api/submissions/image` | Yes | STUDENT | `MultipartFile` | `SubmissionResultResponse` | Загрузка изображения с ответом (OCR) |
-| | GET | `/api/submissions/{id}` | Yes | ALL | | `SubmissionResultResponse` | Результат проверки ответа |
-| | GET | `/api/submissions/my` | Yes | STUDENT | | `List<SubmissionResultResponse>` | Все ответы текущего студента |
-| | PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` | `SubmissionResultResponse` | Переопределение оценки преподавателем |
-| **Group** | GET | `/api/groups` | Yes | TEACHER | | `List<GroupResponse>` | Мои группы |
-| | GET | `/api/groups/{id}` | Yes | TEACHER | | `GroupResponse` | Детали группы |
-| | POST | `/api/groups` | Yes | TEACHER | `CreateGroupRequest` | `GroupResponse` | Создание новой группы |
-| | POST | `/api/groups/{id}/students` | Yes | TEACHER | `AddStudentRequest` | 200 OK | Добавление студента в группу |
-| | DELETE | `/api/groups/{id}/students/{uid}` | Yes | TEACHER | | 204 No Content | Удаление студента из группы |
-| | DELETE | `/api/groups/{id}` | Yes | TEACHER | | 204 No Content | Удаление группы |
-| **Progress**| GET | `/api/progress/me` | Yes | STUDENT | | `List<ProgressResponse>` | Личный прогресс |
-| | GET | `/api/progress/student/{id}` | Yes | TEACHER | | `List<ProgressResponse>` | Прогресс конкретного студента |
-| | GET | `/api/progress/group/{id}` | Yes | TEACHER | | `List<ProgressResponse>` | Прогресс группы (агрегированный) |
-| **Notifications**| GET | `/api/notifications/stream` | Yes | ALL | | SSE Stream | Поток уведомлений (Server-Sent Events) |
-| | GET | `/api/notifications/unread-count` | Yes | ALL | | `Integer` | Количество непрочитанных |
-| | PATCH| `/api/notifications/{id}/read` | Yes | ALL | | 200 OK | Пометить прочитанным |
-| **Subscriptions**| GET | `/api/subscriptions/me` | Yes | ALL | | `SubscriptionResponse` | Текущая подписка пользователя |
-| | POST | `/api/subscriptions/upgrade` | Yes | ALL | `UpgradeRequest` | `PaymentResultResponse` | Повышение уровня подписки |
-| | POST | `/api/subscriptions/downgrade` | Yes | ALL | | 200 OK | Понижение уровня (отмена премиума) |
-| | GET | `/api/subscriptions/usage` | Yes | ALL | | `UsageResponse` | Использование лимитов (evals, OCR) |
-| **API Keys** | GET | `/api/apikeys` | Yes | EDUCATOR| | `List<ApiKey>` | Список сохраненных ключей |
-| | POST | `/api/apikeys` | Yes | EDUCATOR| `CreateApiKeyRequest` | 200 OK | Сохранение нового ключа (шифруется) |
-| | DELETE | `/api/apikeys/{id}` | Yes | EDUCATOR| | 204 No Content | Удаление ключа |
-| **Leaderboard**| GET | `/api/leaderboards/group/{id}`| Yes | ALL | | `List<LeaderboardEntryResponse>` | Рейтинг внутри группы (NO global) |
-| **Export** | GET | `/api/exports/report/group/{id}`| Yes | EDUCATOR| | File (PDF/CSV) | Экспорт отчета по группе |
-| | GET | `/api/exports/report/student/{id}`| Yes | EDUCATOR| | File (PDF/CSV) | Экспорт отчета по студенту |
+| **Auth** | POST | `/api/auth/register` | No | ALL | `RegisterRequest` | `TokenResponse` | Register a new user with email and password |
+| **Auth** | POST | `/api/auth/login` | No | ALL | `LoginRequest` | `TokenResponse` | Authenticate with email and password and issue tokens |
+| **Auth** | POST | `/api/auth/google` | No | ALL | `GoogleAuthRequest` | `TokenResponse` | Authenticate or auto-register via Google OAuth2 ID Token |
+| **Auth** | POST | `/api/auth/refresh` | No | ALL | (Refresh Cookie) | `TokenResponse` | Refresh the short-lived access token |
+| **Auth** | POST | `/api/auth/logout` | Yes | ALL | — | 200 OK | Log out from the current device |
+| **Auth** | DELETE | `/api/auth/logout-all` | Yes | ALL | — | 200 OK | Log out from all active devices |
+| **Auth** | POST | `/api/auth/forgot-password` | No | ALL | `ForgotPasswordRequest` | 200 OK | Request a password reset link |
+| **User** | GET | `/api/users/me` | Yes | ALL | — | `UserResponse` | Retrieve the current authenticated user's profile |
+| **User** | PUT | `/api/users/me` | Yes | ALL | `UpdateProfileRequest` | `UserResponse` | Update user profile details |
+| **User** | PUT | `/api/users/me/password` | Yes | ALL | `ChangePasswordRequest` | 200 OK | Change account password |
+| **User** | DELETE | `/api/users/me` | Yes | ALL | — | 204 No Content | Delete account and anonymize data (GDPR) |
+| **Task** | GET | `/api/tasks` | Yes | ALL | — | `List<TaskResponse>` | List accessible tasks for the current user |
+| **Task** | GET | `/api/tasks/{id}` | Yes | ALL | — | `TaskResponse` | Retrieve task details by ID |
+| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task |
+| **Task** | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Preview an AI-generated task without persisting |
+| **Task** | POST | `/api/tasks/template` | Yes | TEACHER | `TaskParamsRequest` | `TaskResponse` | Save a task as a reusable template |
+| **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups |
+| **Session** | POST | `/api/sessions/start` | Yes | STUDENT | `assignmentId` | `SessionStateResponse` | Start an adaptive test session |
+| **Session** | GET | `/api/sessions/active` | Yes | STUDENT | — | `SessionStateResponse` | Retrieve the active unfinished session (resume) |
+| **Session** | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT | — | `QuestionResponse` | Fetch the next question via the CAT algorithm |
+| **Session** | POST | `/api/sessions/{id}/answer` | Yes | STUDENT | `AnswerRequest` | `AnswerFeedbackResponse` | Submit an answer to the current question |
+| **Session** | POST | `/api/sessions/{id}/complete` | Yes | STUDENT | — | `SubmissionResultResponse` | Complete the adaptive session and calculate score |
+| **Submissions** | POST | `/api/submissions/text` | Yes | STUDENT | `TextSubmissionRequest` | `SubmissionResultResponse` | Submit text or an essay for AI grading |
+| **Submissions** | POST | `/api/submissions/image` | Yes | STUDENT | `MultipartFile` | `SubmissionResultResponse` | Upload a handwritten response image (OCR) |
+| **Submissions** | GET | `/api/submissions/{id}` | Yes | ALL | — | `SubmissionResultResponse` | Retrieve submission evaluation details |
+| **Submissions** | GET | `/api/submissions/my` | Yes | STUDENT | — | `List<SubmissionResultResponse>` | List all submissions by the current student |
+| **Submissions** | PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` | `SubmissionResultResponse` | Override AI score and add teacher feedback |
+| **Group** | GET | `/api/groups` | Yes | TEACHER | — | `List<GroupResponse>` | List the teacher's groups |
+| **Group** | GET | `/api/groups/{id}` | Yes | TEACHER | — | `GroupResponse` | Retrieve group details |
+| **Group** | POST | `/api/groups` | Yes | TEACHER | `CreateGroupRequest` | `GroupResponse` | Create a new student group |
+| **Group** | POST | `/api/groups/{id}/students` | Yes | TEACHER | `AddStudentRequest` | 200 OK | Add a student to a group |
+| **Group** | DELETE | `/api/groups/{id}/students/{uid}` | Yes | TEACHER | — | 204 No Content | Remove a student from a group (soft delete) |
+| **Group** | DELETE | `/api/groups/{id}` | Yes | TEACHER | — | 204 No Content | Delete a group |
+| **Progress** | GET | `/api/progress/me` | Yes | STUDENT | — | `List<ProgressResponse>` | Retrieve personal grammar mastery progress |
+| **Progress** | GET | `/api/progress/student/{id}` | Yes | TEACHER | — | `List<ProgressResponse>` | Retrieve progress for a specific student |
+| **Progress** | GET | `/api/progress/group/{id}` | Yes | TEACHER | — | `List<ProgressResponse>` | Retrieve aggregated progress for a group |
+| **Notifications** | GET | `/api/notifications/stream` | Yes | ALL | — | SSE Stream | Subscribe to real-time notifications (Server-Sent Events) |
+| **Notifications** | GET | `/api/notifications/unread-count` | Yes | ALL | — | `Integer` | Retrieve unread notification count |
+| **Notifications** | PATCH | `/api/notifications/{id}/read` | Yes | ALL | — | 200 OK | Mark a notification as read |
+| **Subscriptions** | GET | `/api/subscriptions/me` | Yes | ALL | — | `SubscriptionResponse` | Retrieve the user's current subscription |
+| **Subscriptions** | POST | `/api/subscriptions/upgrade` | Yes | ALL | `UpgradeRequest` | `PaymentResultResponse` | Upgrade subscription tier |
+| **Subscriptions** | POST | `/api/subscriptions/downgrade` | Yes | ALL | — | 200 OK | Downgrade subscription tier |
+| **Subscriptions** | GET | `/api/subscriptions/usage` | Yes | ALL | — | `UsageResponse` | Retrieve weekly quota usage (evaluations, OCR) |
+| **API Keys** | GET | `/api/api-keys` | Yes | ALL | — | `List<ApiKeyResponse>` | List saved BYOK API keys |
+| **API Keys** | POST | `/api/api-keys` | Yes | ALL | `CreateApiKeyRequest` | 200 OK | Save and encrypt a new API key |
+| **API Keys** | DELETE | `/api/api-keys/{id}` | Yes | ALL | — | 204 No Content | Delete a saved API key |
+| **Leaderboard** | GET | `/api/leaderboard/group/{id}` | Yes | ALL | — | `List<LeaderboardEntryResponse>` | Intra-group weekly leaderboard (NO global) |
+| **Export** | GET | `/api/export/report/group/{id}` | Yes | TEACHER | — | File (PDF/CSV) | Export a group performance report |
+| **Export** | GET | `/api/export/report/student/{id}` | Yes | TEACHER | — | File (PDF/CSV) | Export an individual student report |
 
 ---
 
-## 3. Entity Relationship Diagram (Структура базы данных)
+## 3. Entity Relationship Diagram (Database Schema)
 
-Схема всех сущностей БД, их атрибутов и связей друг с другом.
+Schema of all database entities, their attributes, and relationships.
 
 ```mermaid
 erDiagram
@@ -456,21 +456,21 @@ erDiagram
 
 ---
 
-## 4. Redis Key Schema (Кэширование и токены)
+## 4. Redis Key Schema (Caching & Tokens)
 
-Структура данных в Redis, включая время жизни (TTL).
+Data structures stored in Redis along with their Time-To-Live (TTL) policies.
 
 | Pattern | Type | TTL | Description |
 |---|---|---|---|
-| `refresh_token:<hash>` | String | 30 days | Хеш для валидации refresh-токенов (запрет отозванных сессий). |
-| `ai:prompt_cache:<hash>` | String | 1 hour | Кэш ответов LLM (экономия запросов для идентичных текстов). |
-| `rate_limit:user:<id>` | Counter | 1 minute | Ограничение количества запросов к API для одного пользователя. |
+| `refresh_token:<hash>` | String | 30 days | SHA-256 hash used to validate refresh tokens and reject revoked sessions. |
+| `ai:prompt_cache:<hash>` | String | 1 hour | Cached LLM responses to save API calls for identical task generation prompts. |
+| `rate_limit:user:<id>` | Counter | 1 minute | Per-user request rate limiting counter. |
 
 ---
 
-## 5. Payment Stub Flow (Процесс фиктивной оплаты)
+## 5. Payment Stub Flow
 
-Диаграмма последовательности для модуля подписок. Обратите внимание, что обработка ошибок реализована полноценно, но `PaymentService` (stub) всегда разрешает платеж.
+Sequence diagram for the subscription upgrade workflow. Note that the error handling pipeline is fully implemented, while `PaymentService` (stub) always approves the transaction.
 
 ```mermaid
 sequenceDiagram
@@ -499,9 +499,9 @@ sequenceDiagram
 
 ---
 
-## 6. Group Soft-Delete Flow (Процесс удаления студента из группы)
+## 6. Group Soft-Delete Flow
 
-Поведение системы при удалении студента преподавателем (старые ответы скрываются, но могут быть восстановлены).
+System behavior when a teacher removes a student from a group (historical submissions are hidden from group views but preserved and restorable upon re-adding).
 
 ```mermaid
 sequenceDiagram
@@ -522,28 +522,28 @@ sequenceDiagram
 
 ---
 
-## 7. Scheduler CRON Table (Фоновые задачи)
+## 7. Scheduler CRON Table (Background Jobs)
 
-В системе зарегистрировано 3 планировщика задач (`@Scheduled`).
+The system registers 3 scheduled background jobs (`@Scheduled`).
 
-| Класс Scheduler | CRON Выражение | Расписание | Действие |
+| Scheduler Class | CRON Expression | Schedule | Action |
 |---|---|---|---|
-| `StreakScheduler` | `0 0 1 * * *` | Ежедневно (01:00) | Проверяет `last_active_date`. Если пользователь не заходил: списывает 1 `freeze_token` или обнуляет `streak_count`. |
-| `UsageResetScheduler` | `0 0 0 * * MON` | Еженедельно (Пн, 00:00) | Сбрасывает счетчики `week_evaluations` и `week_ocr_uploads` в `UsageCounter`. |
-| `NotificationScheduler`| `0 0 9 * * *` | Ежедневно (09:00) | Анализирует `ProgressRecord`. Отправляет контекстные уведомления (SSE), если `masteryScore < 0.6` (рекомендует практику). |
+| `StreakScheduler` | `0 0 1 * * *` | Daily (01:00) | Inspects `last_active_date`. If the user missed a day, consumes 1 `freeze_token` or resets `streak_count` to 0. |
+| `UsageResetScheduler` | `0 0 0 * * MON` | Weekly (Monday, 00:00) | Resets the `week_evaluations` and `week_ocr_uploads` counters in `UsageCounter`. |
+| `NotificationScheduler` | `0 0 9 * * *` | Daily (09:00) | Analyzes `ProgressRecord` entries and dispatches contextual notifications (SSE) when `masteryScore < 0.6` to recommend targeted practice. |
 
 ---
 
-## 8. Exception Handling Table (Глобальная обработка ошибок)
+## 8. Exception Handling Table
 
-Класс `GlobalExceptionHandler` мапит кастомные исключения в стандартные HTTP-ответы.
+`GlobalExceptionHandler` maps custom domain exceptions into standardized HTTP error responses.
 
-| Исключение (Exception) | HTTP Status | Описание / Типичное сообщение |
+| Exception | HTTP Status | Description / Typical Message |
 |---|---|---|
-| `OcrException` | `422 Unprocessable Entity` | "Image is unclear, please try again." (Не удалось извлечь текст) |
-| `QuotaExceededException` | `429 Too Many Requests` | "Weekly evaluation limit reached." (Лимит по тарифу исчерпан) |
-| `AIServiceException` | `503 Service Unavailable` | "AI service temporarily unavailable." (Fallback-цепочка провайдеров не справилась) |
-| `PaymentException` | `402 Payment Required` | Ошибки оплаты (`CARD_DECLINED`, `INSUFFICIENT_FUNDS`) |
-| `UnauthorizedException` | `401 Unauthorized` | Отсутствует, просрочен или невалиден JWT-токен |
-| `ForbiddenException` | `403 Forbidden` | Нет прав доступа (например, попытка удалить чужую группу) |
-| `ResourceNotFoundException`| `404 Not Found` | Запрашиваемая сущность (Task, Group, User) не существует |
+| `OcrException` | `422 Unprocessable Entity` | "Image is unclear, please try again." (Failed to extract legible text from image) |
+| `QuotaExceededException` | `429 Too Many Requests` | "Weekly evaluation limit reached." (Free-tier weekly quota exhausted) |
+| `AIServiceException` | `503 Service Unavailable` | "AI service temporarily unavailable." (All providers in the fallback chain failed) |
+| `PaymentException` | `402 Payment Required` | Payment processing errors (`CARD_DECLINED`, `INSUFFICIENT_FUNDS`, etc.) |
+| `UnauthorizedException` | `401 Unauthorized` | Missing, expired, or invalid JWT / OAuth2 token |
+| `ForbiddenException` | `403 Forbidden` | Insufficient permissions (e.g., attempting to modify another teacher's group) |
+| `ResourceNotFoundException` | `404 Not Found` | Requested entity (`Task`, `Group`, `User`, etc.) does not exist |
