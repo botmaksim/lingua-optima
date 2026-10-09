@@ -21,6 +21,7 @@
 | **Interactive Presentation** | [`docs/presentation.html`](./docs/presentation.html) | Interactive Pitch Deck and visual architecture walkthrough (opens directly in any browser) |
 | **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Automatically generated Doxygen documentation covering all packages, classes, methods, and types |
 
+
 ---
 
 ## 🚀 Core Capabilities & Architectural Principles
@@ -30,7 +31,7 @@
    - **Zero-Retention Homework OCR** — handwritten homework photo recognition processed strictly in RAM with immediate byte-array zeroing (`Arrays.fill(bytes, (byte) 0)`).
    - **AI Essay Scoring** — automated essay grading across 4 rubric criteria (*Task Achievement*, *Coherence & Cohesion*, *Lexical Resource*, *Grammatical Range & Accuracy*).
    - **Computerized Adaptive Testing (CAT)** — real-time question difficulty adjustment (scale 1–5) and difficulty-weighted mastery score calculation.
-   - **Progress & Gap Analytics** — topic mastery radar charts, weak-spot identification (`masteryScore < 60%`), and automated CEFR level-up recommendations (`>= 80%` across all topics in the current level).
+   - **Progress & Gap Analytics** — topic mastery radar charts, weak-spot identification (`masteryScore < 60%`) and automated CEFR level-up recommendations (`>= 80%` across all topics in the current level).
    - **Educator Portal** — student group management (up to 200 students per group), task deployment, manual AI grade adjustments (*Teacher Override*), and **PDF / CSV** report exports.
 
 2. **Security, Authentication & Privacy (Security by Design)**:
@@ -55,6 +56,7 @@ The repository root contains the template [`.env.example`](./.env.example) and t
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_GOOGLE_CLIENT_ID` *(to enable Google OAuth2 login, set your OAuth 2.0 Client ID from the Google Cloud Console in `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID`, and the secret in `GOOGLE_CLIENT_SECRET`)*
 - `GROQ_API_KEY`, `GEMINI_API_KEY`
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
+
 
 ---
 

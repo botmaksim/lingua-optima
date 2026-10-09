@@ -202,6 +202,7 @@ Complete reference table of all environment variables used across the system:
 | `VITE_API_URL` | Base URL for the backend REST API (e.g. `http://localhost:8080` or `/api`) |
 | `VITE_GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID for the Google Identity Services sign-in button |
 
+
 ### PostgreSQL
 | Variable | Description |
 |---|---|
@@ -338,11 +339,13 @@ Database schema versioning is managed via **Flyway**, integrated directly into S
 
 **Naming convention:** `V<Version>__<Description>.sql` (note the double underscore separator).
 
-### Migration Scripts
-- `V1__init_schema.sql` — Initial schema creation (users, groups, tasks, questions, assignments, sessions, submissions, progress records, notifications, subscriptions, usage counters, API keys).
-- `V2__seed_data.sql` — Default seed data for development and template tasks.
-- `V3__seed_c1_templates.sql` — Advanced C1 grammar and essay template tasks.
-- `V4__create_pending_ai_tasks.sql` — Queue table (`pending_ai_tasks`) for deferred AI requests when external providers are rate-limited.
+### Migration List
+- `V1__create_users.sql` — Creation of the users table and user preferences.
+- `V2__create_user_api_keys.sql` — Table for storing encrypted user-supplied API keys.
+- `V3__create_materials.sql` — Table of study materials and curriculum templates.
+- `V4__create_exercises.sql` — Table of exercises and AI-generated tasks.
+- `V5__create_user_progress.sql` — Table of mastery statistics, progress history, and submission results.
+- `V6__create_vocabulary.sql` — Personal vocabulary and queued AI task state (`V1__init_schema.sql` .. `V4__create_pending_ai_tasks.sql` in production).
 
 ---
 

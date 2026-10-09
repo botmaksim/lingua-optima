@@ -151,12 +151,12 @@ flowchart TD
 
 ```text
 lingua_optima/
+├── presentation.html                  — Interactive project presentation
 ├── docker-compose.yml                 — PostgreSQL + Redis + Backend + Frontend
 ├── .env.example                       — Environment variables template
 ├── .github/workflows/ci.yml           — CI/CD pipeline
 │
 ├── docs/                              — Documentation
-│   ├── presentation.html              — Interactive project presentation
 │   ├── README.md                      — Master document (THIS FILE)
 │   ├── BACKEND.md                     — Backend specification
 │   ├── FRONTEND.md                    — Frontend specification
@@ -192,12 +192,9 @@ lingua_optima/
 │   │   │   └── ExportController.java        — /report/group/{id}, /report/student/{id}
 │   │   │
 │   │   ├── dto/
-│   │   │   ├── request/                     ── 14 Request DTOs
+│   │   │   ├── request/                     ── 12 Request DTOs
 │   │   │   │   ├── RegisterRequest.java     — email, password, fullName, role
 │   │   │   │   ├── LoginRequest.java        — email, password
-│   │   │   │   ├── GoogleAuthRequest.java   — credential, role
-│   │   │   │   ├── ForgotPasswordRequest.java — email
-│   │   │   │   ├── UpdateProfileRequest.java — fullName, displayAlias, cefrLevel
 │   │   │   │   ├── TaskParamsRequest.java   — cefrLevel, grammarTopic, domain, taskType, difficulty
 │   │   │   │   ├── AssignTaskRequest.java   — groupIds[], dueDate
 │   │   │   │   ├── TextSubmissionRequest.java — text, assignmentId, type
@@ -515,58 +512,71 @@ erDiagram
 
 ---
 
-## 7. REST API — Complete Reference Table {#sec7}
+## 7. REST API {#sec7}
 
-| Module | Method | Path | Role | Description |
-|---|---|---|---|---|
-| **Auth** | POST | `/api/auth/register` | Public | Register a new account with email and password |
-| **Auth** | POST | `/api/auth/login` | Public | Authenticate with email and password → returns JWT |
-| **Auth** | POST | `/api/auth/google` | Public | Sign in or register via Google OAuth2 ID Token → returns JWT |
-| **Auth** | POST | `/api/auth/refresh` | Cookie | Rotate and refresh the short-lived access token |
-| **Auth** | POST | `/api/auth/logout` | Any | Log out and revoke the refresh token in Redis |
-| **Auth** | DELETE | `/api/auth/logout-all` | Any | Log out from all active devices |
-| **Auth** | POST | `/api/auth/forgot-password` | Public | Request a password reset link |
-| **User** | GET | `/api/users/me` | Any | Retrieve the current authenticated user's profile |
-| **User** | PUT | `/api/users/me` | Any | Update user profile details |
-| **User** | PUT | `/api/users/me/password` | Any | Change account password |
-| **User** | DELETE | `/api/users/me` | Any | Delete account and anonymize data (GDPR Right to Erasure) |
-| **Tasks** | POST | `/api/tasks/generate` | Any | Generate a new exercise via AI |
-| **Tasks** | POST | `/api/tasks/preview` | Any | Preview an AI-generated task without saving |
-| **Tasks** | GET | `/api/tasks` | Any | List accessible tasks and assignments |
-| **Tasks** | GET | `/api/tasks/{id}` | Any | Retrieve a specific task by ID |
-| **Tasks** | POST | `/api/tasks/{id}/assign` | TEACHER | Assign a task to one or more student groups |
-| **Tasks** | POST | `/api/tasks/template` | TEACHER | Save a task as a reusable template |
-| **Sessions (CAT)** | POST | `/api/sessions/start` | STUDENT | Start a new Computerized Adaptive Test session |
-| **Sessions (CAT)** | GET | `/api/sessions/active` | STUDENT | Resume an interrupted adaptive session |
-| **Sessions (CAT)** | GET | `/api/sessions/{id}/next-question` | STUDENT | Fetch the next adaptive question |
-| **Sessions (CAT)** | POST | `/api/sessions/{id}/answer` | STUDENT | Submit an answer and adjust difficulty |
-| **Sessions (CAT)** | POST | `/api/sessions/{id}/complete` | STUDENT | Complete the adaptive test and compute mastery |
-| **Submissions** | POST | `/api/submissions/text` | STUDENT | Submit text or an essay for AI evaluation |
-| **Submissions** | POST | `/api/submissions/image` | STUDENT | Upload a handwritten homework photo for OCR + AI grading |
-| **Submissions** | GET | `/api/submissions/my` | STUDENT | List the current student's submissions |
-| **Submissions** | GET | `/api/submissions/{id}` | Any | Retrieve detailed grading results for a submission |
-| **Submissions** | PUT | `/api/submissions/{id}/override` | TEACHER | Override the AI score and attach teacher feedback |
-| **Groups** | GET | `/api/groups` | TEACHER | List the teacher's student groups |
-| **Groups** | POST | `/api/groups` | TEACHER | Create a new student group |
-| **Groups** | POST | `/api/groups/{id}/students` | TEACHER | Add a student to a group (or reactivate a soft-deleted student) |
-| **Groups** | DELETE | `/api/groups/{id}/students/{uid}` | TEACHER | Remove a student from a group (soft delete) |
-| **Groups** | DELETE | `/api/groups/{id}` | TEACHER | Delete a student group |
-| **Progress** | GET | `/api/progress/me` | STUDENT | Retrieve the current student's grammar mastery analytics |
-| **Progress** | GET | `/api/progress/student/{id}` | TEACHER | Retrieve a specific student's progress analytics |
-| **Progress** | GET | `/api/progress/group/{id}` | TEACHER | Retrieve aggregated progress analytics for a group |
-| **Leaderboard** | GET | `/api/leaderboard/group/{id}` | Any (in group) | Retrieve the weekly anonymized ranking within a group |
-| **Notifications** | GET | `/api/notifications/stream` | Any | Establish a real-time Server-Sent Events (SSE) stream |
-| **Notifications** | GET | `/api/notifications/unread-count` | Any | Retrieve the count of unread notifications |
-| **Notifications** | PATCH | `/api/notifications/{id}/read` | Any | Mark a notification as read |
-| **Subscriptions** | GET | `/api/subscriptions/me` | Any | Retrieve the current subscription tier and status |
-| **Subscriptions** | POST | `/api/subscriptions/upgrade` | Any | Upgrade subscription tier (via payment stub) |
-| **Subscriptions** | POST | `/api/subscriptions/downgrade` | Any | Downgrade subscription tier |
-| **Subscriptions** | GET | `/api/subscriptions/usage` | Any | Retrieve remaining weekly evaluations and OCR uploads |
-| **API Keys** | GET | `/api/api-keys` | Any | List configured BYOK AI provider keys (masked) |
-| **API Keys** | POST | `/api/api-keys` | Any | Store and encrypt a new BYOK AI provider key |
-| **API Keys** | DELETE | `/api/api-keys/{id}` | Any | Delete a stored API key |
-| **Export** | GET | `/api/export/report/group/{id}` | TEACHER | Export a group performance report (PDF/CSV) |
-| **Export** | GET | `/api/export/report/student/{id}` | TEACHER | Export an individual student performance report (PDF/CSV) |
+| Method | Path | Role | Description |
+|---|---|---|---|
+| **Auth** | | | |
+| POST | `/api/auth/register` | Public | Register a new account with email and password |
+| POST | `/api/auth/login` | Public | Authenticate with email and password → returns JWT |
+| POST | `/api/auth/google` | Public | Sign in or register via Google OAuth2 ID Token → returns JWT |
+| POST | `/api/auth/refresh` | Cookie | Rotate and refresh the short-lived access token |
+| POST | `/api/auth/logout` | Any | Log out and revoke the refresh token in Redis |
+| DELETE | `/api/auth/logout-all` | Any | Log out from all active devices |
+| POST | `/api/auth/forgot-password` | Public | Request a password reset link |
+| **User** | | | |
+| GET | `/api/users/me` | Any | Retrieve the current authenticated user's profile |
+| PUT | `/api/users/me` | Any | Update user profile details |
+| PUT | `/api/users/me/password` | Any | Change account password |
+| DELETE | `/api/users/me` | Any | Delete account and anonymize data (GDPR Right to Erasure) |
+| **Tasks** | | | |
+| POST | `/api/tasks/generate` | Any | Generate a new exercise via AI |
+| POST | `/api/tasks/preview` | Any | Preview an AI-generated task without saving |
+| GET | `/api/tasks` | Any | List accessible tasks and assignments |
+| GET | `/api/tasks/{id}` | Any | Retrieve a specific task by ID |
+| POST | `/api/tasks/{id}/assign` | TEACHER | Assign a task to one or more student groups |
+| POST | `/api/tasks/template` | TEACHER | Save a task as a reusable template |
+| **Sessions (CAT)** | | | |
+| POST | `/api/sessions/start` | STUDENT | Start a new Computerized Adaptive Test session |
+| GET | `/api/sessions/active` | STUDENT | Resume an interrupted adaptive session |
+| GET | `/api/sessions/{id}/next-question` | STUDENT | Fetch the next adaptive question |
+| POST | `/api/sessions/{id}/answer` | STUDENT | Submit an answer and adjust difficulty |
+| POST | `/api/sessions/{id}/complete` | STUDENT | Complete the adaptive test and compute mastery |
+| **Submissions** | | | |
+| POST | `/api/submissions/text` | STUDENT | Submit text or an essay for AI evaluation |
+| POST | `/api/submissions/image` | STUDENT | Upload a handwritten homework photo for OCR + AI grading |
+| GET | `/api/submissions/my` | STUDENT | List the current student's submissions |
+| GET | `/api/submissions/{id}` | Any | Retrieve detailed grading results for a submission |
+| PUT | `/api/submissions/{id}/override` | TEACHER | Override the AI score and attach teacher feedback |
+| **Groups** | | | |
+| GET | `/api/groups` | TEACHER | List the teacher's student groups |
+| POST | `/api/groups` | TEACHER | Create a new student group |
+| POST | `/api/groups/{id}/students` | TEACHER | Add a student to a group (or reactivate a soft-deleted student) |
+| DELETE | `/api/groups/{id}/students/{uid}` | TEACHER | Remove a student from a group (soft delete) |
+| DELETE | `/api/groups/{id}` | TEACHER | Delete a student group |
+| **Progress** | | | |
+| GET | `/api/progress/me` | STUDENT | Retrieve the current student's grammar mastery analytics |
+| GET | `/api/progress/student/{id}` | TEACHER | Retrieve a specific student's progress analytics |
+| GET | `/api/progress/group/{id}` | TEACHER | Retrieve aggregated progress analytics for a group |
+| **Leaderboard** | | | |
+| GET | `/api/leaderboard/group/{id}` | Any (in group) | Retrieve the weekly anonymized ranking within a group |
+| **Notifications** | | | |
+| GET | `/api/notifications/stream` | Any | Establish a real-time Server-Sent Events (SSE) stream |
+| GET | `/api/notifications/unread-count` | Any | Retrieve the count of unread notifications |
+| PATCH | `/api/notifications/{id}/read` | Any | Mark a notification as read |
+| **Subscriptions** | | | |
+| GET | `/api/subscriptions/me` | Any | Retrieve the current subscription tier and status |
+| POST | `/api/subscriptions/upgrade` | Any | Upgrade subscription tier (via payment stub) |
+| POST | `/api/subscriptions/downgrade` | Any | Downgrade subscription tier |
+| GET | `/api/subscriptions/usage` | Any | Retrieve remaining weekly evaluations and OCR uploads |
+| **API Keys** | | | |
+| GET | `/api/api-keys` | Any | List configured BYOK AI provider keys (masked) |
+| POST | `/api/api-keys` | Any | Store and encrypt a new BYOK AI provider key |
+| DELETE | `/api/api-keys/{id}` | Any | Delete a stored API key |
+| **Export** | | | |
+| GET | `/api/export/report/group/{id}` | TEACHER | Export a group performance report (PDF/CSV) |
+| GET | `/api/export/report/student/{id}` | TEACHER | Export an individual student performance report (PDF/CSV) |
+
 
 ---
 
