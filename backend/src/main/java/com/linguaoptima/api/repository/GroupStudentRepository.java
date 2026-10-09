@@ -1,3 +1,7 @@
+/**
+ * @file GroupStudentRepository.java
+ * @brief Spring Data JPA repository for managing student group enrollments and soft deletions.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.Group;
@@ -11,7 +15,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file GroupStudentRepository.java
  * @brief Spring Data JPA repository for managing student group enrollments and soft deletions.
  */
 @Repository
@@ -55,4 +58,11 @@ public interface GroupStudentRepository extends JpaRepository<GroupStudent, UUID
      * @return Query result (int).
      */
     int countByGroupIdAndIsActiveTrue(UUID groupId);
+
+    /**
+     * @brief Queries all group memberships (active and inactive) for a student.
+     * @param studentId Filter parameter studentId.
+     * @return Query result (List&lt;GroupStudent&gt;).
+     */
+    List<GroupStudent> findAllByStudentId(UUID studentId);
 }

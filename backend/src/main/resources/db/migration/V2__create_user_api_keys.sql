@@ -1,12 +1,15 @@
--- V2: Create user API keys (BYOK encrypted at rest)
-CREATE TABLE IF NOT EXISTS user_api_keys (
+/**
+ * @file V2__create_user_api_keys.sql
+ * @brief Flyway migration V2 creating the api_keys table for AES-256-GCM encrypted BYOK credentials.
+ */
+
+/**
+ * @brief Database table definition for api_keys.
+ */
+CREATE TABLE IF NOT EXISTS api_keys (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     provider VARCHAR(50) NOT NULL,
-    encrypted_key TEXT NOT NULL,
-    key_preview VARCHAR(50) NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_user_provider UNIQUE (user_id, provider)
+    encrypted_key VARCHAR(1024) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

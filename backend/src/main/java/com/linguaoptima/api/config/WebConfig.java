@@ -1,3 +1,7 @@
+/**
+ * @file WebConfig.java
+ * @brief Web MVC infrastructure configuration defining RestTemplate, JSON ObjectMapper, and Multipart file limits.
+ */
 package com.linguaoptima.api.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +15,6 @@ import org.springframework.util.unit.DataSize;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * @file WebConfig.java
  * @brief Web MVC infrastructure configuration defining RestTemplate, JSON ObjectMapper, and Multipart file limits.
  */
 @Configuration

@@ -1,3 +1,7 @@
+/**
+ * @file ExportServiceTest.java
+ * @brief Unit and slice test suite for ExportService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Group;
@@ -27,31 +31,43 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 /**
- * @file ExportServiceTest.java
  * @brief Unit and slice test suite for ExportService.
  */
 @ExtendWith(MockitoExtension.class)
 class ExportServiceTest {
 
+    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
+    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
+    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
+    /** @brief Test fixture or mock dependency for progress record repository. */
     @Mock
     private ProgressRecordRepository progressRecordRepository;
+    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
 
+    /** @brief Test fixture or mock dependency for export service. */
     @InjectMocks
     private ExportService exportService;
 
+    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
+    /** @brief Test fixture or mock dependency for other teacher. */
     private User otherTeacher;
+    /** @brief Test fixture or mock dependency for student. */
     private User student;
+    /** @brief Test fixture or mock dependency for group. */
     private Group group;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in ExportServiceTest.
+     */
     @BeforeEach
     void setUp() {
         teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
@@ -60,6 +76,9 @@ class ExportServiceTest {
         group = Group.builder().id(UUID.randomUUID()).name("Group 1").teacher(teacher).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate group report csv and pdf.
+     */
     @Test
     void testGenerateGroupReportCsvAndPdf() {
         GroupStudent gs = GroupStudent.builder().group(group).student(student).isActive(true).build();
@@ -75,12 +94,18 @@ class ExportServiceTest {
         assertTrue(pdf.length > 0);
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate group report forbidden.
+     */
     @Test
     void testGenerateGroupReportForbidden() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         assertThrows(ForbiddenException.class, () -> exportService.generateGroupReport(group.getId(), "csv", otherTeacher));
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate student report csv and pdf.
+     */
     @Test
     void testGenerateStudentReportCsvAndPdf() {
         ProgressRecord pr = ProgressRecord.builder().student(student).grammarTopic("Passive").totalAttempts(5).masteryScore(0.8).build();
@@ -97,6 +122,9 @@ class ExportServiceTest {
         assertTrue(pdf.length > 0);
     }
 
+    /**
+     * @brief Verifies unit test scenario: group not found throws.
+     */
     @Test
     void testGroupNotFoundThrows() {
         UUID id = UUID.randomUUID();
@@ -105,6 +133,9 @@ class ExportServiceTest {
             () -> exportService.generateGroupReport(id, "csv", teacher));
     }
 
+    /**
+     * @brief Verifies unit test scenario: student not found throws.
+     */
     @Test
     void testStudentNotFoundThrows() {
         UUID id = UUID.randomUUID();

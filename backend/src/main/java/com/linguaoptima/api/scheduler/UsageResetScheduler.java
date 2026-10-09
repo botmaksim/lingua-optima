@@ -1,3 +1,7 @@
+/**
+ * @file UsageResetScheduler.java
+ * @brief Weekly scheduler task resetting free-tier usage quota counters.
+ */
 package com.linguaoptima.api.scheduler;
 
 import com.linguaoptima.api.service.UsageService;
@@ -7,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * @file UsageResetScheduler.java
  * @brief Weekly scheduler task resetting free-tier usage quota counters.
  */
 @Slf4j
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UsageResetScheduler {
 
+    /** @brief Field representing usage service in UsageResetScheduler. */
     private final UsageService usageService;
 
     /**

@@ -1,3 +1,7 @@
+/**
+ * @file SessionStateRepository.java
+ * @brief Spring Data JPA repository for Computerized Adaptive Testing (CAT) session states.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.SessionState;
@@ -11,7 +15,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file SessionStateRepository.java
  * @brief Spring Data JPA repository for Computerized Adaptive Testing (CAT) session states.
  */
 @Repository
@@ -43,4 +46,11 @@ public interface SessionStateRepository extends JpaRepository<SessionState, UUID
      * @return Query result (List&lt;SessionState&gt;).
      */
     List<SessionState> findAllByStudentIdAndStatus(UUID studentId, SessionStatus status);
+
+    /**
+     * @brief Queries all adaptive sessions across all statuses for a student.
+     * @param studentId Filter parameter studentId.
+     * @return Query result (List&lt;SessionState&gt;).
+     */
+    List<SessionState> findAllByStudentId(UUID studentId);
 }

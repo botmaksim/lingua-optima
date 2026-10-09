@@ -10,8 +10,11 @@ import React from 'react';
  * @brief Props definition for LoadingSpinner component.
  */
 interface LoadingSpinnerProps {
+  /** @brief Property representing size in LoadingSpinnerProps. */
   size?: 'sm' | 'md' | 'lg';
+  /** @brief Property representing class name in LoadingSpinnerProps. */
   className?: string;
+  /** @brief Property representing message in LoadingSpinnerProps. */
   message?: string;
 }
 

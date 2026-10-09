@@ -1,3 +1,7 @@
+/**
+ * @file OCRService.java
+ * @brief Zero-Retention optical character recognition service using Tesseract OCR.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.exception.OcrException;
@@ -14,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
 /**
- * @file OCRService.java
  * @brief Zero-Retention optical character recognition service using Tesseract OCR.
  *
  * Guarantees that uploaded images are processed strictly in RAM and memory buffers are
@@ -24,6 +27,7 @@ import java.util.Arrays;
 @Service
 public class OCRService {
 
+    /** @brief Field representing tesseract in OCRService. */
     private final ITesseract tesseract;
 
     /**
@@ -37,6 +41,17 @@ public class OCRService {
             String datapath = System.getenv("TESSDATA_PREFIX");
             if (datapath != null && !datapath.isBlank()) {
                 instance.setDatapath(datapath);
+            } else {
+                for (String candidate : new String[]{
+                    "/usr/share/tessdata",
+                    "/usr/share/tesseract-ocr/5/tessdata",
+                    "/usr/share/tesseract-ocr/4.00/tessdata"
+                }) {
+                    if (new java.io.File(candidate).exists()) {
+                        instance.setDatapath(candidate);
+                        break;
+                    }
+                }
             }
         } catch (Throwable t) {
             log.warn("Tesseract native initialization warning: {}", t.getMessage());

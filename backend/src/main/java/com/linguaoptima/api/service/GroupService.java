@@ -1,3 +1,7 @@
+/**
+ * @file GroupService.java
+ * @brief Educator student group management service.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Group;
@@ -5,6 +9,7 @@ import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.NotificationType;
+import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.dto.request.CreateGroupRequest;
 import com.linguaoptima.api.dto.response.GroupResponse;
 import com.linguaoptima.api.dto.response.UserResponse;
@@ -26,7 +31,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * @file GroupService.java
  * @brief Educator student group management service.
  *
  * Supports creating classes, enrolling students, soft-deleting memberships with history preservation,
@@ -37,10 +41,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GroupService {
 
+    /** @brief Field representing group repository in GroupService. */
     private final GroupRepository groupRepository;
+    /** @brief Field representing group student repository in GroupService. */
     private final GroupStudentRepository groupStudentRepository;
+    /** @brief Field representing user repository in GroupService. */
     private final UserRepository userRepository;
+    /** @brief Field representing submission repository in GroupService. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field representing notification service in GroupService. */
     private final NotificationService notificationService;
 
     /**
@@ -61,12 +70,18 @@ public class GroupService {
     }
 
     /**
-     * @brief Retrieves all active groups owned by the specified educator.
-     * @param teacher Educator whose groups are queried.
+     * @brief Retrieves all active groups owned by an educator or enrolled in by a student.
+     * @param teacher Educator or student whose groups are queried.
      * @return List of GroupResponse DTOs.
      */
     @Transactional(readOnly = true)
     public List<GroupResponse> getGroupsForTeacher(User teacher) {
+        if (teacher.getRole() == Role.STUDENT) {
+            return groupStudentRepository.findByStudentIdAndIsActiveTrue(teacher.getId()).stream()
+                .map(GroupStudent::getGroup)
+                .map(this::mapToGroupResponse)
+                .collect(Collectors.toList());
+        }
         return groupRepository.findByTeacher(teacher).stream()
             .map(this::mapToGroupResponse)
             .collect(Collectors.toList());

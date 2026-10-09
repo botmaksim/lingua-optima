@@ -44,12 +44,18 @@ export const ConfigureTask: React.FC = () => {
       .catch((err) => console.error('Failed to load groups:', err));
   }, []);
 
+  /**
+   * @brief Event handler or helper executing toggle group.
+   */
   const toggleGroup = (id: string) => {
     setSelectedGroupIds((prev) =>
       prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
     );
   };
 
+  /**
+   * @brief Event handler or helper executing handle preview.
+   */
   const handlePreview = async () => {
     setIsLoading(true);
     setStatusMessage(null);
@@ -70,6 +76,9 @@ export const ConfigureTask: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle save template.
+   */
   const handleSaveTemplate = async () => {
     setIsLoading(true);
     setStatusMessage(null);
@@ -90,6 +99,9 @@ export const ConfigureTask: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle deploy.
+   */
   const handleDeploy = async () => {
     if (selectedGroupIds.length === 0) {
       alert('Please select at least one cohort group to deploy this assignment.');
@@ -139,9 +151,7 @@ export const ConfigureTask: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Configuration Form (2 cols) */}
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-          {/* Target Group Selector */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Target Cohort Groups (Multi-select)
@@ -167,7 +177,6 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
-          {/* CEFR Level */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               CEFR Level
@@ -190,7 +199,6 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
-          {/* Grammar Topic & Domain */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
@@ -217,7 +225,6 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
-          {/* Task Type */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Task Type
@@ -240,7 +247,6 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
-          {/* Due date picker */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Submission Due Date (Optional)
@@ -253,7 +259,6 @@ export const ConfigureTask: React.FC = () => {
             />
           </div>
 
-          {/* Actions: [Generate Preview] [Save as Template] [Deploy to Students] */}
           <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
@@ -287,7 +292,6 @@ export const ConfigureTask: React.FC = () => {
           </div>
         </div>
 
-        {/* Preview Panel (1 col) */}
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
             Live Preview

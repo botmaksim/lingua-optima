@@ -12,8 +12,11 @@ import { getCefrBadgeClasses } from '../../utils/cefrColors';
  * @brief Props definition for CefrBadge component.
  */
 interface CefrBadgeProps {
+  /** @brief Property representing level in CefrBadgeProps. */
   level: CefrLevel;
+  /** @brief Property representing size in CefrBadgeProps. */
   size?: 'sm' | 'md' | 'lg';
+  /** @brief Property representing class name in CefrBadgeProps. */
   className?: string;
 }
 

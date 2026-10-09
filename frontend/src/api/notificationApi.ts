@@ -6,6 +6,9 @@
 import { axiosInstance, getAccessToken } from './axiosInstance';
 import { Notification } from '../types/notification';
 
+/**
+ * @brief Client API methods for fetching notifications, unread counts, and SSE streams.
+ */
 export const notificationApi = {
   /**
    * @brief Retrieves all notifications for authenticated user.
@@ -17,12 +20,13 @@ export const notificationApi = {
   },
 
   /**
-   * @brief Queries unread notification count.
+   * @brief Queries unread notification count, normalizing raw integer or object responses.
    * @return Promise resolving to object containing unreadCount.
    */
   getUnreadCount: async (): Promise<{ unreadCount: number }> => {
-    const res = await axiosInstance.get<{ unreadCount: number }>('/notifications/unread-count');
-    return res.data;
+    const res = await axiosInstance.get<number | { unreadCount: number }>('/notifications/unread-count');
+    const data = res.data;
+    return typeof data === 'number' ? { unreadCount: data } : data;
   },
 
   /**
@@ -40,7 +44,12 @@ export const notificationApi = {
    * @return Active EventSource instance.
    */
   connectSSE: (onMessage: (notification: Notification) => void, onError?: () => void) => {
-    const baseURL = import.meta.env.VITE_API_URL || '/api';
+    const rawBaseUrl = (import.meta.env.VITE_API_URL || '').trim();
+    const baseURL = !rawBaseUrl
+      ? '/api'
+      : rawBaseUrl.endsWith('/api')
+      ? rawBaseUrl
+      : `${rawBaseUrl.replace(/\/+$/, '')}/api`;
     const token = getAccessToken();
     const url = token ? `${baseURL}/notifications/subscribe?token=${token}` : `${baseURL}/notifications/subscribe`;
 

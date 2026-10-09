@@ -1,3 +1,7 @@
+/**
+ * @file UsageService.java
+ * @brief Quota tracking and enforcement service for free-tier users.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
@@ -16,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * @file UsageService.java
  * @brief Quota tracking and enforcement service for free-tier users.
  *
  * Enforces weekly caps (10 evaluations, 3 OCR uploads) on FREE tier accounts,
@@ -37,7 +40,9 @@ public class UsageService {
      */
     public static final int FREE_OCR_LIMIT = 3;
 
+    /** @brief Field representing usage counter repository in UsageService. */
     private final UsageCounterRepository usageCounterRepository;
+    /** @brief Field representing subscription repository in UsageService. */
     private final SubscriptionRepository subscriptionRepository;
 
     /**

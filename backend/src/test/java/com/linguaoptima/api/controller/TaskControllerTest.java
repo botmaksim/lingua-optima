@@ -1,3 +1,7 @@
+/**
+ * @file TaskControllerTest.java
+ * @brief Unit and slice test suite for TaskController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -21,27 +25,36 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
- * @file TaskControllerTest.java
  * @brief Unit and slice test suite for TaskController.
  */
 @ExtendWith(MockitoExtension.class)
 class TaskControllerTest {
 
+    /** @brief Test fixture or mock dependency for task service. */
     @Mock
     private TaskService taskService;
 
+    /** @brief Test fixture or mock dependency for task controller. */
     @InjectMocks
     private TaskController taskController;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
+    /** @brief Test fixture or mock dependency for task response. */
     private TaskResponse taskResponse;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in TaskControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
         taskResponse = TaskResponse.builder().id(UUID.randomUUID()).content("Task content").build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get tasks and get by id.
+     */
     @Test
     void testGetTasksAndGetById() {
         when(taskService.getTasksForUser(user)).thenReturn(List.of(taskResponse));
@@ -51,6 +64,9 @@ class TaskControllerTest {
         assertEquals(HttpStatus.OK, taskController.getTaskById(taskResponse.getId()).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate and preview task.
+     */
     @Test
     void testGenerateAndPreviewTask() {
         TaskParamsRequest req = TaskParamsRequest.builder().build();
@@ -61,6 +77,9 @@ class TaskControllerTest {
         assertEquals(HttpStatus.OK, taskController.previewTask(req, user).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: template and assign task.
+     */
     @Test
     void testTemplateAndAssignTask() {
         TaskParamsRequest req = TaskParamsRequest.builder().build();

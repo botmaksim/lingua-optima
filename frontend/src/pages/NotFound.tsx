@@ -16,6 +16,9 @@ export const NotFound: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
 
+  /**
+   * @brief Event handler or helper executing handle go home.
+   */
   const handleGoHome = () => {
     if (!isAuthenticated) {
       navigate('/');

@@ -1,3 +1,7 @@
+/**
+ * @file TextSubmissionRequest.java
+ * @brief Request DTO for submitting written essay or grammar exercise text.
+ */
 package com.linguaoptima.api.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +13,6 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 /**
- * @file TextSubmissionRequest.java
  * @brief Request DTO for submitting written essay or grammar exercise text.
  */
 @Data
@@ -18,8 +21,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class TextSubmissionRequest {
 
+    /** @brief Field representing assignment id in TextSubmissionRequest. */
     private UUID assignmentId;
 
+    /** @brief Field representing text in TextSubmissionRequest. */
     @NotBlank(message = "Text cannot be blank")
     private String text;
 

@@ -1,3 +1,7 @@
+/**
+ * @file GroupController.java
+ * @brief REST controller for managing educator cohorts and student enrollments.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -15,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file GroupController.java
  * @brief REST controller for managing educator cohorts and student enrollments.
  *
  * Implements class cohort creation, soft-delete student removals, and full restoration.
@@ -25,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GroupController {
 
+    /** @brief Field representing group service in GroupController. */
     private final GroupService groupService;
 
     /**

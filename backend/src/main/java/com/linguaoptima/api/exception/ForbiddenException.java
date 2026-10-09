@@ -1,7 +1,10 @@
+/**
+ * @file ForbiddenException.java
+ * @brief Exception thrown when an authenticated user lacks permission to access a resource.
+ */
 package com.linguaoptima.api.exception;
 
 /**
- * @file ForbiddenException.java
  * @brief Exception thrown when an authenticated user lacks permission to access a resource.
  */
 public class ForbiddenException extends RuntimeException {

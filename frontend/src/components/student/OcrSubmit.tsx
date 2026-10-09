@@ -27,6 +27,9 @@ export const OcrSubmit: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * @brief Event handler or helper executing handle file change.
+   */
   const handleFileChange = (file: File) => {
     if (!file.type.startsWith('image/')) {
       setError('Please select a valid image file (JPEG or PNG).');
@@ -43,6 +46,9 @@ export const OcrSubmit: React.FC = () => {
     setPreviewUrl(url);
   };
 
+  /**
+   * @brief Event handler or helper executing handle drop.
+   */
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
@@ -51,6 +57,9 @@ export const OcrSubmit: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle clear.
+   */
   const handleClear = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setSelectedFile(null);
@@ -59,6 +68,9 @@ export const OcrSubmit: React.FC = () => {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  /**
+   * @brief Event handler or helper executing handle submit.
+   */
   const handleSubmit = async () => {
     if (!selectedFile) return;
 

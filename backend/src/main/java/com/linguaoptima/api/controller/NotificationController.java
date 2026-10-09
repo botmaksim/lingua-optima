@@ -1,3 +1,7 @@
+/**
+ * @file NotificationController.java
+ * @brief REST controller managing real-time Server-Sent Events (SSE) and notification status.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -14,7 +18,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file NotificationController.java
  * @brief REST controller managing real-time Server-Sent Events (SSE) and notification status.
  *
  * Dispatches real-time assignment notifications, evaluation feedback alerts, and streak reminders.
@@ -24,6 +27,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationController {
 
+    /** @brief Field representing notification service in NotificationController. */
     private final NotificationService notificationService;
 
     /**
@@ -32,7 +36,7 @@ public class NotificationController {
      * @param user Authenticated user principal.
      * @return SseEmitter streaming live notification events.
      */
-    @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping(value = {"/stream", "/subscribe"}, produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamNotifications(@AuthenticationPrincipal User user) {
         return notificationService.createSseEmitter(user.getId());
     }

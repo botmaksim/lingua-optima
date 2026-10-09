@@ -1,3 +1,7 @@
+/**
+ * @file JwtService.java
+ * @brief Service responsible for JSON Web Token (JWT) generation, claims extraction, and validation.
+ */
 package com.linguaoptima.api.service;
 
 import io.jsonwebtoken.Claims;
@@ -16,14 +20,16 @@ import java.util.UUID;
 import java.util.function.Function;
 
 /**
- * @file JwtService.java
  * @brief Service responsible for JSON Web Token (JWT) generation, claims extraction, and validation.
  */
 @Service
 public class JwtService {
 
+    /** @brief Field representing signing key in JwtService. */
     private final SecretKey signingKey;
+    /** @brief Field representing access token validity ms in JwtService. */
     private final long accessTokenValidityMs = 15 * 60 * 1000L;
+    /** @brief Field representing refresh token validity ms in JwtService. */
     private final long refreshTokenValidityMs = 30L * 24 * 60 * 60 * 1000L;
 
     /**
@@ -33,8 +39,11 @@ public class JwtService {
      */
     public JwtService(@Value("${app.jwt.secret:lingua-optima-super-secret-jwt-signing-key-for-auth-256}") String secret) {
         try {
+            String effectiveSecret = (secret == null || secret.isBlank())
+                ? "lingua-optima-super-secret-jwt-signing-key-for-auth-256"
+                : secret;
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            byte[] keyBytes = sha.digest(secret.getBytes(StandardCharsets.UTF_8));
+            byte[] keyBytes = sha.digest(effectiveSecret.getBytes(StandardCharsets.UTF_8));
             this.signingKey = Keys.hmacShaKeyFor(keyBytes);
         } catch (Exception e) {
             throw new IllegalStateException("Failed to configure JwtService signing key", e);

@@ -1,15 +1,19 @@
+/**
+ * @file PaymentException.java
+ * @brief Exception thrown during payment authorization, settlement, or balance errors.
+ */
 package com.linguaoptima.api.exception;
 
 import com.linguaoptima.api.domain.enums.PaymentErrorCode;
 import lombok.Getter;
 
 /**
- * @file PaymentException.java
  * @brief Exception thrown during payment authorization, settlement, or balance errors.
  */
 @Getter
 public class PaymentException extends RuntimeException {
 
+    /** @brief Field representing error code in PaymentException. */
     private final PaymentErrorCode errorCode;
 
     /**

@@ -1,3 +1,7 @@
+/**
+ * @file AnswerRequest.java
+ * @brief Request DTO for submitting an answer during an adaptive CAT session.
+ */
 package com.linguaoptima.api.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
@@ -10,7 +14,6 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 /**
- * @file AnswerRequest.java
  * @brief Request DTO for submitting an answer during an adaptive CAT session.
  */
 @Data
@@ -19,9 +22,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AnswerRequest {
 
+    /** @brief Field representing question id in AnswerRequest. */
     @NotNull(message = "Question ID is required")
     private UUID questionId;
 
+    /** @brief Field representing answer in AnswerRequest. */
     @NotBlank(message = "Answer is required")
     private String answer;
 }

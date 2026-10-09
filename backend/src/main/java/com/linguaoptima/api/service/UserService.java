@@ -1,3 +1,7 @@
+/**
+ * @file UserService.java
+ * @brief User profile management and GDPR account lifecycle service.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.User;
@@ -16,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 /**
- * @file UserService.java
  * @brief User profile management and GDPR account lifecycle service.
  *
  * Provides operations to retrieve current user details, update profile fields,
@@ -27,14 +30,23 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
 
+    /** @brief Field representing user repository in UserService. */
     private final UserRepository userRepository;
+    /** @brief Field representing api key repository in UserService. */
     private final ApiKeyRepository apiKeyRepository;
+    /** @brief Field representing progress record repository in UserService. */
     private final ProgressRecordRepository progressRecordRepository;
+    /** @brief Field representing notification repository in UserService. */
     private final NotificationRepository notificationRepository;
+    /** @brief Field representing subscription repository in UserService. */
     private final SubscriptionRepository subscriptionRepository;
+    /** @brief Field representing usage counter repository in UserService. */
     private final UsageCounterRepository usageCounterRepository;
+    /** @brief Field representing group student repository in UserService. */
     private final GroupStudentRepository groupStudentRepository;
+    /** @brief Field representing session state repository in UserService. */
     private final SessionStateRepository sessionStateRepository;
+    /** @brief Field representing password encoder in UserService. */
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -117,7 +129,9 @@ public class UserService {
         subscriptionRepository.findByUserId(uid).ifPresent(subscriptionRepository::delete);
         usageCounterRepository.findByUserId(uid).ifPresent(usageCounterRepository::delete);
         groupStudentRepository.findByStudentIdAndIsActiveTrue(uid).forEach(groupStudentRepository::delete);
+        groupStudentRepository.findAllByStudentId(uid).forEach(groupStudentRepository::delete);
         sessionStateRepository.findAllByStudentIdAndStatus(uid, null).forEach(sessionStateRepository::delete);
+        sessionStateRepository.findAllByStudentId(uid).forEach(sessionStateRepository::delete);
 
         userRepository.deleteById(uid);
         log.info("User {} deleted successfully under GDPR", uid);

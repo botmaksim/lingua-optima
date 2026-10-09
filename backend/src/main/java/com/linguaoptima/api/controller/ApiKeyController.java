@@ -1,3 +1,7 @@
+/**
+ * @file ApiKeyController.java
+ * @brief REST controller for managing custom AI provider API keys (BYOK).
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.ApiKey;
@@ -14,7 +18,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file ApiKeyController.java
  * @brief REST controller for managing custom AI provider API keys (BYOK).
  *
  * Provides endpoints to list configured keys, securely persist encrypted keys,
@@ -25,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApiKeyController {
 
+    /** @brief Field representing api key service in ApiKeyController. */
     private final ApiKeyService apiKeyService;
 
     /**

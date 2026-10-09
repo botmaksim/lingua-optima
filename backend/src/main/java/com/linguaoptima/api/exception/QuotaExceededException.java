@@ -1,7 +1,10 @@
+/**
+ * @file QuotaExceededException.java
+ * @brief Exception thrown when rate limits or subscription tier usage quotas are exhausted.
+ */
 package com.linguaoptima.api.exception;
 
 /**
- * @file QuotaExceededException.java
  * @brief Exception thrown when rate limits or subscription tier usage quotas are exhausted.
  */
 public class QuotaExceededException extends RuntimeException {

@@ -1,3 +1,7 @@
+/**
+ * @file CefrTopicRegistryTest.java
+ * @brief Unit and slice test suite for CefrTopicRegistry.
+ */
 package com.linguaoptima.api.util;
 
 import com.linguaoptima.api.domain.enums.CefrLevel;
@@ -8,11 +12,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @file CefrTopicRegistryTest.java
  * @brief Unit and slice test suite for CefrTopicRegistry.
  */
 class CefrTopicRegistryTest {
 
+    /**
+     * @brief Verifies unit test scenario: cefr topics.
+     */
     @Test
     void testCefrTopics() {
         List<String> b1 = CefrTopicRegistry.getTopicsForLevel(CefrLevel.B1);

@@ -8,6 +8,9 @@ import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
  * to prevent XSS credential harvesting. Refresh tokens are exchanged securely via HttpOnly cookies.
  */
 
+/**
+ * @brief In-memory variable holding the active JWT access token.
+ */
 let inMemoryAccessToken: string | null = null;
 
 /**
@@ -24,7 +27,15 @@ export const setAccessToken = (token: string | null) => {
  */
 export const getAccessToken = () => inMemoryAccessToken;
 
-const baseURL = import.meta.env.VITE_API_URL || '/api';
+/**
+ * @brief Resolved API base URL ensuring the /api prefix is present.
+ */
+const rawBaseUrl = (import.meta.env.VITE_API_URL || '').trim();
+const baseURL = !rawBaseUrl
+  ? '/api'
+  : rawBaseUrl.endsWith('/api')
+  ? rawBaseUrl
+  : `${rawBaseUrl.replace(/\/+$/, '')}/api`;
 
 /**
  * @brief Pre-configured Axios instance for Lingua Optima REST API communication.
@@ -47,7 +58,14 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+/**
+ * @brief Flag indicating whether a silent token refresh is currently in flight.
+ */
 let isRefreshing = false;
+
+/**
+ * @brief Queue of pending requests awaiting completion of the active token refresh.
+ */
 let failedQueue: Array<{
   resolve: (token: string) => void;
   reject: (error: any) => void;

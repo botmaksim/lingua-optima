@@ -24,6 +24,9 @@ export const ProfilePage: React.FC = () => {
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keyMessage, setKeyMessage] = useState<string | null>(null);
 
+  /**
+   * @brief Event handler or helper executing load keys.
+   */
   const loadKeys = async () => {
     try {
       const data = await apiKeyApi.getKeys();
@@ -39,6 +42,9 @@ export const ProfilePage: React.FC = () => {
     loadKeys();
   }, []);
 
+  /**
+   * @brief Event handler or helper executing handle save key.
+   */
   const handleSaveKey = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rawKey.trim()) return;
@@ -59,6 +65,9 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle delete key.
+   */
   const handleDeleteKey = async (id: string) => {
     if (!confirm('Remove this custom API key?')) return;
     try {
@@ -80,7 +89,6 @@ export const ProfilePage: React.FC = () => {
         </p>
       </div>
 
-      {/* User Info Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
         <div className="flex items-center space-x-4">
           <div className="w-16 h-16 rounded-2xl bg-indigo-600 text-white font-black text-2xl flex items-center justify-center shadow-md shadow-indigo-100">
@@ -99,7 +107,6 @@ export const ProfilePage: React.FC = () => {
         </div>
       </div>
 
-      {/* BYOK (Bring Your Own Key) Section */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
         <div>
           <div className="flex items-center space-x-2">
@@ -111,7 +118,6 @@ export const ProfilePage: React.FC = () => {
           </p>
         </div>
 
-        {/* Security Alert */}
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start space-x-3">
           <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
           <span>
@@ -126,7 +132,6 @@ export const ProfilePage: React.FC = () => {
           </div>
         )}
 
-        {/* Add Key Form */}
         <form onSubmit={handleSaveKey} className="space-y-4 pt-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -169,7 +174,6 @@ export const ProfilePage: React.FC = () => {
           </button>
         </form>
 
-        {/* Active Keys List */}
         <div className="pt-4 border-t border-slate-100 space-y-3">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
             Active Encrypted Keys

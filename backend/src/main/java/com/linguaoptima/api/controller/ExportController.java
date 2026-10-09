@@ -1,3 +1,7 @@
+/**
+ * @file ExportController.java
+ * @brief REST controller for exporting student and cohort progress reports.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -12,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 /**
- * @file ExportController.java
  * @brief REST controller for exporting student and cohort progress reports.
  *
  * Generates downloadable reports formatted as PDF documents or CSV spreadsheets.
@@ -22,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ExportController {
 
+    /** @brief Field representing export service in ExportController. */
     private final ExportService exportService;
 
     /**
@@ -32,7 +36,7 @@ public class ExportController {
      * @param teacher Authenticated teacher requesting the report.
      * @return Binary attachment containing PDF or CSV document bytes.
      */
-    @GetMapping("/report/group/{id}")
+    @GetMapping({"/report/group/{id}", "/group/{id}"})
     public ResponseEntity<byte[]> exportGroupReport(
         @PathVariable("id") UUID groupId,
         @RequestParam(defaultValue = "pdf") String format,
@@ -57,7 +61,7 @@ public class ExportController {
      * @param teacher Authenticated teacher requesting the report.
      * @return Binary attachment containing PDF or CSV document bytes.
      */
-    @GetMapping("/report/student/{id}")
+    @GetMapping({"/report/student/{id}", "/student/{id}"})
     public ResponseEntity<byte[]> exportStudentReport(
         @PathVariable("id") UUID studentId,
         @RequestParam(defaultValue = "pdf") String format,

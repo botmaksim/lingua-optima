@@ -1,3 +1,7 @@
+/**
+ * @file RedisConfig.java
+ * @brief Redis caching and session store configuration.
+ */
 package com.linguaoptima.api.config;
 
 import org.springframework.context.annotation.Bean;
@@ -9,7 +13,6 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 /**
- * @file RedisConfig.java
  * @brief Redis caching and session store configuration.
  */
 @Configuration

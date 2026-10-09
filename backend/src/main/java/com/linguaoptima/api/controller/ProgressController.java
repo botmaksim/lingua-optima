@@ -1,3 +1,7 @@
+/**
+ * @file ProgressController.java
+ * @brief REST controller for tracking CEFR mastery, grammar gaps, and advancement level-ups.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -12,7 +16,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file ProgressController.java
  * @brief REST controller for tracking CEFR mastery, grammar gaps, and advancement level-ups.
  *
  * Exposes endpoints for student self-analytics, educator diagnostics, and CEFR level promotion.
@@ -22,6 +25,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProgressController {
 
+    /** @brief Field representing progress service in ProgressController. */
     private final ProgressService progressService;
 
     /**
@@ -58,12 +62,23 @@ public class ProgressController {
     }
 
     /**
+     * @brief Fetches grammar topics with mastery below threshold (<60%) for the authenticated student.
+     *
+     * @param student Authenticated student principal.
+     * @return HTTP 200 with list of knowledge gap progress records.
+     */
+    @GetMapping("/gaps")
+    public ResponseEntity<List<ProgressResponse>> getMyGaps(@AuthenticationPrincipal User student) {
+        return ResponseEntity.ok(progressService.getGapsForStudent(student.getId()));
+    }
+
+    /**
      * @brief Confirms promotion to the next suggested CEFR proficiency level.
      *
      * @param student Authenticated student principal.
      * @return HTTP 200 OK after CEFR level update.
      */
-    @PostMapping("/level-up")
+    @PostMapping({"/level-up", "/level-up/confirm"})
     public ResponseEntity<Void> confirmLevelUp(@AuthenticationPrincipal User student) {
         progressService.confirmLevelUp(student);
         return ResponseEntity.ok().build();

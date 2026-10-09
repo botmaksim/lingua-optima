@@ -6,6 +6,9 @@
 import { axiosInstance } from './axiosInstance';
 import { Subscription, SubscriptionTier, UsageCounter } from '../types/subscription';
 
+/**
+ * @brief Client API methods for managing subscription plans and weekly quota usage.
+ */
 export const subscriptionApi = {
   /**
    * @brief Retrieves active subscription details and tier benefits for current user.
@@ -26,12 +29,19 @@ export const subscriptionApi = {
   },
 
   /**
-   * @brief Upgrades user subscription to a higher tier.
+   * @brief Upgrades user subscription to a higher tier and returns updated Subscription state.
    * @param tier Desired target SubscriptionTier.
    * @return Promise resolving to updated Subscription object.
    */
   upgradeTier: async (tier: SubscriptionTier): Promise<Subscription> => {
-    const res = await axiosInstance.post<Subscription>('/subscriptions/upgrade', { tier });
-    return res.data;
+    const res = await axiosInstance.post<Subscription>('/subscriptions/upgrade', {
+      targetTier: tier,
+      tier,
+      paymentToken: 'stub-token',
+    });
+    if (res.data && res.data.tier) {
+      return res.data;
+    }
+    return subscriptionApi.getMySubscription();
   },
 };

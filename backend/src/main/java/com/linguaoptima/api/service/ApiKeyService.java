@@ -1,3 +1,7 @@
+/**
+ * @file ApiKeyService.java
+ * @brief Bring-Your-Own-Key (BYOK) management service for third-party AI provider credentials.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.ApiKey;
@@ -17,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file ApiKeyService.java
  * @brief Bring-Your-Own-Key (BYOK) management service for third-party AI provider credentials.
  *
  * Implements encrypted storage at rest using AES-256-GCM authenticated encryption.
@@ -27,7 +30,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApiKeyService {
 
+    /** @brief Field representing api key repository in ApiKeyService. */
     private final ApiKeyRepository apiKeyRepository;
+    /** @brief Field representing encryption service in ApiKeyService. */
     private final EncryptionService encryptionService;
 
     /**

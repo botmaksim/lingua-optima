@@ -15,6 +15,9 @@ export interface ApiKeyItem {
   createdAt: string;
 }
 
+/**
+ * @brief Exported const for api key api.
+ */
 export const apiKeyApi = {
   /**
    * @brief Retrieves all registered custom API keys for current user.

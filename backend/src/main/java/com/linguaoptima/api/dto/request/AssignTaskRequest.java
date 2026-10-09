@@ -1,3 +1,7 @@
+/**
+ * @file AssignTaskRequest.java
+ * @brief Request DTO for assigning a generated task to one or more student groups.
+ */
 package com.linguaoptima.api.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
@@ -11,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file AssignTaskRequest.java
  * @brief Request DTO for assigning a generated task to one or more student groups.
  */
 @Data
@@ -20,8 +23,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AssignTaskRequest {
 
+    /** @brief Field representing group ids in AssignTaskRequest. */
     @NotEmpty(message = "At least one group ID must be provided")
     private List<UUID> groupIds;
 
+    /** @brief Field representing due date in AssignTaskRequest. */
     private LocalDateTime dueDate;
 }

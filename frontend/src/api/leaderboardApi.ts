@@ -6,8 +6,11 @@
  */
 
 import { axiosInstance } from './axiosInstance';
-import { GroupLeaderboardResponse } from '../types/leaderboard';
+import { GroupLeaderboardResponse, LeaderboardEntry } from '../types/leaderboard';
 
+/**
+ * @brief Client API methods for querying intra-group weekly leaderboards.
+ */
 export const leaderboardApi = {
   /**
    * @brief Retrieves weekly ranked student standings within a group.
@@ -15,7 +18,16 @@ export const leaderboardApi = {
    * @return Promise resolving to GroupLeaderboardResponse.
    */
   getGroupLeaderboard: async (groupId: string): Promise<GroupLeaderboardResponse> => {
-    const res = await axiosInstance.get<GroupLeaderboardResponse>(`/leaderboard/group/${groupId}`);
+    const res = await axiosInstance.get<GroupLeaderboardResponse | LeaderboardEntry[]>(
+      `/leaderboard/group/${groupId}`
+    );
+    if (Array.isArray(res.data)) {
+      return {
+        groupId,
+        groupName: 'Class Cohort',
+        entries: res.data,
+      };
+    }
     return res.data;
   },
 };

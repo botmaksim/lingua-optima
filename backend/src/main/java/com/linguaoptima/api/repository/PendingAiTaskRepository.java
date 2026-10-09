@@ -1,3 +1,7 @@
+/**
+ * @file PendingAiTaskRepository.java
+ * @brief Spring Data JPA repository for queued asynchronous AI task items.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.PendingAiTask;
@@ -8,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file PendingAiTaskRepository.java
  * @brief Spring Data JPA repository for queued asynchronous AI task items.
  */
 @Repository

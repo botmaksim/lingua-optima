@@ -1,3 +1,7 @@
+/**
+ * @file GeminiProvider.java
+ * @brief Google Gemini API provider utilizing gemini-1.5-flash for essay evaluations and fallback generation.
+ */
 package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,15 +17,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @file GeminiProvider.java
  * @brief Google Gemini API provider utilizing gemini-1.5-flash for essay evaluations and fallback generation.
  */
 @Slf4j
 @Component
 public class GeminiProvider implements AIProvider {
 
+    /** @brief Field representing api key in GeminiProvider. */
     private final String apiKey;
+    /** @brief Field representing rest template in GeminiProvider. */
     private final RestTemplate restTemplate;
+    /** @brief Field representing object mapper in GeminiProvider. */
     private final ObjectMapper objectMapper;
 
     /**

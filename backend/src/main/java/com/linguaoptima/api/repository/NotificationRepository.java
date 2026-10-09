@@ -1,3 +1,7 @@
+/**
+ * @file NotificationRepository.java
+ * @brief Spring Data JPA repository for persisted user notifications.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.Notification;
@@ -9,7 +13,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file NotificationRepository.java
  * @brief Spring Data JPA repository for persisted user notifications.
  */
 @Repository

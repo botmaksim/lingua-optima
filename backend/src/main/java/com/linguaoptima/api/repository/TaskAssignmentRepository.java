@@ -1,3 +1,7 @@
+/**
+ * @file TaskAssignmentRepository.java
+ * @brief Spring Data JPA repository for assigned student exercises.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.Task;
@@ -12,7 +16,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file TaskAssignmentRepository.java
  * @brief Spring Data JPA repository for assigned student exercises.
  */
 @Repository

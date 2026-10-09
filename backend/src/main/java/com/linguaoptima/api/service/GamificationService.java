@@ -1,3 +1,7 @@
+/**
+ * @file GamificationService.java
+ * @brief Service controlling daily study streaks and protective freeze token mechanics.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.User;
@@ -11,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 
 /**
- * @file GamificationService.java
  * @brief Service controlling daily study streaks and protective freeze token mechanics.
  *
  * Awards freeze tokens for weekly consistency milestones and protects streaks during inactivity.
@@ -21,7 +24,9 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class GamificationService {
 
+    /** @brief Field representing user repository in GamificationService. */
     private final UserRepository userRepository;
+    /** @brief Field representing notification service in GamificationService. */
     private final NotificationService notificationService;
 
     /**

@@ -1,3 +1,7 @@
+/**
+ * @file PromptTemplatesTest.java
+ * @brief Unit and slice test suite for PromptTemplates.
+ */
 package com.linguaoptima.api.util;
 
 import com.linguaoptima.api.domain.enums.CefrLevel;
@@ -8,11 +12,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @file PromptTemplatesTest.java
  * @brief Unit and slice test suite for PromptTemplates.
  */
 class PromptTemplatesTest {
 
+    /**
+     * @brief Verifies unit test scenario: prompt templates.
+     */
     @Test
     void testPromptTemplates() {
         String taskPrompt = PromptTemplates.buildTaskGenerationPrompt("B1", "Past Simple", "Work", "MCQ", "MEDIUM", 5);

@@ -1,7 +1,10 @@
+/**
+ * @file OcrException.java
+ * @brief Exception thrown during optical character recognition failures or image parsing errors.
+ */
 package com.linguaoptima.api.exception;
 
 /**
- * @file OcrException.java
  * @brief Exception thrown during optical character recognition failures or image parsing errors.
  */
 public class OcrException extends RuntimeException {

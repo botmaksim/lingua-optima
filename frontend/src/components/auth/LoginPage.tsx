@@ -27,6 +27,9 @@ export const LoginPage: React.FC = () => {
   const [role, setRole] = useState<'STUDENT' | 'TEACHER'>('STUDENT');
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * @brief Event handler or helper executing handle submit.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);

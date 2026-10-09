@@ -1,3 +1,7 @@
+/**
+ * @file UsageCounterRepository.java
+ * @brief Spring Data JPA repository for weekly AI evaluation and OCR quota counters.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.UsageCounter;
@@ -9,7 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file UsageCounterRepository.java
  * @brief Spring Data JPA repository for weekly AI evaluation and OCR quota counters.
  */
 @Repository

@@ -14,7 +14,9 @@ import { LoadingSpinner } from './LoadingSpinner';
  * @brief Props definition for route guard component.
  */
 interface ProtectedRouteProps {
+  /** @brief Property representing children in ProtectedRouteProps. */
   children: React.ReactNode;
+  /** @brief Property representing allowed roles in ProtectedRouteProps. */
   allowedRoles?: Role[];
 }
 

@@ -19,6 +19,9 @@ export const useOnline = () => {
   );
 
   useEffect(() => {
+    /**
+     * @brief Event handler or helper executing handle online.
+     */
     const handleOnline = () => {
       setIsOnline(true);
       flushOfflineSubmissions(async (sub) => {
@@ -30,6 +33,9 @@ export const useOnline = () => {
       });
     };
 
+    /**
+     * @brief Event handler or helper executing handle offline.
+     */
     const handleOffline = () => {
       setIsOnline(false);
     };

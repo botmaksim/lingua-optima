@@ -1,3 +1,7 @@
+/**
+ * @file EncryptionService.java
+ * @brief Authenticated symmetric encryption service using AES-256-GCM.
+ */
 package com.linguaoptima.api.service;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +18,6 @@ import java.security.SecureRandom;
 import java.util.Base64;
 
 /**
- * @file EncryptionService.java
  * @brief Authenticated symmetric encryption service using AES-256-GCM.
  *
  * Employs 12-byte initialization vectors and 128-bit authentication tags to ensure
@@ -23,9 +26,13 @@ import java.util.Base64;
 @Service
 public class EncryptionService {
 
+    /** @brief Constant or enum value representing algorithm in EncryptionService. */
     private static final String ALGORITHM = "AES/GCM/NoPadding";
+    /** @brief Constant or enum value representing gcm tag length in EncryptionService. */
     private static final int GCM_TAG_LENGTH = 128;
+    /** @brief Constant or enum value representing iv length in EncryptionService. */
     private static final int IV_LENGTH = 12;
+    /** @brief Field representing secret key in EncryptionService. */
     private final SecretKey secretKey;
 
     /**
@@ -35,8 +42,11 @@ public class EncryptionService {
      */
     public EncryptionService(@Value("${app.encryption.key:lingua-optima-default-secure-key-32b}") String secretKeyString) {
         try {
+            String effectiveKey = (secretKeyString == null || secretKeyString.isBlank())
+                ? "lingua-optima-default-secure-key-32b"
+                : secretKeyString;
             MessageDigest sha = MessageDigest.getInstance("SHA-256");
-            byte[] keyBytes = sha.digest(secretKeyString.getBytes(StandardCharsets.UTF_8));
+            byte[] keyBytes = sha.digest(effectiveKey.getBytes(StandardCharsets.UTF_8));
             this.secretKey = new SecretKeySpec(keyBytes, "AES");
         } catch (Exception e) {
             throw new IllegalStateException("Failed to initialize EncryptionService key", e);

@@ -1,3 +1,7 @@
+/**
+ * @file UserServiceTest.java
+ * @brief Unit and slice test suite for UserService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.ApiKey;
@@ -28,36 +32,49 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * @file UserServiceTest.java
  * @brief Unit and slice test suite for UserService.
  */
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
+    /** @brief Test fixture or mock dependency for api key repository. */
     @Mock
     private ApiKeyRepository apiKeyRepository;
+    /** @brief Test fixture or mock dependency for progress record repository. */
     @Mock
     private ProgressRecordRepository progressRecordRepository;
+    /** @brief Test fixture or mock dependency for notification repository. */
     @Mock
     private NotificationRepository notificationRepository;
+    /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
+    /** @brief Test fixture or mock dependency for usage counter repository. */
     @Mock
     private UsageCounterRepository usageCounterRepository;
+    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
+    /** @brief Test fixture or mock dependency for session state repository. */
     @Mock
     private SessionStateRepository sessionStateRepository;
+    /** @brief Test fixture or mock dependency for password encoder. */
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    /** @brief Test fixture or mock dependency for user service. */
     @InjectMocks
     private UserService userService;
 
+    /** @brief Test fixture or mock dependency for sample user. */
     private User sampleUser;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in UserServiceTest.
+     */
     @BeforeEach
     void setUp() {
         sampleUser = User.builder()
@@ -71,6 +88,9 @@ class UserServiceTest {
             .build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get current user.
+     */
     @Test
     void testGetCurrentUser() {
         when(userRepository.findById(sampleUser.getId())).thenReturn(Optional.of(sampleUser));
@@ -82,6 +102,9 @@ class UserServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> userService.getCurrentUser(sampleUser));
     }
 
+    /**
+     * @brief Verifies unit test scenario: update user.
+     */
     @Test
     void testUpdateUser() {
         UpdateUserRequest req = UpdateUserRequest.builder()
@@ -99,6 +122,9 @@ class UserServiceTest {
         assertEquals(CefrLevel.B2, res.getCefrLevel());
     }
 
+    /**
+     * @brief Verifies unit test scenario: change password success.
+     */
     @Test
     void testChangePasswordSuccess() {
         ChangePasswordRequest req = ChangePasswordRequest.builder()
@@ -114,6 +140,9 @@ class UserServiceTest {
         verify(userRepository).save(argThat(u -> "newHashedPass".equals(u.getPasswordHash())));
     }
 
+    /**
+     * @brief Verifies unit test scenario: change password wrong old password throws.
+     */
     @Test
     void testChangePasswordWrongOldPasswordThrows() {
         ChangePasswordRequest req = ChangePasswordRequest.builder()
@@ -127,6 +156,9 @@ class UserServiceTest {
         assertThrows(ForbiddenException.class, () -> userService.changePassword(sampleUser, req));
     }
 
+    /**
+     * @brief Verifies unit test scenario: delete account gdpr cascade.
+     */
     @Test
     void testDeleteAccountGdprCascade() {
         UUID uid = sampleUser.getId();

@@ -1,3 +1,7 @@
+/**
+ * @file ApiKeyControllerTest.java
+ * @brief Unit and slice test suite for ApiKeyController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.ApiKey;
@@ -21,25 +25,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
- * @file ApiKeyControllerTest.java
  * @brief Unit and slice test suite for ApiKeyController.
  */
 @ExtendWith(MockitoExtension.class)
 class ApiKeyControllerTest {
 
+    /** @brief Test fixture or mock dependency for api key service. */
     @Mock
     private ApiKeyService apiKeyService;
 
+    /** @brief Test fixture or mock dependency for api key controller. */
     @InjectMocks
     private ApiKeyController apiKeyController;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in ApiKeyControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get api keys.
+     */
     @Test
     void testGetApiKeys() {
         ApiKey k = ApiKey.builder().id(UUID.randomUUID()).build();
@@ -50,6 +62,9 @@ class ApiKeyControllerTest {
         assertEquals(1, res.getBody().size());
     }
 
+    /**
+     * @brief Verifies unit test scenario: add api key.
+     */
     @Test
     void testAddApiKey() {
         CreateApiKeyRequest req = CreateApiKeyRequest.builder().provider(AIProvider.OPENAI).rawKey("key").build();
@@ -58,6 +73,9 @@ class ApiKeyControllerTest {
         verify(apiKeyService).saveKey(req, user);
     }
 
+    /**
+     * @brief Verifies unit test scenario: delete api key.
+     */
     @Test
     void testDeleteApiKey() {
         UUID id = UUID.randomUUID();

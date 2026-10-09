@@ -54,6 +54,9 @@ export const AIReview: React.FC = () => {
   const effectiveScore = submission.effectiveScore ?? submission.score;
   const rubric = submission.rubric || {};
 
+  /**
+   * @brief Copies a formatted summary of the submission score to the system clipboard.
+   */
   const handleShare = () => {
     const text = `I scored ${effectiveScore}/100 on Lingua Optima! Master your English with adaptive AI.`;
     navigator.clipboard.writeText(text);
@@ -61,6 +64,9 @@ export const AIReview: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  /**
+   * @brief Saves the evaluated task unit to the student's personal unit bookmark list.
+   */
   const handleSaveUnit = () => {
     setSavedUnit(true);
     setTimeout(() => setSavedUnit(false), 2500);
@@ -120,13 +126,13 @@ export const AIReview: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: 'Task Achievement', val: rubric.taskAchievement ?? 8.0 },
-              { label: 'Coherence & Cohesion', val: rubric.coherenceCohesion ?? 7.5 },
+              { label: 'Coherence & Cohesion', val: rubric.coherence ?? rubric.coherenceCohesion ?? 7.5 },
               { label: 'Lexical Resource', val: rubric.lexicalResource ?? 8.0 },
-              { label: 'Grammar Accuracy', val: rubric.grammaticalRange ?? 7.5 },
+              { label: 'Grammar Accuracy', val: rubric.grammarRange ?? rubric.grammaticalRange ?? 7.5 },
             ].map((crit, idx) => (
               <div key={idx} className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 text-center space-y-1">
                 <div className="text-lg font-black text-slate-900 font-mono">
-                  {typeof crit.val === 'number' ? crit.val.toFixed(1) : crit.val} / 9
+                  {typeof crit.val === 'number' ? crit.val.toFixed(1) : crit.val} / 10
                 </div>
                 <div className="text-[11px] font-medium text-slate-500 leading-tight">
                   {crit.label}

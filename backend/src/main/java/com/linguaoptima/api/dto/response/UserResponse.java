@@ -1,3 +1,7 @@
+/**
+ * @file UserResponse.java
+ * @brief Response DTO representing a user profile.
+ */
 package com.linguaoptima.api.dto.response;
 
 import com.linguaoptima.api.domain.User;
@@ -13,7 +17,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * @file UserResponse.java
  * @brief Response DTO representing a user profile.
  */
 @Data
@@ -22,16 +25,27 @@ import java.util.UUID;
 @AllArgsConstructor
 public class UserResponse {
 
+    /** @brief Field representing id in UserResponse. */
     private UUID id;
+    /** @brief Field representing email in UserResponse. */
     private String email;
+    /** @brief Field representing full name in UserResponse. */
     private String fullName;
+    /** @brief Field representing role in UserResponse. */
     private Role role;
+    /** @brief Field representing cefr level in UserResponse. */
     private CefrLevel cefrLevel;
+    /** @brief Field representing display alias in UserResponse. */
     private String displayAlias;
+    /** @brief Field representing streak count in UserResponse. */
     private int streakCount;
+    /** @brief Field representing freeze tokens in UserResponse. */
     private int freezeTokens;
+    /** @brief Field representing last active date in UserResponse. */
     private LocalDate lastActiveDate;
+    /** @brief Field representing level up suggested at in UserResponse. */
     private LocalDateTime levelUpSuggestedAt;
+    /** @brief Field representing created at in UserResponse. */
     private LocalDateTime createdAt;
 
     /**

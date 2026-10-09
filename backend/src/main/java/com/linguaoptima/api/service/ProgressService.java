@@ -1,3 +1,7 @@
+/**
+ * @file ProgressService.java
+ * @brief Service managing student topic mastery, knowledge gap tracking, and CEFR level-up workflows.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.GroupStudent;
@@ -20,7 +24,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @file ProgressService.java
  * @brief Service managing student topic mastery, knowledge gap tracking, and CEFR level-up workflows.
  */
 @Slf4j
@@ -28,9 +31,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProgressService {
 
+    /** @brief Field representing progress record repository in ProgressService. */
     private final ProgressRecordRepository progressRecordRepository;
+    /** @brief Field representing group student repository in ProgressService. */
     private final GroupStudentRepository groupStudentRepository;
+    /** @brief Field representing user repository in ProgressService. */
     private final UserRepository userRepository;
+    /** @brief Field representing notification service in ProgressService. */
     private final NotificationService notificationService;
 
     /**

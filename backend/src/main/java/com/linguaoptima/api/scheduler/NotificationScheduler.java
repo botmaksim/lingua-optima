@@ -1,3 +1,7 @@
+/**
+ * @file NotificationScheduler.java
+ * @brief Scheduled background component dispatching daily contextual learning notifications.
+ */
 package com.linguaoptima.api.scheduler;
 
 import com.linguaoptima.api.domain.ProgressRecord;
@@ -15,7 +19,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * @file NotificationScheduler.java
  * @brief Scheduled background component dispatching daily contextual learning notifications.
  */
 @Slf4j
@@ -23,8 +26,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationScheduler {
 
+    /** @brief Field representing user repository in NotificationScheduler. */
     private final UserRepository userRepository;
+    /** @brief Field representing progress record repository in NotificationScheduler. */
     private final ProgressRecordRepository progressRecordRepository;
+    /** @brief Field representing notification service in NotificationScheduler. */
     private final NotificationService notificationService;
 
     /**

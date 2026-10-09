@@ -1,3 +1,7 @@
+/**
+ * @file NotificationService.java
+ * @brief Real-time Server-Sent Events (SSE) notification delivery and persistence service.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Group;
@@ -25,7 +29,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
- * @file NotificationService.java
  * @brief Real-time Server-Sent Events (SSE) notification delivery and persistence service.
  */
 @Slf4j
@@ -33,9 +36,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
+    /** @brief Field representing notification repository in NotificationService. */
     private final NotificationRepository notificationRepository;
+    /** @brief Field representing group student repository in NotificationService. */
     private final GroupStudentRepository groupStudentRepository;
 
+    /** @brief Field representing emitters in NotificationService. */
     private final Map<UUID, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
     /**

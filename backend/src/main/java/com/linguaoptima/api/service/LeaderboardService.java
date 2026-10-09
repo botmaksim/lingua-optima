@@ -1,3 +1,7 @@
+/**
+ * @file LeaderboardService.java
+ * @brief Class-scoped student leaderboard service.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Group;
@@ -22,7 +26,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @file LeaderboardService.java
  * @brief Class-scoped student leaderboard service.
  *
  * Implements privacy-preserving competitive ranking strictly scoped within individual teacher groups.
@@ -33,8 +36,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LeaderboardService {
 
+    /** @brief Field representing group repository in LeaderboardService. */
     private final GroupRepository groupRepository;
+    /** @brief Field representing group student repository in LeaderboardService. */
     private final GroupStudentRepository groupStudentRepository;
+    /** @brief Field representing submission repository in LeaderboardService. */
     private final SubmissionRepository submissionRepository;
 
     /**
@@ -97,6 +103,7 @@ public class LeaderboardService {
                 .displayAlias(alias)
                 .weeklyScore(Math.round(entry.getValue() * 10.0) / 10.0)
                 .cefrLevel(student.getCefrLevel())
+                .streakCount(student.getStreakCount())
                 .build());
         }
 

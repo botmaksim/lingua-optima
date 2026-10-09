@@ -6,6 +6,9 @@
 import { axiosInstance } from './axiosInstance';
 import { SubmissionResult, OverrideRequest } from '../types/submission';
 
+/**
+ * @brief Exported const for submission api.
+ */
 export const submissionApi = {
   /**
    * @brief Submits written essay or grammar text for automated AI evaluation.

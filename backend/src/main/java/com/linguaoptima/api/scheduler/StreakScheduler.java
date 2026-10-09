@@ -1,3 +1,7 @@
+/**
+ * @file StreakScheduler.java
+ * @brief Nightly scheduler task maintaining student study streaks and applying freeze token protections.
+ */
 package com.linguaoptima.api.scheduler;
 
 import com.linguaoptima.api.service.GamificationService;
@@ -7,7 +11,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * @file StreakScheduler.java
  * @brief Nightly scheduler task maintaining student study streaks and applying freeze token protections.
  */
 @Slf4j
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StreakScheduler {
 
+    /** @brief Field representing gamification service in StreakScheduler. */
     private final GamificationService gamificationService;
 
     /**

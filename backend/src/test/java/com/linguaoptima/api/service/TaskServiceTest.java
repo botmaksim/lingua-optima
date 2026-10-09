@@ -1,3 +1,7 @@
+/**
+ * @file TaskServiceTest.java
+ * @brief Unit and slice test suite for TaskService.
+ */
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,38 +36,52 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * @file TaskServiceTest.java
  * @brief Unit and slice test suite for TaskService.
  */
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
 
+    /** @brief Test fixture or mock dependency for task repository. */
     @Mock
     private TaskRepository taskRepository;
+    /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
+    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
+    /** @brief Test fixture or mock dependency for ai broker service. */
     @Mock
     private AIBrokerService aiBrokerService;
+    /** @brief Test fixture or mock dependency for subscription service. */
     @Mock
     private SubscriptionService subscriptionService;
+    /** @brief Test fixture or mock dependency for usage service. */
     @Mock
     private UsageService usageService;
+    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 
+    /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    /** @brief Test fixture or mock dependency for task service. */
     @InjectMocks
     private TaskService taskService;
 
+    /** @brief Test fixture or mock dependency for student user. */
     private User studentUser;
+    /** @brief Test fixture or mock dependency for teacher user. */
     private User teacherUser;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in TaskServiceTest.
+     */
     @BeforeEach
     void setUp() {
         studentUser = User.builder()
@@ -82,6 +100,9 @@ class TaskServiceTest {
             .build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate task student creates self assignment.
+     */
     @Test
     void testGenerateTaskStudentCreatesSelfAssignment() {
         TaskParamsRequest req = TaskParamsRequest.builder()
@@ -97,9 +118,9 @@ class TaskServiceTest {
             {
               "content": "Answer the conditional questions",
               "questions": [
-                { "text": "If it rains, we ___ inside.", "correctAnswer": "stay", "options": ["stay", "will stay"], "difficulty": 2, "grammarRule": "Zero Conditional" }
+                { "text": "If it rains, we ___ inside.", "options": ["stay", "will stay"], "difficulty": 2, "grammarRule": "Zero Conditional" }
               ],
-              "answerKey": "[{\\"id\\":1}]"
+              "answerKey": [{"questionOrder": 1, "correctOption": "stay"}]
             }
             """;
 
@@ -122,6 +143,9 @@ class TaskServiceTest {
         ));
     }
 
+    /**
+     * @brief Verifies unit test scenario: preview task does not persist.
+     */
     @Test
     void testPreviewTaskDoesNotPersist() {
         TaskParamsRequest req = TaskParamsRequest.builder()
@@ -137,6 +161,9 @@ class TaskServiceTest {
         verify(taskAssignmentRepository, never()).save(any());
     }
 
+    /**
+     * @brief Verifies unit test scenario: save as template teacher.
+     */
     @Test
     void testSaveAsTemplateTeacher() {
         TaskParamsRequest req = TaskParamsRequest.builder()
@@ -152,12 +179,18 @@ class TaskServiceTest {
         assertTrue(res.isTemplate());
     }
 
+    /**
+     * @brief Verifies unit test scenario: save as template non teacher throws.
+     */
     @Test
     void testSaveAsTemplateNonTeacherThrows() {
         TaskParamsRequest req = TaskParamsRequest.builder().cefrLevel(CefrLevel.B1).taskType(TaskType.MCQ).build();
         assertThrows(ForbiddenException.class, () -> taskService.saveAsTemplate(req, studentUser));
     }
 
+    /**
+     * @brief Verifies unit test scenario: assign task teacher success.
+     */
     @Test
     void testAssignTaskTeacherSuccess() {
         UUID taskId = UUID.randomUUID();
@@ -181,6 +214,9 @@ class TaskServiceTest {
         verify(notificationService).send(eq(studentUser), anyString(), eq(NotificationType.TASK));
     }
 
+    /**
+     * @brief Verifies unit test scenario: assign task not group teacher throws.
+     */
     @Test
     void testAssignTaskNotGroupTeacherThrows() {
         UUID taskId = UUID.randomUUID();
@@ -196,6 +232,9 @@ class TaskServiceTest {
         assertThrows(ForbiddenException.class, () -> taskService.assignTask(taskId, req, teacherUser));
     }
 
+    /**
+     * @brief Verifies unit test scenario: get tasks and get by id.
+     */
     @Test
     void testGetTasksAndGetById() {
         Task t = Task.builder().id(UUID.randomUUID()).type(TaskType.MCQ).cefrLevel(CefrLevel.B1).content("Test").build();
@@ -210,6 +249,9 @@ class TaskServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> taskService.getTaskById(unknown));
     }
 
+    /**
+     * @brief Verifies unit test scenario: assign task task not found throws.
+     */
     @Test
     void testAssignTaskTaskNotFoundThrows() {
         UUID unknown = UUID.randomUUID();
@@ -219,6 +261,9 @@ class TaskServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> taskService.assignTask(unknown, req, teacherUser));
     }
 
+    /**
+     * @brief Verifies unit test scenario: assign task group not found throws.
+     */
     @Test
     void testAssignTaskGroupNotFoundThrows() {
         UUID taskId = UUID.randomUUID();
@@ -231,6 +276,9 @@ class TaskServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> taskService.assignTask(taskId, req, teacherUser));
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate task with malformed json fallback.
+     */
     @Test
     void testGenerateTaskWithMalformedJsonFallback() {
         TaskParamsRequest req = TaskParamsRequest.builder()

@@ -1,3 +1,7 @@
+/**
+ * @file OpenAIProvider.java
+ * @brief OpenAI API provider integration supporting BYOK user keys and gpt-4o-mini inference.
+ */
 package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,14 +14,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @file OpenAIProvider.java
  * @brief OpenAI API provider integration supporting BYOK user keys and gpt-4o-mini inference.
  */
 @Component
 public class OpenAIProvider implements AIProvider {
 
+    /** @brief Field representing api key in OpenAIProvider. */
     private final String apiKey;
+    /** @brief Field representing rest template in OpenAIProvider. */
     private final RestTemplate restTemplate;
+    /** @brief Field representing object mapper in OpenAIProvider. */
     private final ObjectMapper objectMapper;
 
     /**

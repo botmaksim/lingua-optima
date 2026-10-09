@@ -1,8 +1,15 @@
+/**
+ * @file vite.config.ts
+ * @brief Vite build, development server proxy, root .env loader, and Vitest test runner configuration.
+ */
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// https://vitejs.dev/config/
+/**
+ * @brief Exports the Vite and Vitest configuration object for the Lingua Optima frontend.
+ */
 export default defineConfig({
   plugins: [react()],
   envDir: path.resolve(__dirname, '..'),

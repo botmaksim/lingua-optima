@@ -1,3 +1,7 @@
+/**
+ * @file ScoringService.java
+ * @brief Service responsible for parsing, grading, and rubric extraction of student submissions.
+ */
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -13,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @file ScoringService.java
  * @brief Service responsible for parsing, grading, and rubric extraction of student submissions.
  */
 @Slf4j
@@ -21,7 +24,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ScoringService {
 
+    /** @brief Field representing ai broker service in ScoringService. */
     private final AIBrokerService aiBrokerService;
+    /** @brief Field representing object mapper in ScoringService. */
     private final ObjectMapper objectMapper;
 
     /**

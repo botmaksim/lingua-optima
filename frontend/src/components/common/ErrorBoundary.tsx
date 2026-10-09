@@ -10,6 +10,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
  * @brief Props for the ErrorBoundary component.
  */
 interface Props {
+  /** @brief Property representing children in Props. */
   children: ReactNode;
 }
 
@@ -17,7 +18,9 @@ interface Props {
  * @brief State tracking whether an uncaught error occurred during render.
  */
 interface State {
+  /** @brief Property representing has error in State. */
   hasError: boolean;
+  /** @brief Property representing error in State. */
   error?: Error;
 }
 

@@ -24,6 +24,9 @@ export const SubmissionsReview: React.FC = () => {
   const [teacherComment, setTeacherComment] = useState<string>('');
   const [isSubmittingOverride, setIsSubmittingOverride] = useState(false);
 
+  /**
+   * @brief Event handler or helper executing load submissions.
+   */
   const loadSubmissions = async () => {
     try {
       const data = await submissionApi.getMySubmissions();
@@ -39,12 +42,18 @@ export const SubmissionsReview: React.FC = () => {
     loadSubmissions();
   }, []);
 
+  /**
+   * @brief Event handler or helper executing handle open override.
+   */
   const handleOpenOverride = (sub: SubmissionResult) => {
     setEditingSub(sub);
     setNewScore(sub.overrideScore ?? sub.score);
     setTeacherComment(sub.teacherComment || 'Great improvement. Well reasoned argument.');
   };
 
+  /**
+   * @brief Event handler or helper executing handle save override.
+   */
   const handleSaveOverride = async () => {
     if (!editingSub) return;
     setIsSubmittingOverride(true);
@@ -62,6 +71,9 @@ export const SubmissionsReview: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle approve ai grade.
+   */
   const handleApproveAiGrade = async (sub: SubmissionResult) => {
     try {
       await submissionApi.overrideScore(sub.id, {
@@ -87,7 +99,6 @@ export const SubmissionsReview: React.FC = () => {
         </p>
       </div>
 
-      {/* Submissions Table Card */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         {submissions.length === 0 ? (
           <div className="p-12 text-center text-slate-400 text-sm">
@@ -160,7 +171,6 @@ export const SubmissionsReview: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Expandable Details Section */}
                   {isExpanded && (
                     <div className="pt-3 border-t border-slate-100 space-y-3 text-xs animate-in fade-in duration-150">
                       <div>
@@ -194,7 +204,6 @@ export const SubmissionsReview: React.FC = () => {
         )}
       </div>
 
-      {/* Override Grade Modal */}
       {editingSub && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150">

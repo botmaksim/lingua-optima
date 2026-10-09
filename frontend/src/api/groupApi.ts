@@ -6,6 +6,9 @@
 import { axiosInstance } from './axiosInstance';
 import { Group, CreateGroupRequest } from '../types/group';
 
+/**
+ * @brief Exported const for group api.
+ */
 export const groupApi = {
   /**
    * @brief Retrieves all groups owned by the educator.

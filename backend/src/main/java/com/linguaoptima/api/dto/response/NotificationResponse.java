@@ -1,5 +1,10 @@
+/**
+ * @file NotificationResponse.java
+ * @brief Response DTO representing a user notification item.
+ */
 package com.linguaoptima.api.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.linguaoptima.api.domain.Notification;
 import com.linguaoptima.api.domain.enums.NotificationType;
 import lombok.AllArgsConstructor;
@@ -11,7 +16,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * @file NotificationResponse.java
  * @brief Response DTO representing a user notification item.
  */
 @Data
@@ -20,10 +24,20 @@ import java.util.UUID;
 @AllArgsConstructor
 public class NotificationResponse {
 
+    /** @brief Unique identifier of the notification. */
     private UUID id;
+
+    /** @brief Human-readable notification message text. */
     private String message;
+
+    /** @brief Notification category (TASK, GRADE, SYSTEM, CONTEXTUAL, STREAK, LEVEL_UP). */
     private NotificationType type;
+
+    /** @brief Flag indicating whether the notification has been read by the user. */
+    @JsonProperty("isRead")
     private boolean isRead;
+
+    /** @brief Timestamp when the notification was dispatched. */
     private LocalDateTime createdAt;
 
     /**

@@ -1,3 +1,7 @@
+/**
+ * @file AIBrokerService.java
+ * @brief Multi-provider AI broker and fallback orchestration service.
+ */
 package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * @file AIBrokerService.java
  * @brief Multi-provider AI broker and fallback orchestration service.
  *
  * Implements intelligent model routing between primary (Groq/Gemini) and fallback models,
@@ -33,13 +36,21 @@ import java.util.Optional;
 @Service
 public class AIBrokerService {
 
+    /** @brief Field representing groq provider in AIBrokerService. */
     private final GroqProvider groqProvider;
+    /** @brief Field representing gemini provider in AIBrokerService. */
     private final GeminiProvider geminiProvider;
+    /** @brief Field representing api key repository in AIBrokerService. */
     private final ApiKeyRepository apiKeyRepository;
+    /** @brief Field representing encryption service in AIBrokerService. */
     private final EncryptionService encryptionService;
+    /** @brief Field representing pending ai task repository in AIBrokerService. */
     private final PendingAiTaskRepository pendingAiTaskRepository;
+    /** @brief Field representing rest template in AIBrokerService. */
     private final RestTemplate restTemplate;
+    /** @brief Field representing object mapper in AIBrokerService. */
     private final ObjectMapper objectMapper;
+    /** @brief Field representing string redis template in AIBrokerService. */
     private final StringRedisTemplate stringRedisTemplate;
 
     /**

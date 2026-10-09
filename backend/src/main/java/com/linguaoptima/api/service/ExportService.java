@@ -1,3 +1,7 @@
+/**
+ * @file ExportService.java
+ * @brief Report generation service exporting student and class performance to CSV and PDF formats.
+ */
 package com.linguaoptima.api.service;
 
 import com.lowagie.text.Document;
@@ -29,7 +33,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file ExportService.java
  * @brief Report generation service exporting student and class performance to CSV and PDF formats.
  */
 @Slf4j
@@ -37,10 +40,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ExportService {
 
+    /** @brief Field representing group repository in ExportService. */
     private final GroupRepository groupRepository;
+    /** @brief Field representing group student repository in ExportService. */
     private final GroupStudentRepository groupStudentRepository;
+    /** @brief Field representing submission repository in ExportService. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field representing progress record repository in ExportService. */
     private final ProgressRecordRepository progressRecordRepository;
+    /** @brief Field representing user repository in ExportService. */
     private final UserRepository userRepository;
 
     /**

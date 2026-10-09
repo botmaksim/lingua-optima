@@ -1,3 +1,7 @@
+/**
+ * @file SubmissionController.java
+ * @brief REST controller handling student work submissions (text and Zero-Retention OCR).
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -17,7 +21,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file SubmissionController.java
  * @brief REST controller handling student work submissions (text and Zero-Retention OCR).
  *
  * Implements essay rubric evaluations, RAM-only OCR processing, and teacher grade overrides.
@@ -27,6 +30,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SubmissionController {
 
+    /** @brief Field representing submission service in SubmissionController. */
     private final SubmissionService submissionService;
 
     /**
@@ -62,14 +66,29 @@ public class SubmissionController {
     }
 
     /**
-     * @brief Fetches submission history for authenticated student.
+     * @brief Fetches submission history for authenticated student or educator.
      *
-     * @param student Authenticated student principal.
+     * @param student Authenticated user principal.
      * @return HTTP 200 with list of submission results.
      */
-    @GetMapping("/my")
+    @GetMapping({"/my", "/me"})
     public ResponseEntity<List<SubmissionResultResponse>> getMySubmissions(@AuthenticationPrincipal User student) {
         return ResponseEntity.ok(submissionService.getMySubmissions(student));
+    }
+
+    /**
+     * @brief Fetches all submissions for a specific cohort group owned by the educator.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param teacher Authenticated educator principal.
+     * @return HTTP 200 with list of group submission results.
+     */
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<SubmissionResultResponse>> getGroupSubmissions(
+        @PathVariable("groupId") UUID groupId,
+        @AuthenticationPrincipal User teacher
+    ) {
+        return ResponseEntity.ok(submissionService.getGroupSubmissions(groupId, teacher));
     }
 
     /**
@@ -95,7 +114,7 @@ public class SubmissionController {
      * @param teacher Authenticated teacher principal.
      * @return HTTP 200 with updated SubmissionResultResponse.
      */
-    @PutMapping("/{id}/override")
+    @RequestMapping(value = "/{id}/override", method = {RequestMethod.PUT, RequestMethod.POST})
     public ResponseEntity<SubmissionResultResponse> overrideScore(
         @PathVariable("id") UUID submissionId,
         @Valid @RequestBody OverrideRequest request,

@@ -1,4 +1,11 @@
--- V3: Create curriculum topics and materials
+/**
+ * @file V3__create_materials.sql
+ * @brief Flyway migration V3 creating curriculum topics reference table.
+ */
+
+/**
+ * @brief Database table definition for curriculum_topics.
+ */
 CREATE TABLE IF NOT EXISTS curriculum_topics (
     id UUID PRIMARY KEY,
     cefr_level VARCHAR(10) NOT NULL,
@@ -6,5 +13,5 @@ CREATE TABLE IF NOT EXISTS curriculum_topics (
     domain VARCHAR(100) NOT NULL,
     description TEXT,
     difficulty_order INT DEFAULT 1,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

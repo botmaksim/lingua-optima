@@ -1,7 +1,10 @@
+/**
+ * @file AIProvider.java
+ * @brief Common interface for large language model providers.
+ */
 package com.linguaoptima.api.service.ai;
 
 /**
- * @file AIProvider.java
  * @brief Common interface for large language model providers.
  */
 public interface AIProvider {

@@ -1,37 +1,46 @@
--- V5: Create submissions, progress records, and notifications
-CREATE TABLE IF NOT EXISTS student_submissions (
+/**
+ * @file V5__create_user_progress.sql
+ * @brief Flyway migration V5 creating submissions, progress_records, and notifications tables.
+ */
+
+/**
+ * @brief Database table definition for submissions.
+ */
+CREATE TABLE IF NOT EXISTS submissions (
     id UUID PRIMARY KEY,
-    assignment_id UUID REFERENCES student_assignments(id) ON DELETE SET NULL,
+    assignment_id UUID REFERENCES task_assignments(id) ON DELETE SET NULL,
     student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     submission_type VARCHAR(50) NOT NULL,
-    original_text TEXT NOT NULL,
-    score DOUBLE PRECISION NOT NULL,
+    student_text TEXT,
+    ai_score DOUBLE PRECISION,
+    ai_feedback TEXT,
     override_score DOUBLE PRECISION,
-    feedback TEXT,
-    rubric JSONB,
     teacher_comment TEXT,
-    provider_used VARCHAR(50),
-    submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    evaluated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    provider_used VARCHAR(255),
+    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS user_progress (
+/**
+ * @brief Database table definition for progress_records.
+ */
+CREATE TABLE IF NOT EXISTS progress_records (
     id UUID PRIMARY KEY,
     student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    cefr_level VARCHAR(10) NOT NULL,
     grammar_topic VARCHAR(255) NOT NULL,
+    total_attempts INT NOT NULL DEFAULT 0,
+    error_count INT NOT NULL DEFAULT 0,
     mastery_score DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-    attempts_count INT NOT NULL DEFAULT 0,
-    is_grammar_gap BOOLEAN NOT NULL DEFAULT FALSE,
-    last_practiced_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_student_progress UNIQUE (student_id, cefr_level, grammar_topic)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+/**
+ * @brief Database table definition for notifications.
+ */
 CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type VARCHAR(50) NOT NULL,
     message TEXT NOT NULL,
+    type VARCHAR(50) NOT NULL,
     is_read BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

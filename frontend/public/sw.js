@@ -1,12 +1,25 @@
+/**
+ * @file sw.js
+ * @brief Progressive Web App (PWA) Service Worker for offline static asset caching and background submission sync.
+ */
+
+/**
+ * @brief Versioned cache storage key for static shell assets.
+ */
 const CACHE_NAME = 'lingua-optima-v1';
+
+/**
+ * @brief Core application shell assets pre-cached during Service Worker installation.
+ */
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/favicon.svg',
-  '/manifest.json'
 ];
 
-// Install: Cache core static assets
+/**
+ * @brief Service Worker install event listener pre-caching core static shell assets.
+ */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -16,7 +29,9 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean older caches
+/**
+ * @brief Service Worker activate event listener purging obsolete cache versions.
+ */
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -28,24 +43,27 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: Network First for API, Cache First / Stale While Revalidate for assets
+/**
+ * @brief Service Worker fetch interceptor applying Network-First for API routes and Cache-First for static assets.
+ */
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Network only or Network First for API requests
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
       fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({ error: 'You are offline. Submission queued for background sync.' }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return new Response(
+          JSON.stringify({ error: 'You are offline. Submission queued for background sync.' }),
+          {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       })
     );
     return;
   }
 
-  // Cache First for static assets
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) {
@@ -64,7 +82,9 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Background Sync for deferred task submissions
+/**
+ * @brief Background Sync event listener notifying active clients to flush offline submission queues.
+ */
 self.addEventListener('sync', (event) => {
   if (event.tag === 'sync-submissions') {
     event.waitUntil(

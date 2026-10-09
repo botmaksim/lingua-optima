@@ -1,3 +1,7 @@
+/**
+ * @file SessionService.java
+ * @brief Manages interactive Computerized Adaptive Testing (CAT) sessions for students.
+ */
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,7 +26,6 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 /**
- * @file SessionService.java
  * @brief Manages interactive Computerized Adaptive Testing (CAT) sessions for students.
  *
  * Implements Item Response Theory / CAT logic where question difficulty dynamically adjusts
@@ -34,12 +37,19 @@ import java.util.*;
 @RequiredArgsConstructor
 public class SessionService {
 
+    /** @brief Field representing session state repository in SessionService. */
     private final SessionStateRepository sessionStateRepository;
+    /** @brief Field representing task assignment repository in SessionService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Field representing task question repository in SessionService. */
     private final TaskQuestionRepository taskQuestionRepository;
+    /** @brief Field representing submission repository in SessionService. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field representing progress service in SessionService. */
     private final ProgressService progressService;
+    /** @brief Field representing gamification service in SessionService. */
     private final GamificationService gamificationService;
+    /** @brief Field representing object mapper in SessionService. */
     private final ObjectMapper objectMapper;
 
     /**
@@ -190,11 +200,12 @@ public class SessionService {
     @Transactional
     public SubmissionResultResponse completeSession(UUID sessionId, User student) {
         SessionState session = getSessionAndVerify(sessionId, student);
+        boolean alreadyCompleted = session.getStatus() == SessionStatus.COMPLETED;
         session.setStatus(SessionStatus.COMPLETED);
         session.setLastActiveAt(LocalDateTime.now());
 
         List<Map<String, Object>> answers = parseAnswers(session.getAnswersJson());
-        double mastery = completeSessionInternal(session, student, answers);
+        double mastery = alreadyCompleted ? 0.0 : completeSessionInternal(session, student, answers);
         sessionStateRepository.save(session);
 
         Submission sub = submissionRepository.findByAssignmentId(session.getAssignment().getId()).stream()

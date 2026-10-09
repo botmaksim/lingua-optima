@@ -1,3 +1,7 @@
+/**
+ * @file TaskParamsRequest.java
+ * @brief Request DTO specifying CEFR level, topic, domain, and type for AI task generation.
+ */
 package com.linguaoptima.api.dto.request;
 
 import com.linguaoptima.api.domain.enums.CefrLevel;
@@ -10,7 +14,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @file TaskParamsRequest.java
  * @brief Request DTO specifying CEFR level, topic, domain, and type for AI task generation.
  */
 @Data
@@ -19,19 +22,25 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TaskParamsRequest {
 
+    /** @brief Field representing cefr level in TaskParamsRequest. */
     @NotNull(message = "CEFR level is required")
     private CefrLevel cefrLevel;
 
+    /** @brief Field representing grammar topic in TaskParamsRequest. */
     private String grammarTopic;
 
+    /** @brief Field representing domain in TaskParamsRequest. */
     private String domain;
 
+    /** @brief Field representing task type in TaskParamsRequest. */
     @NotNull(message = "Task type is required")
     private TaskType taskType;
 
+    /** @brief Field representing difficulty in TaskParamsRequest. */
     @Builder.Default
     private DifficultyLevel difficulty = DifficultyLevel.MEDIUM;
 
+    /** @brief Field representing number of questions in TaskParamsRequest. */
     @Builder.Default
     private int numberOfQuestions = 5;
 }

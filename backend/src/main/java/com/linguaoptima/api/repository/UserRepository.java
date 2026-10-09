@@ -1,3 +1,7 @@
+/**
+ * @file UserRepository.java
+ * @brief Spring Data JPA repository for User entity operations.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.User;
@@ -8,7 +12,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file UserRepository.java
  * @brief Spring Data JPA repository for User entity operations.
  */
 @Repository

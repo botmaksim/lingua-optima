@@ -1,3 +1,7 @@
+/**
+ * @file ProgressControllerTest.java
+ * @brief Unit and slice test suite for ProgressController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -19,35 +23,49 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
- * @file ProgressControllerTest.java
  * @brief Unit and slice test suite for ProgressController.
  */
 @ExtendWith(MockitoExtension.class)
 class ProgressControllerTest {
 
+    /** @brief Test fixture or mock dependency for progress service. */
     @Mock
     private ProgressService progressService;
 
+    /** @brief Test fixture or mock dependency for progress controller. */
     @InjectMocks
     private ProgressController progressController;
 
+    /** @brief Test fixture or mock dependency for student. */
     private User student;
+    /** @brief Test fixture or mock dependency for progress response. */
     private ProgressResponse progressResponse;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in ProgressControllerTest.
+     */
     @BeforeEach
     void setUp() {
         student = User.builder().id(UUID.randomUUID()).build();
         progressResponse = ProgressResponse.builder().grammarTopic("Passive").masteryScore(0.85).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get progress me.
+     */
     @Test
     void testGetProgressMe() {
         when(progressService.getProgressForStudent(student.getId())).thenReturn(List.of(progressResponse));
+        when(progressService.getGapsForStudent(student.getId())).thenReturn(List.of(progressResponse));
         ResponseEntity<List<ProgressResponse>> res = progressController.getMyProgress(student);
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(1, res.getBody().size());
+        assertEquals(HttpStatus.OK, progressController.getMyGaps(student).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get student and group progress.
+     */
     @Test
     void testGetStudentAndGroupProgress() {
         UUID studentId = UUID.randomUUID();
@@ -60,6 +78,9 @@ class ProgressControllerTest {
         assertEquals(HttpStatus.OK, progressController.getGroupProgress(groupId).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: confirm level up.
+     */
     @Test
     void testConfirmLevelUp() {
         ResponseEntity<Void> res = progressController.confirmLevelUp(student);

@@ -1,3 +1,7 @@
+/**
+ * @file AnthropicProvider.java
+ * @brief Anthropic Claude API provider integration supporting BYOK user keys and claude-3-5-sonnet.
+ */
 package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,14 +14,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @file AnthropicProvider.java
  * @brief Anthropic Claude API provider integration supporting BYOK user keys and claude-3-5-sonnet.
  */
 @Component
 public class AnthropicProvider implements AIProvider {
 
+    /** @brief Field representing api key in AnthropicProvider. */
     private final String apiKey;
+    /** @brief Field representing rest template in AnthropicProvider. */
     private final RestTemplate restTemplate;
+    /** @brief Field representing object mapper in AnthropicProvider. */
     private final ObjectMapper objectMapper;
 
     /**

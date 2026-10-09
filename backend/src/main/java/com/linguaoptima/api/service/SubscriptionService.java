@@ -1,3 +1,7 @@
+/**
+ * @file SubscriptionService.java
+ * @brief Subscription lifecycle and access tier enforcement service.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
@@ -17,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * @file SubscriptionService.java
  * @brief Subscription lifecycle and access tier enforcement service.
  *
  * Enforces tier restrictions across FREE, PREMIUM, and EDUCATOR tiers, including
@@ -28,8 +31,11 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class SubscriptionService {
 
+    /** @brief Field representing subscription repository in SubscriptionService. */
     private final SubscriptionRepository subscriptionRepository;
+    /** @brief Field representing payment service in SubscriptionService. */
     private final PaymentService paymentService;
+    /** @brief Field representing usage service in SubscriptionService. */
     private final UsageService usageService;
 
     /**

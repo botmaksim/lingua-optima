@@ -1,10 +1,13 @@
+/**
+ * @file LinguaOptimaApplication.java
+ * @brief Spring Boot entry point for the Lingua Optima backend application.
+ */
 package com.linguaoptima.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
- * @file LinguaOptimaApplication.java
  * @brief Spring Boot entry point for the Lingua Optima backend application.
  */
 @SpringBootApplication

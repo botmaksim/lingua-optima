@@ -63,11 +63,17 @@ export const GenerateTask: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * @brief Event handler or helper executing handle cefr change.
+   */
   const handleCefrChange = (newLevel: CefrLevel) => {
     setCefrLevel(newLevel);
     setGrammarTopic(CEFR_TOPICS[newLevel][0]);
   };
 
+  /**
+   * @brief Event handler or helper executing handle generate.
+   */
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isQuotaExceeded) {
@@ -105,6 +111,9 @@ export const GenerateTask: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle clear.
+   */
   const handleClear = () => {
     setCefrLevel(user?.cefrLevel || 'B1');
     setGrammarTopic(CEFR_TOPICS[user?.cefrLevel || 'B1'][0]);

@@ -6,6 +6,9 @@
 import { axiosInstance, setAccessToken } from './axiosInstance';
 import { AuthResponse } from '../types/user';
 
+/**
+ * @brief Exported const for auth api.
+ */
 export const authApi = {
   /**
    * @brief Authenticates user credentials with backend.

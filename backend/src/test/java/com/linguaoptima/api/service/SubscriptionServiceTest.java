@@ -1,3 +1,7 @@
+/**
+ * @file SubscriptionServiceTest.java
+ * @brief Unit and slice test suite for SubscriptionService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
@@ -24,31 +28,42 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * @file SubscriptionServiceTest.java
  * @brief Unit and slice test suite for SubscriptionService.
  */
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
 
+    /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
+    /** @brief Test fixture or mock dependency for payment service. */
     @Mock
     private PaymentService paymentService;
+    /** @brief Test fixture or mock dependency for usage service. */
     @Mock
     private UsageService usageService;
 
+    /** @brief Test fixture or mock dependency for subscription service. */
     @InjectMocks
     private SubscriptionService subscriptionService;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
+    /** @brief Test fixture or mock dependency for subscription. */
     private Subscription subscription;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in SubscriptionServiceTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("sub@lingua.com").build();
         subscription = Subscription.builder().id(UUID.randomUUID()).user(user).tier(SubscriptionTier.FREE).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get subscription.
+     */
     @Test
     void testGetSubscription() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
@@ -64,6 +79,9 @@ class SubscriptionServiceTest {
         assertFalse(res.isUnlimited());
     }
 
+    /**
+     * @brief Verifies unit test scenario: upgrade to premium success.
+     */
     @Test
     void testUpgradeToPremiumSuccess() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
@@ -77,6 +95,9 @@ class SubscriptionServiceTest {
         assertNotNull(subscription.getExpiresAt());
     }
 
+    /**
+     * @brief Verifies unit test scenario: upgrade to free downgrades.
+     */
     @Test
     void testUpgradeToFreeDowngrades() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
@@ -87,6 +108,9 @@ class SubscriptionServiceTest {
         assertEquals(SubscriptionTier.FREE, subscription.getTier());
     }
 
+    /**
+     * @brief Verifies unit test scenario: downgrade.
+     */
     @Test
     void testDowngrade() {
         subscription.setTier(SubscriptionTier.PREMIUM);
@@ -98,6 +122,9 @@ class SubscriptionServiceTest {
         assertNull(subscription.getExpiresAt());
     }
 
+    /**
+     * @brief Verifies unit test scenario: validate cefr level access.
+     */
     @Test
     void testValidateCefrLevelAccess() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
@@ -111,6 +138,9 @@ class SubscriptionServiceTest {
         assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.C1));
     }
 
+    /**
+     * @brief Verifies unit test scenario: is feature allowed.
+     */
     @Test
     void testIsFeatureAllowed() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));

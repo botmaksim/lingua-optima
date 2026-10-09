@@ -1,3 +1,7 @@
+/**
+ * @file SubmissionControllerTest.java
+ * @brief Unit and slice test suite for SubmissionController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -22,27 +26,36 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
- * @file SubmissionControllerTest.java
  * @brief Unit and slice test suite for SubmissionController.
  */
 @ExtendWith(MockitoExtension.class)
 class SubmissionControllerTest {
 
+    /** @brief Test fixture or mock dependency for submission service. */
     @Mock
     private SubmissionService submissionService;
 
+    /** @brief Test fixture or mock dependency for submission controller. */
     @InjectMocks
     private SubmissionController submissionController;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
+    /** @brief Test fixture or mock dependency for result response. */
     private SubmissionResultResponse resultResponse;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in SubmissionControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
         resultResponse = SubmissionResultResponse.builder().id(UUID.randomUUID()).score(90.0).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: submit text and image.
+     */
     @Test
     void testSubmitTextAndImage() {
         TextSubmissionRequest req = TextSubmissionRequest.builder().text("Text").build();
@@ -54,15 +67,24 @@ class SubmissionControllerTest {
         assertEquals(HttpStatus.OK, submissionController.submitImage(file, null, user).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get my submissions and get by id.
+     */
     @Test
     void testGetMySubmissionsAndGetById() {
+        UUID groupId = UUID.randomUUID();
         when(submissionService.getMySubmissions(user)).thenReturn(List.of(resultResponse));
+        when(submissionService.getGroupSubmissions(groupId, user)).thenReturn(List.of(resultResponse));
         when(submissionService.getSubmissionById(resultResponse.getId(), user)).thenReturn(resultResponse);
 
         assertEquals(HttpStatus.OK, submissionController.getMySubmissions(user).getStatusCode());
+        assertEquals(HttpStatus.OK, submissionController.getGroupSubmissions(groupId, user).getStatusCode());
         assertEquals(HttpStatus.OK, submissionController.getSubmission(resultResponse.getId(), user).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: override score.
+     */
     @Test
     void testOverrideScore() {
         OverrideRequest req = OverrideRequest.builder().overrideScore(95.0).build();

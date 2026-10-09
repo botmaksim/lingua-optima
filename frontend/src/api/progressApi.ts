@@ -7,6 +7,9 @@ import { axiosInstance } from './axiosInstance';
 import { ProgressRecord } from '../types/progress';
 import { User } from '../types/user';
 
+/**
+ * @brief Client API methods for querying topic mastery, grammar gaps, and CEFR level promotions.
+ */
 export const progressApi = {
   /**
    * @brief Retrieves topic mastery progress records for the current student.
@@ -37,11 +40,15 @@ export const progressApi = {
   },
 
   /**
-   * @brief Confirms student acceptance of a suggested CEFR level upgrade.
+   * @brief Confirms student acceptance of a suggested CEFR level upgrade and returns updated profile.
    * @return Promise resolving to updated User profile object.
    */
   confirmLevelUp: async (): Promise<User> => {
     const res = await axiosInstance.post<User>('/progress/level-up/confirm');
-    return res.data;
+    if (res.data && res.data.id) {
+      return res.data;
+    }
+    const userRes = await axiosInstance.get<User>('/users/me');
+    return userRes.data;
   },
 };

@@ -1,3 +1,7 @@
+/**
+ * @file AuthController.java
+ * @brief REST controller managing user authentication, registration, and tokens.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -17,7 +21,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @file AuthController.java
  * @brief REST controller managing user authentication, registration, and tokens.
  *
  * Implements JWT access token generation, HttpOnly cookie refresh token rotation,
@@ -28,7 +31,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
+    /** @brief Field representing auth service in AuthController. */
     private final AuthService authService;
+    /** @brief Field representing jwt service in AuthController. */
     private final JwtService jwtService;
 
     /**
@@ -44,7 +49,7 @@ public class AuthController {
         HttpServletResponse response
     ) {
         TokenResponse tokenResponse = authService.register(request);
-        setRefreshTokenCookie(response, tokenResponse.getUser().getId().toString(), tokenResponse.getUser().getEmail());
+        setRefreshTokenCookie(response, tokenResponse);
         return ResponseEntity.ok(tokenResponse);
     }
 
@@ -61,7 +66,7 @@ public class AuthController {
         HttpServletResponse response
     ) {
         TokenResponse tokenResponse = authService.login(request);
-        setRefreshTokenCookie(response, tokenResponse.getUser().getId().toString(), tokenResponse.getUser().getEmail());
+        setRefreshTokenCookie(response, tokenResponse);
         return ResponseEntity.ok(tokenResponse);
     }
 
@@ -129,14 +134,15 @@ public class AuthController {
     }
 
     /**
-     * @brief Attaches a strict HttpOnly refresh token cookie to the response.
+     * @brief Attaches a strict HttpOnly refresh token cookie to the response using the token issued by AuthService.
      *
      * @param response Target HTTP response.
-     * @param userId Unique user ID string.
-     * @param email User email string.
+     * @param tokenResponse TokenResponse containing user metadata and pre-generated refresh token.
      */
-    private void setRefreshTokenCookie(HttpServletResponse response, String userId, String email) {
-        String refreshToken = jwtService.generateRefreshToken(java.util.UUID.fromString(userId), email);
+    private void setRefreshTokenCookie(HttpServletResponse response, TokenResponse tokenResponse) {
+        String refreshToken = tokenResponse.getRefreshToken() != null
+            ? tokenResponse.getRefreshToken()
+            : jwtService.generateRefreshToken(tokenResponse.getUser().getId(), tokenResponse.getUser().getEmail());
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
             .httpOnly(true)
             .secure(false)

@@ -24,6 +24,9 @@ export const LevelUpModal: React.FC = () => {
   const currentLevel = user.cefrLevel;
   const nextLevel = (currentLevel === 'B1' ? 'B2' : 'C1') as CefrLevel;
 
+  /**
+   * @brief Event handler or helper executing handle confirm.
+   */
   const handleConfirm = async () => {
     setIsSubmitting(true);
     try {

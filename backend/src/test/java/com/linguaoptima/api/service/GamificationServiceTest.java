@@ -1,3 +1,7 @@
+/**
+ * @file GamificationServiceTest.java
+ * @brief Unit and slice test suite for GamificationService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.User;
@@ -19,23 +23,29 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * @file GamificationServiceTest.java
  * @brief Unit and slice test suite for GamificationService.
  */
 @ExtendWith(MockitoExtension.class)
 class GamificationServiceTest {
 
+    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
 
+    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 
+    /** @brief Test fixture or mock dependency for gamification service. */
     @InjectMocks
     private GamificationService gamificationService;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in GamificationServiceTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder()
@@ -46,6 +56,9 @@ class GamificationServiceTest {
             .build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: on submission completed first time.
+     */
     @Test
     void testOnSubmissionCompletedFirstTime() {
         gamificationService.onSubmissionCompleted(user);
@@ -54,6 +67,9 @@ class GamificationServiceTest {
         verify(userRepository).save(user);
     }
 
+    /**
+     * @brief Verifies unit test scenario: on submission completed next day increments streak.
+     */
     @Test
     void testOnSubmissionCompletedNextDayIncrementsStreak() {
         user.setStreakCount(3);
@@ -64,6 +80,9 @@ class GamificationServiceTest {
         verify(userRepository).save(user);
     }
 
+    /**
+     * @brief Verifies unit test scenario: on submission completed7 day milestone grants freeze token.
+     */
     @Test
     void testOnSubmissionCompleted7DayMilestoneGrantsFreezeToken() {
         user.setStreakCount(6);
@@ -75,6 +94,9 @@ class GamificationServiceTest {
         verify(notificationService).send(eq(user), anyString(), eq(NotificationType.SYSTEM));
     }
 
+    /**
+     * @brief Verifies unit test scenario: on submission completed same day does not increment.
+     */
     @Test
     void testOnSubmissionCompletedSameDayDoesNotIncrement() {
         user.setStreakCount(5);
@@ -84,6 +106,9 @@ class GamificationServiceTest {
         assertEquals(5, user.getStreakCount());
     }
 
+    /**
+     * @brief Verifies unit test scenario: apply daily streak check uses freeze token.
+     */
     @Test
     void testApplyDailyStreakCheckUsesFreezeToken() {
         user.setStreakCount(10);
@@ -100,6 +125,9 @@ class GamificationServiceTest {
         verify(userRepository).save(user);
     }
 
+    /**
+     * @brief Verifies unit test scenario: apply daily streak check resets streak when no tokens.
+     */
     @Test
     void testApplyDailyStreakCheckResetsStreakWhenNoTokens() {
         user.setStreakCount(10);

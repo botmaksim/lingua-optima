@@ -1,3 +1,7 @@
+/**
+ * @file UserController.java
+ * @brief REST controller for user profile management, password updates, and GDPR account deletion.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -12,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @file UserController.java
  * @brief REST controller for user profile management, password updates, and GDPR account deletion.
  */
 @RestController
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UserController {
 
+    /** @brief Field representing user service in UserController. */
     private final UserService userService;
 
     /**

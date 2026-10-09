@@ -24,6 +24,14 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="flex items-center space-x-6 text-sm text-slate-500">
+            <a
+              href="/presentation.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-primary font-semibold transition"
+            >
+              Presentation
+            </a>
             <a href="#privacy" className="hover:text-primary transition">
               Privacy Policy
             </a>

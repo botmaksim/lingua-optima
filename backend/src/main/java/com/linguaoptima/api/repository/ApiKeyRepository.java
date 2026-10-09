@@ -1,3 +1,7 @@
+/**
+ * @file ApiKeyRepository.java
+ * @brief Spring Data JPA repository for managing encrypted BYOK API keys.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.ApiKey;
@@ -11,7 +15,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file ApiKeyRepository.java
  * @brief Spring Data JPA repository for managing encrypted BYOK API keys.
  */
 @Repository

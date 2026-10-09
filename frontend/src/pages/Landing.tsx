@@ -100,6 +100,15 @@ export const Landing: React.FC = () => {
               Sign In
             </Link>
           )}
+
+          <a
+            href="/presentation.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="py-4 px-8 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-primary font-bold text-sm border border-indigo-200 transition shadow-sm"
+          >
+            View Presentation
+          </a>
         </div>
       </section>
 

@@ -59,10 +59,16 @@ export const TaskView: React.FC = () => {
     return () => clearInterval(timer);
   }, [taskId]);
 
+  /**
+   * @brief Event handler or helper executing handle select answer.
+   */
   const handleSelectAnswer = (questionId: string, answer: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
   };
 
+  /**
+   * @brief Event handler or helper executing handle save draft.
+   */
   const handleSaveDraft = async () => {
     if (!taskId) return;
     await saveDraftLocal(`task_${taskId}`, JSON.stringify(answers));
@@ -70,6 +76,9 @@ export const TaskView: React.FC = () => {
     setTimeout(() => setSaveSuccess(false), 2000);
   };
 
+  /**
+   * @brief Event handler or helper executing handle submit.
+   */
   const handleSubmit = async () => {
     if (!task) return;
     setIsSubmitting(true);
@@ -122,7 +131,6 @@ export const TaskView: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* Top Action Bar */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
@@ -138,7 +146,6 @@ export const TaskView: React.FC = () => {
         </div>
       </div>
 
-      {/* Task Header Card */}
       <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-3">
         <div className="flex items-center space-x-2">
           <CefrBadge level={task.cefrLevel} size="md" />
@@ -157,7 +164,6 @@ export const TaskView: React.FC = () => {
         )}
       </div>
 
-      {/* Questions List */}
       <div className="space-y-4">
         {questions.length === 0 ? (
           <div className="bg-white p-6 rounded-2xl text-center text-slate-500 text-sm">
@@ -178,7 +184,6 @@ export const TaskView: React.FC = () => {
                 </span>
               </div>
 
-              {/* Options */}
               {Array.isArray(q.options) && q.options.length > 0 ? (
                 <div className="space-y-2">
                   {q.options.map((opt, optIdx) => {
@@ -214,7 +219,6 @@ export const TaskView: React.FC = () => {
         )}
       </div>
 
-      {/* Footer Buttons: [Save Draft] [Submit Answers] */}
       <div className="flex items-center space-x-3 pt-4">
         <button
           type="button"

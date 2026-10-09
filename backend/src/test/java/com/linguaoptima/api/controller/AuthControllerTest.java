@@ -1,3 +1,7 @@
+/**
+ * @file AuthControllerTest.java
+ * @brief Unit and slice test suite for AuthController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -26,24 +30,31 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * @file AuthControllerTest.java
  * @brief Unit and slice test suite for AuthController.
  */
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
+    /** @brief Test fixture or mock dependency for auth service. */
     @Mock
     private AuthService authService;
 
+    /** @brief Test fixture or mock dependency for jwt service. */
     @Mock
     private JwtService jwtService;
 
+    /** @brief Test fixture or mock dependency for auth controller. */
     @InjectMocks
     private AuthController authController;
 
+    /** @brief Test fixture or mock dependency for sample token. */
     private TokenResponse sampleToken;
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in AuthControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("auth@lingua.com").role(Role.STUDENT).build();
@@ -53,6 +64,9 @@ class AuthControllerTest {
             .build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: register.
+     */
     @Test
     void testRegister() {
         RegisterRequest req = RegisterRequest.builder().email("auth@lingua.com").password("pass").fullName("Auth").role(Role.STUDENT).build();
@@ -67,6 +81,9 @@ class AuthControllerTest {
         assertTrue(res.containsHeader("Set-Cookie"));
     }
 
+    /**
+     * @brief Verifies unit test scenario: login.
+     */
     @Test
     void testLogin() {
         LoginRequest req = LoginRequest.builder().email("auth@lingua.com").password("pass").build();
@@ -80,6 +97,9 @@ class AuthControllerTest {
         assertTrue(res.containsHeader("Set-Cookie"));
     }
 
+    /**
+     * @brief Verifies unit test scenario: refresh.
+     */
     @Test
     void testRefresh() {
         when(authService.refreshToken("cookieToken")).thenReturn(sampleToken);
@@ -87,6 +107,9 @@ class AuthControllerTest {
         assertEquals(HttpStatus.OK, entity.getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: logout.
+     */
     @Test
     void testLogout() {
         MockHttpServletResponse res = new MockHttpServletResponse();
@@ -95,6 +118,9 @@ class AuthControllerTest {
         verify(authService).logout("cookieToken");
     }
 
+    /**
+     * @brief Verifies unit test scenario: logout all.
+     */
     @Test
     void testLogoutAll() {
         MockHttpServletResponse res = new MockHttpServletResponse();
@@ -103,6 +129,9 @@ class AuthControllerTest {
         verify(authService).logoutAll(user);
     }
 
+    /**
+     * @brief Verifies unit test scenario: forgot password.
+     */
     @Test
     void testForgotPassword() {
         ForgotPasswordRequest req = ForgotPasswordRequest.builder().email("auth@lingua.com").build();

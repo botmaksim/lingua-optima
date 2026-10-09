@@ -1,3 +1,7 @@
+/**
+ * @file LeaderboardController.java
+ * @brief REST controller providing privacy-first cohort-scoped leaderboards.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -15,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file LeaderboardController.java
  * @brief REST controller providing privacy-first cohort-scoped leaderboards.
  *
  * Enforces strict design constraint: no global leaderboard exists.
@@ -26,6 +29,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LeaderboardController {
 
+    /** @brief Field representing leaderboard service in LeaderboardController. */
     private final LeaderboardService leaderboardService;
 
     /**

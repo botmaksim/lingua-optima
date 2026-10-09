@@ -1,3 +1,7 @@
+/**
+ * @file SubmissionResultResponse.java
+ * @brief Response DTO representing an evaluated student submission with scores and feedback.
+ */
 package com.linguaoptima.api.dto.response;
 
 import com.linguaoptima.api.domain.Submission;
@@ -12,7 +16,6 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * @file SubmissionResultResponse.java
  * @brief Response DTO representing an evaluated student submission with scores and feedback.
  */
 @Data
@@ -21,17 +24,43 @@ import java.util.UUID;
 @AllArgsConstructor
 public class SubmissionResultResponse {
 
+    /** @brief Unique identifier of the submission. */
     private UUID id;
+
+    /** @brief Optional identifier of the linked task assignment. */
     private UUID assignmentId;
+
+    /** @brief Identifier of the student who submitted the work. */
     private UUID studentId;
+
+    /** @brief Submission modality (TEXT or IMAGE). */
     private SubmissionType submissionType;
+
+    /** @brief Submitted or OCR-extracted student text. */
     private String originalText;
+
+    /** @brief Primary score (0-100 scale). */
     private Double score;
+
+    /** @brief Effective score resolving teacher override over AI score. */
+    private Double effectiveScore;
+
+    /** @brief Narrative AI evaluation feedback. */
     private String feedback;
+
+    /** @brief Structured rubric breakdown map. */
     private Map<String, Object> rubric;
+
+    /** @brief Educator manual override score, if applied. */
     private Double overrideScore;
+
+    /** @brief Educator commentary accompanying a score override. */
     private String teacherComment;
+
+    /** @brief Identifier of the AI provider that evaluated the submission. */
     private String providerUsed;
+
+    /** @brief Timestamp when the submission was recorded. */
     private LocalDateTime submittedAt;
 
     /**
@@ -48,6 +77,7 @@ public class SubmissionResultResponse {
             .submissionType(submission.getSubmissionType())
             .originalText(submission.getStudentText())
             .score(submission.getEffectiveScore())
+            .effectiveScore(submission.getEffectiveScore())
             .feedback(submission.getAiFeedback())
             .overrideScore(submission.getOverrideScore())
             .teacherComment(submission.getTeacherComment())

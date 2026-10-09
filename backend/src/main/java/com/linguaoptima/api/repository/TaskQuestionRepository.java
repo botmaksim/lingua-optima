@@ -1,3 +1,7 @@
+/**
+ * @file TaskQuestionRepository.java
+ * @brief Spring Data JPA repository for individual task questions.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.TaskQuestion;
@@ -8,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file TaskQuestionRepository.java
  * @brief Spring Data JPA repository for individual task questions.
  */
 @Repository

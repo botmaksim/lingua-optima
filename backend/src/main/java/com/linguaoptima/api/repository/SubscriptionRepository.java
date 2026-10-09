@@ -1,3 +1,7 @@
+/**
+ * @file SubscriptionRepository.java
+ * @brief Spring Data JPA repository for user subscription licenses.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.Subscription;
@@ -9,7 +13,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file SubscriptionRepository.java
  * @brief Spring Data JPA repository for user subscription licenses.
  */
 @Repository

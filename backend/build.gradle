@@ -1,3 +1,8 @@
+/**
+ * @file build.gradle
+ * @brief Gradle build configuration for the Lingua Optima Spring Boot 3.3 (Java 21) backend, JaCoCo 95% coverage gate, and root .env loader.
+ */
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.4'
@@ -40,21 +45,41 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
 
-    // JWT
+    /** @brief JSON Web Token (JJWT) dependencies for HS256 token signing and verification. */
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
 
-    // OCR
+    /** @brief Tess4J Tesseract OCR engine wrapper for Zero-Retention in-memory image text extraction. */
     implementation 'net.sourceforge.tess4j:tess4j:5.12.0'
 
-    // Export: PDF & CSV
+    /** @brief OpenPDF and OpenCSV libraries for educator cohort and student report exports. */
     implementation 'com.github.librepdf:openpdf:2.0.3'
     implementation 'com.opencsv:opencsv:5.9'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+/**
+ * @brief Loads non-empty environment variables from the repository root .env file into JavaExec tasks (e.g., bootRun).
+ */
+tasks.withType(JavaExec).configureEach {
+    def envFile = file("${rootDir}/../.env")
+    if (envFile.exists()) {
+        envFile.readLines().each { line ->
+            def trimmed = line.trim()
+            if (trimmed && !trimmed.startsWith('#') && trimmed.contains('=')) {
+                def idx = trimmed.indexOf('=')
+                def key = trimmed.substring(0, idx).trim()
+                def val = trimmed.substring(idx + 1).trim()
+                if (key && val) {
+                    environment(key, val)
+                }
+            }
+        }
+    }
 }
 
 tasks.named('test') {
@@ -105,4 +130,3 @@ javadoc {
     options.encoding = 'UTF-8'
     options.addStringOption('Xdoclint:none', '-quiet')
 }
-

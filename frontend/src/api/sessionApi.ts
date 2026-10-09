@@ -7,6 +7,9 @@ import { axiosInstance } from './axiosInstance';
 import { SessionState, QuestionResponse, AnswerRequest, AnswerFeedback } from '../types/session';
 import { SubmissionResult } from '../types/submission';
 
+/**
+ * @brief Exported const for session api.
+ */
 export const sessionApi = {
   /**
    * @brief Starts a new adaptive testing session for the given assignment.

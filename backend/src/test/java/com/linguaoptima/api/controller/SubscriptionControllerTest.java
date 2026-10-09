@@ -1,3 +1,7 @@
+/**
+ * @file SubscriptionControllerTest.java
+ * @brief Unit and slice test suite for SubscriptionController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -23,28 +27,37 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
- * @file SubscriptionControllerTest.java
  * @brief Unit and slice test suite for SubscriptionController.
  */
 @ExtendWith(MockitoExtension.class)
 class SubscriptionControllerTest {
 
+    /** @brief Test fixture or mock dependency for subscription service. */
     @Mock
     private SubscriptionService subscriptionService;
 
+    /** @brief Test fixture or mock dependency for usage service. */
     @Mock
     private UsageService usageService;
 
+    /** @brief Test fixture or mock dependency for subscription controller. */
     @InjectMocks
     private SubscriptionController subscriptionController;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in SubscriptionControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get subscription and usage.
+     */
     @Test
     void testGetSubscriptionAndUsage() {
         SubscriptionResponse subRes = SubscriptionResponse.builder().tier(SubscriptionTier.FREE).build();
@@ -56,6 +69,9 @@ class SubscriptionControllerTest {
         assertEquals(HttpStatus.OK, subscriptionController.getUsage(user).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: upgrade and downgrade.
+     */
     @Test
     void testUpgradeAndDowngrade() {
         UpgradeRequest req = UpgradeRequest.builder().targetTier(SubscriptionTier.PREMIUM).paymentToken("tok").build();

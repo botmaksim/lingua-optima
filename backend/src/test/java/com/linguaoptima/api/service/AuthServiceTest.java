@@ -1,3 +1,7 @@
+/**
+ * @file AuthServiceTest.java
+ * @brief Unit and slice test suite for AuthService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
@@ -37,35 +41,45 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * @file AuthServiceTest.java
  * @brief Unit and slice test suite for AuthService.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AuthServiceTest {
 
+    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
 
+    /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
+    /** @brief Test fixture or mock dependency for password encoder. */
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    /** @brief Test fixture or mock dependency for jwt service. */
     @Mock
     private JwtService jwtService;
 
+    /** @brief Test fixture or mock dependency for string redis template. */
     @Mock
     private StringRedisTemplate stringRedisTemplate;
 
+    /** @brief Test fixture or mock dependency for value operations. */
     @Mock
     private ValueOperations<String, String> valueOperations;
 
+    /** @brief Test fixture or mock dependency for auth service. */
     private AuthService authService;
 
+    /** @brief Test fixture or mock dependency for sample user. */
     private User sampleUser;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in AuthServiceTest.
+     */
     @BeforeEach
     void setUp() {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -80,6 +94,9 @@ class AuthServiceTest {
             .build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: register student success.
+     */
     @Test
     void testRegisterStudentSuccess() {
         RegisterRequest req = RegisterRequest.builder()
@@ -103,6 +120,9 @@ class AuthServiceTest {
         verify(subscriptionRepository).save(argThat(sub -> sub.getTier() == SubscriptionTier.FREE));
     }
 
+    /**
+     * @brief Verifies unit test scenario: register teacher success.
+     */
     @Test
     void testRegisterTeacherSuccess() {
         RegisterRequest req = RegisterRequest.builder()
@@ -131,6 +151,9 @@ class AuthServiceTest {
         verify(subscriptionRepository).save(argThat(sub -> sub.getTier() == SubscriptionTier.EDUCATOR));
     }
 
+    /**
+     * @brief Verifies unit test scenario: register duplicate email throws.
+     */
     @Test
     void testRegisterDuplicateEmailThrows() {
         RegisterRequest req = RegisterRequest.builder()
@@ -144,6 +167,9 @@ class AuthServiceTest {
         assertThrows(IllegalArgumentException.class, () -> authService.register(req));
     }
 
+    /**
+     * @brief Verifies unit test scenario: login success.
+     */
     @Test
     void testLoginSuccess() {
         LoginRequest req = LoginRequest.builder()
@@ -161,6 +187,9 @@ class AuthServiceTest {
         assertEquals("token123", res.getAccessToken());
     }
 
+    /**
+     * @brief Verifies unit test scenario: login bad password throws.
+     */
     @Test
     void testLoginBadPasswordThrows() {
         LoginRequest req = LoginRequest.builder()
@@ -174,6 +203,9 @@ class AuthServiceTest {
         assertThrows(BadCredentialsException.class, () -> authService.login(req));
     }
 
+    /**
+     * @brief Verifies unit test scenario: login user not found throws.
+     */
     @Test
     void testLoginUserNotFoundThrows() {
         LoginRequest req = LoginRequest.builder()
@@ -185,6 +217,9 @@ class AuthServiceTest {
         assertThrows(BadCredentialsException.class, () -> authService.login(req));
     }
 
+    /**
+     * @brief Verifies unit test scenario: login rate limit exceeded.
+     */
     @Test
     void testLoginRateLimitExceeded() {
         LoginRequest req = LoginRequest.builder().email("rate@lingua.com").password("pwd").build();
@@ -194,6 +229,9 @@ class AuthServiceTest {
         assertThrows(QuotaExceededException.class, () -> authService.login(req));
     }
 
+    /**
+     * @brief Verifies unit test scenario: refresh token success.
+     */
     @Test
     void testRefreshTokenSuccess() {
         String ref = "valid-refresh";
@@ -212,12 +250,18 @@ class AuthServiceTest {
         assertEquals("new-access", tokenResponse.getAccessToken());
     }
 
+    /**
+     * @brief Verifies unit test scenario: refresh token invalid throws.
+     */
     @Test
     void testRefreshTokenInvalidThrows() {
         when(jwtService.isTokenValid("bad-token")).thenReturn(false);
         assertThrows(UnauthorizedException.class, () -> authService.refreshToken("bad-token"));
     }
 
+    /**
+     * @brief Verifies unit test scenario: refresh token revoked in redis throws.
+     */
     @Test
     void testRefreshTokenRevokedInRedisThrows() {
         String ref = "revoked-token";
@@ -228,21 +272,32 @@ class AuthServiceTest {
         assertThrows(UnauthorizedException.class, () -> authService.refreshToken(ref));
     }
 
+    /**
+     * @brief Verifies unit test scenario: logout.
+     */
     @Test
     void testLogout() {
         authService.logout("refresh-to-delete");
         verify(stringRedisTemplate).delete(anyString());
     }
 
+    /**
+     * @brief Verifies unit test scenario: logout all.
+     */
     @Test
     void testLogoutAll() {
-        when(stringRedisTemplate.keys("refresh_tokens:" + sampleUser.getId() + ":*"))
-            .thenReturn(Set.of("key1", "key2"));
+        String prefix = "refresh_tokens:" + sampleUser.getId() + ":";
+        when(stringRedisTemplate.keys(prefix + "*"))
+            .thenReturn(Set.of(prefix + "hash1", prefix + "hash2"));
+        when(valueOperations.increment(anyString())).thenReturn(1L);
 
         authService.logoutAll(sampleUser);
         verify(stringRedisTemplate).delete(any(Set.class));
     }
 
+    /**
+     * @brief Verifies unit test scenario: forgot password.
+     */
     @Test
     void testForgotPassword() {
         when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(sampleUser));

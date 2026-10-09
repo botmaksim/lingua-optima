@@ -1,3 +1,7 @@
+/**
+ * @file CefrTopicRegistry.java
+ * @brief Static registry mapping CEFR proficiency levels (B1, B2, C1) to syllabus grammar topics and contexts.
+ */
 package com.linguaoptima.api.util;
 
 import com.linguaoptima.api.domain.enums.CefrLevel;
@@ -6,13 +10,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @file CefrTopicRegistry.java
  * @brief Static registry mapping CEFR proficiency levels (B1, B2, C1) to syllabus grammar topics and contexts.
  */
 public final class CefrTopicRegistry {
 
     private CefrTopicRegistry() {}
 
+    /** @brief Constant or enum value representing cefr grammar topics in CefrTopicRegistry. */
     private static final Map<CefrLevel, List<String>> CEFR_GRAMMAR_TOPICS = Map.of(
         CefrLevel.B1, List.of(
             "Present Perfect vs Past Simple",
@@ -46,6 +50,7 @@ public final class CefrTopicRegistry {
         )
     );
 
+    /** @brief Constant or enum value representing common domains in CefrTopicRegistry. */
     private static final List<String> COMMON_DOMAINS = List.of(
         "Business & Work",
         "Travel & Tourism",

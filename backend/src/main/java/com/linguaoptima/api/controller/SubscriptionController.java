@@ -1,3 +1,7 @@
+/**
+ * @file SubscriptionController.java
+ * @brief REST controller for managing subscription tiers and tracking usage quotas.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -14,7 +18,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * @file SubscriptionController.java
  * @brief REST controller for managing subscription tiers and tracking usage quotas.
  *
  * Coordinates Free, Premium, and Educator tier upgrades via mock payment processing.
@@ -24,7 +27,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class SubscriptionController {
 
+    /** @brief Field representing subscription service in SubscriptionController. */
     private final SubscriptionService subscriptionService;
+    /** @brief Field representing usage service in SubscriptionController. */
     private final UsageService usageService;
 
     /**

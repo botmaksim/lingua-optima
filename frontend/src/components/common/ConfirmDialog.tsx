@@ -10,13 +10,21 @@ import { AlertCircle } from 'lucide-react';
  * @brief Props for the ConfirmDialog component.
  */
 interface ConfirmDialogProps {
+  /** @brief Property representing is open in ConfirmDialogProps. */
   isOpen: boolean;
+  /** @brief Property representing title in ConfirmDialogProps. */
   title: string;
+  /** @brief Property representing message in ConfirmDialogProps. */
   message: string;
+  /** @brief Property representing confirm text in ConfirmDialogProps. */
   confirmText?: string;
+  /** @brief Property representing cancel text in ConfirmDialogProps. */
   cancelText?: string;
+  /** @brief Property representing is destructive in ConfirmDialogProps. */
   isDestructive?: boolean;
+  /** @brief Property representing on confirm in ConfirmDialogProps. */
   onConfirm: () => void;
+  /** @brief Property representing on cancel in ConfirmDialogProps. */
   onCancel: () => void;
 }
 

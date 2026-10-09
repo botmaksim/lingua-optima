@@ -1,3 +1,7 @@
+/**
+ * @file PaymentService.java
+ * @brief Payment gateway integration stub with test simulation capabilities.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.enums.PaymentErrorCode;
@@ -9,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 /**
- * @file PaymentService.java
  * @brief Payment gateway integration stub with test simulation capabilities.
  *
  * Implements billing flows and provides test hooks to simulate gateway error states

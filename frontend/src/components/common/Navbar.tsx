@@ -50,6 +50,9 @@ export const Navbar: React.FC = () => {
     }
   }, [user, fetchNotifications]);
 
+  /**
+   * @brief Event handler or helper executing handle logout.
+   */
   const handleLogout = async () => {
     await logout();
     navigate('/login');
@@ -78,7 +81,6 @@ export const Navbar: React.FC = () => {
       <OfflineBanner />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <div className="flex items-center space-x-6">
             <Link to={user ? (isTeacher ? '/teacher' : '/student') : '/'} className="flex items-center space-x-2">
               <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white font-black text-lg shadow-md shadow-indigo-100">
@@ -87,7 +89,6 @@ export const Navbar: React.FC = () => {
               <span className="font-bold text-lg text-slate-900 tracking-tight">Lingua Optima</span>
             </Link>
 
-            {/* Desktop Navigation Links */}
             {user && (
               <nav className="hidden md:flex items-center space-x-1">
                 {navLinks.map((link) => {
@@ -112,10 +113,8 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Right Section: Usage Badge, Notifications, User Menu */}
           {user ? (
             <div className="flex items-center space-x-3">
-              {/* Daily evaluations badge */}
               <button
                 onClick={() => isQuotaExceeded && openUpgradeWall()}
                 className={`hidden sm:flex items-center space-x-1 px-2.5 py-1 rounded-full text-xs font-semibold border transition ${
@@ -129,7 +128,6 @@ export const Navbar: React.FC = () => {
                 <span>{remainingEvaluations} evaluations left</span>
               </button>
 
-              {/* Notifications Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setIsNotifOpen(!isNotifOpen)}
@@ -172,7 +170,6 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
 
-              {/* User Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
@@ -224,7 +221,6 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
 
-              {/* Mobile menu toggle */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="md:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100"
@@ -250,7 +246,6 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Mobile Navigation Menu */}
         {isMobileMenuOpen && user && (
           <div className="md:hidden py-3 border-t border-slate-100 space-y-1">
             {navLinks.map((link) => {

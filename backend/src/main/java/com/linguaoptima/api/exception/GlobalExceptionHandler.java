@@ -1,3 +1,7 @@
+/**
+ * @file GlobalExceptionHandler.java
+ * @brief Centralized exception handler and HTTP error response mapper.
+ */
 package com.linguaoptima.api.exception;
 
 import com.linguaoptima.api.dto.response.ErrorResponse;
@@ -16,7 +20,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * @file GlobalExceptionHandler.java
  * @brief Centralized exception handler and HTTP error response mapper.
  */
 @RestControllerAdvice

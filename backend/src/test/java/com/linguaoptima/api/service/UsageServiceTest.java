@@ -1,3 +1,7 @@
+/**
+ * @file UsageServiceTest.java
+ * @brief Unit and slice test suite for UsageService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
@@ -24,29 +28,39 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * @file UsageServiceTest.java
  * @brief Unit and slice test suite for UsageService.
  */
 @ExtendWith(MockitoExtension.class)
 class UsageServiceTest {
 
+    /** @brief Test fixture or mock dependency for usage counter repository. */
     @Mock
     private UsageCounterRepository usageCounterRepository;
+    /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
+    /** @brief Test fixture or mock dependency for usage service. */
     @InjectMocks
     private UsageService usageService;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
+    /** @brief Test fixture or mock dependency for counter. */
     private UsageCounter counter;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in UsageServiceTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
         counter = UsageCounter.builder().id(UUID.randomUUID()).user(user).weekEvaluations(0).weekOcrUploads(0).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: increment evaluation free within limit.
+     */
     @Test
     void testIncrementEvaluationFreeWithinLimit() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.FREE).build()));
@@ -57,6 +71,9 @@ class UsageServiceTest {
         verify(usageCounterRepository).save(counter);
     }
 
+    /**
+     * @brief Verifies unit test scenario: increment evaluation free limit reached throws.
+     */
     @Test
     void testIncrementEvaluationFreeLimitReachedThrows() {
         counter.setWeekEvaluations(10);
@@ -66,6 +83,9 @@ class UsageServiceTest {
         assertThrows(QuotaExceededException.class, () -> usageService.incrementEvaluation(user));
     }
 
+    /**
+     * @brief Verifies unit test scenario: increment evaluation premium unlimited.
+     */
     @Test
     void testIncrementEvaluationPremiumUnlimited() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.PREMIUM).build()));
@@ -73,6 +93,9 @@ class UsageServiceTest {
         verify(usageCounterRepository, never()).save(any());
     }
 
+    /**
+     * @brief Verifies unit test scenario: increment ocr free limit reached throws.
+     */
     @Test
     void testIncrementOcrFreeLimitReachedThrows() {
         counter.setWeekOcrUploads(3);
@@ -82,6 +105,9 @@ class UsageServiceTest {
         assertThrows(QuotaExceededException.class, () -> usageService.incrementOcr(user));
     }
 
+    /**
+     * @brief Verifies unit test scenario: increment ocr free within limit.
+     */
     @Test
     void testIncrementOcrFreeWithinLimit() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.FREE).build()));
@@ -91,6 +117,9 @@ class UsageServiceTest {
         assertEquals(1, counter.getWeekOcrUploads());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get usage free and premium.
+     */
     @Test
     void testGetUsageFreeAndPremium() {
         counter.setWeekEvaluations(4);
@@ -109,6 +138,9 @@ class UsageServiceTest {
         assertEquals(Integer.MAX_VALUE, premUsage.getEvaluationsRemaining());
     }
 
+    /**
+     * @brief Verifies unit test scenario: reset weekly counters.
+     */
     @Test
     void testResetWeeklyCounters() {
         when(usageCounterRepository.findAll()).thenReturn(List.of(counter));

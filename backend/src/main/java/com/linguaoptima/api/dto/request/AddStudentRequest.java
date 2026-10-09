@@ -1,3 +1,7 @@
+/**
+ * @file AddStudentRequest.java
+ * @brief Request DTO for enrolling a student into a cohort group by email.
+ */
 package com.linguaoptima.api.dto.request;
 
 import jakarta.validation.constraints.Email;
@@ -8,7 +12,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @file AddStudentRequest.java
  * @brief Request DTO for enrolling a student into a cohort group by email.
  */
 @Data
@@ -17,6 +20,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AddStudentRequest {
 
+    /** @brief Field representing email in AddStudentRequest. */
     @NotBlank(message = "Student email is required")
     @Email(message = "Invalid email format")
     private String email;

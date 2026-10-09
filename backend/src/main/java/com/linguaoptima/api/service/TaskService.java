@@ -1,3 +1,7 @@
+/**
+ * @file TaskService.java
+ * @brief Service responsible for AI-powered educational task generation, template management, and task assignments.
+ */
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -27,7 +31,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * @file TaskService.java
  * @brief Service responsible for AI-powered educational task generation, template management, and task assignments.
  */
 @Slf4j
@@ -35,14 +38,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TaskService {
 
+    /** @brief Field representing task repository in TaskService. */
     private final TaskRepository taskRepository;
+    /** @brief Field representing task assignment repository in TaskService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Field representing group repository in TaskService. */
     private final GroupRepository groupRepository;
+    /** @brief Field representing group student repository in TaskService. */
     private final GroupStudentRepository groupStudentRepository;
+    /** @brief Field representing ai broker service in TaskService. */
     private final AIBrokerService aiBrokerService;
+    /** @brief Field representing subscription service in TaskService. */
     private final SubscriptionService subscriptionService;
+    /** @brief Field representing usage service in TaskService. */
     private final UsageService usageService;
+    /** @brief Field representing notification service in TaskService. */
     private final NotificationService notificationService;
+    /** @brief Field representing object mapper in TaskService. */
     private final ObjectMapper objectMapper;
 
     /**
@@ -231,21 +243,41 @@ public class TaskService {
         try {
             JsonNode root = objectMapper.readTree(rawJson);
             task.setContent(root.path("content").asText("Task instructions and content"));
-            task.setAnswerKey(root.path("answerKey").toString());
+            JsonNode answerKeyNode = root.path("answerKey");
+            task.setAnswerKey(answerKeyNode.toString());
+
+            java.util.Map<Integer, String> answerKeyMap = new java.util.HashMap<>();
+            if (answerKeyNode.isArray()) {
+                int idx = 1;
+                for (JsonNode ak : answerKeyNode) {
+                    int qOrder = ak.path("questionOrder").asInt(idx++);
+                    String opt = ak.path("correctOption").asText(ak.path("correctAnswer").asText(""));
+                    if (!opt.isBlank()) {
+                        answerKeyMap.put(qOrder, opt);
+                    }
+                }
+            }
 
             JsonNode questionsNode = root.path("questions");
             List<TaskQuestion> questions = new ArrayList<>();
             if (questionsNode.isArray()) {
                 int order = 1;
                 for (JsonNode qNode : questionsNode) {
+                    int currentOrder = order++;
                     JsonNode optionsNode = qNode.path("options");
                     String optionsJson = optionsNode.isMissingNode() ? "[]" : optionsNode.toString();
 
+                    String resolvedAnswer = qNode.path("correctAnswer").asText(
+                        qNode.path("correctOption").asText(
+                            answerKeyMap.getOrDefault(currentOrder, "Answer")
+                        )
+                    );
+
                     TaskQuestion tq = TaskQuestion.builder()
                         .task(task)
-                        .questionOrder(order++)
+                        .questionOrder(currentOrder)
                         .questionText(qNode.path("text").asText("Question text"))
-                        .correctAnswer(qNode.path("correctAnswer").asText("Answer"))
+                        .correctAnswer(resolvedAnswer)
                         .optionsJson(optionsJson)
                         .difficulty(qNode.path("difficulty").asInt(2))
                         .grammarRule(qNode.path("grammarRule").asText(params.getGrammarTopic()))

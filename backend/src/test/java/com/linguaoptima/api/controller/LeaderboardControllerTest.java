@@ -1,3 +1,7 @@
+/**
+ * @file LeaderboardControllerTest.java
+ * @brief Unit and slice test suite for LeaderboardController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -19,25 +23,33 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 /**
- * @file LeaderboardControllerTest.java
  * @brief Unit and slice test suite for LeaderboardController.
  */
 @ExtendWith(MockitoExtension.class)
 class LeaderboardControllerTest {
 
+    /** @brief Test fixture or mock dependency for leaderboard service. */
     @Mock
     private LeaderboardService leaderboardService;
 
+    /** @brief Test fixture or mock dependency for leaderboard controller. */
     @InjectMocks
     private LeaderboardController leaderboardController;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in LeaderboardControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get group leaderboard.
+     */
     @Test
     void testGetGroupLeaderboard() {
         UUID groupId = UUID.randomUUID();

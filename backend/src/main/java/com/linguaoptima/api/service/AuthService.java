@@ -1,3 +1,7 @@
+/**
+ * @file AuthService.java
+ * @brief Authentication and user onboarding service.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Subscription;
@@ -29,7 +33,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * @file AuthService.java
  * @brief Authentication and user onboarding service.
  *
  * Handles account registration, credential authentication, JWT token refresh,
@@ -39,10 +42,15 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
+    /** @brief Field representing user repository in AuthService. */
     private final UserRepository userRepository;
+    /** @brief Field representing subscription repository in AuthService. */
     private final SubscriptionRepository subscriptionRepository;
+    /** @brief Field representing password encoder in AuthService. */
     private final PasswordEncoder passwordEncoder;
+    /** @brief Field representing jwt service in AuthService. */
     private final JwtService jwtService;
+    /** @brief Field representing string redis template in AuthService. */
     private final StringRedisTemplate stringRedisTemplate;
 
     /**
@@ -104,6 +112,7 @@ public class AuthService {
 
         return TokenResponse.builder()
             .accessToken(accessToken)
+            .refreshToken(refreshToken)
             .user(UserResponse.fromEntity(savedUser))
             .build();
     }
@@ -133,6 +142,7 @@ public class AuthService {
 
         return TokenResponse.builder()
             .accessToken(accessToken)
+            .refreshToken(refreshToken)
             .user(UserResponse.fromEntity(user))
             .build();
     }
@@ -188,10 +198,18 @@ public class AuthService {
      */
     public void logoutAll(User user) {
         if (stringRedisTemplate != null && user != null) {
-            String pattern = "refresh_tokens:" + user.getId() + ":*";
+            String prefix = "refresh_tokens:" + user.getId() + ":";
+            String pattern = prefix + "*";
             var keys = stringRedisTemplate.keys(pattern);
             if (keys != null && !keys.isEmpty()) {
-                stringRedisTemplate.delete(keys);
+                java.util.Set<String> allKeysToDelete = new java.util.HashSet<>(keys);
+                for (String key : keys) {
+                    if (key.startsWith(prefix)) {
+                        String hash = key.substring(prefix.length());
+                        allKeysToDelete.add("refresh_token:" + hash);
+                    }
+                }
+                stringRedisTemplate.delete(allKeysToDelete);
             }
         }
     }
@@ -240,6 +258,7 @@ public class AuthService {
         try {
             String tokenHash = hashToken(refreshToken);
             stringRedisTemplate.opsForValue().set("refresh_token:" + tokenHash, userId.toString(), Duration.ofDays(30));
+            stringRedisTemplate.opsForValue().set("refresh_tokens:" + userId + ":" + tokenHash, tokenHash, Duration.ofDays(30));
         } catch (Exception e) {
             log.warn("Failed to store refresh token in Redis: {}", e.getMessage());
         }

@@ -1,3 +1,7 @@
+/**
+ * @file CorsConfig.java
+ * @brief Cross-Origin Resource Sharing (CORS) security configuration.
+ */
 package com.linguaoptima.api.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -11,12 +15,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @file CorsConfig.java
  * @brief Cross-Origin Resource Sharing (CORS) security configuration.
  */
 @Configuration
 public class CorsConfig {
 
+    /** @brief Field representing allowed origins in CorsConfig. */
     @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
     private String allowedOrigins;
 

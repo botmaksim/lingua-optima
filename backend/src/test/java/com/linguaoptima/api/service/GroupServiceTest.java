@@ -1,3 +1,7 @@
+/**
+ * @file GroupServiceTest.java
+ * @brief Unit and slice test suite for GroupService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Group;
@@ -30,31 +34,43 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * @file GroupServiceTest.java
  * @brief Unit and slice test suite for GroupService.
  */
 @ExtendWith(MockitoExtension.class)
 class GroupServiceTest {
 
+    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
+    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
+    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
+    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
+    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 
+    /** @brief Test fixture or mock dependency for group service. */
     @InjectMocks
     private GroupService groupService;
 
+    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
+    /** @brief Test fixture or mock dependency for other teacher. */
     private User otherTeacher;
+    /** @brief Test fixture or mock dependency for student. */
     private User student;
+    /** @brief Test fixture or mock dependency for group. */
     private Group group;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in GroupServiceTest.
+     */
     @BeforeEach
     void setUp() {
         teacher = User.builder()
@@ -84,6 +100,9 @@ class GroupServiceTest {
             .build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: create group.
+     */
     @Test
     void testCreateGroup() {
         CreateGroupRequest req = CreateGroupRequest.builder().name("Advanced B2").build();
@@ -94,17 +113,26 @@ class GroupServiceTest {
         assertEquals("Advanced B2", res.getName());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get groups and details.
+     */
     @Test
     void testGetGroupsAndDetails() {
+        GroupStudent gs = GroupStudent.builder().group(group).student(student).isActive(true).build();
         when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.findByStudentIdAndIsActiveTrue(student.getId())).thenReturn(List.of(gs));
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
 
         assertEquals(1, groupService.getGroupsForTeacher(teacher).size());
+        assertEquals(1, groupService.getGroupsForTeacher(student).size());
         assertEquals("Advanced B2", groupService.getGroupDetails(group.getId(), teacher).getName());
 
         assertThrows(ForbiddenException.class, () -> groupService.getGroupDetails(group.getId(), otherTeacher));
     }
 
+    /**
+     * @brief Verifies unit test scenario: add new student.
+     */
     @Test
     void testAddNewStudent() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
@@ -118,6 +146,9 @@ class GroupServiceTest {
         verify(notificationService).send(eq(student), anyString(), any());
     }
 
+    /**
+     * @brief Verifies unit test scenario: add student reactivates soft deleted.
+     */
     @Test
     void testAddStudentReactivatesSoftDeleted() {
         GroupStudent softDeleted = GroupStudent.builder()
@@ -138,6 +169,9 @@ class GroupServiceTest {
         verify(groupStudentRepository).save(softDeleted);
     }
 
+    /**
+     * @brief Verifies unit test scenario: add student max capacity throws.
+     */
     @Test
     void testAddStudentMaxCapacityThrows() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
@@ -148,6 +182,9 @@ class GroupServiceTest {
         assertThrows(ForbiddenException.class, () -> groupService.addStudent(group.getId(), "student@lingua.com", teacher));
     }
 
+    /**
+     * @brief Verifies unit test scenario: remove student soft delete.
+     */
     @Test
     void testRemoveStudentSoftDelete() {
         GroupStudent activeMember = GroupStudent.builder()
@@ -166,6 +203,9 @@ class GroupServiceTest {
         verify(groupStudentRepository).save(activeMember);
     }
 
+    /**
+     * @brief Verifies unit test scenario: get group details with submissions and students.
+     */
     @Test
     void testGetGroupDetailsWithSubmissionsAndStudents() {
         GroupStudent gs = GroupStudent.builder().group(group).student(student).isActive(true).build();
@@ -182,6 +222,9 @@ class GroupServiceTest {
         assertEquals(1, res.getStudents().size());
     }
 
+    /**
+     * @brief Verifies unit test scenario: group not found throws.
+     */
     @Test
     void testGroupNotFoundThrows() {
         UUID randomId = UUID.randomUUID();
@@ -190,6 +233,9 @@ class GroupServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> groupService.getGroupDetails(randomId, teacher));
     }
 
+    /**
+     * @brief Verifies unit test scenario: add student user not found throws.
+     */
     @Test
     void testAddStudentUserNotFoundThrows() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
@@ -198,6 +244,9 @@ class GroupServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> groupService.addStudent(group.getId(), "nonexistent@lingua.com", teacher));
     }
 
+    /**
+     * @brief Verifies unit test scenario: remove student not found throws.
+     */
     @Test
     void testRemoveStudentNotFoundThrows() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
@@ -206,6 +255,9 @@ class GroupServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> groupService.removeStudent(group.getId(), student.getId(), teacher));
     }
 
+    /**
+     * @brief Verifies unit test scenario: delete group.
+     */
     @Test
     void testDeleteGroup() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));

@@ -1,3 +1,7 @@
+/**
+ * @file LoginRequest.java
+ * @brief Request DTO for user email and password authentication.
+ */
 package com.linguaoptima.api.dto.request;
 
 import jakarta.validation.constraints.Email;
@@ -8,7 +12,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @file LoginRequest.java
  * @brief Request DTO for user email and password authentication.
  */
 @Data
@@ -17,10 +20,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
 
+    /** @brief Field representing email in LoginRequest. */
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 
+    /** @brief Field representing password in LoginRequest. */
     @NotBlank(message = "Password is required")
     private String password;
 }

@@ -1,3 +1,7 @@
+/**
+ * @file SessionServiceTest.java
+ * @brief Unit and slice test suite for SessionService.
+ */
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,37 +37,51 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * @file SessionServiceTest.java
  * @brief Unit and slice test suite for SessionService.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SessionServiceTest {
 
+    /** @brief Test fixture or mock dependency for session state repository. */
     @Mock
     private SessionStateRepository sessionStateRepository;
+    /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Test fixture or mock dependency for task question repository. */
     @Mock
     private TaskQuestionRepository taskQuestionRepository;
+    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
+    /** @brief Test fixture or mock dependency for progress service. */
     @Mock
     private ProgressService progressService;
+    /** @brief Test fixture or mock dependency for gamification service. */
     @Mock
     private GamificationService gamificationService;
 
+    /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    /** @brief Test fixture or mock dependency for session service. */
     @InjectMocks
     private SessionService sessionService;
 
+    /** @brief Test fixture or mock dependency for student. */
     private User student;
+    /** @brief Test fixture or mock dependency for task. */
     private Task task;
+    /** @brief Test fixture or mock dependency for assignment. */
     private TaskAssignment assignment;
+    /** @brief Test fixture or mock dependency for session state. */
     private SessionState sessionState;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in SessionServiceTest.
+     */
     @BeforeEach
     void setUp() {
         student = User.builder()
@@ -96,6 +114,9 @@ class SessionServiceTest {
             .build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: start session success.
+     */
     @Test
     void testStartSessionSuccess() {
         when(taskAssignmentRepository.findById(assignment.getId())).thenReturn(Optional.of(assignment));
@@ -107,6 +128,9 @@ class SessionServiceTest {
         assertEquals(AssignmentStatus.IN_PROGRESS, assignment.getStatus());
     }
 
+    /**
+     * @brief Verifies unit test scenario: start session other student throws.
+     */
     @Test
     void testStartSessionOtherStudentThrows() {
         User other = User.builder().id(UUID.randomUUID()).build();
@@ -114,6 +138,9 @@ class SessionServiceTest {
         assertThrows(ForbiddenException.class, () -> sessionService.startSession(assignment.getId(), other));
     }
 
+    /**
+     * @brief Verifies unit test scenario: get active session.
+     */
     @Test
     void testGetActiveSession() {
         when(sessionStateRepository.findFirstByStudentIdAndStatusOrderByStartedAtDesc(student.getId(), SessionStatus.IN_PROGRESS))
@@ -124,6 +151,9 @@ class SessionServiceTest {
         assertEquals(sessionState.getId(), active.get().getId());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get next question.
+     */
     @Test
     void testGetNextQuestion() {
         TaskQuestion tq = TaskQuestion.builder()
@@ -142,6 +172,9 @@ class SessionServiceTest {
         assertEquals("Sample question?", qResp.getQuestionText());
     }
 
+    /**
+     * @brief Verifies unit test scenario: submit answer correct difficulty increases.
+     */
     @Test
     void testSubmitAnswerCorrectDifficultyIncreases() {
         TaskQuestion tq = TaskQuestion.builder()
@@ -169,6 +202,9 @@ class SessionServiceTest {
         verify(progressService).updateFromSubmission(student, "Past Simple", true);
     }
 
+    /**
+     * @brief Verifies unit test scenario: submit answer wrong difficulty decreases.
+     */
     @Test
     void testSubmitAnswerWrongDifficultyDecreases() {
         TaskQuestion tq = TaskQuestion.builder()
@@ -194,6 +230,9 @@ class SessionServiceTest {
         verify(progressService).updateFromSubmission(student, "Past Simple", false);
     }
 
+    /**
+     * @brief Verifies unit test scenario: submit10th answer completes session.
+     */
     @Test
     void testSubmit10thAnswerCompletesSession() {
         sessionState.setCurrentQuestionIndex(9);
@@ -218,6 +257,9 @@ class SessionServiceTest {
         verify(gamificationService).onSubmissionCompleted(student);
     }
 
+    /**
+     * @brief Verifies unit test scenario: complete session.
+     */
     @Test
     void testCompleteSession() {
         when(sessionStateRepository.findById(sessionState.getId())).thenReturn(Optional.of(sessionState));
@@ -234,6 +276,9 @@ class SessionServiceTest {
         verify(gamificationService).onSubmissionCompleted(student);
     }
 
+    /**
+     * @brief Verifies unit test scenario: session not found throws.
+     */
     @Test
     void testSessionNotFoundThrows() {
         UUID unknown = UUID.randomUUID();
@@ -242,6 +287,9 @@ class SessionServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> sessionService.getNextQuestion(unknown, student));
     }
 
+    /**
+     * @brief Verifies unit test scenario: get next question no questions throws.
+     */
     @Test
     void testGetNextQuestionNoQuestionsThrows() {
         when(sessionStateRepository.findById(sessionState.getId())).thenReturn(Optional.of(sessionState));
@@ -251,6 +299,9 @@ class SessionServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> sessionService.getNextQuestion(sessionState.getId(), student));
     }
 
+    /**
+     * @brief Verifies unit test scenario: submit answer question not found throws.
+     */
     @Test
     void testSubmitAnswerQuestionNotFoundThrows() {
         when(sessionStateRepository.findById(sessionState.getId())).thenReturn(Optional.of(sessionState));
@@ -261,6 +312,9 @@ class SessionServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> sessionService.submitAnswer(sessionState.getId(), req, student));
     }
 
+    /**
+     * @brief Verifies unit test scenario: submit answer clamps difficulty boundaries.
+     */
     @Test
     void testSubmitAnswerClampsDifficultyBoundaries() {
         sessionState.setCurrentDifficulty(4);

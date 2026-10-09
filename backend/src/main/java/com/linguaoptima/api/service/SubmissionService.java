@@ -1,3 +1,7 @@
+/**
+ * @file SubmissionService.java
+ * @brief Service responsible for student homework submissions, OCR processing, and teacher grading overrides.
+ */
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,7 +34,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * @file SubmissionService.java
  * @brief Service responsible for student homework submissions, OCR processing, and teacher grading overrides.
  *
  * Implements strict Zero-Retention OCR architecture: uploaded images are processed in-memory
@@ -41,14 +44,23 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SubmissionService {
 
+    /** @brief Field representing submission repository in SubmissionService. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field representing task assignment repository in SubmissionService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
+    /** @brief Field representing ocr service in SubmissionService. */
     private final OCRService ocrService;
+    /** @brief Field representing scoring service in SubmissionService. */
     private final ScoringService scoringService;
+    /** @brief Field representing usage service in SubmissionService. */
     private final UsageService usageService;
+    /** @brief Field representing progress service in SubmissionService. */
     private final ProgressService progressService;
+    /** @brief Field representing gamification service in SubmissionService. */
     private final GamificationService gamificationService;
+    /** @brief Field representing notification service in SubmissionService. */
     private final NotificationService notificationService;
+    /** @brief Field representing object mapper in SubmissionService. */
     private final ObjectMapper objectMapper;
 
     /**
@@ -224,13 +236,35 @@ public class SubmissionService {
     }
 
     /**
-     * @brief Retrieves submission history for the specified student.
-     * @param student The student whose submission history is requested.
+     * @brief Retrieves submission history for the specified student or educator.
+     * @param student The user whose submission history is requested.
      * @return List of SubmissionResultResponse DTOs ordered by submission date descending.
      */
     @Transactional(readOnly = true)
     public List<SubmissionResultResponse> getMySubmissions(User student) {
+        if (student.getRole() == Role.TEACHER || student.getRole() == Role.ADMIN) {
+            return submissionRepository.findAll().stream()
+                .map(SubmissionResultResponse::fromEntity)
+                .collect(Collectors.toList());
+        }
         return submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId()).stream()
+            .map(SubmissionResultResponse::fromEntity)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * @brief Retrieves all active student submissions for a specific group.
+     * @param groupId Unique identifier of the group.
+     * @param teacher Educator requesting group submissions.
+     * @return List of SubmissionResultResponse DTOs for the group.
+     * @throws ForbiddenException if caller is not an educator or administrator.
+     */
+    @Transactional(readOnly = true)
+    public List<SubmissionResultResponse> getGroupSubmissions(UUID groupId, User teacher) {
+        if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only educators can view group submissions.");
+        }
+        return submissionRepository.findActiveGroupSubmissions(groupId).stream()
             .map(SubmissionResultResponse::fromEntity)
             .collect(Collectors.toList());
     }

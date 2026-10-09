@@ -1,3 +1,7 @@
+/**
+ * @file SecurityConfig.java
+ * @brief Spring Security configuration for HTTP security, JWT filters, stateless sessions, and role authorization.
+ */
 package com.linguaoptima.api.config;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +22,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
- * @file SecurityConfig.java
  * @brief Spring Security configuration for HTTP security, JWT filters, stateless sessions, and role authorization.
  */
 @Configuration
@@ -27,7 +30,9 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    /** @brief Field representing jwt authentication filter in SecurityConfig. */
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    /** @brief Field representing cors configuration source in SecurityConfig. */
     private final CorsConfigurationSource corsConfigurationSource;
 
     /**
@@ -52,13 +57,15 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/tasks/{id}/assign").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/tasks/template").hasAnyRole("TEACHER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/groups").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
                 .requestMatchers("/api/groups/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/submissions/{id}/override").hasAnyRole("TEACHER", "ADMIN")
-                .requestMatchers("/api/exports/**").hasAnyRole("TEACHER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/submissions/{id}/override").hasAnyRole("TEACHER", "ADMIN")
+                .requestMatchers("/api/exports/**", "/api/export/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers("/api/progress/student/**", "/api/progress/group/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers("/api/sessions/**").hasAnyRole("STUDENT", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/submissions/text", "/api/submissions/image").hasAnyRole("STUDENT", "ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/submissions/my").hasAnyRole("STUDENT", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/submissions/my", "/api/submissions/me").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

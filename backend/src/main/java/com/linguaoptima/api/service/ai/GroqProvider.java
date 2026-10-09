@@ -1,3 +1,7 @@
+/**
+ * @file GroqProvider.java
+ * @brief Ultra-low-latency Groq LPU inference provider using Llama 3.1 models.
+ */
 package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -13,15 +17,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @file GroqProvider.java
  * @brief Ultra-low-latency Groq LPU inference provider using Llama 3.1 models.
  */
 @Slf4j
 @Component
 public class GroqProvider implements AIProvider {
 
+    /** @brief Field representing api key in GroqProvider. */
     private final String apiKey;
+    /** @brief Field representing rest template in GroqProvider. */
     private final RestTemplate restTemplate;
+    /** @brief Field representing object mapper in GroqProvider. */
     private final ObjectMapper objectMapper;
 
     /**

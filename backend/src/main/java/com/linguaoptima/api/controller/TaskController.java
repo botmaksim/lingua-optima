@@ -1,3 +1,7 @@
+/**
+ * @file TaskController.java
+ * @brief REST controller for AI task generation, catalog previews, and cohort assignments.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -15,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file TaskController.java
  * @brief REST controller for AI task generation, catalog previews, and cohort assignments.
  *
  * Implements self-service practice task creation and educator assignment distribution.
@@ -25,6 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskController {
 
+    /** @brief Field representing task service in TaskController. */
     private final TaskService taskService;
 
     /**

@@ -1,3 +1,7 @@
+/**
+ * @file AIBrokerServiceTest.java
+ * @brief Unit and slice test suite for AIBrokerService.
+ */
 package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,34 +35,47 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * @file AIBrokerServiceTest.java
  * @brief Unit and slice test suite for AIBrokerService.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AIBrokerServiceTest {
 
+    /** @brief Test fixture or mock dependency for groq provider. */
     @Mock
     private GroqProvider groqProvider;
+    /** @brief Test fixture or mock dependency for gemini provider. */
     @Mock
     private GeminiProvider geminiProvider;
+    /** @brief Test fixture or mock dependency for api key repository. */
     @Mock
     private ApiKeyRepository apiKeyRepository;
+    /** @brief Test fixture or mock dependency for encryption service. */
     @Mock
     private EncryptionService encryptionService;
+    /** @brief Test fixture or mock dependency for pending ai task repository. */
     @Mock
     private PendingAiTaskRepository pendingAiTaskRepository;
+    /** @brief Test fixture or mock dependency for rest template. */
     @Mock
     private RestTemplate restTemplate;
+    /** @brief Test fixture or mock dependency for string redis template. */
     @Mock
     private StringRedisTemplate stringRedisTemplate;
+    /** @brief Test fixture or mock dependency for value operations. */
     @Mock
     private ValueOperations<String, String> valueOperations;
 
+    /** @brief Test fixture or mock dependency for object mapper. */
     private final ObjectMapper objectMapper = new ObjectMapper();
+    /** @brief Test fixture or mock dependency for ai broker service. */
     private AIBrokerService aiBrokerService;
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in AIBrokerServiceTest.
+     */
     @BeforeEach
     void setUp() {
         when(groqProvider.getProviderName()).thenReturn("GROQ");
@@ -78,6 +95,9 @@ class AIBrokerServiceTest {
         user = User.builder().id(UUID.randomUUID()).email("ai@lingua.com").build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate task content cache hit.
+     */
     @Test
     void testGenerateTaskContentCacheHit() {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -88,6 +108,9 @@ class AIBrokerServiceTest {
         verifyNoInteractions(groqProvider);
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate task content primary success.
+     */
     @Test
     void testGenerateTaskContentPrimarySuccess() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -101,6 +124,9 @@ class AIBrokerServiceTest {
         verify(valueOperations).set(anyString(), eq("{\"generated\": true}"), any());
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate task content fallback to gemini.
+     */
     @Test
     void testGenerateTaskContentFallbackToGemini() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -114,6 +140,9 @@ class AIBrokerServiceTest {
         verify(geminiProvider).complete("prompt text");
     }
 
+    /**
+     * @brief Verifies unit test scenario: generate task content all fail queues request.
+     */
     @Test
     void testGenerateTaskContentAllFailQueuesRequest() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -126,6 +155,9 @@ class AIBrokerServiceTest {
         verify(pendingAiTaskRepository).save(any(PendingAiTask.class));
     }
 
+    /**
+     * @brief Verifies unit test scenario: score essay no caching.
+     */
     @Test
     void testScoreEssayNoCaching() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -137,6 +169,9 @@ class AIBrokerServiceTest {
         verify(valueOperations, never()).get(startsWith("ai_cache:"));
     }
 
+    /**
+     * @brief Verifies unit test scenario: check grammar primary success.
+     */
     @Test
     void testCheckGrammarPrimarySuccess() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -147,6 +182,9 @@ class AIBrokerServiceTest {
         assertEquals("{\"score\": 90.0}", result);
     }
 
+    /**
+     * @brief Verifies unit test scenario: rate limit exceeded throws.
+     */
     @Test
     void testRateLimitExceededThrows() {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -155,6 +193,9 @@ class AIBrokerServiceTest {
         assertThrows(QuotaExceededException.class, () -> aiBrokerService.generateTaskContent("prompt", user));
     }
 
+    /**
+     * @brief Verifies unit test scenario: rate limit first request sets expire.
+     */
     @Test
     void testRateLimitFirstRequestSetsExpire() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
@@ -165,6 +206,9 @@ class AIBrokerServiceTest {
         verify(stringRedisTemplate).expire(eq("rate_limit:" + user.getId() + ":ai"), any());
     }
 
+    /**
+     * @brief Verifies unit test scenario: custom key open aisuccess.
+     */
     @Test
     void testCustomKeyOpenAISuccess() throws Exception {
         ApiKey key = ApiKey.builder()
@@ -187,6 +231,9 @@ class AIBrokerServiceTest {
         assertEquals("OpenAI output", result);
     }
 
+    /**
+     * @brief Verifies unit test scenario: custom key anthropic success.
+     */
     @Test
     void testCustomKeyAnthropicSuccess() throws Exception {
         ApiKey key = ApiKey.builder()
@@ -209,6 +256,9 @@ class AIBrokerServiceTest {
         assertEquals("Claude output", result);
     }
 
+    /**
+     * @brief Verifies unit test scenario: custom key gemini and groq.
+     */
     @Test
     void testCustomKeyGeminiAndGroq() throws Exception {
         ApiKey keyGemini = ApiKey.builder()
@@ -231,6 +281,9 @@ class AIBrokerServiceTest {
         assertEquals("Gemini custom", res);
     }
 
+    /**
+     * @brief Verifies unit test scenario: custom key failure throws payment exception.
+     */
     @Test
     void testCustomKeyFailureThrowsPaymentException() {
         ApiKey key = ApiKey.builder()
@@ -249,6 +302,9 @@ class AIBrokerServiceTest {
         assertThrows(PaymentException.class, () -> aiBrokerService.generateTaskContent("Prompt", user));
     }
 
+    /**
+     * @brief Verifies unit test scenario: fallback primary retry success.
+     */
     @Test
     void testFallbackPrimaryRetrySuccess() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);

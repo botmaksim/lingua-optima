@@ -1,3 +1,7 @@
+/**
+ * @file PaymentServiceTest.java
+ * @brief Unit and slice test suite for PaymentService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.enums.PaymentErrorCode;
@@ -9,18 +13,24 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @file PaymentServiceTest.java
  * @brief Unit and slice test suite for PaymentService.
  */
 class PaymentServiceTest {
 
+    /** @brief Test fixture or mock dependency for payment service. */
     private PaymentService paymentService;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in PaymentServiceTest.
+     */
     @BeforeEach
     void setUp() {
         paymentService = new PaymentService();
     }
 
+    /**
+     * @brief Verifies unit test scenario: process payment success stub.
+     */
     @Test
     void testProcessPaymentSuccessStub() {
         PaymentResultResponse res = paymentService.processPayment(19.99, "valid_token");
@@ -31,6 +41,9 @@ class PaymentServiceTest {
         assertNull(res.getErrorCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: process payment card declined error trigger.
+     */
     @Test
     void testProcessPaymentCardDeclinedErrorTrigger() {
         PaymentException ex = assertThrows(PaymentException.class,
@@ -38,6 +51,9 @@ class PaymentServiceTest {
         assertEquals(PaymentErrorCode.CARD_DECLINED, ex.getErrorCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: process payment insufficient funds trigger.
+     */
     @Test
     void testProcessPaymentInsufficientFundsTrigger() {
         PaymentException ex = assertThrows(PaymentException.class,

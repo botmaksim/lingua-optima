@@ -6,6 +6,9 @@
 import { axiosInstance } from './axiosInstance';
 import { Task, TaskParams } from '../types/task';
 
+/**
+ * @brief Exported const for task api.
+ */
 export const taskApi = {
   /**
    * @brief Dispatches request to generate an AI exercise and saves it.

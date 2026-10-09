@@ -1,3 +1,7 @@
+/**
+ * @file SessionController.java
+ * @brief REST controller driving adaptive Computerized Adaptive Testing (CAT) sessions.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.SessionState;
@@ -18,7 +22,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file SessionController.java
  * @brief REST controller driving adaptive Computerized Adaptive Testing (CAT) sessions.
  *
  * Manages dynamic difficulty adjustments, in-flight question requests, and CAT test completions.
@@ -28,6 +31,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SessionController {
 
+    /** @brief Field representing session service in SessionController. */
     private final SessionService sessionService;
 
     /**

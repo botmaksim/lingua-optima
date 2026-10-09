@@ -26,6 +26,9 @@ export const StudentGroups: React.FC = () => {
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
+  /**
+   * @brief Event handler or helper executing load groups.
+   */
   const loadGroups = async () => {
     try {
       const data = await groupApi.getGroups();
@@ -40,6 +43,9 @@ export const StudentGroups: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing load group details.
+   */
   const loadGroupDetails = async (id: string) => {
     try {
       const details = await groupApi.getGroupDetails(id);
@@ -53,6 +59,9 @@ export const StudentGroups: React.FC = () => {
     loadGroups();
   }, []);
 
+  /**
+   * @brief Event handler or helper executing handle create group.
+   */
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newGroupName.trim()) return;
@@ -69,6 +78,9 @@ export const StudentGroups: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle add student.
+   */
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedGroup || !studentEmail.trim()) return;
@@ -90,6 +102,9 @@ export const StudentGroups: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle remove student.
+   */
   const handleRemoveStudent = async (studentId: string) => {
     if (!selectedGroup) return;
     if (!confirm('Remove student from group? Their historical records will remain safe and restored if re-added.')) {
@@ -105,6 +120,9 @@ export const StudentGroups: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle delete group.
+   */
   const handleDeleteGroup = async () => {
     if (!selectedGroup) return;
     if (!confirm(`Are you sure you want to delete "${selectedGroup.name}"?`)) return;

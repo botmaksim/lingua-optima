@@ -1,3 +1,7 @@
+/**
+ * @file ProgressRecordRepository.java
+ * @brief Spring Data JPA repository for student grammar topic mastery records.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.ProgressRecord;
@@ -10,7 +14,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file ProgressRecordRepository.java
  * @brief Spring Data JPA repository for student grammar topic mastery records.
  */
 @Repository

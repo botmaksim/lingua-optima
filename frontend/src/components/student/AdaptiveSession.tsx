@@ -46,6 +46,9 @@ export const AdaptiveSession: React.FC = () => {
     initSession();
   }, [assignmentId]);
 
+  /**
+   * @brief Event handler or helper executing handle submit answer.
+   */
   const handleSubmitAnswer = async () => {
     if (!session || !currentQuestion || !selectedAnswer) return;
     setIsSubmitting(true);
@@ -63,6 +66,9 @@ export const AdaptiveSession: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Event handler or helper executing handle next question.
+   */
   const handleNextQuestion = async () => {
     if (!session) return;
 
@@ -114,7 +120,6 @@ export const AdaptiveSession: React.FC = () => {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Session Progress Header */}
       <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -127,7 +132,6 @@ export const AdaptiveSession: React.FC = () => {
           </div>
         </div>
 
-        {/* Progress Bar */}
         <div className="space-y-1.5">
           <div className="flex justify-between text-xs text-slate-500 font-medium">
             <span>Question {currentIdx + 1} of 10</span>
@@ -142,7 +146,6 @@ export const AdaptiveSession: React.FC = () => {
         </div>
       </div>
 
-      {/* Question Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
         <div className="space-y-2">
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -153,7 +156,6 @@ export const AdaptiveSession: React.FC = () => {
           </h2>
         </div>
 
-        {/* Multiple Choice Options or Input */}
         {Array.isArray(currentQuestion.options) && currentQuestion.options.length > 0 ? (
           <div className="space-y-3">
             {currentQuestion.options.map((opt, idx) => {
@@ -186,7 +188,6 @@ export const AdaptiveSession: React.FC = () => {
           />
         )}
 
-        {/* Feedback Section (appears after submitting answer) */}
         {feedback && (
           <div
             className={`p-5 rounded-2xl border flex items-start space-x-3 animate-in fade-in duration-200 ${
@@ -209,7 +210,6 @@ export const AdaptiveSession: React.FC = () => {
           </div>
         )}
 
-        {/* Submit or Next Button */}
         {!feedback ? (
           <button
             type="button"

@@ -18,6 +18,9 @@ export const ForgotPassword: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  /**
+   * @brief Event handler or helper executing handle submit.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;

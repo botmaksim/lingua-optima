@@ -1,7 +1,10 @@
+/**
+ * @file AIServiceException.java
+ * @brief Exception thrown when all upstream AI providers fail or when inference cannot proceed.
+ */
 package com.linguaoptima.api.exception;
 
 /**
- * @file AIServiceException.java
  * @brief Exception thrown when all upstream AI providers fail or when inference cannot proceed.
  */
 public class AIServiceException extends RuntimeException {

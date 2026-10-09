@@ -1,3 +1,7 @@
+/**
+ * @file TaskRepository.java
+ * @brief Spring Data JPA repository for curriculum tasks and templates.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.Task;
@@ -10,7 +14,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file TaskRepository.java
  * @brief Spring Data JPA repository for curriculum tasks and templates.
  */
 @Repository
@@ -36,10 +39,10 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
     List<Task> findTemplates();
 
     /**
-     * @brief Queries repository via findAllAccessibleForUser.
+     * @brief Queries repository via findAllAccessibleForUser including templates, created tasks, and assigned tasks.
      * @param userId Filter parameter userId.
      * @return Query result (List&lt;Task&gt;).
      */
-    @Query("SELECT t FROM Task t WHERE t.isTemplate = true OR t.createdBy.id = :userId")
+    @Query("SELECT DISTINCT t FROM Task t LEFT JOIN TaskAssignment ta ON ta.task = t WHERE t.isTemplate = true OR t.createdBy.id = :userId OR ta.student.id = :userId")
     List<Task> findAllAccessibleForUser(UUID userId);
 }

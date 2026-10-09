@@ -1,3 +1,7 @@
+/**
+ * @file NotificationServiceTest.java
+ * @brief Unit and slice test suite for NotificationService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Group;
@@ -33,35 +37,47 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
- * @file NotificationServiceTest.java
  * @brief Unit and slice test suite for NotificationService.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class NotificationServiceTest {
 
+    /** @brief Test fixture or mock dependency for notification repository. */
     @Mock
     private NotificationRepository notificationRepository;
 
+    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
 
+    /** @brief Test fixture or mock dependency for notification service. */
     @InjectMocks
     private NotificationService notificationService;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in NotificationServiceTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("note@lingua.com").build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: create sse emitter.
+     */
     @Test
     void testCreateSseEmitter() {
         SseEmitter emitter = notificationService.createSseEmitter(user.getId());
         assertNotNull(emitter);
     }
 
+    /**
+     * @brief Verifies unit test scenario: send notification with sse emitter success and failure.
+     */
     @Test
     @SuppressWarnings("unchecked")
     void testSendNotificationWithSseEmitterSuccessAndFailure() throws Exception {
@@ -87,6 +103,9 @@ class NotificationServiceTest {
         assertNotNull(result);
     }
 
+    /**
+     * @brief Verifies unit test scenario: send notification.
+     */
     @Test
     void testSendNotification() {
         Notification n = Notification.builder()
@@ -104,6 +123,9 @@ class NotificationServiceTest {
         assertEquals("Test note", result.getMessage());
     }
 
+    /**
+     * @brief Verifies unit test scenario: send to group.
+     */
     @Test
     void testSendToGroup() {
         Group g = Group.builder().id(UUID.randomUUID()).build();
@@ -116,6 +138,9 @@ class NotificationServiceTest {
         verify(notificationRepository).save(any(Notification.class));
     }
 
+    /**
+     * @brief Verifies unit test scenario: get unread count and notifications.
+     */
     @Test
     void testGetUnreadCountAndNotifications() {
         when(notificationRepository.countByUserIdAndIsReadFalse(user.getId())).thenReturn(3);
@@ -128,6 +153,9 @@ class NotificationServiceTest {
         assertEquals(1, list.size());
     }
 
+    /**
+     * @brief Verifies unit test scenario: mark as read.
+     */
     @Test
     void testMarkAsRead() {
         Notification n = Notification.builder().id(UUID.randomUUID()).user(user).isRead(false).build();

@@ -1,3 +1,7 @@
+/**
+ * @file LeaderboardServiceTest.java
+ * @brief Unit and slice test suite for LeaderboardService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.Group;
@@ -29,28 +33,39 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 /**
- * @file LeaderboardServiceTest.java
  * @brief Unit and slice test suite for LeaderboardService.
  */
 @ExtendWith(MockitoExtension.class)
 class LeaderboardServiceTest {
 
+    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
+    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
+    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
 
+    /** @brief Test fixture or mock dependency for leaderboard service. */
     @InjectMocks
     private LeaderboardService leaderboardService;
 
+    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
+    /** @brief Test fixture or mock dependency for student1. */
     private User student1;
+    /** @brief Test fixture or mock dependency for student2. */
     private User student2;
+    /** @brief Test fixture or mock dependency for stranger. */
     private User stranger;
+    /** @brief Test fixture or mock dependency for group. */
     private Group group;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in LeaderboardServiceTest.
+     */
     @BeforeEach
     void setUp() {
         teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
@@ -61,6 +76,9 @@ class LeaderboardServiceTest {
         group = Group.builder().id(UUID.randomUUID()).name("Group B1").teacher(teacher).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get group leaderboard success.
+     */
     @Test
     void testGetGroupLeaderboardSuccess() {
         GroupStudent gs1 = GroupStudent.builder().group(group).student(student1).isActive(true).build();
@@ -85,6 +103,9 @@ class LeaderboardServiceTest {
         assertEquals(70.0, board.get(1).getWeeklyScore());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get group leaderboard stranger forbidden.
+     */
     @Test
     void testGetGroupLeaderboardStrangerForbidden() {
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));

@@ -1,3 +1,7 @@
+/**
+ * @file QuestionResponse.java
+ * @brief Response DTO representing an individual question within a task or CAT session.
+ */
 package com.linguaoptima.api.dto.response;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -13,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * @file QuestionResponse.java
  * @brief Response DTO representing an individual question within a task or CAT session.
  */
 @Data
@@ -22,14 +25,21 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuestionResponse {
 
+    /** @brief Field representing id in QuestionResponse. */
     private UUID id;
+    /** @brief Field representing question order in QuestionResponse. */
     private int questionOrder;
+    /** @brief Field representing question text in QuestionResponse. */
     private String questionText;
+    /** @brief Field representing options in QuestionResponse. */
     @Builder.Default
     private List<String> options = new ArrayList<>();
+    /** @brief Field representing difficulty in QuestionResponse. */
     private int difficulty;
+    /** @brief Field representing grammar rule in QuestionResponse. */
     private String grammarRule;
 
+    /** @brief Constant or enum value representing mapper in QuestionResponse. */
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**

@@ -1,3 +1,7 @@
+/**
+ * @file UserControllerTest.java
+ * @brief Unit and slice test suite for UserController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -20,27 +24,36 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 /**
- * @file UserControllerTest.java
  * @brief Unit and slice test suite for UserController.
  */
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
+    /** @brief Test fixture or mock dependency for user service. */
     @Mock
     private UserService userService;
 
+    /** @brief Test fixture or mock dependency for user controller. */
     @InjectMocks
     private UserController userController;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
+    /** @brief Test fixture or mock dependency for user response. */
     private UserResponse userResponse;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in UserControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("u@lingua.com").build();
         userResponse = UserResponse.builder().id(user.getId()).email("u@lingua.com").build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: get profile.
+     */
     @Test
     void testGetProfile() {
         when(userService.getCurrentUser(user)).thenReturn(userResponse);
@@ -49,6 +62,9 @@ class UserControllerTest {
         assertEquals(user.getId(), res.getBody().getId());
     }
 
+    /**
+     * @brief Verifies unit test scenario: update profile.
+     */
     @Test
     void testUpdateProfile() {
         UpdateUserRequest req = UpdateUserRequest.builder().fullName("New Name").build();
@@ -58,6 +74,9 @@ class UserControllerTest {
         assertEquals(HttpStatus.OK, res.getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: change password.
+     */
     @Test
     void testChangePassword() {
         ChangePasswordRequest req = ChangePasswordRequest.builder().oldPassword("old").newPassword("new").build();
@@ -66,6 +85,9 @@ class UserControllerTest {
         verify(userService).changePassword(user, req);
     }
 
+    /**
+     * @brief Verifies unit test scenario: delete account.
+     */
     @Test
     void testDeleteAccount() {
         ResponseEntity<Void> res = userController.deleteAccount(user);

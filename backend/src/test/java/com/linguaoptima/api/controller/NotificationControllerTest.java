@@ -1,3 +1,7 @@
+/**
+ * @file NotificationControllerTest.java
+ * @brief Unit and slice test suite for NotificationController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -22,25 +26,33 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 /**
- * @file NotificationControllerTest.java
  * @brief Unit and slice test suite for NotificationController.
  */
 @ExtendWith(MockitoExtension.class)
 class NotificationControllerTest {
 
+    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 
+    /** @brief Test fixture or mock dependency for notification controller. */
     @InjectMocks
     private NotificationController notificationController;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in NotificationControllerTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: stream notifications.
+     */
     @Test
     void testStreamNotifications() {
         when(notificationService.createSseEmitter(user.getId())).thenReturn(new SseEmitter());
@@ -48,6 +60,9 @@ class NotificationControllerTest {
         assertNotNull(emitter);
     }
 
+    /**
+     * @brief Verifies unit test scenario: get unread count and notifications.
+     */
     @Test
     void testGetUnreadCountAndNotifications() {
         when(notificationService.getUnreadCount(user.getId())).thenReturn(5);
@@ -58,6 +73,9 @@ class NotificationControllerTest {
         assertEquals(1, notificationController.getNotifications(user).getBody().size());
     }
 
+    /**
+     * @brief Verifies unit test scenario: mark as read.
+     */
     @Test
     void testMarkAsRead() {
         UUID id = UUID.randomUUID();

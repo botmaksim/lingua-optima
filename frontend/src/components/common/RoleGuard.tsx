@@ -11,8 +11,11 @@ import { useAuth } from '../../hooks/useAuth';
  * @brief Props for the RoleGuard component.
  */
 interface RoleGuardProps {
+  /** @brief Property representing allowed roles in RoleGuardProps. */
   allowedRoles: Role[];
+  /** @brief Property representing children in RoleGuardProps. */
   children: React.ReactNode;
+  /** @brief Property representing fallback in RoleGuardProps. */
   fallback?: React.ReactNode;
 }
 

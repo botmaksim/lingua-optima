@@ -1,3 +1,7 @@
+/**
+ * @file UpdateUserRequest.java
+ * @brief Request DTO for updating user profile attributes and CEFR level.
+ */
 package com.linguaoptima.api.dto.request;
 
 import com.linguaoptima.api.domain.enums.CefrLevel;
@@ -7,7 +11,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @file UpdateUserRequest.java
  * @brief Request DTO for updating user profile attributes and CEFR level.
  */
 @Data
@@ -16,7 +19,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateUserRequest {
 
+    /** @brief Field representing full name in UpdateUserRequest. */
     private String fullName;
+    /** @brief Field representing display alias in UpdateUserRequest. */
     private String displayAlias;
+    /** @brief Field representing cefr level in UpdateUserRequest. */
     private CefrLevel cefrLevel;
 }

@@ -1,3 +1,7 @@
+/**
+ * @file ApiKeyServiceTest.java
+ * @brief Unit and slice test suite for ApiKeyService.
+ */
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.ApiKey;
@@ -22,25 +26,33 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * @file ApiKeyServiceTest.java
  * @brief Unit and slice test suite for ApiKeyService.
  */
 @ExtendWith(MockitoExtension.class)
 class ApiKeyServiceTest {
 
+    /** @brief Test fixture or mock dependency for api key repository. */
     @Mock
     private ApiKeyRepository apiKeyRepository;
 
+    /** @brief Test fixture or mock dependency for encryption service. */
     @Mock
     private EncryptionService encryptionService;
 
+    /** @brief Test fixture or mock dependency for api key service. */
     @InjectMocks
     private ApiKeyService apiKeyService;
 
+    /** @brief Test fixture or mock dependency for user. */
     private User user;
+    /** @brief Test fixture or mock dependency for other user. */
     private User otherUser;
+    /** @brief Test fixture or mock dependency for api key. */
     private ApiKey apiKey;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in ApiKeyServiceTest.
+     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("keyowner@lingua.com").build();
@@ -48,6 +60,9 @@ class ApiKeyServiceTest {
         apiKey = ApiKey.builder().id(UUID.randomUUID()).user(user).provider(AIProvider.OPENAI).encryptedKey("enc123").build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: save key new.
+     */
     @Test
     void testSaveKeyNew() {
         CreateApiKeyRequest req = CreateApiKeyRequest.builder().provider(AIProvider.OPENAI).rawKey("sk-secret").build();
@@ -60,6 +75,9 @@ class ApiKeyServiceTest {
         assertEquals("enc123", saved.getEncryptedKey());
     }
 
+    /**
+     * @brief Verifies unit test scenario: save key update existing.
+     */
     @Test
     void testSaveKeyUpdateExisting() {
         CreateApiKeyRequest req = CreateApiKeyRequest.builder().provider(AIProvider.OPENAI).rawKey("sk-new-secret").build();
@@ -71,12 +89,18 @@ class ApiKeyServiceTest {
         assertEquals("encNew", updated.getEncryptedKey());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get keys for user.
+     */
     @Test
     void testGetKeysForUser() {
         when(apiKeyRepository.findAllByUser(user)).thenReturn(List.of(apiKey));
         assertEquals(1, apiKeyService.getKeysForUser(user).size());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get decrypted key.
+     */
     @Test
     void testGetDecryptedKey() {
         when(apiKeyRepository.findById(apiKey.getId())).thenReturn(Optional.of(apiKey));
@@ -88,6 +112,9 @@ class ApiKeyServiceTest {
         assertThrows(ForbiddenException.class, () -> apiKeyService.getDecryptedKey(apiKey.getId(), otherUser));
     }
 
+    /**
+     * @brief Verifies unit test scenario: delete key.
+     */
     @Test
     void testDeleteKey() {
         when(apiKeyRepository.findById(apiKey.getId())).thenReturn(Optional.of(apiKey));
@@ -97,6 +124,9 @@ class ApiKeyServiceTest {
         assertThrows(ForbiddenException.class, () -> apiKeyService.deleteKey(apiKey.getId(), otherUser));
     }
 
+    /**
+     * @brief Verifies unit test scenario: get decrypted key not found throws.
+     */
     @Test
     void testGetDecryptedKeyNotFoundThrows() {
         UUID id = UUID.randomUUID();
@@ -105,6 +135,9 @@ class ApiKeyServiceTest {
             () -> apiKeyService.getDecryptedKey(id, user));
     }
 
+    /**
+     * @brief Verifies unit test scenario: delete key not found throws.
+     */
     @Test
     void testDeleteKeyNotFoundThrows() {
         UUID id = UUID.randomUUID();

@@ -1,3 +1,7 @@
+/**
+ * @file GroupRepository.java
+ * @brief Spring Data JPA repository for managing educator cohort study groups.
+ */
 package com.linguaoptima.api.repository;
 
 import com.linguaoptima.api.domain.Group;
@@ -10,7 +14,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * @file GroupRepository.java
  * @brief Spring Data JPA repository for managing educator cohort study groups.
  */
 @Repository

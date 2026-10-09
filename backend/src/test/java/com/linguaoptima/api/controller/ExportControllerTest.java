@@ -1,3 +1,7 @@
+/**
+ * @file ExportControllerTest.java
+ * @brief Unit and slice test suite for ExportController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
@@ -18,25 +22,33 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 /**
- * @file ExportControllerTest.java
  * @brief Unit and slice test suite for ExportController.
  */
 @ExtendWith(MockitoExtension.class)
 class ExportControllerTest {
 
+    /** @brief Test fixture or mock dependency for export service. */
     @Mock
     private ExportService exportService;
 
+    /** @brief Test fixture or mock dependency for export controller. */
     @InjectMocks
     private ExportController exportController;
 
+    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in ExportControllerTest.
+     */
     @BeforeEach
     void setUp() {
         teacher = User.builder().id(UUID.randomUUID()).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: export group report pdf and csv.
+     */
     @Test
     void testExportGroupReportPdfAndCsv() {
         UUID groupId = UUID.randomUUID();
@@ -52,6 +64,9 @@ class ExportControllerTest {
         assertNotNull(csvRes.getBody());
     }
 
+    /**
+     * @brief Verifies unit test scenario: export student report pdf and csv.
+     */
     @Test
     void testExportStudentReportPdfAndCsv() {
         UUID studentId = UUID.randomUUID();

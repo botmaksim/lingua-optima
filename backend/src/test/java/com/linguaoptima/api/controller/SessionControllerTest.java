@@ -1,3 +1,7 @@
+/**
+ * @file SessionControllerTest.java
+ * @brief Unit and slice test suite for SessionController.
+ */
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.SessionState;
@@ -25,22 +29,29 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 /**
- * @file SessionControllerTest.java
  * @brief Unit and slice test suite for SessionController.
  */
 @ExtendWith(MockitoExtension.class)
 class SessionControllerTest {
 
+    /** @brief Test fixture or mock dependency for session service. */
     @Mock
     private SessionService sessionService;
 
+    /** @brief Test fixture or mock dependency for session controller. */
     @InjectMocks
     private SessionController sessionController;
 
+    /** @brief Test fixture or mock dependency for student. */
     private User student;
+    /** @brief Test fixture or mock dependency for session state. */
     private SessionState sessionState;
+    /** @brief Test fixture or mock dependency for session id. */
     private UUID sessionId;
 
+    /**
+     * @brief Initializes test fixtures and mock state before each test in SessionControllerTest.
+     */
     @BeforeEach
     void setUp() {
         student = User.builder().id(UUID.randomUUID()).build();
@@ -48,6 +59,9 @@ class SessionControllerTest {
         sessionState = SessionState.builder().id(sessionId).build();
     }
 
+    /**
+     * @brief Verifies unit test scenario: start session.
+     */
     @Test
     void testStartSession() {
         UUID assignmentId = UUID.randomUUID();
@@ -60,6 +74,9 @@ class SessionControllerTest {
         assertThrows(IllegalArgumentException.class, () -> sessionController.startSession(Map.of(), student));
     }
 
+    /**
+     * @brief Verifies unit test scenario: get active session.
+     */
     @Test
     void testGetActiveSession() {
         when(sessionService.getActiveSession(student)).thenReturn(Optional.of(sessionState));
@@ -69,6 +86,9 @@ class SessionControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, sessionController.getActiveSession(student).getStatusCode());
     }
 
+    /**
+     * @brief Verifies unit test scenario: get next question and answer and complete.
+     */
     @Test
     void testGetNextQuestionAndAnswerAndComplete() {
         QuestionResponse qr = QuestionResponse.builder().id(UUID.randomUUID()).build();

@@ -1,3 +1,7 @@
+/**
+ * @file AIProvidersTest.java
+ * @brief Unit and slice test suite for AIProviders.
+ */
 package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,17 +21,21 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 /**
- * @file AIProvidersTest.java
  * @brief Unit and slice test suite for AIProviders.
  */
 @ExtendWith(MockitoExtension.class)
 class AIProvidersTest {
 
+    /** @brief Test fixture or mock dependency for rest template. */
     @Mock
     private RestTemplate restTemplate;
 
+    /** @brief Test fixture or mock dependency for object mapper. */
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * @brief Verifies unit test scenario: groq provider success.
+     */
     @Test
     void testGroqProviderSuccess() throws Exception {
         GroqProvider provider = new GroqProvider("groq-key", restTemplate, objectMapper);
@@ -41,6 +49,9 @@ class AIProvidersTest {
         assertEquals("Groq response", res);
     }
 
+    /**
+     * @brief Verifies unit test scenario: groq provider http error throws.
+     */
     @Test
     void testGroqProviderHttpErrorThrows() {
         GroqProvider provider = new GroqProvider("groq-key", restTemplate, objectMapper);
@@ -50,6 +61,9 @@ class AIProvidersTest {
         assertThrows(RuntimeException.class, () -> provider.complete("hello"));
     }
 
+    /**
+     * @brief Verifies unit test scenario: gemini provider success.
+     */
     @Test
     void testGeminiProviderSuccess() throws Exception {
         GeminiProvider provider = new GeminiProvider("gemini-key", restTemplate, objectMapper);
@@ -63,6 +77,9 @@ class AIProvidersTest {
         assertEquals("Gemini response", res);
     }
 
+    /**
+     * @brief Verifies unit test scenario: open aiprovider success.
+     */
     @Test
     void testOpenAIProviderSuccess() throws Exception {
         OpenAIProvider provider = new OpenAIProvider("openai-key", restTemplate, objectMapper);
@@ -76,6 +93,9 @@ class AIProvidersTest {
         assertEquals("OpenAI response", res);
     }
 
+    /**
+     * @brief Verifies unit test scenario: anthropic provider success.
+     */
     @Test
     void testAnthropicProviderSuccess() throws Exception {
         AnthropicProvider provider = new AnthropicProvider("claude-key", restTemplate, objectMapper);

@@ -1,7 +1,10 @@
+/**
+ * @file PromptTemplates.java
+ * @brief Structured prompt generators ensuring strict JSON schema compliance from downstream AI models.
+ */
 package com.linguaoptima.api.util;
 
 /**
- * @file PromptTemplates.java
  * @brief Structured prompt generators ensuring strict JSON schema compliance from downstream AI models.
  */
 public final class PromptTemplates {

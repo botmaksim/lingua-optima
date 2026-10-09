@@ -31,6 +31,9 @@ export const ExportReports: React.FC = () => {
       .catch((err) => console.error('Failed to load groups:', err));
   }, []);
 
+  /**
+   * @brief Event handler or helper executing handle download.
+   */
   const handleDownload = async () => {
     if (!selectedGroupId) return;
     setIsLoading(true);
