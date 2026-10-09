@@ -78,6 +78,35 @@ class AIProvidersTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: gemini provider fallback on model failure.
+     */
+    @Test
+    void testGeminiProviderFallbackOnModelFailure() throws Exception {
+        GeminiProvider provider = new GeminiProvider("gemini-key", "https://generativelanguage.googleapis.com", "gemini-3.6-flash", restTemplate, objectMapper);
+        assertEquals("GEMINI", provider.getProviderName());
+
+        String json = "{\"candidates\":[{\"content\":{\"parts\":[{\"text\":\"Fallback response\"}]}}]}";
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenThrow(new RuntimeException("First model 429 quota"))
+            .thenReturn(new ResponseEntity<>(json, HttpStatus.OK));
+
+        String res = provider.complete("hello");
+        assertEquals("Fallback response", res);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: gemini provider all models exception throws.
+     */
+    @Test
+    void testGeminiProviderAllModelsExceptionThrows() {
+        GeminiProvider provider = new GeminiProvider("gemini-key", restTemplate, objectMapper);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenThrow(new RuntimeException("All models fail"));
+
+        assertThrows(RuntimeException.class, () -> provider.complete("hello"));
+    }
+
+    /**
      * @brief Verifies unit test scenario: open aiprovider success.
      */
     @Test

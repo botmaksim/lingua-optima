@@ -104,25 +104,42 @@ public class GeminiProvider implements AIProvider {
      */
     @Override
     public String complete(String prompt) throws Exception {
-        String url = baseUrl.replaceAll("/+$", "") + "/v1beta/models/" + modelName + ":generateContent?key=" + apiKey;
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        Map<String, Object> body = Map.of(
-            "contents", List.of(
-                Map.of("parts", List.of(Map.of("text", prompt)))
-            )
-        );
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            JsonNode root = objectMapper.readTree(response.getBody());
-            return root.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
+        List<String> modelsToTry = new java.util.ArrayList<>();
+        modelsToTry.add(modelName);
+        for (String m : List.of("gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite")) {
+            if (!modelsToTry.contains(m)) {
+                modelsToTry.add(m);
+            }
         }
 
-        throw new RuntimeException("Gemini API returned error status: " + response.getStatusCode());
+        Exception lastException = null;
+        for (String model : modelsToTry) {
+            try {
+                String url = baseUrl.replaceAll("/+$", "") + "/v1beta/models/" + model + ":generateContent?key=" + apiKey;
+
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+
+                Map<String, Object> body = Map.of(
+                    "contents", List.of(
+                        Map.of("parts", List.of(Map.of("text", prompt)))
+                    )
+                );
+
+                HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
+                ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+                if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                    JsonNode root = objectMapper.readTree(response.getBody());
+                    return root.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
+                }
+                lastException = new RuntimeException("Gemini API returned error status: " + response.getStatusCode());
+            } catch (Exception e) {
+                log.warn("Gemini model {} failed ({}), attempting fallback if available...", model, e.getMessage());
+                lastException = e;
+            }
+        }
+
+        throw lastException;
     }
 }
