@@ -1,15 +1,20 @@
 /**
  * @file worker.js
- * @brief Cloudflare Worker reverse-proxy for AI providers (Groq, Gemini, OpenAI, Anthropic).
+ * @brief Cloudflare Worker reverse-proxy for AI providers (Groq, Gemini, OpenAI, Anthropic, DeepSeek, Qwen, Kimi).
  *
  * Enables backend servers deployed in geo-restricted regions (e.g. RU/BY) to securely route
- * AI inference requests through Cloudflare's global edge network (US/EU egress IPs).
+ * AI inference requests through Cloudflare's global edge network (US/EU egress IPs) via
+ * https://ai-proxy.mybsu.online and https://lingua-optima-ai-proxy.maksimmon2008.workers.dev.
  *
  * Supported Routes:
- *   - /groq/*       -> https://api.groq.com/*
- *   - /gemini/*     -> https://generativelanguage.googleapis.com/*
- *   - /openai/*     -> https://api.openai.com/*
- *   - /anthropic/*  -> https://api.anthropic.com/*
+ *   - /groq/...       -> https://api.groq.com/...
+ *   - /gemini/...     -> https://generativelanguage.googleapis.com/...
+ *   - /openai/...     -> https://api.openai.com/...
+ *   - /anthropic/...  -> https://api.anthropic.com/...
+ *   - /deepseek/...   -> https://api.deepseek.com/...
+ *   - /qwen/...       -> https://dashscope-intl.aliyuncs.com/...
+ *   - /kimi/...       -> https://api.moonshot.cn/...
+ *   - /health         -> {"status":"UP","service":"Lingua Optima AI Proxy"}
  */
 
 export default {

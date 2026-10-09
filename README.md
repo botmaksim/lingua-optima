@@ -17,7 +17,8 @@
 | **Backend Specification** | [`docs/BACKEND.md`](./docs/BACKEND.md) | Java 21 / Spring Boot 3 architecture, all controllers, services, repositories, DTOs, database migrations, and error handling |
 | **Frontend Specification** | [`docs/FRONTEND.md`](./docs/FRONTEND.md) | React 18 + TypeScript + Vite PWA architecture, components, Zustand stores, custom hooks, and routing |
 | **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Provider & model selection, Cloudflare Edge reverse-proxy, fallback chain (BYOK → Groq → Gemini), prompt leak sanitization, Zero-Retention RAM OCR pipeline, and CAT algorithm |
-| **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, multi-stage Dockerfiles, Nginx, GitHub Actions CI/CD, and `.env` configuration |
+| **Cloudflare Edge AI Proxy** | [`cloudflare-proxy/README.md`](./cloudflare-proxy/README.md) | Cloudflare Worker (`worker.js` / `ai-proxy.mybsu.online`) reverse-proxy architecture, route mapping for all 7 AI providers, and deployment guide |
+| **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, multi-stage Dockerfiles, Nginx, Cloudflare Tunnel & Edge Worker topology, GitHub Actions CI/CD, and `.env` configuration |
 | **Interactive Presentation** | [`docs/presentation.html`](./docs/presentation.html) | Interactive Pitch Deck and visual architecture walkthrough (opens directly in any browser) |
 | **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Automatically generated Doxygen documentation covering all packages, classes, methods, and types |
 

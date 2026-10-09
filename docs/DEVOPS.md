@@ -68,9 +68,21 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - JWT_SECRET=${JWT_SECRET}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GROQ_BASE_URL=${GROQ_BASE_URL:-https://ai-proxy.mybsu.online/groq/openai/v1}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_BASE_URL=${GEMINI_BASE_URL:-https://ai-proxy.mybsu.online/gemini}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://ai-proxy.mybsu.online/openai/v1}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-https://ai-proxy.mybsu.online/anthropic/v1}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      - QWEN_API_KEY=${QWEN_API_KEY:-}
+      - QWEN_BASE_URL=${QWEN_BASE_URL:-https://dashscope-intl.aliyuncs.com/compatible-mode/v1}
+      - KIMI_API_KEY=${KIMI_API_KEY:-}
+      - KIMI_BASE_URL=${KIMI_BASE_URL:-https://api.moonshot.cn/v1}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
     depends_on:
       db:
@@ -415,13 +427,25 @@ Step-by-step guide to running the project locally:
 
 ---
 
-## 11. Cloudflare Edge Reverse-Proxy Setup
+## 11. Cloudflare Edge Reverse-Proxy & Tunnel Architecture
 
-To ensure continuous operation for deployments in geo-restricted regions (e.g. RU/BY), a lightweight Cloudflare Worker reverse-proxy is included in [`cloudflare-proxy/`](../cloudflare-proxy).
+To ensure continuous operation for deployments in geo-restricted regions (e.g. RU/BY), Lingua Optima combines two Cloudflare Edge components:
+1. **Cloudflare Tunnel (`cloudflared`)**: Exposes the ARM64 server (`tvbox`, port `5173`) securely on **`https://linguaoptima.mybsu.online`** without opening inbound firewall ports.
+2. **Cloudflare Worker AI Reverse-Proxy (`lingua-optima-ai-proxy`)**: Deployed from [`cloudflare-proxy/worker.js`](../cloudflare-proxy/worker.js) to **`https://ai-proxy.mybsu.online`** (and `https://lingua-optima-ai-proxy.maksimmon2008.workers.dev`). Strips origin client IP headers (`cf-connecting-ip`, `x-real-ip`, `x-forwarded-for`) and routes outbound AI API calls from Cloudflare's US/EU edge network.
 
-### Deployment
+```mermaid
+flowchart LR
+    User["User Browser"] -->|"HTTPS"| CF_Tunnel["Cloudflare Tunnel<br/>linguaoptima.mybsu.online"]
+    CF_Tunnel -->|"localhost:5173"| Nginx["Frontend Nginx Container<br/>(SPA + /api proxy)"]
+    Nginx -->|"lingua_network:8080"| Backend["Spring Boot Backend<br/>(AIBrokerService)"]
+    Backend -->|"HTTPS (*_BASE_URL)"| CF_Worker["Cloudflare Worker<br/>ai-proxy.mybsu.online"]
+    Backend -.->|"Direct HTTPS"| CN_AI["DeepSeek / Qwen / Kimi"]
+    CF_Worker -->|"US/EU Egress IP"| West_AI["Groq / Gemini / OpenAI / Anthropic"]
+```
 
-1. **Option A (Automated via Wrangler):**
+### Worker Deployment
+
+1. **Option A (Automated via Wrangler / Cloudflare API):**
    ```bash
    cd cloudflare-proxy
    export CLOUDFLARE_API_TOKEN="<your-token>"
@@ -429,20 +453,20 @@ To ensure continuous operation for deployments in geo-restricted regions (e.g. R
    npx wrangler deploy
    ```
 2. **Option B (Web Dashboard in 2 minutes):**
-   - Cloudflare Dashboard → Workers & Pages → Create Application.
+   - Cloudflare Dashboard → Workers & Pages → Create Application (`lingua-optima-ai-proxy`).
    - Quick Edit → Paste [`cloudflare-proxy/worker.js`](../cloudflare-proxy/worker.js) → Save & Deploy.
-   - Add Custom Domain (e.g. `ai-proxy.mybsu.online`).
+   - Add Custom Domain: `ai-proxy.mybsu.online`.
 
-### Linking with Backend
-In the root `.env` file, specify:
+### Linking with Backend (`.env`)
+In the root `.env` file, both system keys and user BYOK keys automatically use these configurable base URLs:
 ```env
 GROQ_BASE_URL=https://ai-proxy.mybsu.online/groq/openai/v1
 GEMINI_BASE_URL=https://ai-proxy.mybsu.online/gemini
 OPENAI_BASE_URL=https://ai-proxy.mybsu.online/openai/v1
 ANTHROPIC_BASE_URL=https://ai-proxy.mybsu.online/anthropic/v1
-DEEPSEEK_BASE_URL=https://ai-proxy.mybsu.online/deepseek
-QWEN_BASE_URL=https://ai-proxy.mybsu.online/qwen/compatible-mode/v1
-KIMI_BASE_URL=https://ai-proxy.mybsu.online/kimi/v1
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1
+KIMI_BASE_URL=https://api.moonshot.cn/v1
 ```
 
 ---

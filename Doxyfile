@@ -5,7 +5,7 @@ OUTPUT_DIRECTORY       = docs/generated
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 
-INPUT                  = README.md docs/README.md docs/BACKEND.md docs/FRONTEND.md docs/AI_INTEGRATION.md docs/DEVOPS.md backend/src/main/java backend/src/test/java backend/src/main/resources/db/migration frontend/src frontend/vite.config.ts frontend/public/sw.js
+INPUT                  = README.md docs/README.md docs/BACKEND.md docs/FRONTEND.md docs/AI_INTEGRATION.md docs/DEVOPS.md cloudflare-proxy/README.md cloudflare-proxy/worker.js backend/src/main/java backend/src/test/java backend/src/main/resources/db/migration frontend/src frontend/vite.config.ts frontend/public/sw.js
 USE_MDFILE_AS_MAINPAGE = docs/README.md
 HTML_EXTRA_FILES       = docs/presentation.html docs/qr_code.png docs/qr_code.svg docs/mermaid.min.js
 HTML_FOOTER            = docs/doxygen_footer.html
