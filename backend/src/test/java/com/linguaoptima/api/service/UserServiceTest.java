@@ -6,6 +6,7 @@ package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.ApiKey;
 import com.linguaoptima.api.domain.ProgressRecord;
+import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
@@ -61,6 +62,9 @@ class UserServiceTest {
     /** @brief Test fixture or mock dependency for session state repository. */
     @Mock
     private SessionStateRepository sessionStateRepository;
+    /** @brief Test fixture or mock dependency for submission repository. */
+    @Mock
+    private SubmissionRepository submissionRepository;
     /** @brief Test fixture or mock dependency for password encoder. */
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -183,11 +187,13 @@ class UserServiceTest {
         UUID uid = sampleUser.getId();
         when(apiKeyRepository.findAllByUserId(uid)).thenReturn(List.of(ApiKey.builder().id(UUID.randomUUID()).build()));
         when(progressRecordRepository.findByStudentId(uid)).thenReturn(List.of(ProgressRecord.builder().id(UUID.randomUUID()).build()));
+        when(submissionRepository.findByStudentIdOrderBySubmittedAtDesc(uid)).thenReturn(List.of(Submission.builder().id(UUID.randomUUID()).build()));
 
         assertDoesNotThrow(() -> userService.deleteAccount(sampleUser));
 
         verify(apiKeyRepository).delete(any(ApiKey.class));
         verify(progressRecordRepository).delete(any(ProgressRecord.class));
+        verify(submissionRepository).delete(any(Submission.class));
         verify(userRepository).deleteById(uid);
 
         when(userRepository.findById(uid)).thenReturn(Optional.empty());

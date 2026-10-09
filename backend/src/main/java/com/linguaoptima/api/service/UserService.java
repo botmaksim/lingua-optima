@@ -46,6 +46,8 @@ public class UserService {
     private final GroupStudentRepository groupStudentRepository;
     /** @brief Field representing session state repository in UserService. */
     private final SessionStateRepository sessionStateRepository;
+    /** @brief Field representing submission repository in UserService. */
+    private final SubmissionRepository submissionRepository;
     /** @brief Field representing password encoder in UserService. */
     private final PasswordEncoder passwordEncoder;
 
@@ -125,6 +127,7 @@ public class UserService {
 
         apiKeyRepository.findAllByUserId(uid).forEach(apiKeyRepository::delete);
         progressRecordRepository.findByStudentId(uid).forEach(progressRecordRepository::delete);
+        submissionRepository.findByStudentIdOrderBySubmittedAtDesc(uid).forEach(submissionRepository::delete);
         notificationRepository.findByUserIdOrderByCreatedAtDesc(uid).forEach(notificationRepository::delete);
         subscriptionRepository.findByUserId(uid).ifPresent(subscriptionRepository::delete);
         usageCounterRepository.findByUserId(uid).ifPresent(usageCounterRepository::delete);
