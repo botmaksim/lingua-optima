@@ -1,6 +1,15 @@
+/**
+ * @file Footer.tsx
+ * @brief Application footer component containing branding, privacy notices, and navigation links.
+ */
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+/**
+ * @brief Global footer bar component.
+ * @return React component element.
+ */
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-white border-t border-slate-200 mt-auto py-8">

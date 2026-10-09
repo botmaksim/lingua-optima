@@ -1,5 +1,15 @@
 import { CefrLevel } from '../types/user';
 
+/**
+ * @file cefrColors.ts
+ * @brief Visual design helper providing color classes for CEFR level badges.
+ */
+
+/**
+ * @brief Resolves Tailwind CSS color badge classes for a given CEFR proficiency level.
+ * @param level CEFR level ('B1', 'B2', 'C1').
+ * @return String of CSS class names.
+ */
 export const getCefrBadgeClasses = (level: CefrLevel): string => {
   switch (level) {
     case 'B1':

@@ -1,3 +1,11 @@
+/**
+ * @file session.ts
+ * @brief Types for adaptive practice sessions, questions, and answering feedback.
+ */
+
+/**
+ * @brief Current runtime state of an adaptive exercise session.
+ */
 export interface SessionState {
   id: string;
   assignmentId: string;
@@ -8,6 +16,9 @@ export interface SessionState {
   lastActiveAt: string;
 }
 
+/**
+ * @brief Individual question presented during an adaptive session.
+ */
 export interface QuestionResponse {
   id: string;
   questionOrder: number;
@@ -17,11 +28,17 @@ export interface QuestionResponse {
   grammarRule: string;
 }
 
+/**
+ * @brief Payload for submitting an answer in an adaptive session.
+ */
 export interface AnswerRequest {
   questionId: string;
   answer: string;
 }
 
+/**
+ * @brief Evaluation result and updated state following an answered question.
+ */
 export interface AnswerFeedback {
   correct: boolean;
   correctAnswer: string;

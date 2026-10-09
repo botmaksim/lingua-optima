@@ -1,9 +1,18 @@
+/**
+ * @file ForgotPassword.tsx
+ * @brief Self-service password recovery component with timing-attack resistant responses.
+ */
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { authApi } from '../../api/authApi';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief ForgotPassword page component providing password reset request form.
+ * @return React component element.
+ */
 export const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -18,7 +27,6 @@ export const ForgotPassword: React.FC = () => {
       await authApi.forgotPassword(email);
       setIsSubmitted(true);
     } catch (err) {
-      // Security defense: avoid leaking user presence
       setIsSubmitted(true);
     } finally {
       setIsLoading(false);

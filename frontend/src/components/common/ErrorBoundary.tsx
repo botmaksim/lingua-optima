@@ -1,28 +1,53 @@
+/**
+ * @file ErrorBoundary.tsx
+ * @brief React error boundary for catching rendering failures and providing a fallback UI.
+ */
+
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
+/**
+ * @brief Props for the ErrorBoundary component.
+ */
 interface Props {
   children: ReactNode;
 }
 
+/**
+ * @brief State tracking whether an uncaught error occurred during render.
+ */
 interface State {
   hasError: boolean;
   error?: Error;
 }
 
+/**
+ * @brief Top-level React error boundary displaying user-friendly recovery UI on unhandled errors.
+ */
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
   };
 
+  /**
+   * @brief Derives error state from caught exception.
+   * @return Updated component state with hasError set to true.
+   */
   public static getDerivedStateFromError(error: Error): State {
     return { hasError: true, error };
   }
 
+  /**
+   * @brief Logs error diagnostic details when a child component throws.
+   */
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error:', error, errorInfo);
   }
 
+  /**
+   * @brief Renders child components or error fallback UI.
+   * @return Rendered React node.
+   */
   public render() {
     if (this.state.hasError) {
       return (

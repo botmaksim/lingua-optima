@@ -1,8 +1,17 @@
+/**
+ * @file NotFound.tsx
+ * @brief 404 error fallback page with contextual redirection to role dashboard.
+ */
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Compass, Home, ArrowLeft } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
+/**
+ * @brief 404 HTTP fallback component shown when requested route does not exist.
+ * @return JSX 404 element.
+ */
 export const NotFound: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();

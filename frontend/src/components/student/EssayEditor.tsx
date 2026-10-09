@@ -1,3 +1,8 @@
+/**
+ * @file EssayEditor.tsx
+ * @brief Rich essay editor providing real-time word counting, automatic drafts, and submission for rubric evaluation.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FileText, Save, Send, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -9,6 +14,10 @@ import { getWordCount } from '../../utils/wordCount';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Interactive essay composing workspace with client-side auto-saving and word counting.
+ * @return JSX essay editor view.
+ */
 export const EssayEditor: React.FC = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
@@ -79,7 +88,6 @@ export const EssayEditor: React.FC = () => {
         {task && <CefrBadge level={task.cefrLevel} size="md" />}
       </div>
 
-      {/* Task Prompt (Read-only) */}
       {task && (
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-2">
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -100,7 +108,6 @@ export const EssayEditor: React.FC = () => {
         </div>
       )}
 
-      {/* Essay Editor Area */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
         <div className="flex items-center justify-between text-xs font-medium border-b border-slate-100 pb-3">
           <div className="flex items-center space-x-2">
@@ -138,7 +145,6 @@ export const EssayEditor: React.FC = () => {
           className="w-full p-4 rounded-2xl border border-slate-200 text-slate-800 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y font-sans"
         />
 
-        {/* Buttons: [Save Draft] [Submit for Scoring] */}
         <div className="flex items-center justify-between pt-2">
           <button
             type="button"

@@ -1,9 +1,28 @@
+/**
+ * @file task.ts
+ * @brief Task domain model, question definitions, parameters, and assignment contracts.
+ */
+
 import { CefrLevel, User } from './user';
 
+/**
+ * @brief Types of pedagogical tasks available.
+ */
 export type TaskType = 'MCQ' | 'GAP_FILL' | 'REWRITE' | 'ESSAY';
+
+/**
+ * @brief Task difficulty categorization.
+ */
 export type DifficultyLevel = 'EASY' | 'MEDIUM' | 'HARD';
+
+/**
+ * @brief Assignment workflow status.
+ */
 export type AssignmentStatus = 'PENDING' | 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED';
 
+/**
+ * @brief Individual question within a multi-item task.
+ */
 export interface TaskQuestion {
   id: string;
   questionOrder: number;
@@ -14,6 +33,9 @@ export interface TaskQuestion {
   grammarRule: string;
 }
 
+/**
+ * @brief Language learning task or exercise template.
+ */
 export interface Task {
   id: string;
   type: TaskType;
@@ -29,6 +51,9 @@ export interface Task {
   createdAt: string;
 }
 
+/**
+ * @brief Parameters for generating or configuring a task.
+ */
 export interface TaskParams {
   cefrLevel: CefrLevel;
   grammarTopic?: string;
@@ -38,6 +63,9 @@ export interface TaskParams {
   numberOfQuestions?: number;
 }
 
+/**
+ * @brief Task assignment linking a student to an assigned exercise.
+ */
 export interface TaskAssignment {
   id: string;
   taskId: string;

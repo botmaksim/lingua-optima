@@ -1,3 +1,8 @@
+/**
+ * @file Navbar.tsx
+ * @brief Primary application navigation header featuring responsive mobile menu, notifications dropdown, and role links.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -23,6 +28,10 @@ import { CefrBadge } from './CefrBadge';
 import { OfflineBanner } from './OfflineBanner';
 import { formatDate } from '../../utils/formatDate';
 
+/**
+ * @brief Global navigation bar component.
+ * @return React component element.
+ */
 export const Navbar: React.FC = () => {
   const { user, isStudent, isTeacher, logout } = useAuth();
   const { remainingEvaluations, isQuotaExceeded } = useUsage();

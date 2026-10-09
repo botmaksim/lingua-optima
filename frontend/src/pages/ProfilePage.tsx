@@ -1,3 +1,8 @@
+/**
+ * @file ProfilePage.tsx
+ * @brief User account profile, CEFR status, and BYOK AES-256 encrypted API key management page.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Key, ShieldCheck, Trash2, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
@@ -5,12 +10,15 @@ import { apiKeyApi, ApiKeyItem } from '../api/apiKeyApi';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
+/**
+ * @brief User profile page component.
+ * @return React component element.
+ */
 export const ProfilePage: React.FC = () => {
   const { user } = useAuthStore();
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // New key input state
   const [selectedProvider, setSelectedProvider] = useState<'GROQ' | 'GEMINI' | 'OPENAI' | 'ANTHROPIC'>('OPENAI');
   const [rawKey, setRawKey] = useState('');
   const [isSavingKey, setIsSavingKey] = useState(false);

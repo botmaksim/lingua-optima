@@ -1,3 +1,8 @@
+/**
+ * @file TeacherDashboard.tsx
+ * @brief Educator central hub displaying cohort groups, enrolled students, and grading controls.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Sparkles, CheckCircle, FileText, ArrowRight, TrendingUp } from 'lucide-react';
@@ -5,6 +10,10 @@ import { groupApi } from '../../api/groupApi';
 import { Group } from '../../types/group';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Teacher command center showing cohort statistics, quick actions, and group management.
+ * @return JSX teacher dashboard element.
+ */
 export const TeacherDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -26,7 +35,6 @@ export const TeacherDashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
-      {/* Educator Header Card */}
       <div className="bg-gradient-to-r from-sky-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-sky-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
@@ -55,7 +63,6 @@ export const TeacherDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center space-x-4">
           <div className="w-14 h-14 rounded-2xl bg-sky-50 text-accent flex items-center justify-center">
@@ -88,7 +95,6 @@ export const TeacherDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Cohort Groups Overview */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">

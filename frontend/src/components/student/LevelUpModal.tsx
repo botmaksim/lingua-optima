@@ -1,3 +1,8 @@
+/**
+ * @file LevelUpModal.tsx
+ * @brief Modal dialogue celebrating student progression and offering voluntary promotion to the next CEFR level.
+ */
+
 import React, { useState } from 'react';
 import { Award, Sparkles } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
@@ -5,6 +10,10 @@ import { progressApi } from '../../api/progressApi';
 import { CefrBadge } from '../common/CefrBadge';
 import { CefrLevel } from '../../types/user';
 
+/**
+ * @brief Prompts the student when eligible to advance their account's CEFR proficiency level.
+ * @return JSX modal element or null.
+ */
 export const LevelUpModal: React.FC = () => {
   const { user, setUser } = useAuthStore();
   const [isOpen, setIsOpen] = useState(true);

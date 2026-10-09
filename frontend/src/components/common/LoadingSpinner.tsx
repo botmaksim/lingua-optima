@@ -1,11 +1,25 @@
 import React from 'react';
 
+/**
+ * @file LoadingSpinner.tsx
+ * @brief Reusable animated loading indicator spinner component.
+ */
+
+/**
+ * @interface LoadingSpinnerProps
+ * @brief Props definition for LoadingSpinner component.
+ */
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   message?: string;
 }
 
+/**
+ * @brief Animated loading spinner component.
+ * @param props Component properties.
+ * @return React component element.
+ */
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
   className = '',

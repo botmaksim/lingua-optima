@@ -1,3 +1,8 @@
+/**
+ * @file AdaptiveSession.tsx
+ * @brief Interactive Computerized Adaptive Testing (CAT) testing interface with dynamic difficulty adjustments.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle, ArrowRight, Zap } from 'lucide-react';
@@ -5,6 +10,10 @@ import { sessionApi } from '../../api/sessionApi';
 import { SessionState, QuestionResponse, AnswerFeedback } from '../../types/session';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Student adaptive testing session component.
+ * @return React component element.
+ */
 export const AdaptiveSession: React.FC = () => {
   const { assignmentId } = useParams<{ assignmentId: string }>();
   const navigate = useNavigate();
@@ -19,7 +28,6 @@ export const AdaptiveSession: React.FC = () => {
   useEffect(() => {
     const initSession = async () => {
       try {
-        // Try resuming existing active session
         let active = await sessionApi.getActiveSession();
         if (!active && assignmentId) {
           active = await sessionApi.startSession(assignmentId);

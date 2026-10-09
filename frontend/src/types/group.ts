@@ -1,5 +1,13 @@
+/**
+ * @file group.ts
+ * @brief Types for educational study groups and group membership.
+ */
+
 import { User } from './user';
 
+/**
+ * @brief Student enrollment within a study group.
+ */
 export interface GroupStudent {
   id: string;
   student: User;
@@ -7,6 +15,9 @@ export interface GroupStudent {
   joinedAt: string;
 }
 
+/**
+ * @brief Study group managed by an educator.
+ */
 export interface Group {
   id: string;
   name: string;
@@ -16,6 +27,9 @@ export interface Group {
   createdAt: string;
 }
 
+/**
+ * @brief Request payload to create a new study group.
+ */
 export interface CreateGroupRequest {
   name: string;
 }

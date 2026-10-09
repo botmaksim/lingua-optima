@@ -1,3 +1,8 @@
+/**
+ * @file MyUnits.tsx
+ * @brief Student history view displaying past submissions, evaluations, and searchable completed units.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Search, Filter } from 'lucide-react';
@@ -6,6 +11,10 @@ import { SubmissionResult } from '../../types/submission';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { formatDate } from '../../utils/formatDate';
 
+/**
+ * @brief Renders the history of student tasks and submissions with filtering and search.
+ * @return JSX student units view.
+ */
 export const MyUnits: React.FC = () => {
   const navigate = useNavigate();
   const [submissions, setSubmissions] = useState<SubmissionResult[]>([]);
@@ -42,7 +51,6 @@ export const MyUnits: React.FC = () => {
         </p>
       </div>
 
-      {/* Filter and Search Bar */}
       <div className="bg-white rounded-3xl p-4 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center gap-3">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -69,7 +77,6 @@ export const MyUnits: React.FC = () => {
         </div>
       </div>
 
-      {/* Submissions List */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-slate-200">

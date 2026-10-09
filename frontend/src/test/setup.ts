@@ -1,6 +1,9 @@
 import '@testing-library/jest-dom';
 
-// Mock window.matchMedia
+/**
+ * @file setup.ts
+ * @brief Vitest testing environment initialization and window.matchMedia mock setup.
+ */
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({

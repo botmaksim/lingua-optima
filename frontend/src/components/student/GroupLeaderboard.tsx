@@ -1,3 +1,8 @@
+/**
+ * @file GroupLeaderboard.tsx
+ * @brief Intra-group privacy-first student leaderboard utilizing pseudonymous aliases.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Trophy, Flame, Shield, Users } from 'lucide-react';
 import { leaderboardApi } from '../../api/leaderboardApi';
@@ -5,6 +10,10 @@ import { groupApi } from '../../api/groupApi';
 import { LeaderboardEntry } from '../../types/leaderboard';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Renders the weekly points leaderboard scoped strictly within the student's assigned group.
+ * @return JSX group leaderboard view.
+ */
 export const GroupLeaderboard: React.FC = () => {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [groupName, setGroupName] = useState<string>('');
@@ -48,7 +57,6 @@ export const GroupLeaderboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Strict Architectural Guarantee Notice */}
       <div className="p-4 rounded-2xl bg-slate-100/70 border border-slate-200 text-xs text-slate-600 flex items-start space-x-3">
         <Shield className="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" />
         <p>
@@ -57,7 +65,6 @@ export const GroupLeaderboard: React.FC = () => {
         </p>
       </div>
 
-      {/* Leaderboard Table / Card List */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         {entries.length === 0 ? (
           <div className="p-12 text-center text-slate-500">
@@ -83,7 +90,6 @@ export const GroupLeaderboard: React.FC = () => {
                   className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/60 transition"
                 >
                   <div className="flex items-center space-x-4">
-                    {/* Rank badge */}
                     <div
                       className={`w-9 h-9 rounded-xl border flex items-center justify-center font-black text-sm font-mono ${medalColors}`}
                     >
@@ -102,7 +108,6 @@ export const GroupLeaderboard: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Score */}
                   <div className="text-right">
                     <div className="text-base font-black text-primary font-mono">
                       {Math.round(entry.weeklyScore)}

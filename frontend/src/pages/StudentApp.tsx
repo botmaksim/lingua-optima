@@ -1,3 +1,8 @@
+/**
+ * @file StudentApp.tsx
+ * @brief Sub-router container for all student role views and adaptive learning workflows.
+ */
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Dashboard } from '../components/student/Dashboard';
@@ -11,6 +16,10 @@ import { MyUnits } from '../components/student/MyUnits';
 import { Progress } from '../components/student/Progress';
 import { GroupLeaderboard } from '../components/student/GroupLeaderboard';
 
+/**
+ * @brief Routes student actions including dashboard, OCR, sessions, and reviews.
+ * @return JSX student sub-routing structure.
+ */
 export const StudentApp: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

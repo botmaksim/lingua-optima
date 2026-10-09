@@ -1,3 +1,8 @@
+/**
+ * @file StudentGroups.tsx
+ * @brief Educator student group management view allowing group creation, enrollment, and member soft-deletion.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, UserPlus, Mail } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
@@ -5,6 +10,10 @@ import { Group } from '../../types/group';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Cohort management panel for educators to organize groups, add students, and monitor enrollment.
+ * @return JSX cohort management view.
+ */
 export const StudentGroups: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -123,7 +132,6 @@ export const StudentGroups: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Group list & Create group */}
         <div className="space-y-6">
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
             <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
@@ -179,7 +187,6 @@ export const StudentGroups: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Group Details & Enrolled Students */}
         <div className="lg:col-span-2 space-y-6">
           {selectedGroup ? (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
@@ -201,7 +208,6 @@ export const StudentGroups: React.FC = () => {
                 </button>
               </div>
 
-              {/* Add Student by Email */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-3">
                 <div className="flex items-center space-x-2 text-xs font-bold text-slate-700">
                   <UserPlus className="w-4 h-4 text-primary" />
@@ -232,7 +238,6 @@ export const StudentGroups: React.FC = () => {
                 )}
               </div>
 
-              {/* Enrolled Students List */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                   Enrolled Students

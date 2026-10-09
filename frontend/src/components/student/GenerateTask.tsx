@@ -1,3 +1,8 @@
+/**
+ * @file GenerateTask.tsx
+ * @brief Dynamic task generator interface allowing students to generate CEFR-aligned exercises.
+ */
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, RotateCcw, AlertTriangle } from 'lucide-react';
@@ -39,6 +44,10 @@ const CEFR_TOPICS: Record<CefrLevel, string[]> = {
 
 const DOMAINS = ['Daily Life', 'Business', 'Academic', 'Technology', 'Travel & Culture'];
 
+/**
+ * @brief Form component to configure and generate AI-driven practice tasks.
+ * @return JSX form element for task generation.
+ */
 export const GenerateTask: React.FC = () => {
   const { user } = useAuth();
   const { isQuotaExceeded } = useUsage();
@@ -123,7 +132,6 @@ export const GenerateTask: React.FC = () => {
       )}
 
       <form onSubmit={handleGenerate} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-        {/* CEFR Level selection */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Target CEFR Level
@@ -147,7 +155,6 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
-        {/* Grammar topic selection */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Grammar Topic
@@ -165,7 +172,6 @@ export const GenerateTask: React.FC = () => {
           </select>
         </div>
 
-        {/* Domain selection */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Vocabulary Domain
@@ -188,7 +194,6 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
-        {/* Task Type */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Task Type
@@ -218,7 +223,6 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
-        {/* Difficulty and Question count slider */}
         {taskType !== 'ESSAY' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
@@ -262,7 +266,6 @@ export const GenerateTask: React.FC = () => {
           </div>
         )}
 
-        {/* Buttons: [Generate Task] [Clear] */}
         <div className="flex items-center space-x-3 pt-4 border-t border-slate-100">
           <button
             type="submit"

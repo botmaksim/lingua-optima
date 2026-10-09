@@ -1,8 +1,16 @@
+/**
+ * @file useSSE.ts
+ * @brief Custom React hook managing real-time Server-Sent Events (SSE) notification connection and automatic reconnection.
+ */
+
 import { useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 import { notificationApi } from '../api/notificationApi';
 
+/**
+ * @brief React hook subscribing to real-time notification push events when authenticated.
+ */
 export const useSSE = () => {
   const { isAuthenticated } = useAuthStore();
   const { addNotification } = useNotificationStore();
@@ -19,7 +27,6 @@ export const useSSE = () => {
           addNotification(notification);
         },
         () => {
-          // Reconnect on disconnect after 5 seconds
           if (eventSource) {
             eventSource.close();
           }

@@ -1,9 +1,18 @@
+/**
+ * @file LoginPage.tsx
+ * @brief Authentication page supporting user sign-in and registration for students and teachers.
+ */
+
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Mail, Lock, User, AlertCircle, Sparkles, GraduationCap } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief User login and account registration view with role selection.
+ * @return JSX authentication element.
+ */
 export const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -60,7 +69,6 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Tab switch between Log In and Register */}
         <div className="flex rounded-2xl bg-slate-100 p-1">
           <button
             type="button"

@@ -1,7 +1,16 @@
+/**
+ * @file OfflineBanner.tsx
+ * @brief Floating banner alerting the user to offline connectivity status.
+ */
+
 import React from 'react';
 import { WifiOff } from 'lucide-react';
 import { useOnline } from '../../hooks/useOnline';
 
+/**
+ * @brief Displays an informational banner when the browser loses network connection.
+ * @return JSX banner element or null if online.
+ */
 export const OfflineBanner: React.FC = () => {
   const isOnline = useOnline();
 

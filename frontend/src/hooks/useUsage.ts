@@ -1,8 +1,17 @@
+/**
+ * @file useUsage.ts
+ * @brief Custom React hook querying and computing remaining free-tier evaluation and OCR quotas.
+ */
+
 import { useState, useEffect } from 'react';
 import { subscriptionApi } from '../api/subscriptionApi';
 import { UsageCounter } from '../types/subscription';
 import { useAuthStore } from '../store/authStore';
 
+/**
+ * @brief Hook monitoring quota consumption and limit warnings.
+ * @return Object containing usage data, remaining allowances, and refresh trigger.
+ */
 export const useUsage = () => {
   const { isAuthenticated } = useAuthStore();
   const [usage, setUsage] = useState<UsageCounter | null>(null);

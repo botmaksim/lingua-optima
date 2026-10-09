@@ -1,7 +1,13 @@
+/**
+ * @file utils.test.ts
+ * @brief Unit tests for frontend utility functions (wordCount, cefrColors, formatDate).
+ */
+
 import { describe, it, expect } from 'vitest';
 import { getWordCount } from '../utils/wordCount';
 import { getCefrBadgeClasses } from '../utils/cefrColors';
 import { formatDate } from '../utils/formatDate';
+import { CefrLevel } from '../types/user';
 
 describe('wordCount utility', () => {
   it('returns 0 for empty or whitespace string', () => {
@@ -36,8 +42,7 @@ describe('cefrColors utility', () => {
   });
 
   it('returns fallback slate classes for unknown levels', () => {
-    // @ts-expect-error test fallback branch
-    const classes = getCefrBadgeClasses('A1');
+    const classes = getCefrBadgeClasses('A1' as unknown as CefrLevel);
     expect(classes).toContain('slate');
   });
 });

@@ -1,13 +1,23 @@
+/**
+ * @file useDraft.ts
+ * @brief Custom React hook managing local draft persistence with automatic 30-second background save timer.
+ */
+
 import { useState, useEffect, useRef } from 'react';
 import { saveDraftLocal, getDraftLocal, clearDraftLocal } from '../utils/offlineSync';
 
+/**
+ * @brief React hook managing student work-in-progress draft text state.
+ * @param draftKey Unique storage key for the document.
+ * @param initialContent Initial content if no draft is found.
+ * @return State object containing content, save state, and persistence handlers.
+ */
 export const useDraft = (draftKey: string, initialContent = '') => {
   const [content, setContent] = useState<string>(initialContent);
   const [isSaved, setIsSaved] = useState<boolean>(true);
   const contentRef = useRef<string>(content);
   contentRef.current = content;
 
-  // Load draft on mount
   useEffect(() => {
     let isMounted = true;
     getDraftLocal(draftKey).then((saved) => {
@@ -20,7 +30,6 @@ export const useDraft = (draftKey: string, initialContent = '') => {
     };
   }, [draftKey]);
 
-  // Auto-save every 30 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       if (contentRef.current) {

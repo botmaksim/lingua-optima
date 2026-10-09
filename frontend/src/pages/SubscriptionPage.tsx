@@ -1,3 +1,8 @@
+/**
+ * @file SubscriptionPage.tsx
+ * @brief Subscription management and upgrade pricing tiers page with mock payment processing.
+ */
+
 import React, { useEffect, useState } from 'react';
 import { Check, Sparkles, Shield, Zap, Users } from 'lucide-react';
 import { subscriptionApi } from '../api/subscriptionApi';
@@ -5,6 +10,10 @@ import { Subscription, SubscriptionTier, UsageCounter } from '../types/subscript
 import { useNotificationStore } from '../store/notificationStore';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
+/**
+ * @brief Renders the subscription plans, daily quota usage meters, and sandbox upgrade actions.
+ * @return JSX subscription management view.
+ */
 export const SubscriptionPage: React.FC = () => {
   const { addToast } = useNotificationStore();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -137,7 +146,6 @@ export const SubscriptionPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Current Usage Stats */}
       {usage && (
         <div className="mb-12 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
@@ -197,7 +205,6 @@ export const SubscriptionPage: React.FC = () => {
         </div>
       )}
 
-      {/* Plan Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {plans.map((plan) => {
           const isCurrent = currentTier === plan.tier;

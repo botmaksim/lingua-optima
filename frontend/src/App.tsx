@@ -1,3 +1,8 @@
+/**
+ * @file App.tsx
+ * @brief Top-level application routing layout, authentication initialization, and modal provider.
+ */
+
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/common/Navbar';
@@ -19,6 +24,10 @@ import { ProfilePage } from './pages/ProfilePage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
 import { NotFound } from './pages/NotFound';
 
+/**
+ * @brief Inner shell managing navigation routes, toasts, upgrade wall modals, and SSE events.
+ * @return JSX main layout.
+ */
 const AppContent: React.FC = () => {
   useSSE();
   const { toasts, removeToast } = useNotificationStore();
@@ -27,7 +36,6 @@ const AppContent: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-surface">
       <Navbar />
 
-      {/* Floating Toast Notification Container */}
       <div className="fixed top-20 right-4 z-50 flex flex-col space-y-2 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto">
@@ -50,7 +58,6 @@ const AppContent: React.FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 
-            {/* Student Portal Routes */}
             <Route
               path="/student/*"
               element={
@@ -60,7 +67,6 @@ const AppContent: React.FC = () => {
               }
             />
 
-            {/* Teacher Portal Routes */}
             <Route
               path="/teacher/*"
               element={
@@ -70,7 +76,6 @@ const AppContent: React.FC = () => {
               }
             />
 
-            {/* Profile & BYOK */}
             <Route
               path="/profile"
               element={
@@ -80,7 +85,6 @@ const AppContent: React.FC = () => {
               }
             />
 
-            {/* Subscription & Pricing */}
             <Route
               path="/subscription"
               element={
@@ -90,7 +94,6 @@ const AppContent: React.FC = () => {
               }
             />
 
-            {/* 404 Catch-All */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </ErrorBoundary>
@@ -101,6 +104,10 @@ const AppContent: React.FC = () => {
   );
 };
 
+/**
+ * @brief Application root wrapped in browser history router and auth session bootstrap.
+ * @return JSX top-level application element.
+ */
 export const App: React.FC = () => {
   const { initAuth } = useAuthStore();
 

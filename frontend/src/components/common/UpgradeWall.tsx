@@ -1,8 +1,17 @@
+/**
+ * @file UpgradeWall.tsx
+ * @brief Modal dialog prompting users to upgrade their subscription tier or provide BYOK keys.
+ */
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Key, AlertCircle, X } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 
+/**
+ * @brief Paywall/quota modal rendered when daily AI or OCR limits are reached.
+ * @return JSX modal element or null when hidden.
+ */
 export const UpgradeWall: React.FC = () => {
   const { isUpgradeWallOpen, upgradeWallReason, closeUpgradeWall } = useUIStore();
   const navigate = useNavigate();

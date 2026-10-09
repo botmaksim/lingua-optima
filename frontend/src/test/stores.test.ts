@@ -1,3 +1,8 @@
+/**
+ * @file stores.test.ts
+ * @brief Unit tests for Zustand state stores (useUIStore, useNotificationStore).
+ */
+
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useUIStore } from '../store/uiStore';
 import { useNotificationStore } from '../store/notificationStore';

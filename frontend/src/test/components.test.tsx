@@ -1,3 +1,8 @@
+/**
+ * @file components.test.tsx
+ * @brief Unit tests for common React UI components (CefrBadge, Toast).
+ */
+
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CefrBadge } from '../components/common/CefrBadge';

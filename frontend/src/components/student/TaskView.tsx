@@ -1,3 +1,8 @@
+/**
+ * @file TaskView.tsx
+ * @brief Student exercise solving interface supporting offline draft autosaving, countdown timer, and text submission.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Send, Clock, CheckCircle2 } from 'lucide-react';
@@ -8,6 +13,10 @@ import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { saveDraftLocal, getDraftLocal } from '../../utils/offlineSync';
 
+/**
+ * @brief Student task interactive view component.
+ * @return React component element.
+ */
 export const TaskView: React.FC = () => {
   const { taskId } = useParams<{ taskId: string }>();
   const navigate = useNavigate();
@@ -27,13 +36,11 @@ export const TaskView: React.FC = () => {
         const data = await taskApi.getTaskById(taskId);
         setTask(data);
 
-        // Load any saved draft
         const draft = await getDraftLocal(`task_${taskId}`);
         if (draft) {
           try {
             setAnswers(JSON.parse(draft));
           } catch {
-            // Ignore
           }
         }
       } catch (err) {
@@ -45,7 +52,6 @@ export const TaskView: React.FC = () => {
 
     loadTask();
 
-    // Timer
     const timer = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
@@ -69,7 +75,6 @@ export const TaskView: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Format answers as student text payload
       const formattedAnswers = (task.questions || []).map((q, idx) => {
         return `Q${idx + 1}: ${answers[q.id] || 'No answer'}`;
       }).join('\n');

@@ -1,3 +1,8 @@
+/**
+ * @file ExportReports.tsx
+ * @brief Educator reporting interface for downloading student cohort performance in PDF or CSV formats.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { FileText, Download, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
@@ -5,6 +10,10 @@ import { exportApi } from '../../api/exportApi';
 import { Group } from '../../types/group';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Panel allowing educators to export cohort progress reports in PDF and CSV format.
+ * @return JSX report export view.
+ */
 export const ExportReports: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
@@ -58,7 +67,6 @@ export const ExportReports: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-        {/* Select Cohort */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Select Cohort Group
@@ -76,7 +84,6 @@ export const ExportReports: React.FC = () => {
           </select>
         </div>
 
-        {/* Format Select (PDF vs CSV) */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Report Format

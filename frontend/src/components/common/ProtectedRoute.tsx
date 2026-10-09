@@ -1,14 +1,28 @@
+/**
+ * @file ProtectedRoute.tsx
+ * @brief Route protection wrapper enforcing authentication and role-based access control.
+ */
+
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { Role } from '../../types/user';
 import { LoadingSpinner } from './LoadingSpinner';
 
+/**
+ * @interface ProtectedRouteProps
+ * @brief Props definition for route guard component.
+ */
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedRoles?: Role[];
 }
 
+/**
+ * @brief Guard wrapper component verifying user authentication and roles prior to rendering child routes.
+ * @param props Component properties containing children and allowedRoles.
+ * @return React component element or redirect.
+ */
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   allowedRoles,
@@ -29,7 +43,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // If student tries teacher page, redirect to student app
     const fallbackPath = user.role === 'STUDENT' ? '/student' : '/teacher';
     return <Navigate to={fallbackPath} replace />;
   }

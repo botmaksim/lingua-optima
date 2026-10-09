@@ -1,25 +1,42 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-// Strict Architectural Rule: Access token in JS memory ONLY (never localStorage)
+/**
+ * @file axiosInstance.ts
+ * @brief Configured Axios instance with in-memory JWT storage, request interceptor, and silent refresh queue.
+ *
+ * Implements strict security rule: access tokens are stored strictly in JS memory (never localStorage/sessionStorage)
+ * to prevent XSS credential harvesting. Refresh tokens are exchanged securely via HttpOnly cookies.
+ */
+
 let inMemoryAccessToken: string | null = null;
 
+/**
+ * @brief Sets the in-memory access token string.
+ * @param token The active access token or null to clear.
+ */
 export const setAccessToken = (token: string | null) => {
   inMemoryAccessToken = token;
 };
 
+/**
+ * @brief Retrieves the current in-memory access token.
+ * @return In-memory token string or null if unauthenticated.
+ */
 export const getAccessToken = () => inMemoryAccessToken;
 
 const baseURL = import.meta.env.VITE_API_URL || '/api';
 
+/**
+ * @brief Pre-configured Axios instance for Lingua Optima REST API communication.
+ */
 export const axiosInstance = axios.create({
   baseURL,
-  withCredentials: true, // Send HttpOnly refresh token cookie
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor: attach in-memory Bearer token
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (inMemoryAccessToken && config.headers) {
@@ -30,13 +47,17 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Silent refresh queue management
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (token: string) => void;
   reject: (error: any) => void;
 }> = [];
 
+/**
+ * @brief Processes queued HTTP requests waiting for an in-flight silent token refresh.
+ * @param error Error if refresh failed, null if succeeded.
+ * @param token New access token if refreshed, null otherwise.
+ */
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach((promise) => {
     if (error) {
@@ -48,13 +69,11 @@ const processQueue = (error: any, token: string | null = null) => {
   failedQueue = [];
 };
 
-// Response interceptor: silent JWT refresh on 401
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    // Don't loop on refresh/login endpoints
     if (
       error.response?.status === 401 &&
       originalRequest &&
@@ -96,7 +115,6 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         setAccessToken(null);
-        // Dispatch custom event to notify authStore to clear state
         window.dispatchEvent(new CustomEvent('auth:expired'));
         return Promise.reject(refreshError);
       } finally {

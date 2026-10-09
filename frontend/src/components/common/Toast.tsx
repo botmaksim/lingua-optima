@@ -1,8 +1,19 @@
+/**
+ * @file Toast.tsx
+ * @brief Toast notification popup component for user feedback messages.
+ */
+
 import React from 'react';
 import { CheckCircle2, AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
 
+/**
+ * @brief Categorization of toast visual severity.
+ */
 export type ToastType = 'success' | 'warning' | 'error' | 'info';
 
+/**
+ * @brief Props for individual Toast message.
+ */
 interface ToastProps {
   id: string;
   type: ToastType;
@@ -10,6 +21,14 @@ interface ToastProps {
   onClose: (id: string) => void;
 }
 
+/**
+ * @brief Renders a floating notification card with severity styling and dismiss trigger.
+ * @param id Unique identifier of the notification.
+ * @param type Severity category determining color and icon.
+ * @param message User message text.
+ * @param onClose Callback to dismiss the toast.
+ * @return JSX notification element.
+ */
 export const Toast: React.FC<ToastProps> = ({ id, type, message, onClose }) => {
   const icons = {
     success: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,

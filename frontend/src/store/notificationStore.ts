@@ -1,8 +1,17 @@
+/**
+ * @file notificationStore.ts
+ * @brief Zustand reactive store managing real-time notifications, unread badges, and toast messages.
+ */
+
 import { create } from 'zustand';
 import { Notification } from '../types/notification';
 import { notificationApi } from '../api/notificationApi';
 import { ToastType } from '../components/common/Toast';
 
+/**
+ * @interface ToastItem
+ * @brief Transient toast notification data model.
+ */
 export interface ToastItem {
   id: string;
   type: ToastType;
@@ -10,6 +19,10 @@ export interface ToastItem {
   title?: string;
 }
 
+/**
+ * @interface NotificationState
+ * @brief Notification state and mutation actions.
+ */
 interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
@@ -22,6 +35,9 @@ interface NotificationState {
   removeToast: (id: string) => void;
 }
 
+/**
+ * @brief Global notification and toast store hook.
+ */
 export const useNotificationStore = create<NotificationState>((set) => ({
   notifications: [],
   unreadCount: 0,

@@ -1,3 +1,8 @@
+/**
+ * @file main.tsx
+ * @brief Application entry point mounting the root React DOM tree.
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';

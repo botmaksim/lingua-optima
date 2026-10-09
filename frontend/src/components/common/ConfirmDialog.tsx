@@ -1,6 +1,14 @@
+/**
+ * @file ConfirmDialog.tsx
+ * @brief Modal confirmation dialog for destructive or critical actions.
+ */
+
 import React from 'react';
 import { AlertCircle } from 'lucide-react';
 
+/**
+ * @brief Props for the ConfirmDialog component.
+ */
 interface ConfirmDialogProps {
   isOpen: boolean;
   title: string;
@@ -12,6 +20,18 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
+/**
+ * @brief Renders a modal confirmation dialog requesting user verification before proceeding.
+ * @param isOpen Whether the modal is actively visible.
+ * @param title Dialog heading.
+ * @param message Clarifying description of the action.
+ * @param confirmText Label on positive confirmation button.
+ * @param cancelText Label on cancellation button.
+ * @param isDestructive Whether the action is hazardous (styles button in rose red).
+ * @param onConfirm Callback when user clicks confirmation.
+ * @param onCancel Callback when user clicks cancel or closes.
+ * @return JSX modal element or null.
+ */
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
   title,

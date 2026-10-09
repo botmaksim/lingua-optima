@@ -1,3 +1,8 @@
+/**
+ * @file Progress.tsx
+ * @brief Student progress analytics and mastery tracking across CEFR grammar syllabus topics.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart3, Sparkles, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -5,6 +10,10 @@ import { progressApi } from '../../api/progressApi';
 import { ProgressRecord } from '../../types/progress';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Renders student diagnostic analytics, error frequencies, and per-topic mastery metrics.
+ * @return JSX student progress view.
+ */
 export const Progress: React.FC = () => {
   const navigate = useNavigate();
   const [records, setRecords] = useState<ProgressRecord[]>([]);
@@ -53,7 +62,6 @@ export const Progress: React.FC = () => {
         </button>
       </div>
 
-      {/* Summary Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex items-center space-x-4">
           <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center">
@@ -86,7 +94,6 @@ export const Progress: React.FC = () => {
         </div>
       </div>
 
-      {/* Topics & Mastery Table */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">

@@ -1,19 +1,36 @@
+/**
+ * @file authStore.ts
+ * @brief Zustand store managing client authentication state, user identity, and session restoration.
+ */
+
 import { create } from 'zustand';
 import { User } from '../types/user';
 import { authApi } from '../api/authApi';
 import { setAccessToken } from '../api/axiosInstance';
 
+/**
+ * @interface AuthState
+ * @brief Reactive state and actions for user authentication and session management.
+ */
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  /** @brief Sets current user identity */
   setUser: (user: User | null) => void;
+  /** @brief Authenticates user with email and password */
   login: (email: string, password: string) => Promise<void>;
+  /** @brief Registers a new user account */
   register: (email: string, password: string, fullName: string, role: string) => Promise<void>;
+  /** @brief Terminates the active session and clears tokens */
   logout: () => Promise<void>;
+  /** @brief Restores active session on app startup via refresh token */
   initAuth: () => Promise<void>;
 }
 
+/**
+ * @brief Global authentication store hook.
+ */
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
@@ -64,7 +81,6 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 }));
 
-// Listen to custom expiration event from axios interceptor
 if (typeof window !== 'undefined') {
   window.addEventListener('auth:expired', () => {
     useAuthStore.getState().logout();

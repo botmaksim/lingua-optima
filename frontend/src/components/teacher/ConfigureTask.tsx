@@ -1,3 +1,8 @@
+/**
+ * @file ConfigureTask.tsx
+ * @brief Educator task generation, parameter configuration, preview, and cohort deployment interface.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, Bookmark, Eye, CheckCircle2 } from 'lucide-react';
@@ -8,6 +13,10 @@ import { Task, TaskType, DifficultyLevel } from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 
+/**
+ * @brief Teacher component for configuring and deploying AI-generated assignments to student groups.
+ * @return React component element.
+ */
 export const ConfigureTask: React.FC = () => {
   const navigate = useNavigate();
 
@@ -91,7 +100,6 @@ export const ConfigureTask: React.FC = () => {
     setStatusMessage(null);
 
     try {
-      // 1. Generate full persisted task
       const task = await taskApi.generateTask({
         cefrLevel,
         grammarTopic,
@@ -101,7 +109,6 @@ export const ConfigureTask: React.FC = () => {
         numberOfQuestions,
       });
 
-      // 2. Assign to groups
       await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined);
 
       setStatusMessage('Task successfully deployed to selected student cohorts!');

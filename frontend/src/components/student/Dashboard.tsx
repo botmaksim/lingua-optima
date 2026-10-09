@@ -1,3 +1,8 @@
+/**
+ * @file Dashboard.tsx
+ * @brief Main student dashboard rendering streak, progress metrics, assigned tasks, and grammar gaps.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flame, Sparkles, Camera, ArrowRight, AlertCircle, CheckCircle, Clock } from 'lucide-react';
@@ -13,6 +18,10 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 import { LevelUpModal } from './LevelUpModal';
 import { formatDate } from '../../utils/formatDate';
 
+/**
+ * @brief Student home dashboard showing summary statistics, active tasks, and identified learning gaps.
+ * @return JSX student dashboard element.
+ */
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -48,10 +57,8 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
-      {/* Level Up Suggestion Modal if applicable */}
       {user?.levelUpSuggestedAt && <LevelUpModal />}
 
-      {/* Top Welcome & Actions Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-sky-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center space-x-3 mb-2">
@@ -65,7 +72,6 @@ export const Dashboard: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick Action Buttons */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => navigate('/student/generate')}
@@ -84,9 +90,7 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Stat Cards Grid: Streak & CEFR Progress */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Streak card */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center space-x-4">
           <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
             <Flame className="w-8 h-8 fill-amber-500" />
@@ -97,7 +101,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* CEFR Level & Target */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Current CEFR</span>
@@ -116,7 +119,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Weak Grammar Gaps Alert */}
         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex items-center space-x-4">
           <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center">
             <AlertCircle className="w-8 h-8" />
@@ -128,9 +130,7 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Grid: Active Assignments & Grammar Gaps */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column (2 cols): Available & Active Tasks */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
@@ -187,7 +187,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column (1 col): Grammar Gaps & Quick Targeted Practice */}
         <div className="space-y-6">
           <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
             <AlertCircle className="w-5 h-5 text-rose-500" />

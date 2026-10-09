@@ -1,3 +1,8 @@
+/**
+ * @file SubmissionsReview.tsx
+ * @brief Educator submission grading and AI evaluation override interface.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Edit3, ChevronDown, ChevronUp } from 'lucide-react';
 import { submissionApi } from '../../api/submissionApi';
@@ -5,12 +10,15 @@ import { SubmissionResult } from '../../types/submission';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { formatDate } from '../../utils/formatDate';
 
+/**
+ * @brief Educator component reviewing student homework and adjusting scores.
+ * @return React component element.
+ */
 export const SubmissionsReview: React.FC = () => {
   const [submissions, setSubmissions] = useState<SubmissionResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Override dialog state
   const [editingSub, setEditingSub] = useState<SubmissionResult | null>(null);
   const [newScore, setNewScore] = useState<number>(85);
   const [teacherComment, setTeacherComment] = useState<string>('');

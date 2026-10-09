@@ -1,3 +1,8 @@
+/**
+ * @file AIReview.tsx
+ * @brief Detailed AI evaluation feedback view showing rubrics, scores, and teacher overrides.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Sparkles, Share2, ArrowRight, BookmarkCheck, CheckCircle2, UserCheck } from 'lucide-react';
@@ -5,6 +10,10 @@ import { submissionApi } from '../../api/submissionApi';
 import { SubmissionResult } from '../../types/submission';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Renders the AI evaluation report, breakdown rubrics, and feedback for a student submission.
+ * @return JSX evaluation review view.
+ */
 export const AIReview: React.FC = () => {
   const { submissionId } = useParams<{ submissionId: string }>();
   const navigate = useNavigate();
@@ -59,7 +68,6 @@ export const AIReview: React.FC = () => {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      {/* Score Header Card */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="space-y-1 text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start space-x-2">
@@ -78,7 +86,6 @@ export const AIReview: React.FC = () => {
           </p>
         </div>
 
-        {/* Score Badge */}
         <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-100 w-32 h-32 flex-shrink-0">
           <div className="text-4xl font-black text-primary tracking-tight">
             {Math.round(effectiveScore)}
@@ -89,7 +96,6 @@ export const AIReview: React.FC = () => {
         </div>
       </div>
 
-      {/* Teacher Override Banner if present */}
       {submission.overrideScore != null && (
         <div className="p-5 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-900 flex items-start space-x-3">
           <UserCheck className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -105,7 +111,6 @@ export const AIReview: React.FC = () => {
         </div>
       )}
 
-      {/* Rubric Breakdown (for essays) */}
       {Object.keys(rubric).length > 0 && (
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
           <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
@@ -132,7 +137,6 @@ export const AIReview: React.FC = () => {
         </div>
       )}
 
-      {/* Feedback & Corrections */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
         <div>
           <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider mb-2">
@@ -143,7 +147,6 @@ export const AIReview: React.FC = () => {
           </div>
         </div>
 
-        {/* Student Original Answer */}
         <div>
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
             Your Submitted Text
@@ -154,7 +157,6 @@ export const AIReview: React.FC = () => {
         </div>
       </div>
 
-      {/* Action Buttons: [Save to My Units] [Try Another Task] [Share Result] */}
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={handleSaveUnit}

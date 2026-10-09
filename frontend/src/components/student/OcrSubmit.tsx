@@ -1,3 +1,8 @@
+/**
+ * @file OcrSubmit.tsx
+ * @brief Student submission interface for optical character recognition of handwritten homework.
+ */
+
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UploadCloud, ShieldCheck, X, Sparkles, AlertCircle } from 'lucide-react';
@@ -6,6 +11,10 @@ import { useUsage } from '../../hooks/useUsage';
 import { useUIStore } from '../../store/uiStore';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
+/**
+ * @brief Component allowing students to upload handwritten homework photos for zero-retention OCR evaluation.
+ * @return JSX student OCR submission view.
+ */
 export const OcrSubmit: React.FC = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -88,7 +97,6 @@ export const OcrSubmit: React.FC = () => {
         </p>
       </div>
 
-      {/* Zero Retention Security Notice */}
       <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-start space-x-3 text-xs text-indigo-950">
         <ShieldCheck className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
         <div>
@@ -104,7 +112,6 @@ export const OcrSubmit: React.FC = () => {
         </div>
       )}
 
-      {/* Upload Zone or Preview */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
         {!previewUrl ? (
           <div
@@ -167,7 +174,6 @@ export const OcrSubmit: React.FC = () => {
           </div>
         )}
 
-        {/* Buttons: [Analyse Photo] [Clear Photo] */}
         {selectedFile && (
           <div className="flex items-center space-x-3 pt-2">
             <button

@@ -1,3 +1,8 @@
+/**
+ * @file Landing.tsx
+ * @brief Public landing page highlighting product capabilities, CEFR progression, and zero-retention OCR.
+ */
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -12,6 +17,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
+/**
+ * @brief Public marketing landing page introducing LinguaOptima features and CTA links.
+ * @return JSX landing page element.
+ */
 export const Landing: React.FC = () => {
   const { user } = useAuth();
 
@@ -56,7 +65,6 @@ export const Landing: React.FC = () => {
 
   return (
     <div className="space-y-20 py-10 sm:py-16">
-      {/* Hero Section */}
       <section className="text-center max-w-4xl mx-auto px-4 space-y-6">
         <div className="inline-flex items-center space-x-2 py-1.5 px-3.5 rounded-full bg-indigo-50 border border-indigo-200 text-primary text-xs font-bold shadow-sm">
           <Sparkles className="w-3.5 h-3.5" />
@@ -95,7 +103,6 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Feature Highlights Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="text-center space-y-2">
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">
@@ -125,7 +132,6 @@ export const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* CEFR Level Ladder Preview */}
       <section className="max-w-5xl mx-auto px-4">
         <div className="bg-slate-900 rounded-3xl p-8 sm:p-12 text-white shadow-2xl space-y-8">
           <div className="text-center space-y-2">

@@ -1,6 +1,18 @@
+/**
+ * @file offlineSync.ts
+ * @brief Offline synchronization and IndexedDB draft storage engine.
+ *
+ * Provides resilient local storage for in-progress essay drafts and queues offline submissions
+ * for automatic replay when network connectivity is re-established.
+ */
+
 const DB_NAME = 'LinguaOptimaOfflineDB';
 const DB_VERSION = 1;
 
+/**
+ * @interface OfflineSubmission
+ * @brief Queued homework submission record awaiting network connection.
+ */
 interface OfflineSubmission {
   id: string;
   assignmentId?: string;
@@ -9,12 +21,20 @@ interface OfflineSubmission {
   timestamp: number;
 }
 
+/**
+ * @interface Draft
+ * @brief Draft document record stored locally.
+ */
 interface Draft {
   key: string;
   content: string;
   updatedAt: number;
 }
 
+/**
+ * @brief Opens and initializes the IndexedDB storage instance.
+ * @return Promise resolving to IDBDatabase instance.
+ */
 const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
     if (typeof window === 'undefined' || !window.indexedDB) {
@@ -35,6 +55,11 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
+/**
+ * @brief Saves an in-progress draft locally to IndexedDB with localStorage fallback.
+ * @param key Unique draft key identifier.
+ * @param content Draft text content.
+ */
 export const saveDraftLocal = async (key: string, content: string): Promise<void> => {
   try {
     const db = await openDB();
@@ -43,11 +68,15 @@ export const saveDraftLocal = async (key: string, content: string): Promise<void
     const draft: Draft = { key, content, updatedAt: Date.now() };
     store.put(draft);
   } catch (err) {
-    // Fallback to localStorage
     localStorage.setItem(`draft_${key}`, content);
   }
 };
 
+/**
+ * @brief Retrieves a previously saved draft from IndexedDB or localStorage fallback.
+ * @param key Unique draft key identifier.
+ * @return Promise resolving to draft string or null if absent.
+ */
 export const getDraftLocal = async (key: string): Promise<string | null> => {
   try {
     const db = await openDB();
@@ -69,17 +98,24 @@ export const getDraftLocal = async (key: string): Promise<string | null> => {
   }
 };
 
+/**
+ * @brief Deletes a saved draft from local storage upon submission or dismissal.
+ * @param key Unique draft key identifier.
+ */
 export const clearDraftLocal = async (key: string): Promise<void> => {
   try {
     const db = await openDB();
     const tx = db.transaction('drafts', 'readwrite');
     tx.objectStore('drafts').delete(key);
   } catch {
-    // Ignore
   }
   localStorage.removeItem(`draft_${key}`);
 };
 
+/**
+ * @brief Queues a submission into IndexedDB when client is offline.
+ * @param data Submission payload containing optional assignmentId, text, and type.
+ */
 export const queueOfflineSubmission = async (data: { assignmentId?: string; text: string; type?: string }): Promise<void> => {
   try {
     const db = await openDB();
@@ -93,17 +129,20 @@ export const queueOfflineSubmission = async (data: { assignmentId?: string; text
     };
     tx.objectStore('offline_submissions').put(item);
 
-    // Request background sync if supported
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
       const reg = await navigator.serviceWorker.ready;
-      // @ts-ignore
-      await reg.sync.register('sync-submissions');
+      /* Background sync registration */
+      await (reg as any).sync?.register('sync-submissions');
     }
   } catch (err) {
     console.error('Failed to queue offline submission:', err);
   }
 };
 
+/**
+ * @brief Replays and transmits all queued offline submissions once network is restored.
+ * @param onSubmit Callback handler executing remote API submission.
+ */
 export const flushOfflineSubmissions = async (
   onSubmit: (sub: OfflineSubmission) => Promise<void>
 ): Promise<void> => {
@@ -118,7 +157,6 @@ export const flushOfflineSubmissions = async (
       for (const item of items) {
         try {
           await onSubmit(item);
-          // Delete from store on success
           const deleteTx = db.transaction('offline_submissions', 'readwrite');
           deleteTx.objectStore('offline_submissions').delete(item.id);
         } catch (err) {
