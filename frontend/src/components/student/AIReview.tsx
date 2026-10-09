@@ -9,6 +9,7 @@ import { Sparkles, Share2, ArrowRight, BookmarkCheck, CheckCircle2, UserCheck } 
 import { submissionApi } from '../../api/submissionApi';
 import { SubmissionResult } from '../../types/submission';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { sanitizeFeedback } from '../../utils/textSanitizer';
 
 /**
  * @brief Renders the AI evaluation report, breakdown rubrics, and feedback for a student submission.
@@ -149,7 +150,10 @@ export const AIReview: React.FC = () => {
             Detailed AI Feedback & Explanation
           </h2>
           <div className="p-4 rounded-2xl bg-slate-50 text-slate-700 text-sm leading-relaxed border border-slate-100 whitespace-pre-wrap">
-            {submission.feedback || 'Good attempt. Continue practicing similar structures to solidify mastery.'}
+            {sanitizeFeedback(
+              submission.feedback,
+              'Good attempt. Continue practicing similar structures to solidify mastery.'
+            )}
           </div>
         </div>
 

@@ -13,6 +13,7 @@ import { useDraft } from '../../hooks/useDraft';
 import { getWordCount } from '../../utils/wordCount';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { sanitizeTaskContent } from '../../utils/textSanitizer';
 
 /**
  * @brief Interactive essay composing workspace with client-side auto-saving and word counting.
@@ -39,7 +40,7 @@ export const EssayEditor: React.FC = () => {
     taskApi
       .getTaskById(taskId)
       .then((data) => setTask(data))
-      .catch((err) => console.error('Failed to load essay prompt:', err))
+      .catch((err) => console.error('Failed to load essay assignment:', err))
       .finally(() => setIsLoading(false));
   }, [taskId]);
 
@@ -75,7 +76,7 @@ export const EssayEditor: React.FC = () => {
   };
 
   if (isLoading) {
-    return <LoadingSpinner size="lg" message="Loading essay prompt..." />;
+    return <LoadingSpinner size="lg" message="Loading essay assignment..." />;
   }
 
   return (
@@ -95,11 +96,16 @@ export const EssayEditor: React.FC = () => {
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-2">
           <div className="flex items-center space-x-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
             <FileText className="w-4 h-4 text-primary" />
-            <span>Writing Prompt · {task.domain}</span>
+            <span>Essay Topic · {task.domain}</span>
           </div>
           <h2 className="text-base font-bold text-slate-900">{task.grammarTopic}</h2>
           <p className="text-sm text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 leading-relaxed whitespace-pre-wrap">
-            {task.content}
+            {sanitizeTaskContent(
+              task.content,
+              task.grammarTopic
+                ? `Write an essay discussing ${task.grammarTopic.toLowerCase()} in relation to ${task.domain.toLowerCase()}. Provide clear arguments and relevant examples.`
+                : undefined
+            )}
           </p>
         </div>
       )}

@@ -12,6 +12,7 @@ import { Task, TaskQuestion } from '../../types/task';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { saveDraftLocal, getDraftLocal } from '../../utils/offlineSync';
+import { sanitizeTaskContent } from '../../utils/textSanitizer';
 
 /**
  * @brief Student task interactive view component.
@@ -159,7 +160,7 @@ export const TaskView: React.FC = () => {
         </h1>
         {task.content && (
           <p className="text-sm text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 leading-relaxed">
-            {task.content}
+            {sanitizeTaskContent(task.content, 'Read the questions carefully and select the best answer.')}
           </p>
         )}
       </div>

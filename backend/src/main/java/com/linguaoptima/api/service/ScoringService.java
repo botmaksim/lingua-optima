@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,12 +42,15 @@ public class ScoringService {
         String aiResponse = aiBrokerService.checkGrammar(prompt, user);
 
         try {
-            return objectMapper.readValue(aiResponse, new TypeReference<Map<String, Object>>() {});
+            String cleaned = cleanJson(aiResponse);
+            Map<String, Object> result = objectMapper.readValue(cleaned, new TypeReference<Map<String, Object>>() {});
+            sanitizeFeedback(result, "Your submission has been evaluated. Review the score and accuracy breakdown above.");
+            return result;
         } catch (Exception e) {
             log.warn("Failed to parse AI grammar response as JSON, fallback parsing: {}", e.getMessage());
             Map<String, Object> fallback = new HashMap<>();
             fallback.put("score", 75.0);
-            fallback.put("feedback", aiResponse);
+            fallback.put("feedback", "Your submission has been evaluated. Review the score and accuracy breakdown above.");
             return fallback;
         }
     }
@@ -63,7 +67,10 @@ public class ScoringService {
         String aiResponse = aiBrokerService.scoreEssay(prompt, user);
 
         try {
-            return objectMapper.readValue(aiResponse, new TypeReference<Map<String, Object>>() {});
+            String cleaned = cleanJson(aiResponse);
+            Map<String, Object> result = objectMapper.readValue(cleaned, new TypeReference<Map<String, Object>>() {});
+            sanitizeFeedback(result, "Your essay has been evaluated according to CEFR standards. Review the scoring criteria breakdown above for detailed criteria ratings.");
+            return result;
         } catch (Exception e) {
             log.warn("Failed to parse AI essay score as JSON: {}", e.getMessage());
             Map<String, Object> fallback = new HashMap<>();
@@ -72,7 +79,7 @@ public class ScoringService {
             fallback.put("lexicalResource", 7.0);
             fallback.put("grammarRange", 7.0);
             fallback.put("overallScore", 7.0);
-            fallback.put("feedback", aiResponse);
+            fallback.put("feedback", "Your essay has been evaluated according to CEFR standards. Review the scoring criteria breakdown above for detailed criteria ratings.");
             return fallback;
         }
     }
@@ -93,5 +100,60 @@ public class ScoringService {
             return ((Number) overallScoreObj).doubleValue() * 10.0;
         }
         return 70.0;
+    }
+
+    private static final List<String> PROMPT_LEAK_MARKERS = List.of(
+        "evaluate the following",
+        "compare the student's text",
+        "return only a valid json",
+        "official answer key",
+        "cambridge/ielts english examiner",
+        "critical: do not echo",
+        "system parameters",
+        "0-10 scale"
+    );
+
+    /**
+     * @brief Strips markdown code fence blocks from AI response strings.
+     * @param raw Raw AI response string.
+     * @return Clean JSON string.
+     */
+    private String cleanJson(String raw) {
+        if (raw == null) {
+            return "{}";
+        }
+        return raw.trim()
+            .replaceFirst("^```(?:json)?\\s*", "")
+            .replaceFirst("\\s*```$", "")
+            .trim();
+    }
+
+    /**
+     * @brief Inspects and sanitizes feedback to prevent leaking AI meta-prompts or instructions.
+     * @param map Map containing AI evaluation result.
+     * @param defaultFallback Contextual student-facing fallback feedback.
+     */
+    private void sanitizeFeedback(Map<String, Object> map, String defaultFallback) {
+        Object fbObj = map.get("feedback");
+        if (fbObj instanceof String fb && !fb.isBlank() && !containsPromptLeak(fb)) {
+            map.put("feedback", fb.trim());
+        } else {
+            map.put("feedback", defaultFallback);
+        }
+    }
+
+    /**
+     * @brief Checks if a string contains known system prompt leak keywords.
+     * @param text Text to evaluate.
+     * @return True if prompt leak keyword is present.
+     */
+    private boolean containsPromptLeak(String text) {
+        String lower = text.toLowerCase();
+        for (String marker : PROMPT_LEAK_MARKERS) {
+            if (lower.contains(marker)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

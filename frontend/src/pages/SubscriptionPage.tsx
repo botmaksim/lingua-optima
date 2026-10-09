@@ -135,7 +135,7 @@ export const SubscriptionPage: React.FC = () => {
         'Unlimited student groups & class codes',
         'Student progress tracking & soft-delete restore',
         'Export reports in CSV and PDF formats',
-        'Custom task & essay prompt generation',
+        'Custom task & essay topic generation',
         'Group-level anonymized ranking settings',
       ],
     },

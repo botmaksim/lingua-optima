@@ -11,6 +11,7 @@ import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.DifficultyLevel;
 import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
+import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.response.TaskResponse;
@@ -237,8 +238,10 @@ public class TaskService {
             .build();
 
         try {
-            JsonNode root = objectMapper.readTree(rawJson);
-            task.setContent(root.path("content").asText("Task instructions and content"));
+            String cleanedJson = cleanJson(rawJson);
+            JsonNode root = objectMapper.readTree(cleanedJson);
+            String rawContent = root.path("content").asText("");
+            task.setContent(sanitizeTaskContent(rawContent, params));
             JsonNode answerKeyNode = root.path("answerKey");
             task.setAnswerKey(answerKeyNode.toString());
 
@@ -289,5 +292,80 @@ public class TaskService {
         }
 
         return task;
+    }
+
+    private static final List<String> PROMPT_LEAK_MARKERS = List.of(
+        "generate an english",
+        "cefr level:",
+        "grammar topic:",
+        "domain/context:",
+        "task type:",
+        "return only a valid json",
+        "critical: do not echo",
+        "number of questions:",
+        "system parameters",
+        "overall instructions or context passage"
+    );
+
+    /**
+     * @brief Strips markdown code fence blocks from AI response strings.
+     * @param rawJson Raw AI response string.
+     * @return Clean JSON string.
+     */
+    private String cleanJson(String rawJson) {
+        if (rawJson == null) {
+            return "{}";
+        }
+        return rawJson.trim()
+            .replaceFirst("^```(?:json)?\\s*", "")
+            .replaceFirst("\\s*```$", "")
+            .trim();
+    }
+
+    /**
+     * @brief Inspects and sanitizes task content to prevent leaking AI meta-prompts or instructions.
+     * @param rawContent Raw content returned from the AI model.
+     * @param params Generation parameters used to construct contextual fallback content.
+     * @return Sanitized student-facing task instructions or topic.
+     */
+    private String sanitizeTaskContent(String rawContent, TaskParamsRequest params) {
+        if (rawContent == null || rawContent.isBlank() || containsPromptLeak(rawContent)) {
+            return generateDefaultTaskContent(params);
+        }
+        return rawContent.trim();
+    }
+
+    /**
+     * @brief Checks if a string contains known system prompt leak keywords.
+     * @param text Text to evaluate.
+     * @return True if prompt leak keyword is present.
+     */
+    private boolean containsPromptLeak(String text) {
+        String lower = text.toLowerCase();
+        for (String marker : PROMPT_LEAK_MARKERS) {
+            if (lower.contains(marker)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @brief Builds clean student-facing default task instructions based on task type.
+     * @param params Task generation parameters.
+     * @return Human-readable assignment instructions.
+     */
+    private String generateDefaultTaskContent(TaskParamsRequest params) {
+        if (params.getTaskType() == TaskType.ESSAY) {
+            String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
+                ? params.getGrammarTopic() : "General Topic";
+            String domain = (params.getDomain() != null && !params.getDomain().isBlank())
+                ? params.getDomain() : "Daily Life";
+            return "Write an essay discussing " + topic + " in relation to " + domain
+                + ". Present clear arguments and relevant examples to support your viewpoint.";
+        }
+        String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
+            ? params.getGrammarTopic() : "English grammar";
+        return "Complete the following exercises focusing on " + topic + ". Read each question carefully and select the best answer.";
     }
 }

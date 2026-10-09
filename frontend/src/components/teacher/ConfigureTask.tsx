@@ -12,6 +12,7 @@ import { Group } from '../../types/group';
 import { Task, TaskType, DifficultyLevel } from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
+import { sanitizeTaskContent } from '../../utils/textSanitizer';
 
 /**
  * @brief Teacher component for configuring and deploying AI-generated assignments to student groups.
@@ -305,7 +306,7 @@ export const ConfigureTask: React.FC = () => {
               </div>
               <h3 className="text-sm font-bold text-slate-900">{previewTask.grammarTopic}</h3>
               <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl leading-relaxed whitespace-pre-wrap">
-                {previewTask.content}
+                {sanitizeTaskContent(previewTask.content, 'AI-generated task assignment instructions.')}
               </p>
             </div>
           ) : (

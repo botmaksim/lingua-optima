@@ -364,5 +364,132 @@ class TaskServiceTest {
         AssignTaskRequest assignReq = AssignTaskRequest.builder().groupIds(List.of(UUID.randomUUID())).build();
         assertThrows(ForbiddenException.class, () -> taskService.assignTask(UUID.randomUUID(), assignReq, studentUser));
     }
+
+    /**
+     * @brief Verifies unit test scenario: markdown code block and prompt leak sanitization for MCQ task.
+     */
+    @Test
+    void testGenerateTaskWithMarkdownCodeBlockAndPromptLeak() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Reported Speech")
+            .domain("Workplace")
+            .taskType(TaskType.MCQ)
+            .difficulty(DifficultyLevel.MEDIUM)
+            .build();
+
+        String wrappedJsonWithLeak = """
+            ```json
+            {
+              "content": "Generate an English grammar exercise based on the following parameters: - CEFR Level: B1 - Grammar Topic: Reported Speech - Return ONLY a valid JSON",
+              "questions": [
+                { "text": "He said he was tired.", "options": ["yes", "no"] }
+              ]
+            }
+            ```
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(wrappedJsonWithLeak);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertFalse(res.getContent().contains("Generate an English"));
+        assertTrue(res.getContent().contains("Complete the following exercises focusing on Reported Speech."));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: essay task prompt leak sanitization and topic fallback.
+     */
+    @Test
+    void testGenerateEssayTaskWithPromptLeakFallback() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.C1)
+            .grammarTopic("Subjunctive Mood")
+            .domain("Higher Education")
+            .taskType(TaskType.ESSAY)
+            .build();
+
+        String wrappedJsonWithPromptLeak = """
+            ```
+            {
+              "content": "Overall instructions or context passage: CRITICAL: Do NOT echo system parameters",
+              "questions": []
+            }
+            ```
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(wrappedJsonWithPromptLeak);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.saveAsTemplate(req, teacherUser);
+        assertNotNull(res);
+        assertFalse(res.getContent().contains("CRITICAL"));
+        assertTrue(res.getContent().contains("Write an essay discussing Subjunctive Mood"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: blank content sanitized to contextual default.
+     */
+    @Test
+    void testGenerateTaskWithBlankContentFallback() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .taskType(TaskType.GAP_FILL)
+            .build();
+
+        String jsonWithBlankContent = """
+            {
+              "content": "   ",
+              "questions": []
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(jsonWithBlankContent);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertTrue(res.getContent().contains("Complete the following exercises"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: null AI response falls back safely.
+     */
+    @Test
+    void testGenerateTaskWithNullAiResponse() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .taskType(TaskType.MCQ)
+            .build();
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(null);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertTrue(res.getContent().contains("Complete the following exercises"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: essay task with null grammar topic and domain uses default context strings.
+     */
+    @Test
+    void testGenerateEssayTaskWithNullTopicAndDomain() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.C1)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic(null)
+            .domain(null)
+            .build();
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn("{\"content\":\"\"}");
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertTrue(res.getContent().contains("General Topic"));
+        assertTrue(res.getContent().contains("Daily Life"));
+    }
 }
 
