@@ -52,7 +52,7 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY:-dummy-groq-key}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-dummy-gemini-key}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef}
-      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:*,https://*}
     depends_on:
       db:
         condition: service_healthy
@@ -65,11 +65,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     container_name: lingua_optima_frontend
     ports:
       - "5173:80"
     environment:
-      - VITE_API_URL=${VITE_API_URL:-http://localhost:8080}
+      - VITE_API_URL=${VITE_API_URL:-/api}
       - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID:-}
     depends_on:
       - backend

@@ -22,7 +22,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.UUID;
 
@@ -171,6 +174,46 @@ class AuthControllerTest {
         ResponseEntity<Void> entity = authController.forgotPassword(req);
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         verify(authService).forgotPassword(req);
+    }
+
+    /**
+     * @brief Verifies that refresh token cookies set Secure=true under direct TLS or Cloudflare Tunnel X-Forwarded-Proto: https.
+     */
+    @Test
+    void testSecureCookieDetectionBehindHttpsAndTunnel() {
+        LoginRequest req = LoginRequest.builder().email("auth@lingua.com").password("pass").build();
+        when(authService.login(any())).thenReturn(sampleToken);
+        when(jwtService.generateRefreshToken(any(), any())).thenReturn("refresh123");
+
+        try {
+            // 1. Direct HTTPS request
+            MockHttpServletRequest directTlsReq = new MockHttpServletRequest();
+            directTlsReq.setSecure(true);
+            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(directTlsReq));
+            MockHttpServletResponse directTlsRes = new MockHttpServletResponse();
+            authController.login(req, directTlsRes);
+            assertTrue(directTlsRes.getHeader("Set-Cookie").contains("Secure"));
+
+            // 2. Cloudflare Tunnel forwarded HTTPS request (X-Forwarded-Proto: https)
+            MockHttpServletRequest tunnelReq = new MockHttpServletRequest();
+            tunnelReq.setSecure(false);
+            tunnelReq.addHeader("X-Forwarded-Proto", "https");
+            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(tunnelReq));
+            MockHttpServletResponse tunnelRes = new MockHttpServletResponse();
+            authController.login(req, tunnelRes);
+            assertTrue(tunnelRes.getHeader("Set-Cookie").contains("Secure"));
+
+            // 3. Plain local HTTP request (X-Forwarded-Proto: http)
+            MockHttpServletRequest plainHttpReq = new MockHttpServletRequest();
+            plainHttpReq.setSecure(false);
+            plainHttpReq.addHeader("X-Forwarded-Proto", "http");
+            RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(plainHttpReq));
+            MockHttpServletResponse plainHttpRes = new MockHttpServletResponse();
+            authController.login(req, plainHttpRes);
+            assertFalse(plainHttpRes.getHeader("Set-Cookie").contains("Secure"));
+        } finally {
+            RequestContextHolder.resetRequestAttributes();
+        }
     }
 }
 

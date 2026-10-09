@@ -12,6 +12,7 @@ import com.linguaoptima.api.dto.request.RegisterRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.service.AuthService;
 import com.linguaoptima.api.service.JwtService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * @brief REST controller managing user authentication, registration, and tokens.
@@ -164,7 +168,7 @@ public class AuthController {
             : jwtService.generateRefreshToken(tokenResponse.getUser().getId(), tokenResponse.getUser().getEmail());
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
             .httpOnly(true)
-            .secure(false)
+            .secure(isSecureRequest())
             .path("/api/auth")
             .maxAge(30 * 24 * 60 * 60)
             .sameSite("Strict")
@@ -180,10 +184,25 @@ public class AuthController {
     private void clearRefreshTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
             .httpOnly(true)
+            .secure(isSecureRequest())
             .path("/api/auth")
             .maxAge(0)
             .sameSite("Strict")
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    /**
+     * @brief Detects whether the incoming request is served over HTTPS directly or behind an HTTPS tunnel/reverse proxy.
+     *
+     * @return True if TLS is active or X-Forwarded-Proto is https.
+     */
+    private boolean isSecureRequest() {
+        RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
+        if (attrs instanceof ServletRequestAttributes servletAttrs) {
+            HttpServletRequest req = servletAttrs.getRequest();
+            return req.isSecure() || "https".equalsIgnoreCase(req.getHeader("X-Forwarded-Proto"));
+        }
+        return false;
     }
 }
