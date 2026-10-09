@@ -9,6 +9,7 @@ import { BookOpen, Search, Filter } from 'lucide-react';
 import { submissionApi } from '../../api/submissionApi';
 import { SubmissionResult } from '../../types/submission';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { CustomSelect } from '../common/CustomSelect';
 import { formatDate } from '../../utils/formatDate';
 
 /**
@@ -63,17 +64,20 @@ export const MyUnits: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center space-x-2 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <select
+        <div className="flex items-center space-x-2 w-full sm:w-52">
+          <Filter className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <CustomSelect
+            size="sm"
+            className="flex-1"
             value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none"
-          >
-            <option value="ALL">All Types</option>
-            <option value="TEXT">Text & Grammar</option>
-            <option value="IMAGE">OCR Homework</option>
-          </select>
+            onChange={(val) => setSelectedType(val)}
+            options={[
+              { value: 'ALL', label: 'All Types' },
+              { value: 'TEXT', label: 'Text & Grammar' },
+              { value: 'IMAGE', label: 'OCR Homework' },
+            ]}
+            ariaLabel="Filter by submission type"
+          />
         </div>
       </div>
 

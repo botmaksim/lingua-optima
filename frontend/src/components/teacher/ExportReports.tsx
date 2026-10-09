@@ -8,6 +8,7 @@ import { FileText, Download, FileSpreadsheet, CheckCircle2 } from 'lucide-react'
 import { groupApi } from '../../api/groupApi';
 import { exportApi } from '../../api/exportApi';
 import { Group } from '../../types/group';
+import { CustomSelect } from '../common/CustomSelect';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 
 /**
@@ -74,17 +75,18 @@ export const ExportReports: React.FC = () => {
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Select Cohort Group
           </label>
-          <select
+          <CustomSelect
+            size="lg"
             value={selectedGroupId}
-            onChange={(e) => setSelectedGroupId(e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-          >
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name} ({g.studentCount} students)
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSelectedGroupId(val)}
+            options={groups.map((g) => ({
+              value: g.id,
+              label: g.name,
+              badge: `${g.studentCount} students`,
+            }))}
+            placeholder="Select a cohort group..."
+            ariaLabel="Select Cohort Group"
+          />
         </div>
 
         <div>

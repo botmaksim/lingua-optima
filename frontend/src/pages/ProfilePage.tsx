@@ -26,6 +26,7 @@ import { useAuthStore } from '../store/authStore';
 import { authApi } from '../api/authApi';
 import { apiKeyApi, ApiKeyItem } from '../api/apiKeyApi';
 import { CefrBadge } from '../components/common/CefrBadge';
+import { CustomSelect } from '../components/common/CustomSelect';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { CefrLevel, Role } from '../types/user';
 import {
@@ -465,17 +466,15 @@ export const ProfilePage: React.FC = () => {
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
                 AI Provider
               </label>
-              <select
+              <CustomSelect
                 value={selectedProvider}
-                onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                {AI_PROVIDER_CATALOG.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleProviderChange(val as AIProviderType)}
+                options={AI_PROVIDER_CATALOG.map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                }))}
+                ariaLabel="AI Provider"
+              />
             </div>
 
             <div>
@@ -487,17 +486,16 @@ export const ProfilePage: React.FC = () => {
                   </span>
                 )}
               </label>
-              <select
+              <CustomSelect
                 value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-              >
-                {providerModels.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label} — {m.badge}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setSelectedModel(val)}
+                options={providerModels.map((m) => ({
+                  value: m.id,
+                  label: m.label,
+                  badge: m.badge,
+                }))}
+                ariaLabel="AI Model"
+              />
             </div>
 
             <div>

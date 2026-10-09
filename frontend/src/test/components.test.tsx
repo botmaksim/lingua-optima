@@ -151,3 +151,38 @@ describe('AIReview component', () => {
   });
 });
 
+import { CustomSelect } from '../components/common/CustomSelect';
+
+describe('CustomSelect component', () => {
+  it('renders selected option, opens styled dropdown, and invokes onChange when option clicked', () => {
+    const handleChange = vi.fn();
+    render(
+      <CustomSelect
+        value="Cleft Sentences"
+        onChange={handleChange}
+        ariaLabel="Grammar Topic"
+        groups={[
+          {
+            label: 'Core Syllabus (C1)',
+            options: [
+              { value: 'Advanced Inversion & Fronting', label: 'Advanced Inversion & Fronting', badge: 'C1' },
+              { value: 'Cleft Sentences', label: 'Cleft Sentences', badge: 'C1' },
+            ],
+          },
+        ]}
+      />
+    );
+
+    const trigger = screen.getByRole('button', { name: /grammar topic/i });
+    expect(trigger).toHaveTextContent('Cleft Sentences');
+
+    fireEvent.click(trigger);
+    expect(screen.getByText('Core Syllabus (C1)')).toBeInTheDocument();
+
+    const nextOption = screen.getByRole('option', { name: /advanced inversion & fronting/i });
+    fireEvent.click(nextOption);
+    expect(handleChange).toHaveBeenCalledWith('Advanced Inversion & Fronting');
+  });
+});
+
+

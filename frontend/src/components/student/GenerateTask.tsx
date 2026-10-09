@@ -30,6 +30,7 @@ import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
 import { CefrLevel } from '../../types/user';
 import { TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
 import { CefrBadge } from '../common/CefrBadge';
+import { CustomSelect } from '../common/CustomSelect';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import {
   AI_PROVIDER_CATALOG,
@@ -492,17 +493,15 @@ export const GenerateTask: React.FC = () => {
               <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
                 AI Provider
               </label>
-              <select
+              <CustomSelect
                 value={provider}
-                onChange={(e) => handleProviderChange(e.target.value as AIProviderType)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-              >
-                {AI_PROVIDER_CATALOG.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => handleProviderChange(val as AIProviderType)}
+                options={AI_PROVIDER_CATALOG.map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                }))}
+                ariaLabel="AI Provider"
+              />
             </div>
 
             <div>
@@ -514,17 +513,16 @@ export const GenerateTask: React.FC = () => {
                   </span>
                 )}
               </label>
-              <select
+              <CustomSelect
                 value={modelName}
-                onChange={(e) => setModelName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-              >
-                {providerModels.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.label} ({m.badge})
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setModelName(val)}
+                options={providerModels.map((m) => ({
+                  value: m.id,
+                  label: m.label,
+                  badge: m.badge,
+                }))}
+                ariaLabel="AI Model"
+              />
             </div>
           </div>
         </div>
@@ -574,43 +572,56 @@ export const GenerateTask: React.FC = () => {
             </button>
           </div>
 
-          <select
+          <CustomSelect
+            size="lg"
             value={selectedTopicOption}
-            onChange={(e) => setSelectedTopicOption(e.target.value)}
-            className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-          >
-            <optgroup label={`Core Syllabus Topics (CEFR ${cefrLevel})`}>
-              {currentLevelTopics.map((topic) => (
-                <option key={topic} value={topic}>
-                  {topic}
-                </option>
-              ))}
-            </optgroup>
-
-            {currentLevelMixedTopics.length > 0 && (
-              <optgroup label={`🔀 Mixed Challenges (CEFR ${cefrLevel})`}>
-                {currentLevelMixedTopics.map((topic) => (
-                  <option key={topic} value={topic}>
-                    {topic}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-
-            {crossLevelTopics.length > 0 && (
-              <optgroup label="🌐 Thematic & Cross-Level Challenges">
-                {crossLevelTopics.map((topic) => (
-                  <option key={topic} value={topic}>
-                    {topic}
-                  </option>
-                ))}
-              </optgroup>
-            )}
-
-            <optgroup label="Custom Practice">
-              <option value="__CUSTOM__">✏️ Custom Topic (Enter your own)...</option>
-            </optgroup>
-          </select>
+            onChange={(val) => setSelectedTopicOption(val)}
+            ariaLabel="Practice Topic & Mixed Challenges"
+            groups={[
+              {
+                label: `Core Syllabus Topics (CEFR ${cefrLevel})`,
+                options: currentLevelTopics.map((topic) => ({
+                  value: topic,
+                  label: topic,
+                  badge: cefrLevel,
+                })),
+              },
+              ...(currentLevelMixedTopics.length > 0
+                ? [
+                    {
+                      label: `🔀 Mixed Challenges (CEFR ${cefrLevel})`,
+                      options: currentLevelMixedTopics.map((topic) => ({
+                        value: topic,
+                        label: topic,
+                        badge: 'Mixed',
+                      })),
+                    },
+                  ]
+                : []),
+              ...(crossLevelTopics.length > 0
+                ? [
+                    {
+                      label: '🌐 Thematic & Cross-Level Challenges',
+                      options: crossLevelTopics.map((topic) => ({
+                        value: topic,
+                        label: topic,
+                        badge: 'Cross-Level',
+                      })),
+                    },
+                  ]
+                : []),
+              {
+                label: 'Custom Practice',
+                options: [
+                  {
+                    value: '__CUSTOM__',
+                    label: '✏️ Custom Topic (Enter your own)...',
+                    badge: 'Custom',
+                  },
+                ],
+              },
+            ]}
+          />
 
           {isCustomTopic && (
             <div className="mt-3 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-2 animate-in fade-in duration-200">

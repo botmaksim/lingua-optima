@@ -60,3 +60,31 @@ body {
   border: none !important;
   box-shadow: none !important;
 }
+
+/* Branded customizable select fallback styling */
+select,
+select::picker(select) {
+  appearance: base-select;
+}
+
+select::picker(select) {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  padding: 0.375rem;
+  box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+}
+
+select option {
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.625rem;
+  color: #1e293b;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+select option:hover {
+  background-color: #eef2ff;
+  color: #4f46e5;
+}
+
