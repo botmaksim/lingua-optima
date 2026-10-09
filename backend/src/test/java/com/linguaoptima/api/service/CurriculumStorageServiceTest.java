@@ -54,8 +54,12 @@ class CurriculumStorageServiceTest {
 
         Path vocabDir = tempDir.resolve("vocabulary");
         Files.createDirectories(vocabDir);
+        Files.writeString(vocabDir.resolve("mixed_conditionals.json"), "{\"words\":[\"consequence\",\"hypothetical\"]}");
+        Files.writeString(vocabDir.resolve("inversion_and_cleft.json"), "{\"words\":[\"seldom\",\"scarcely\"]}");
         Files.writeString(vocabDir.resolve("business_advanced.json"), "{\"words\":[\"synergy\",\"leverage\"]}");
         Files.writeString(vocabDir.resolve("academic_collocations.json"), "{\"words\":[\"substantiate\",\"empirical\"]}");
+        Files.writeString(rulesDir.resolve("present_simple_to_be_common_verbs.md"), "Subject + V1 (s/es)");
+        Files.writeString(vocabDir.resolve("present_simple_to_be_common_verbs.json"), "{\"words\":[\"always\",\"usually\"]}");
     }
 
     @Test
@@ -136,11 +140,16 @@ class CurriculumStorageServiceTest {
 
     @Test
     void testGetReferenceCurriculumCanonicalAndSynthesized() {
-        // Conditionals canonical
+        // Conditionals canonical (exact slug)
         CurriculumReferenceResponse condRef = storageService.getReferenceCurriculum(CefrLevel.B2, "Mixed Conditionals");
         assertEquals("CANONICAL", condRef.getSource());
         assertTrue(condRef.getReferenceRule().contains("If had V3"));
         assertTrue(condRef.getReferenceVocabulary().contains("consequence"));
+
+        // Conditionals canonical (keyword fallback)
+        CurriculumReferenceResponse kwCondRef = storageService.getReferenceCurriculum(CefrLevel.B2, "Advanced Conditional Forms");
+        assertEquals("CANONICAL", kwCondRef.getSource());
+        assertTrue(kwCondRef.getReferenceRule().contains("If had V3"));
 
         // Inversion canonical
         CurriculumReferenceResponse invRef = storageService.getReferenceCurriculum(CefrLevel.C1, "Cleft Sentences & Inversion");
@@ -278,5 +287,26 @@ class CurriculumStorageServiceTest {
         CurriculumReferenceResponse missingBusRef = storageService.getReferenceCurriculum(CefrLevel.B2, "Business Negotiations");
         assertNotNull(missingBusRef);
         assertTrue(missingBusRef.getReferenceVocabulary().contains("essential"));
+    }
+
+    @Test
+    void testToSlugHelper() {
+        assertEquals("general", CurriculumStorageService.toSlug(null));
+        assertEquals("general", CurriculumStorageService.toSlug(""));
+        assertEquals("general", CurriculumStorageService.toSlug("   "));
+        assertEquals("present_simple_to_be_common_verbs",
+            CurriculumStorageService.toSlug("Present Simple (to be & common verbs)"));
+    }
+
+    @Test
+    void testSlugBasedCanonicalResolution() {
+        CurriculumReferenceResponse ref = storageService.getReferenceCurriculum(
+            CefrLevel.A1, "Present Simple (to be & common verbs)"
+        );
+        assertNotNull(ref);
+        assertEquals("CANONICAL", ref.getSource());
+        assertEquals("Subject + V1 (s/es)", ref.getReferenceRule());
+        assertNotNull(ref.getReferenceVocabulary());
+        assertTrue(ref.getReferenceVocabulary().contains("always"));
     }
 }

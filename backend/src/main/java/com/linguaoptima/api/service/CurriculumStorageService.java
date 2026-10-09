@@ -160,6 +160,20 @@ public class CurriculumStorageService {
     }
 
     /**
+     * @brief Normalizes a topic string into a filesystem-safe canonical slug.
+     * @param topic Topic title string.
+     * @return Normalized slug string.
+     */
+    public static String toSlug(String topic) {
+        if (topic == null || topic.isBlank()) {
+            return "general";
+        }
+        return topic.toLowerCase()
+            .replaceAll("[^a-z0-9]+", "_")
+            .replaceAll("^_+|_+$", "");
+    }
+
+    /**
      * @brief Retrieves canonical or synthesized pedagogical reference materials for a given CEFR level and topic.
      * @param level Target CEFR level.
      * @param topic Subject or grammar topic.
@@ -169,15 +183,29 @@ public class CurriculumStorageService {
         String safeLevel = (level != null) ? level.name() : "B1";
         String safeTopic = (topic != null && !topic.isBlank()) ? topic.trim() : "General English Grammar";
 
-        // 1. Check for pre-seeded canonical files matching topic keywords
+        // 1. Check for exact or normalized slug match in canonical files
+        String slug = toSlug(safeTopic);
+        String rule = readCanonicalFile("rules/" + slug + ".md");
+        List<String> vocab = readCanonicalVocabulary("vocabulary/" + slug + ".json");
+        if (rule != null) {
+            return CurriculumReferenceResponse.builder()
+                .cefrLevel(safeLevel)
+                .grammarTopic(safeTopic)
+                .referenceRule(rule)
+                .referenceVocabulary(vocab)
+                .source("CANONICAL")
+                .build();
+        }
+
+        // 2. Check for pre-seeded canonical files matching topic keywords
         String lowerTopic = safeTopic.toLowerCase();
         if (lowerTopic.contains("conditional")) {
-            String rule = readCanonicalFile("rules/mixed_conditionals.md");
-            if (rule != null) {
+            String condRule = readCanonicalFile("rules/mixed_conditionals.md");
+            if (condRule != null) {
                 return CurriculumReferenceResponse.builder()
                     .cefrLevel(safeLevel)
                     .grammarTopic(safeTopic)
-                    .referenceRule(rule)
+                    .referenceRule(condRule)
                     .referenceVocabulary(List.of("consequence", "hypothetical", "implication", "contingency", "speculate"))
                     .source("CANONICAL")
                     .build();
@@ -185,12 +213,12 @@ public class CurriculumStorageService {
         }
 
         if (lowerTopic.contains("inversion") || lowerTopic.contains("cleft")) {
-            String rule = readCanonicalFile("rules/inversion_and_cleft.md");
-            if (rule != null) {
+            String invRule = readCanonicalFile("rules/inversion_and_cleft.md");
+            if (invRule != null) {
                 return CurriculumReferenceResponse.builder()
                     .cefrLevel(safeLevel)
                     .grammarTopic(safeTopic)
-                    .referenceRule(rule)
+                    .referenceRule(invRule)
                     .referenceVocabulary(List.of("seldom", "scarcely", "paramount", "pivotal", "substantiate"))
                     .source("CANONICAL")
                     .build();
@@ -198,23 +226,23 @@ public class CurriculumStorageService {
         }
 
         if (lowerTopic.contains("business") || lowerTopic.contains("work")) {
-            List<String> vocab = readCanonicalVocabulary("vocabulary/business_advanced.json");
+            List<String> busVocab = readCanonicalVocabulary("vocabulary/business_advanced.json");
             return CurriculumReferenceResponse.builder()
                 .cefrLevel(safeLevel)
                 .grammarTopic(safeTopic)
                 .referenceRule("Focus on polite professional modals, indirect questions, and passive voice in corporate discourse.")
-                .referenceVocabulary(vocab)
+                .referenceVocabulary(busVocab)
                 .source("CANONICAL")
                 .build();
         }
 
         if (lowerTopic.contains("academic") || lowerTopic.contains("science")) {
-            List<String> vocab = readCanonicalVocabulary("vocabulary/academic_collocations.json");
+            List<String> acadVocab = readCanonicalVocabulary("vocabulary/academic_collocations.json");
             return CurriculumReferenceResponse.builder()
                 .cefrLevel(safeLevel)
                 .grammarTopic(safeTopic)
                 .referenceRule("Focus on hedging devices, impersonal passive constructions, and complex participle clauses.")
-                .referenceVocabulary(vocab)
+                .referenceVocabulary(acadVocab)
                 .source("CANONICAL")
                 .build();
         }

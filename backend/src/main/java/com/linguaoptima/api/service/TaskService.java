@@ -146,7 +146,11 @@ public class TaskService {
     private String buildPromptFromParams(TaskParamsRequest params) {
         String targetRule = params.getCustomRule();
         String targetVocab = params.getCustomVocabulary();
-        if (curriculumStorageService != null) {
+
+        if (Boolean.TRUE.equals(params.getEcoMode())) {
+            targetRule = null;
+            targetVocab = null;
+        } else if (curriculumStorageService != null) {
             String[] resolvedContext = curriculumStorageService.resolvePromptCurriculumContext(
                 params.getCefrLevel(),
                 params.getGrammarTopic(),

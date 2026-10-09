@@ -665,5 +665,27 @@ class TaskServiceTest {
             eq(CefrLevel.B2), eq("Mixed Conditionals"), eq("Custom Rule"), eq("vocab1, vocab2")
         );
     }
+
+    @Test
+    void testGenerateTaskWithEcoMode() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Mixed Conditionals")
+            .domain("Science")
+            .taskType(TaskType.MCQ)
+            .difficulty(DifficultyLevel.HARD)
+            .numberOfQuestions(3)
+            .ecoMode(true)
+            .build();
+
+        String rawJson = "{\"content\":\"Eco mode test content\",\"questions\":[]}";
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(rawJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        // Verify that curriculum context was NEVER resolved because Eco Mode was active
+        verify(curriculumStorageService, never()).resolvePromptCurriculumContext(any(), any(), any(), any());
+    }
 }
 

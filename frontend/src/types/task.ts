@@ -98,6 +98,8 @@ export interface TaskParams {
   ruleFilePath?: string;
   /** @brief Server relative path of uploaded custom vocabulary file. */
   vocabularyFilePath?: string;
+  /** @brief Optional Eco Mode toggle to skip verbose rule and vocabulary prompts and save tokens. */
+  ecoMode?: boolean;
 }
 
 /**

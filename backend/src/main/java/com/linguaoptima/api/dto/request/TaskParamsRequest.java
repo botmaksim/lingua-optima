@@ -62,4 +62,7 @@ public class TaskParamsRequest {
 
     /** @brief Optional server path of uploaded custom vocabulary reference file. */
     private String vocabularyFilePath;
+
+    /** @brief Optional Eco Mode flag to skip verbose rule and vocabulary context to conserve prompt tokens. */
+    private Boolean ecoMode;
 }

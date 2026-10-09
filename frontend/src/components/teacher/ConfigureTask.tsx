@@ -18,6 +18,7 @@ import {
   FileText,
   Trash2,
   Sparkles,
+  Leaf,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
@@ -141,6 +142,7 @@ export const ConfigureTask: React.FC = () => {
   const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
   const { models: providerModels, isLiveSynced } = useProviderModels(provider);
   const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
+  const [ecoMode, setEcoMode] = useState<boolean>(false);
 
   // Curriculum context state
   const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
@@ -320,6 +322,7 @@ export const ConfigureTask: React.FC = () => {
     customVocabulary: customVocabulary.trim() || undefined,
     ruleFilePath: uploadedRuleFile?.serverPath || undefined,
     vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
+    ecoMode,
   });
 
   /**
@@ -589,8 +592,55 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
+          {/* Eco Mode (Token Saver) Toggle */}
+          <div className={`p-4 rounded-2xl border transition ${
+            ecoMode
+              ? 'bg-emerald-50/70 border-emerald-200'
+              : 'bg-slate-50/80 border-slate-200/80'
+          } flex items-center justify-between`}>
+            <div className="flex items-center space-x-3">
+              <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
+                ecoMode ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'
+              }`}>
+                <Leaf className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Eco Mode (Token Saver)
+                  </h4>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    ecoMode ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-600'
+                  }`}>
+                    {ecoMode ? 'ACTIVE' : 'OFF'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  {ecoMode
+                    ? 'Omit verbose grammar rules & vocabulary lists from prompt to accelerate generation and conserve quota.'
+                    : 'Inject detailed curriculum rules and target vocabulary into the assignment generation prompt.'}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setEcoMode(!ecoMode)}
+              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                ecoMode ? 'bg-emerald-600' : 'bg-slate-300'
+              }`}
+            >
+              <span
+                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  ecoMode ? 'translate-x-5' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+
           {/* Curriculum Context (Rules & Vocabulary) Expandable Panel */}
-          <div className="rounded-2xl border border-slate-200/90 overflow-hidden bg-slate-50/50">
+          <div className={`rounded-2xl border transition overflow-hidden ${
+            ecoMode ? 'border-slate-200 bg-slate-50/30 opacity-75' : 'border-slate-200/90 bg-slate-50/50'
+          }`}>
             <button
               type="button"
               onClick={() => setShowCurriculumPanel(!showCurriculumPanel)}
@@ -605,7 +655,9 @@ export const ConfigureTask: React.FC = () => {
                     Curriculum Rules & Vocabulary Context (Optional)
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    {uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary
+                    {ecoMode
+                      ? '🌱 Eco Mode is active: curriculum context will be skipped during generation'
+                      : uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary
                       ? '✓ Custom rules or vocabulary active'
                       : 'Attach lesson rules, target vocabulary, or upload reference files (.txt, .md, .json)'}
                   </p>
