@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Trash2,
   CheckCircle2,
+  AlertCircle,
   Cpu,
   GraduationCap,
   School,
@@ -55,10 +56,10 @@ export const ProfilePage: React.FC = () => {
   const { models: providerModels, isLiveSynced } = useProviderModels(selectedProvider);
   const [rawKey, setRawKey] = useState('');
   const [isSavingKey, setIsSavingKey] = useState(false);
-  const [keyMessage, setKeyMessage] = useState<string | null>(null);
+  const [keyMessage, setKeyMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
-  const [profileMessage, setProfileMessage] = useState<string | null>(null);
+  const [profileMessage, setProfileMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
   /**
    * @brief Switches the authenticated user's role between STUDENT and TEACHER.
@@ -71,10 +72,16 @@ export const ProfilePage: React.FC = () => {
     try {
       const updated = await authApi.updateProfile({ role: nextRole });
       setUser(updated);
-      setProfileMessage(`Switched role to ${nextRole === 'TEACHER' ? 'Educator / Teacher' : 'Student'} mode.`);
+      setProfileMessage({
+        text: `Switched role to ${nextRole === 'TEACHER' ? 'Educator / Teacher' : 'Student'} mode.`,
+        type: 'success',
+      });
       setTimeout(() => setProfileMessage(null), 4000);
     } catch (err: any) {
-      setProfileMessage(err.response?.data?.message || 'Failed to switch role.');
+      setProfileMessage({
+        text: err.response?.data?.message || 'Failed to switch role.',
+        type: 'error',
+      });
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -91,10 +98,16 @@ export const ProfilePage: React.FC = () => {
     try {
       const updated = await authApi.updateProfile({ cefrLevel: level });
       setUser(updated);
-      setProfileMessage(`Proficiency level successfully updated to ${level} (${CEFR_LEVEL_METADATA[level].title}).`);
+      setProfileMessage({
+        text: `Proficiency level successfully updated to ${level} (${CEFR_LEVEL_METADATA[level].title}).`,
+        type: 'success',
+      });
       setTimeout(() => setProfileMessage(null), 3500);
     } catch (err: any) {
-      setProfileMessage(err.response?.data?.message || 'Failed to update CEFR level.');
+      setProfileMessage({
+        text: err.response?.data?.message || 'Failed to update CEFR level.',
+        type: 'error',
+      });
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -139,12 +152,18 @@ export const ProfilePage: React.FC = () => {
     try {
       await apiKeyApi.saveKey(selectedProvider, rawKey.trim(), selectedModel);
       setRawKey('');
-      setKeyMessage(`Custom ${selectedProvider} key (${selectedModel}) encrypted with AES-256-GCM and saved.`);
+      setKeyMessage({
+        text: `Custom ${selectedProvider} key (${selectedModel}) encrypted with AES-256-GCM and saved.`,
+        type: 'success',
+      });
       setTimeout(() => setKeyMessage(null), 3500);
       await loadKeys();
     } catch (err: any) {
       console.error('Failed to save API key:', err);
-      setKeyMessage(err.response?.data?.message || 'Failed to save API key.');
+      setKeyMessage({
+        text: err.response?.data?.message || 'Failed to save API key.',
+        type: 'error',
+      });
     } finally {
       setIsSavingKey(false);
     }
@@ -175,9 +194,19 @@ export const ProfilePage: React.FC = () => {
       </div>
 
       {profileMessage && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs sm:text-sm font-semibold flex items-center space-x-2 animate-in fade-in duration-200">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-          <span>{profileMessage}</span>
+        <div
+          className={`p-4 rounded-2xl text-xs sm:text-sm font-semibold flex items-center space-x-2 animate-in fade-in duration-200 border ${
+            profileMessage.type === 'error'
+              ? 'bg-rose-50 border-rose-200 text-rose-900'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+          }`}
+        >
+          {profileMessage.type === 'error' ? (
+            <AlertCircle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+          ) : (
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+          )}
+          <span>{profileMessage.text}</span>
         </div>
       )}
 
@@ -343,9 +372,19 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         {keyMessage && (
-          <div className="p-3.5 bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-xl text-xs flex items-center space-x-2">
-            <CheckCircle2 className="w-4 h-4 text-primary" />
-            <span>{keyMessage}</span>
+          <div
+            className={`p-3.5 rounded-xl text-xs font-semibold flex items-center space-x-2 border ${
+              keyMessage.type === 'error'
+                ? 'bg-rose-50 border-rose-200 text-rose-900'
+                : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            }`}
+          >
+            {keyMessage.type === 'error' ? (
+              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            )}
+            <span>{keyMessage.text}</span>
           </div>
         )}
 
