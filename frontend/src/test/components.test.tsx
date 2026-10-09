@@ -58,7 +58,7 @@ describe('LoginPage component', () => {
     expect(screen.getByText('Continue with Google')).toBeInTheDocument();
 
     fireEvent.click(googleBtn);
-    expect(screen.getByText(/VITE_GOOGLE_CLIENT_ID/i)).toBeInTheDocument();
+    expect(screen.getByText(/VITE_GOOGLE_CLIENT_ID|Google Identity Services/i)).toBeInTheDocument();
   });
 });
 

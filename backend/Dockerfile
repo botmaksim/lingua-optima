@@ -9,8 +9,10 @@ RUN gradle bootJar --no-daemon
 # Stage 2: Run
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
+ARG SERVER_PORT=8080
+ENV SERVER_PORT=${SERVER_PORT}
 # Install Tesseract OCR and English language pack
 RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng
 COPY --from=build /app/build/libs/*.jar app.jar
-EXPOSE 8080
+EXPOSE ${SERVER_PORT}
 ENTRYPOINT ["java", "-jar", "app.jar"]
