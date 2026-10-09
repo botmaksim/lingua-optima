@@ -1,6 +1,7 @@
 # 📚 Lingua Optima — Полная документация
 
-> AI-платформа для изучения английского языка. Генерация заданий, проверка эссе, OCR домашних работ, адаптивное тестирование.
+> AI-платформа для изучения английского языка. Генерация заданий, проверка эссе, OCR домашних работ, адаптивное тестирование.  
+> 📊 **Интерактивная презентация**: [Открыть presentation.html](../presentation.html)
 
 ---
 
@@ -765,11 +766,14 @@ docker compose up --build
 
 ---
 
-## 📎 Специализированные документы
+## 📎 Документация проекта и интерактивные материалы
 
-| Документ | Содержимое |
-|---|---|
-| [BACKEND.md](./BACKEND.md) | Детальное описание всех Java-классов, полная API-таблица, ERD, Redis, CRON, exceptions |
-| [FRONTEND.md](./FRONTEND.md) | Компоненты, хуки, store, роутинг, PWA, дизайн-система |
-| [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Провайдеры, промпты, fallback, кеширование, OCR pipeline, CAT алгоритм |
-| [DEVOPS.md](./DEVOPS.md) | Docker, Dockerfile, CI/CD, миграции, мониторинг, security checklist |
+| Документ | Формат | Описание |
+|---|---|---|
+| [Интерактивная презентация проекта (Pitch Deck)](../presentation.html) | HTML | Интерактивная презентация концепции, бизнес-модели, UI/UX и архитектуры |
+| [README.md (Главный документ)](./README.md) | Markdown | Мастер-индекс, общее руководство и сводная спецификация |
+| [BACKEND.md](./BACKEND.md) | Markdown | Детальное описание всех Java-классов, полная API-таблица, ERD, Redis, CRON, exceptions |
+| [FRONTEND.md](./FRONTEND.md) | Markdown | Компоненты, хуки, Zustand-хранилища, роутинг, PWA, дизайн-система |
+| [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Markdown | Провайдеры, промпты, fallback-цепочка, кеширование, OCR pipeline, CAT алгоритм |
+| [DEVOPS.md](./DEVOPS.md) | Markdown | Docker, Dockerfile, CI/CD, Flyway-миграции, мониторинг, security checklist |
+| [Doxygen Generated API Reference](./generated/html/index.html) | HTML (Doxygen) | Автоматически скомпилированная Doxygen-документация всех классов и функций |

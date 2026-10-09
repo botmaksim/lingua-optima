@@ -15,9 +15,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Leaderboard Controller:
- * STRICT ARCHITECTURAL CONSTRAINT: NO GLOBAL LEADERBOARD.
- * Only group-scoped leaderboards exist in the system.
+ * @file LeaderboardController.java
+ * @brief REST controller providing privacy-first cohort-scoped leaderboards.
+ *
+ * Enforces strict design constraint: no global leaderboard exists.
+ * Leaderboards are only accessible within designated study groups with masked aliases.
  */
 @RestController
 @RequestMapping({"/api/leaderboard", "/api/leaderboards"})
@@ -26,6 +28,13 @@ public class LeaderboardController {
 
     private final LeaderboardService leaderboardService;
 
+    /**
+     * @brief Calculates anonymized ranking positions for members of a specific cohort.
+     *
+     * @param groupId Unique identifier of the study group.
+     * @param user Authenticated user requesting the leaderboard.
+     * @return HTTP 200 with list of leaderboard entries sorted by score.
+     */
     @GetMapping("/group/{id}")
     public ResponseEntity<List<LeaderboardEntryResponse>> getGroupLeaderboard(
         @PathVariable("id") UUID groupId,

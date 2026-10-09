@@ -16,6 +16,12 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file SubmissionController.java
+ * @brief REST controller handling student work submissions (text and Zero-Retention OCR).
+ *
+ * Implements essay rubric evaluations, RAM-only OCR processing, and teacher grade overrides.
+ */
 @RestController
 @RequestMapping("/api/submissions")
 @RequiredArgsConstructor
@@ -23,6 +29,13 @@ public class SubmissionController {
 
     private final SubmissionService submissionService;
 
+    /**
+     * @brief Submits written text or essay for automated AI rubric evaluation.
+     *
+     * @param request Payload containing essay text and optional assignment ID.
+     * @param student Authenticated student principal.
+     * @return HTTP 200 with rubric scoring and lexical feedback.
+     */
     @PostMapping("/text")
     public ResponseEntity<SubmissionResultResponse> submitText(
         @Valid @RequestBody TextSubmissionRequest request,
@@ -31,6 +44,14 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionService.submitText(request, student));
     }
 
+    /**
+     * @brief Ingests handwritten homework image for Zero-Retention OCR and AI feedback.
+     *
+     * @param file Uploaded image multipart file (processed purely in RAM).
+     * @param assignmentId Optional assignment link.
+     * @param student Authenticated student principal.
+     * @return HTTP 200 with extracted text and rubric assessment.
+     */
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionResultResponse> submitImage(
         @RequestParam("file") MultipartFile file,
@@ -40,11 +61,24 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionService.submitImage(file, assignmentId, student));
     }
 
+    /**
+     * @brief Fetches submission history for authenticated student.
+     *
+     * @param student Authenticated student principal.
+     * @return HTTP 200 with list of submission results.
+     */
     @GetMapping("/my")
     public ResponseEntity<List<SubmissionResultResponse>> getMySubmissions(@AuthenticationPrincipal User student) {
         return ResponseEntity.ok(submissionService.getMySubmissions(student));
     }
 
+    /**
+     * @brief Retrieves submission evaluation details by ID.
+     *
+     * @param submissionId Unique identifier of submission.
+     * @param user Authenticated user principal.
+     * @return HTTP 200 with SubmissionResultResponse.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<SubmissionResultResponse> getSubmission(
         @PathVariable("id") UUID submissionId,
@@ -53,6 +87,14 @@ public class SubmissionController {
         return ResponseEntity.ok(submissionService.getSubmissionById(submissionId, user));
     }
 
+    /**
+     * @brief Allows educators to override AI-assigned score and leave feedback notes.
+     *
+     * @param submissionId Unique identifier of submission.
+     * @param request Payload containing override score and commentary.
+     * @param teacher Authenticated teacher principal.
+     * @return HTTP 200 with updated SubmissionResultResponse.
+     */
     @PutMapping("/{id}/override")
     public ResponseEntity<SubmissionResultResponse> overrideScore(
         @PathVariable("id") UUID submissionId,

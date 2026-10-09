@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file TaskController.java
+ * @brief REST controller for AI task generation, catalog previews, and cohort assignments.
+ *
+ * Implements self-service practice task creation and educator assignment distribution.
+ */
 @RestController
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
@@ -21,16 +27,35 @@ public class TaskController {
 
     private final TaskService taskService;
 
+    /**
+     * @brief Lists available tasks and assignments assigned to the user.
+     *
+     * @param user Authenticated user principal.
+     * @return HTTP 200 with list of TaskResponse items.
+     */
     @GetMapping
     public ResponseEntity<List<TaskResponse>> getTasks(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(taskService.getTasksForUser(user));
     }
 
+    /**
+     * @brief Fetches full task metadata and questions by unique identifier.
+     *
+     * @param taskId Unique identifier of the task.
+     * @return HTTP 200 with TaskResponse.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponse> getTaskById(@PathVariable("id") UUID taskId) {
         return ResponseEntity.ok(taskService.getTaskById(taskId));
     }
 
+    /**
+     * @brief Generates and persists a customized practice task using AI pipeline.
+     *
+     * @param request Generation parameters (CEFR level, topic, domain, task type).
+     * @param user Authenticated user principal.
+     * @return HTTP 200 with generated TaskResponse.
+     */
     @PostMapping("/generate")
     public ResponseEntity<TaskResponse> generateTask(
         @Valid @RequestBody TaskParamsRequest request,
@@ -39,6 +64,13 @@ public class TaskController {
         return ResponseEntity.ok(taskService.generateTask(request, user));
     }
 
+    /**
+     * @brief Generates an ephemeral preview of a task without persisting to database.
+     *
+     * @param request Generation parameters.
+     * @param user Authenticated user principal.
+     * @return HTTP 200 with preview TaskResponse.
+     */
     @PostMapping("/preview")
     public ResponseEntity<TaskResponse> previewTask(
         @Valid @RequestBody TaskParamsRequest request,
@@ -47,6 +79,13 @@ public class TaskController {
         return ResponseEntity.ok(taskService.previewTask(request, user));
     }
 
+    /**
+     * @brief Saves a configured task configuration as a curriculum template.
+     *
+     * @param request Generation parameters.
+     * @param teacher Authenticated educator principal.
+     * @return HTTP 200 with saved template TaskResponse.
+     */
     @PostMapping("/template")
     public ResponseEntity<TaskResponse> saveAsTemplate(
         @Valid @RequestBody TaskParamsRequest request,
@@ -55,6 +94,14 @@ public class TaskController {
         return ResponseEntity.ok(taskService.saveAsTemplate(request, teacher));
     }
 
+    /**
+     * @brief Deploys and assigns an existing task to designated student cohorts.
+     *
+     * @param taskId Identifier of task to assign.
+     * @param request Assignment payload containing groupIds and due dates.
+     * @param teacher Authenticated educator principal.
+     * @return HTTP 200 OK.
+     */
     @PostMapping("/{id}/assign")
     public ResponseEntity<Void> assignTask(
         @PathVariable("id") UUID taskId,

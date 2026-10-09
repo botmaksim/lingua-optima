@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file GroupController.java
+ * @brief REST controller for managing educator cohorts and student enrollments.
+ *
+ * Implements class cohort creation, soft-delete student removals, and full restoration.
+ */
 @RestController
 @RequestMapping("/api/groups")
 @RequiredArgsConstructor
@@ -21,11 +27,24 @@ public class GroupController {
 
     private final GroupService groupService;
 
+    /**
+     * @brief Retrieves all cohort groups managed by the authenticated educator.
+     *
+     * @param teacher Authenticated teacher principal.
+     * @return HTTP 200 with list of group overview representations.
+     */
     @GetMapping
     public ResponseEntity<List<GroupResponse>> getGroups(@AuthenticationPrincipal User teacher) {
         return ResponseEntity.ok(groupService.getGroupsForTeacher(teacher));
     }
 
+    /**
+     * @brief Fetches detailed information and member roster for a specific cohort.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param teacher Authenticated teacher principal.
+     * @return HTTP 200 with GroupResponse detailing active members.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<GroupResponse> getGroup(
         @PathVariable("id") UUID groupId,
@@ -34,6 +53,13 @@ public class GroupController {
         return ResponseEntity.ok(groupService.getGroupDetails(groupId, teacher));
     }
 
+    /**
+     * @brief Creates a new study cohort with a generated unique invite code.
+     *
+     * @param request Group creation payload containing group name.
+     * @param teacher Authenticated teacher principal.
+     * @return HTTP 200 with newly created GroupResponse.
+     */
     @PostMapping
     public ResponseEntity<GroupResponse> createGroup(
         @Valid @RequestBody CreateGroupRequest request,
@@ -42,6 +68,14 @@ public class GroupController {
         return ResponseEntity.ok(groupService.createGroup(request, teacher));
     }
 
+    /**
+     * @brief Enrolls or reactivates a student within a cohort by registered email.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param request Student addition payload containing student email.
+     * @param teacher Authenticated teacher principal.
+     * @return HTTP 200 OK.
+     */
     @PostMapping("/{id}/students")
     public ResponseEntity<Void> addStudent(
         @PathVariable("id") UUID groupId,
@@ -52,6 +86,14 @@ public class GroupController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * @brief Soft-deletes a student from a group while preserving historical submissions.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param studentId Unique identifier of the student to remove.
+     * @param teacher Authenticated teacher principal.
+     * @return HTTP 204 No Content.
+     */
     @DeleteMapping("/{id}/students/{uid}")
     public ResponseEntity<Void> removeStudent(
         @PathVariable("id") UUID groupId,
@@ -62,6 +104,13 @@ public class GroupController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * @brief Deletes a cohort group and its membership associations.
+     *
+     * @param groupId Unique identifier of the group to remove.
+     * @param teacher Authenticated teacher principal.
+     * @return HTTP 204 No Content.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGroup(
         @PathVariable("id") UUID groupId,

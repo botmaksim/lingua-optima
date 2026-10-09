@@ -14,9 +14,11 @@ import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 
 /**
- * Zero-Retention OCR Service:
- * Images are processed in RAM only and immediately nulled for Garbage Collection.
- * Strictly adheres to GDPR and handwriting biometric protection policies.
+ * @file OCRService.java
+ * @brief Zero-Retention optical character recognition service using Tesseract OCR.
+ *
+ * Guarantees that uploaded images are processed strictly in RAM and memory buffers are
+ * zeroed immediately via Arrays.fill() to ensure biometric and GDPR compliance.
  */
 @Slf4j
 @Service
@@ -24,6 +26,9 @@ public class OCRService {
 
     private final ITesseract tesseract;
 
+    /**
+     * @brief Default constructor initializing native Tesseract OCR engine.
+     */
     public OCRService() {
         ITesseract instance = null;
         try {
@@ -39,10 +44,22 @@ public class OCRService {
         this.tesseract = instance;
     }
 
+    /**
+     * @brief Constructor for testing with dependency-injected ITesseract mock.
+     *
+     * @param tesseract Mocked or preconfigured ITesseract instance.
+     */
     public OCRService(ITesseract tesseract) {
         this.tesseract = tesseract;
     }
 
+    /**
+     * @brief Extracts handwritten or printed text from raw image bytes in memory.
+     *
+     * @param imageBytes Binary content of uploaded image.
+     * @return Extracted textual content.
+     * @throws OcrException if image is invalid, unreadable, or exceeds limits.
+     */
     public String extractText(byte[] imageBytes) {
         if (imageBytes == null || imageBytes.length == 0) {
             throw new OcrException("No image provided. Please select a valid photo.");
@@ -75,7 +92,6 @@ public class OCRService {
             }
 
             if (result == null || result.trim().isBlank()) {
-                // If OCR returned nothing, throw clear user error
                 throw new OcrException("Image is unclear, please try again.");
             }
 
@@ -86,25 +102,33 @@ public class OCRService {
             log.error("OCR extraction error: {}", e.getMessage());
             throw new OcrException("Image is unclear, please try again.", e);
         } finally {
-            // ZERO-RETENTION: Clear in-memory references and arrays for immediate GC
             purgeImage(imageBytes);
             if (original != null) original.flush();
             if (preprocessed != null) preprocessed.flush();
         }
     }
 
+    /**
+     * @brief Enhances image quality by converting to grayscale and increasing contrast.
+     *
+     * @param image Input original image.
+     * @return High-contrast grayscale image optimized for OCR recognition.
+     */
     public BufferedImage preprocess(BufferedImage image) {
-        // Convert to grayscale
         BufferedImage gray = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         Graphics2D g = gray.createGraphics();
         g.drawImage(image, 0, 0, null);
         g.dispose();
 
-        // Enhance contrast
         RescaleOp rescale = new RescaleOp(1.2f, 15, null);
         return rescale.filter(gray, null);
     }
 
+    /**
+     * @brief Erases byte contents in RAM to prevent forensic retrieval of student handwriting.
+     *
+     * @param imageBytes Byte array to overwrite with zeros.
+     */
     public void purgeImage(byte[] imageBytes) {
         if (imageBytes != null) {
             Arrays.fill(imageBytes, (byte) 0);

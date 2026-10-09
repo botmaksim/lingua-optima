@@ -7,8 +7,6 @@ import com.linguaoptima.api.dto.request.RegisterRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.service.AuthService;
 import com.linguaoptima.api.service.JwtService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @file AuthController.java
+ * @brief REST controller managing user authentication, registration, and tokens.
+ *
+ * Implements JWT access token generation, HttpOnly cookie refresh token rotation,
+ * multi-device logout, and password recovery workflows.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -26,6 +31,13 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
 
+    /**
+     * @brief Registers a new user and sets a secure HttpOnly refresh token cookie.
+     *
+     * @param request User registration payload.
+     * @param response HTTP servlet response for setting cookies.
+     * @return HTTP 200 with TokenResponse containing access token and user details.
+     */
     @PostMapping("/register")
     public ResponseEntity<TokenResponse> register(
         @Valid @RequestBody RegisterRequest request,
@@ -36,6 +48,13 @@ public class AuthController {
         return ResponseEntity.ok(tokenResponse);
     }
 
+    /**
+     * @brief Authenticates user credentials and returns session tokens.
+     *
+     * @param request Credentials containing email and plaintext password.
+     * @param response HTTP servlet response for setting refresh cookie.
+     * @return HTTP 200 with TokenResponse containing access token and user details.
+     */
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(
         @Valid @RequestBody LoginRequest request,
@@ -46,6 +65,13 @@ public class AuthController {
         return ResponseEntity.ok(tokenResponse);
     }
 
+    /**
+     * @brief Refreshes an expired access token using the HttpOnly refresh token.
+     *
+     * @param refreshTokenFromCookie Refresh token extracted from cookie.
+     * @param refreshTokenFromHeader Optional refresh token from fallback header.
+     * @return HTTP 200 with new TokenResponse.
+     */
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(
         @CookieValue(name = "refreshToken", required = false) String refreshTokenFromCookie,
@@ -56,6 +82,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * @brief Revokes current session refresh token and clears cookie.
+     *
+     * @param refreshToken Cookie token value to invalidate.
+     * @param response HTTP servlet response to clear cookie.
+     * @return HTTP 200 OK.
+     */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
         @CookieValue(name = "refreshToken", required = false) String refreshToken,
@@ -66,6 +99,13 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * @brief Invalidate all active refresh tokens for the user across all devices.
+     *
+     * @param user Authenticated user principal.
+     * @param response HTTP servlet response to clear cookie.
+     * @return HTTP 200 OK.
+     */
     @DeleteMapping("/logout-all")
     public ResponseEntity<Void> logoutAll(
         @AuthenticationPrincipal User user,
@@ -76,24 +116,42 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * @brief Initiates password recovery request for the specified account email.
+     *
+     * @param request Payload containing target account email.
+     * @return HTTP 200 OK.
+     */
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * @brief Attaches a strict HttpOnly refresh token cookie to the response.
+     *
+     * @param response Target HTTP response.
+     * @param userId Unique user ID string.
+     * @param email User email string.
+     */
     private void setRefreshTokenCookie(HttpServletResponse response, String userId, String email) {
         String refreshToken = jwtService.generateRefreshToken(java.util.UUID.fromString(userId), email);
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
             .httpOnly(true)
-            .secure(false) // Set true in production HTTPS
+            .secure(false)
             .path("/api/auth")
-            .maxAge(30 * 24 * 60 * 60) // 30 days
+            .maxAge(30 * 24 * 60 * 60)
             .sameSite("Strict")
             .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
+    /**
+     * @brief Clears the client-side refresh token cookie.
+     *
+     * @param response Target HTTP response.
+     */
     private void clearRefreshTokenCookie(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
             .httpOnly(true)

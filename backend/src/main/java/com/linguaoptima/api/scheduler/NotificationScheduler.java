@@ -25,7 +25,7 @@ public class NotificationScheduler {
 
     /**
      * Executes daily at 09:00 AM:
-     * Analyzes students' ProgressRecords and sends contextual recommendations for weak topics (mastery < 0.6).
+     * Analyzes students' ProgressRecords and sends contextual recommendations for weak topics (mastery &lt; 0.6).
      */
     @Scheduled(cron = "0 0 9 * * *")
     public void sendContextualReminders() {

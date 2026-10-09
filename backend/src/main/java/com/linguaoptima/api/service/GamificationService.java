@@ -10,6 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+/**
+ * @file GamificationService.java
+ * @brief Service controlling daily study streaks and protective freeze token mechanics.
+ *
+ * Awards freeze tokens for weekly consistency milestones and protects streaks during inactivity.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -18,6 +24,11 @@ public class GamificationService {
     private final UserRepository userRepository;
     private final NotificationService notificationService;
 
+    /**
+     * @brief Updates daily streak progress when a student completes an exercise or submission.
+     *
+     * @param user Authenticated student user completing work.
+     */
     @Transactional
     public void onSubmissionCompleted(User user) {
         LocalDate today = LocalDate.now();
@@ -41,6 +52,9 @@ public class GamificationService {
         userRepository.save(user);
     }
 
+    /**
+     * @brief Evaluates inactivity across users and applies streak freeze tokens or resets streaks.
+     */
     @Transactional
     public void applyDailyStreakCheck() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
@@ -51,7 +65,7 @@ public class GamificationService {
             if (user.getStreakCount() > 0 && (lastActive == null || lastActive.isBefore(yesterday))) {
                 if (user.getFreezeTokens() > 0) {
                     user.setFreezeTokens(user.getFreezeTokens() - 1);
-                    user.setLastActiveDate(yesterday); // Protected by freeze token
+                    user.setLastActiveDate(yesterday);
                     userRepository.save(user);
                     notificationService.send(user,
                         "❄️ A Streak Freeze token was used to protect your " + user.getStreakCount() + "-day streak!",

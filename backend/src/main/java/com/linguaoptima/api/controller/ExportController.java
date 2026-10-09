@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
+/**
+ * @file ExportController.java
+ * @brief REST controller for exporting student and cohort progress reports.
+ *
+ * Generates downloadable reports formatted as PDF documents or CSV spreadsheets.
+ */
 @RestController
 @RequestMapping({"/api/export", "/api/exports"})
 @RequiredArgsConstructor
@@ -18,6 +24,14 @@ public class ExportController {
 
     private final ExportService exportService;
 
+    /**
+     * @brief Generates and downloads a cohort group progress report.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param format Export document format, defaults to pdf.
+     * @param teacher Authenticated teacher requesting the report.
+     * @return Binary attachment containing PDF or CSV document bytes.
+     */
     @GetMapping("/report/group/{id}")
     public ResponseEntity<byte[]> exportGroupReport(
         @PathVariable("id") UUID groupId,
@@ -35,6 +49,14 @@ public class ExportController {
             .body(data);
     }
 
+    /**
+     * @brief Generates and downloads an individual student academic report.
+     *
+     * @param studentId Unique identifier of the student.
+     * @param format Export document format, defaults to pdf.
+     * @param teacher Authenticated teacher requesting the report.
+     * @return Binary attachment containing PDF or CSV document bytes.
+     */
     @GetMapping("/report/student/{id}")
     public ResponseEntity<byte[]> exportStudentReport(
         @PathVariable("id") UUID studentId,
