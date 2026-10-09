@@ -21,8 +21,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +29,7 @@ import java.util.Optional;
  * @brief Multi-provider AI broker and fallback orchestration service.
  *
  * Implements intelligent model routing between primary (Groq/Gemini) and fallback models,
- * custom BYOK user key routing, response caching via Redis, and asynchronous retry queueing.
+ * custom BYOK user key routing, rate limiting via Redis, and asynchronous retry queueing.
  */
 @Slf4j
 @Service
@@ -115,7 +113,7 @@ public class AIBrokerService {
     }
 
     /**
-     * @brief Generates task content via AI with 1-hour Redis caching and fallback protection.
+     * @brief Generates fresh task content via AI with fallback protection and rate limiting.
      * @param prompt Task generation prompt.
      * @param user User initiating the generation.
      * @return Raw JSON response containing generated questions and metadata.
@@ -123,36 +121,11 @@ public class AIBrokerService {
     public String generateTaskContent(String prompt, User user) {
         checkUserRateLimit(user);
 
-        String cacheKey = "ai_cache:" + sha256(prompt);
-        if (stringRedisTemplate != null) {
-            try {
-                String cached = stringRedisTemplate.opsForValue().get(cacheKey);
-                if (cached != null && !cached.isBlank()) {
-                    log.info("Task generation cache hit for hash: {}", sha256(prompt));
-                    return cached;
-                }
-            } catch (Exception e) {
-                log.warn("Redis cache read failed: {}", e.getMessage());
-            }
-        }
-
         AIProvider customProvider = getUserCustomProvider(user).orElse(null);
-        String result;
         if (customProvider != null) {
-            result = executeWithUserKey(customProvider, prompt);
-        } else {
-            result = executeWithFallback(groqProvider, geminiProvider, prompt, user, "TASK_GENERATION");
+            return executeWithUserKey(customProvider, prompt);
         }
-
-        if (stringRedisTemplate != null && result != null) {
-            try {
-                stringRedisTemplate.opsForValue().set(cacheKey, result, Duration.ofHours(1));
-            } catch (Exception e) {
-                log.warn("Redis cache write failed: {}", e.getMessage());
-            }
-        }
-
-        return result;
+        return executeWithFallback(groqProvider, geminiProvider, prompt, user, "TASK_GENERATION");
     }
 
     /**
@@ -296,25 +269,5 @@ public class AIBrokerService {
             log.warn("Rate limit check failed, proceeding: {}", e.getMessage());
         }
     }
-
-    /**
-     * @brief Computes SHA-256 hash string for prompt caching.
-     * @param text Prompt string to hash.
-     * @return Hexadecimal SHA-256 string.
-     */
-    private String sha256(String text) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(text.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (Exception e) {
-            return Integer.toHexString(java.util.Objects.hashCode(text));
-        }
-    }
 }
+

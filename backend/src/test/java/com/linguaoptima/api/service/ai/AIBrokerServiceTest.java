@@ -96,16 +96,19 @@ class AIBrokerServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: generate task content cache hit.
+     * @brief Verifies unit test scenario: generate task content no caching.
      */
     @Test
-    void testGenerateTaskContentCacheHit() {
+    void testGenerateTaskContentNoCaching() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(startsWith("ai_cache:"))).thenReturn("{\"cached\": true}");
+        when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of());
+        when(groqProvider.complete(anyString())).thenReturn("{\"generated\": true}");
 
         String result = aiBrokerService.generateTaskContent("prompt text", user);
-        assertEquals("{\"cached\": true}", result);
-        verifyNoInteractions(groqProvider);
+        assertEquals("{\"generated\": true}", result);
+        verify(groqProvider).complete("prompt text");
+        verify(valueOperations, never()).get(startsWith("ai_cache:"));
+        verify(valueOperations, never()).set(startsWith("ai_cache:"), anyString(), any());
     }
 
     /**
@@ -114,14 +117,12 @@ class AIBrokerServiceTest {
     @Test
     void testGenerateTaskContentPrimarySuccess() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(anyString())).thenReturn(null);
         when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of());
         when(groqProvider.complete(anyString())).thenReturn("{\"generated\": true}");
 
         String result = aiBrokerService.generateTaskContent("prompt text", user);
         assertEquals("{\"generated\": true}", result);
         verify(groqProvider).complete("prompt text");
-        verify(valueOperations).set(anyString(), eq("{\"generated\": true}"), any());
     }
 
     /**
@@ -130,7 +131,6 @@ class AIBrokerServiceTest {
     @Test
     void testGenerateTaskContentFallbackToGemini() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(anyString())).thenReturn(null);
         when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of());
         when(groqProvider.complete(anyString())).thenThrow(new RuntimeException("Groq 429 Rate limit"));
         when(geminiProvider.complete(anyString())).thenReturn("{\"gemini\": true}");
@@ -146,7 +146,6 @@ class AIBrokerServiceTest {
     @Test
     void testGenerateTaskContentAllFailQueuesRequest() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
-        when(valueOperations.get(anyString())).thenReturn(null);
         when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of());
         when(groqProvider.complete(anyString())).thenThrow(new RuntimeException("Groq down"));
         when(geminiProvider.complete(anyString())).thenThrow(new RuntimeException("Gemini down"));
@@ -358,14 +357,12 @@ class AIBrokerServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: Redis read/write/rate-limit exceptions and null Redis/user fallbacks.
+     * @brief Verifies unit test scenario: Redis rate-limit exceptions and null Redis/user fallbacks.
      */
     @Test
     void testRedisExceptionsAndNullUserBranches() throws Exception {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.increment(anyString())).thenThrow(new RuntimeException("Redis inc error"));
-        when(valueOperations.get(anyString())).thenThrow(new RuntimeException("Redis get error"));
-        doThrow(new RuntimeException("Redis set error")).when(valueOperations).set(anyString(), anyString(), any());
         when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of());
         when(groqProvider.complete(anyString())).thenReturn("{\"ok\": true}");
 
@@ -389,18 +386,14 @@ class AIBrokerServiceTest {
         reset(valueOperations, groqProvider, geminiProvider);
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
         when(valueOperations.increment(anyString())).thenReturn(null);
-        when(valueOperations.get(anyString())).thenReturn("   ");
         when(groqProvider.complete(anyString())).thenReturn(null);
-        assertNull(aiBrokerService.generateTaskContent("blank-cache-prompt", user));
-        assertNull(aiBrokerService.generateTaskContent("blank-cache-prompt", unpersistedUser));
+        assertNull(aiBrokerService.generateTaskContent("fresh-prompt", user));
+        assertNull(aiBrokerService.generateTaskContent("fresh-prompt", unpersistedUser));
 
         when(groqProvider.complete(anyString())).thenThrow(new RuntimeException("Primary down"));
         when(geminiProvider.complete(anyString())).thenThrow(new RuntimeException("Secondary down"));
         assertThrows(AIServiceException.class, () -> aiBrokerService.generateTaskContent("fail", null));
         assertThrows(AIServiceException.class, () -> aiBrokerService.generateTaskContent("fail", unpersistedUser));
-
-        String nullHash = org.springframework.test.util.ReflectionTestUtils.invokeMethod(aiBrokerService, "sha256", (Object) null);
-        assertEquals("0", nullHash);
     }
 }
 

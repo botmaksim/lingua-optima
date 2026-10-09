@@ -106,6 +106,7 @@ public final class PromptTemplates {
                 4. The "correctAnswer" field must be the complete, ideal rewritten sentence, with acceptable alternatives separated by ' / '.
                 5. The "content" field must contain clear, student-facing exercise instructions, NEVER system meta-instructions.
                 6. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+                7. Ensure all sentences, contexts, characters, and scenarios are unique, fresh, and creative.
 
                 Return ONLY a valid JSON object with the following structure:
                 {
@@ -149,6 +150,7 @@ public final class PromptTemplates {
                 4. The "correctAnswer" field must contain ONLY the correct form of the word in brackets (e.g. 'used to visit' or 'had already left' or acceptable alternatives separated by ' / ').
                 5. The "content" field must contain clear, student-facing exercise instructions, NEVER system meta-instructions.
                 6. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+                7. Ensure all sentences, contexts, characters, and scenarios are unique, fresh, and creative.
 
                 Return ONLY a valid JSON object with the following structure:
                 {
@@ -195,6 +197,7 @@ public final class PromptTemplates {
             3. The reading content, question sentences, and options MUST actively utilize and contextualize the target vocabulary if provided.
             4. The "content" field must contain ONLY student-facing reading material or a clear assignment topic, NEVER system meta-instructions.
             5. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+            6. Ensure all sentences, contexts, characters, and scenarios are unique, fresh, and creative.
 
             Return ONLY a valid JSON object with the following structure:
             {

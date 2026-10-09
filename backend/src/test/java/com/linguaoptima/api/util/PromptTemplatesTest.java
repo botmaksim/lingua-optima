@@ -58,5 +58,21 @@ class PromptTemplatesTest {
         );
         assertTrue(customEssayPrompt.contains("Seldom + aux + subj + verb"));
         assertTrue(customEssayPrompt.contains("empirical, substantiate"));
+
+        // Test REWRITE prompt template
+        String rewritePrompt = PromptTemplates.buildTaskGenerationPrompt(
+            "B2", "Inversion", "Literature", "REWRITE", "HARD", 4
+        );
+        assertTrue(rewritePrompt.contains("SENTENCE REWRITING"));
+        assertTrue(rewritePrompt.contains("REWRITE (Sentence Transformation)"));
+        assertTrue(rewritePrompt.contains("options\" array MUST be empty []"));
+
+        // Test OPEN_BRACKETS prompt template
+        String openBracketsPrompt = PromptTemplates.buildTaskGenerationPrompt(
+            "B1", "Conditionals", "Everyday Life", "OPEN_BRACKETS", "MEDIUM", 5
+        );
+        assertTrue(openBracketsPrompt.contains("раскрытие скобок"));
+        assertTrue(openBracketsPrompt.contains("OPEN_BRACKETS"));
+        assertTrue(openBracketsPrompt.contains("options\" array MUST be empty []"));
     }
 }
