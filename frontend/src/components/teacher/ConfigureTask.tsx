@@ -1,16 +1,29 @@
 /**
  * @file ConfigureTask.tsx
- * @brief Educator task generation, parameter configuration, preview, and cohort deployment interface.
+ * @brief Educator task generation, parameter configuration, preview, custom curriculum context, and cohort deployment interface.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Bookmark, Eye, CheckCircle2, Cpu } from 'lucide-react';
+import {
+  Send,
+  Bookmark,
+  Eye,
+  CheckCircle2,
+  Cpu,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  UploadCloud,
+  FileText,
+  Trash2,
+  Sparkles,
+} from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
 import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
 import { Group } from '../../types/group';
-import { Task, TaskType, DifficultyLevel } from '../../types/task';
+import { Task, TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 import { sanitizeTaskContent } from '../../utils/textSanitizer';
@@ -21,6 +34,92 @@ import {
   useProviderModels,
 } from '../../constants/aiModels';
 
+const DEFAULT_CEFR_TOPICS: Record<CefrLevel, string[]> = {
+  A1: [
+    'Present Simple (to be & common verbs)',
+    'Articles (a, an, the) & Demonstratives',
+    'Basic Prepositions of Place & Time (in, at, on)',
+    "Can / Can't for Ability & Permission",
+    "Possessive Adjectives & Possessive 's",
+    'Imperatives & Basic Question Formation',
+  ],
+  A2: [
+    'Past Simple (Regular & Irregular Verbs)',
+    "Future with 'Going to' vs 'Will'",
+    'Comparative and Superlative Adjectives',
+    'Countable vs Uncountable Nouns (some, any, much, many)',
+    'Have to & Must (Basic Rules)',
+    'Present Continuous for Future Arrangements',
+  ],
+  B1: [
+    'Present Perfect vs Past Simple',
+    'Past Continuous',
+    'Conditionals (First & Second)',
+    'Modal Verbs of Obligation',
+    'Passive Voice (Basic)',
+    'Relative Clauses (Defining)',
+    'Used to & Would',
+  ],
+  B2: [
+    'Third & Mixed Conditionals',
+    'Passive Voice (Advanced & Causative)',
+    'Reported Speech',
+    'Wish & If Only Structures',
+    'Modal Verbs of Deduction',
+    'Inversion for Emphasis',
+    'Participle Clauses',
+  ],
+  C1: [
+    'Advanced Inversion & Fronting',
+    'Subjunctive Mood',
+    'Cleft Sentences',
+    'Complex Gerunds & Infinitives',
+    'Discourse Markers & Nuance',
+    'Ellipsis & Substitution',
+  ],
+  C2: [
+    'Stylistic Inversion & Rhetorical Fronting',
+    'Subtle Modal Nuances & Speculative Stance',
+    'Complex Cleft Constructions & Focalization',
+    'Idiomatic Phrasal Collocations & Register Shifts',
+    'Advanced Ellipsis, Substitution & Cohesive Ties',
+    'Figurative Language & Lexical Precision',
+  ],
+};
+
+const DEFAULT_MIXED_TOPICS: Record<CefrLevel, string[]> = {
+  A1: [
+    'Present Simple vs Present Continuous in Daily Routines',
+    'Articles, Plurals, and Demonstrative Pronouns',
+    'Question Formation with To Be, Do/Does, and Can',
+  ],
+  A2: [
+    'Past Simple vs Past Continuous Narrative Interruption',
+    'Future Plans: Going to vs Present Continuous vs Will',
+    'Comparatives, Superlatives, and As...As Equality',
+  ],
+  B1: [
+    'Narrative Tenses: Past Simple, Continuous, and Perfect',
+    'Mixed Modal Verbs: Obligation, Permission, and Advice',
+    'Zero, First, and Second Conditionals with Unless',
+  ],
+  B2: [
+    'Mixed Conditionals (Past Cause with Present Result)',
+    'Advanced Passive and Causative Structures (Have/Get something done)',
+    'Reported Speech Shifts with Reporting Verbs & Modals',
+  ],
+  C1: [
+    'Negative Inversion and Cleft Sentences Combined',
+    'Participle Clauses with Reduced Relatives & Adverbials',
+    'Subjunctive Mood and Formulaic Mandative Expressions',
+  ],
+  C2: [
+    'Stylistic Inversion, Clefting, and Focal Fronting',
+    'Epistemic Stance, Subtle Modal Nuances, and Hedging',
+    'Advanced Ellipsis, Substitution, and Cohesive Chaining',
+  ],
+};
+
 /**
  * @brief Teacher component for configuring and deploying AI-generated assignments to student groups.
  * @return React component element.
@@ -30,6 +129,7 @@ export const ConfigureTask: React.FC = () => {
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
+  const [catalog, setCatalog] = useState<TopicsCatalogResponse | null>(null);
   const [cefrLevel, setCefrLevel] = useState<CefrLevel>('B1');
   const [grammarTopic, setGrammarTopic] = useState<string>('Passive Voice (Basic)');
   const [domain, setDomain] = useState<string>('Academic');
@@ -41,6 +141,30 @@ export const ConfigureTask: React.FC = () => {
   const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
   const { models: providerModels, isLiveSynced } = useProviderModels(provider);
   const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
+
+  // Curriculum context state
+  const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
+  const [customRule, setCustomRule] = useState<string>('');
+  const [customVocabulary, setCustomVocabulary] = useState<string>('');
+  const [uploadedRuleFile, setUploadedRuleFile] = useState<{
+    fileName: string;
+    fileSize: number;
+    contentSnippet: string;
+    serverPath: string;
+  } | null>(null);
+  const [uploadedVocabFile, setUploadedVocabFile] = useState<{
+    fileName: string;
+    fileSize: number;
+    contentSnippet: string;
+    serverPath: string;
+  } | null>(null);
+  const [isUploadingRule, setIsUploadingRule] = useState<boolean>(false);
+  const [isUploadingVocab, setIsUploadingVocab] = useState<boolean>(false);
+  const [isLoadingRef, setIsLoadingRef] = useState<boolean>(false);
+  const [refNotice, setRefNotice] = useState<string | null>(null);
+
+  const ruleFileInputRef = useRef<HTMLInputElement>(null);
+  const vocabFileInputRef = useRef<HTMLInputElement>(null);
 
   const [previewTask, setPreviewTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,6 +179,11 @@ export const ConfigureTask: React.FC = () => {
       })
       .catch((err) => console.error('Failed to load groups:', err));
 
+    taskApi
+      .getTopicsCatalog()
+      .then((data) => setCatalog(data))
+      .catch((err) => console.warn('Could not load topics catalog:', err));
+
     apiKeyApi
       .getKeys()
       .then((keys) => {
@@ -67,6 +196,12 @@ export const ConfigureTask: React.FC = () => {
       })
       .catch(() => {});
   }, []);
+
+  const currentLevelTopics =
+    catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel] || [];
+  const currentLevelMixedTopics =
+    catalog?.mixedTopicsByLevel?.[cefrLevel] || DEFAULT_MIXED_TOPICS[cefrLevel] || [];
+  const crossLevelTopics = catalog?.crossLevelTopics || [];
 
   /**
    * @brief Event handler updating selected AI provider and its associated model.
@@ -88,22 +223,113 @@ export const ConfigureTask: React.FC = () => {
   };
 
   /**
-   * @brief Event handler or helper executing handle preview.
+   * @brief Loads canonical or synthesized reference curriculum from server.
+   */
+  const handleLoadReference = async () => {
+    setIsLoadingRef(true);
+    setRefNotice(null);
+    try {
+      const ref = await taskApi.getCurriculumReference(cefrLevel, grammarTopic);
+      if (ref.referenceRule) {
+        setCustomRule(ref.referenceRule);
+      }
+      if (ref.referenceVocabulary && ref.referenceVocabulary.length > 0) {
+        setCustomVocabulary(ref.referenceVocabulary.join(', '));
+      }
+      setRefNotice(
+        ref.source === 'CANONICAL'
+          ? 'Loaded canonical curriculum rules & vocabulary from server repository!'
+          : 'Synthesized reference curriculum aligned with CEFR standards.'
+      );
+      setShowCurriculumPanel(true);
+    } catch (err: any) {
+      console.error('Failed to load reference curriculum:', err);
+      setRefNotice('Could not fetch reference curriculum.');
+    } finally {
+      setIsLoadingRef(false);
+    }
+  };
+
+  /**
+   * @brief Handles file upload for rule or vocabulary context.
+   */
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'RULE' | 'VOCABULARY'
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'RULE') {
+      setIsUploadingRule(true);
+    } else {
+      setIsUploadingVocab(true);
+    }
+
+    try {
+      const res = await taskApi.uploadCurriculumFile(file, type, grammarTopic);
+      if (type === 'RULE') {
+        setUploadedRuleFile({
+          fileName: res.fileName,
+          fileSize: res.fileSize,
+          contentSnippet: res.contentSnippet,
+          serverPath: res.serverPath,
+        });
+        if (res.fullContent) {
+          setCustomRule(res.fullContent);
+        }
+      } else {
+        setUploadedVocabFile({
+          fileName: res.fileName,
+          fileSize: res.fileSize,
+          contentSnippet: res.contentSnippet,
+          serverPath: res.serverPath,
+        });
+        if (res.fullContent) {
+          setCustomVocabulary(res.fullContent);
+        }
+      }
+      setShowCurriculumPanel(true);
+    } catch (err: any) {
+      console.error('Failed to upload curriculum file:', err);
+      setStatusMessage(err.response?.data?.message || 'Failed to upload curriculum file.');
+    } finally {
+      if (type === 'RULE') {
+        setIsUploadingRule(false);
+        if (ruleFileInputRef.current) ruleFileInputRef.current.value = '';
+      } else {
+        setIsUploadingVocab(false);
+        if (vocabFileInputRef.current) vocabFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  /**
+   * @brief Helper returning current task parameters including curriculum context.
+   */
+  const buildTaskParams = () => ({
+    cefrLevel,
+    grammarTopic: grammarTopic.trim() || 'General Practice',
+    domain,
+    taskType,
+    difficulty,
+    numberOfQuestions,
+    provider,
+    modelName,
+    customRule: customRule.trim() || undefined,
+    customVocabulary: customVocabulary.trim() || undefined,
+    ruleFilePath: uploadedRuleFile?.serverPath || undefined,
+    vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
+  });
+
+  /**
+   * @brief Event handler executing preview generation.
    */
   const handlePreview = async () => {
     setIsLoading(true);
     setStatusMessage(null);
     try {
-      const task = await taskApi.previewTask({
-        cefrLevel,
-        grammarTopic,
-        domain,
-        taskType,
-        difficulty,
-        numberOfQuestions,
-        provider,
-        modelName,
-      });
+      const task = await taskApi.previewTask(buildTaskParams());
       setPreviewTask(task);
     } catch (err: any) {
       setStatusMessage(err.response?.data?.message || 'Failed to preview task.');
@@ -113,22 +339,13 @@ export const ConfigureTask: React.FC = () => {
   };
 
   /**
-   * @brief Event handler or helper executing handle save template.
+   * @brief Event handler executing save template.
    */
   const handleSaveTemplate = async () => {
     setIsLoading(true);
     setStatusMessage(null);
     try {
-      await taskApi.saveTemplate({
-        cefrLevel,
-        grammarTopic,
-        domain,
-        taskType,
-        difficulty,
-        numberOfQuestions,
-        provider,
-        modelName,
-      });
+      await taskApi.saveTemplate(buildTaskParams());
       setStatusMessage('Template saved to your curriculum catalog!');
     } catch (err: any) {
       setStatusMessage(err.response?.data?.message || 'Failed to save template.');
@@ -138,7 +355,7 @@ export const ConfigureTask: React.FC = () => {
   };
 
   /**
-   * @brief Event handler or helper executing handle deploy.
+   * @brief Event handler executing assignment deployment to selected groups.
    */
   const handleDeploy = async () => {
     if (selectedGroupIds.length === 0) {
@@ -150,48 +367,45 @@ export const ConfigureTask: React.FC = () => {
     setStatusMessage(null);
 
     try {
-      const task = await taskApi.generateTask({
-        cefrLevel,
-        grammarTopic,
-        domain,
-        taskType,
-        difficulty,
-        numberOfQuestions,
-        provider,
-        modelName,
-      });
-
+      const task = await taskApi.generateTask(buildTaskParams());
       await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined);
 
-      setStatusMessage('Task successfully deployed to selected student cohorts!');
-      setTimeout(() => navigate('/teacher'), 1500);
+      setStatusMessage('Assignment deployed successfully to selected cohort groups!');
+      setTimeout(() => navigate('/teacher/dashboard'), 1500);
     } catch (err: any) {
-      setStatusMessage(err.response?.data?.message || 'Failed to deploy task.');
+      setStatusMessage(err.response?.data?.message || 'Failed to deploy assignment.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-          Curriculum Task Designer
+          Configure & Deploy Task
         </h1>
         <p className="text-sm text-slate-500 mt-1">
-          Configure an AI-generated assignment, preview questions, and deploy directly to your student cohorts.
+          Design custom exercises, inject syllabus rules, and deploy assignments to student cohorts.
         </p>
       </div>
 
       {statusMessage && (
-        <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-sm flex items-center space-x-2">
-          <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+        <div
+          className={`p-4 rounded-2xl flex items-center space-x-2 text-xs font-semibold ${
+            statusMessage.includes('success') || statusMessage.includes('saved') || statusMessage.includes('deployed')
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border border-rose-200'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
           <span>{statusMessage}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+          {/* AI Engine Selection */}
           <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -247,6 +461,7 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
+          {/* Cohort Groups */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Target Cohort Groups (Multi-select)
@@ -272,6 +487,7 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
+          {/* CEFR Level */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               CEFR Level
@@ -281,7 +497,13 @@ export const ConfigureTask: React.FC = () => {
                 <button
                   type="button"
                   key={level}
-                  onClick={() => setCefrLevel(level)}
+                  onClick={() => {
+                    setCefrLevel(level);
+                    const defaultList = catalog?.topicsByLevel?.[level] || DEFAULT_CEFR_TOPICS[level];
+                    if (defaultList && defaultList.length > 0) {
+                      setGrammarTopic(defaultList[0]);
+                    }
+                  }}
                   className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center space-x-1.5 transition ${
                     cefrLevel === level
                       ? 'border-primary bg-indigo-50 text-primary'
@@ -294,15 +516,61 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Grammar Topic & Domain */}
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Grammar Topic
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Grammar Topic / Subject
+                </label>
+                <div className="text-[11px] text-slate-500">
+                  Select a syllabus preset or enter custom topic
+                </div>
+              </div>
+
+              {/* Quick Select Preset Dropdown */}
+              <select
+                onChange={(e) => {
+                  if (e.target.value) setGrammarTopic(e.target.value);
+                }}
+                defaultValue=""
+                className="w-full mb-2 px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="" disabled>
+                  💡 Pick from Syllabus Presets & Mixed Challenges...
+                </option>
+                <optgroup label={`Core Syllabus (CEFR ${cefrLevel})`}>
+                  {currentLevelTopics.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </optgroup>
+                {currentLevelMixedTopics.length > 0 && (
+                  <optgroup label={`🔀 Mixed Challenges (CEFR ${cefrLevel})`}>
+                    {currentLevelMixedTopics.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {crossLevelTopics.length > 0 && (
+                  <optgroup label="🌐 Cross-Level & Thematic Challenges">
+                    {crossLevelTopics.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+              </select>
+
               <input
                 type="text"
                 value={grammarTopic}
                 onChange={(e) => setGrammarTopic(e.target.value)}
+                placeholder="Enter custom topic or customize selected..."
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
               />
             </div>
@@ -315,11 +583,175 @@ export const ConfigureTask: React.FC = () => {
                 type="text"
                 value={domain}
                 onChange={(e) => setDomain(e.target.value)}
+                placeholder="e.g. Academic, Business, Science, Law..."
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
               />
             </div>
           </div>
 
+          {/* Curriculum Context (Rules & Vocabulary) Expandable Panel */}
+          <div className="rounded-2xl border border-slate-200/90 overflow-hidden bg-slate-50/50">
+            <button
+              type="button"
+              onClick={() => setShowCurriculumPanel(!showCurriculumPanel)}
+              className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-100/60 transition"
+            >
+              <div className="flex items-center space-x-2.5">
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 text-primary flex items-center justify-center">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Curriculum Rules & Vocabulary Context (Optional)
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    {uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary
+                      ? '✓ Custom rules or vocabulary active'
+                      : 'Attach lesson rules, target vocabulary, or upload reference files (.txt, .md, .json)'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2 text-slate-400">
+                {showCurriculumPanel ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </button>
+
+            {showCurriculumPanel && (
+              <div className="p-4 sm:p-5 border-t border-slate-200/80 bg-white space-y-4 animate-in fade-in duration-200">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                  <span className="text-xs text-slate-600 font-medium">
+                    Enforce exact target rules and vocabulary in the assignment:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleLoadReference}
+                    disabled={isLoadingRef}
+                    className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-50"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>{isLoadingRef ? 'Loading...' : '💡 Auto-Fill Canonical Reference'}</span>
+                  </button>
+                </div>
+
+                {refNotice && (
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                    <span>{refNotice}</span>
+                  </div>
+                )}
+
+                {/* Target Grammar Rule Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700">
+                      1. Target Grammar Rule / Structural Guide
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        ref={ruleFileInputRef}
+                        type="file"
+                        accept=".txt,.md,.json"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, 'RULE')}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => ruleFileInputRef.current?.click()}
+                        disabled={isUploadingRule}
+                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1 disabled:opacity-50"
+                      >
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>{isUploadingRule ? 'Uploading...' : 'Upload Rule File (.md, .txt)'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {uploadedRuleFile && (
+                    <div className="p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200 flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-2 truncate">
+                        <FileText className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="font-semibold text-slate-800 truncate">{uploadedRuleFile.fileName}</span>
+                        <span className="text-slate-500 font-mono text-[10px]">
+                          ({(uploadedRuleFile.fileSize / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setUploadedRuleFile(null)}
+                        className="text-slate-400 hover:text-rose-500 transition ml-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  <textarea
+                    value={customRule}
+                    onChange={(e) => setCustomRule(e.target.value)}
+                    rows={3}
+                    placeholder="e.g. Focus on Inversion after negative adverbials..."
+                    className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-mono leading-relaxed"
+                  />
+                </div>
+
+                {/* Target Vocabulary Section */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-700">
+                      2. Target Vocabulary / Lexicon List
+                    </label>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        ref={vocabFileInputRef}
+                        type="file"
+                        accept=".txt,.json,.csv"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, 'VOCABULARY')}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => vocabFileInputRef.current?.click()}
+                        disabled={isUploadingVocab}
+                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1 disabled:opacity-50"
+                      >
+                        <UploadCloud className="w-3.5 h-3.5" />
+                        <span>{isUploadingVocab ? 'Uploading...' : 'Upload Vocab File (.json, .csv)'}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {uploadedVocabFile && (
+                    <div className="p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200 flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-2 truncate">
+                        <FileText className="w-4 h-4 text-primary flex-shrink-0" />
+                        <span className="font-semibold text-slate-800 truncate">{uploadedVocabFile.fileName}</span>
+                        <span className="text-slate-500 font-mono text-[10px]">
+                          ({(uploadedVocabFile.fileSize / 1024).toFixed(1)} KB)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setUploadedVocabFile(null)}
+                        className="text-slate-400 hover:text-rose-500 transition ml-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  <textarea
+                    value={customVocabulary}
+                    onChange={(e) => setCustomVocabulary(e.target.value)}
+                    rows={2}
+                    placeholder="e.g. substantiate, empirical, paradigm, ubiquitous, resilient..."
+                    className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-mono leading-relaxed"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Task Type */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Task Type
@@ -342,6 +774,7 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
+          {/* Due Date */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Submission Due Date (Optional)
@@ -354,6 +787,7 @@ export const ConfigureTask: React.FC = () => {
             />
           </div>
 
+          {/* Actions */}
           <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
@@ -387,6 +821,7 @@ export const ConfigureTask: React.FC = () => {
           </div>
         </div>
 
+        {/* Live Preview Column */}
         <div className="space-y-4">
           <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
             Live Preview

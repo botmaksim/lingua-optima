@@ -65,6 +65,9 @@ class TaskServiceTest {
     /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
+    /** @brief Test fixture or mock dependency for curriculum storage service. */
+    @Mock
+    private CurriculumStorageService curriculumStorageService;
 
     /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
@@ -616,6 +619,51 @@ class TaskServiceTest {
         TaskResponse res = taskService.generateTask(req, studentUser);
         assertNotNull(res);
         assertEquals(cleanContent, res.getContent());
+    }
+
+    /**
+     * @brief Verifies topics catalog retrieval containing level topics, mixed topics, and domains.
+     */
+    @Test
+    void testGetTopicsCatalog() {
+        com.linguaoptima.api.dto.response.TopicsCatalogResponse catalog = taskService.getTopicsCatalog();
+        assertNotNull(catalog);
+        assertNotNull(catalog.getTopicsByLevel());
+        assertEquals(6, catalog.getTopicsByLevel().size());
+        assertNotNull(catalog.getMixedTopicsByLevel());
+        assertEquals(6, catalog.getMixedTopicsByLevel().size());
+        assertNotNull(catalog.getCrossLevelTopics());
+        assertFalse(catalog.getCrossLevelTopics().isEmpty());
+        assertNotNull(catalog.getDomains());
+        assertFalse(catalog.getDomains().isEmpty());
+    }
+
+    @Test
+    void testGenerateTaskWithResolvedCurriculumContext() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Mixed Conditionals")
+            .domain("Science")
+            .taskType(TaskType.MCQ)
+            .difficulty(DifficultyLevel.HARD)
+            .numberOfQuestions(3)
+            .customRule("Custom Rule")
+            .customVocabulary("vocab1, vocab2")
+            .build();
+
+        when(curriculumStorageService.resolvePromptCurriculumContext(
+            eq(CefrLevel.B2), eq("Mixed Conditionals"), eq("Custom Rule"), eq("vocab1, vocab2")
+        )).thenReturn(new String[] { "Injected Rule Content", "Injected Vocabulary List" });
+
+        String rawJson = "{\"content\":\"Test curriculum content\",\"questions\":[]}";
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(rawJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        verify(curriculumStorageService).resolvePromptCurriculumContext(
+            eq(CefrLevel.B2), eq("Mixed Conditionals"), eq("Custom Rule"), eq("vocab1, vocab2")
+        );
     }
 }
 

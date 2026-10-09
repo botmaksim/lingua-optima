@@ -15,10 +15,12 @@ import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.response.TaskResponse;
+import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.*;
 import com.linguaoptima.api.service.ai.AIBrokerService;
+import com.linguaoptima.api.util.CefrTopicRegistry;
 import com.linguaoptima.api.util.PromptTemplates;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +57,8 @@ public class TaskService {
     private final NotificationService notificationService;
     /** @brief Field representing object mapper in TaskService. */
     private final ObjectMapper objectMapper;
+    /** @brief Field representing curriculum storage service for context injection. */
+    private final CurriculumStorageService curriculumStorageService;
 
     /**
      * @brief Generates an educational task with AI, persists it, and creates an automatic assignment for students.
@@ -142,13 +144,30 @@ public class TaskService {
      * @return Formatted prompt string for the AI provider.
      */
     private String buildPromptFromParams(TaskParamsRequest params) {
+        String targetRule = params.getCustomRule();
+        String targetVocab = params.getCustomVocabulary();
+        if (curriculumStorageService != null) {
+            String[] resolvedContext = curriculumStorageService.resolvePromptCurriculumContext(
+                params.getCefrLevel(),
+                params.getGrammarTopic(),
+                params.getCustomRule(),
+                params.getCustomVocabulary()
+            );
+            if (resolvedContext != null) {
+                targetRule = resolvedContext[0];
+                targetVocab = resolvedContext[1];
+            }
+        }
+
         return PromptTemplates.buildTaskGenerationPrompt(
             params.getCefrLevel().name(),
             params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
             params.getDomain() != null ? params.getDomain() : "Daily Life",
             params.getTaskType().name(),
             params.getDifficulty() != null ? params.getDifficulty().name() : DifficultyLevel.MEDIUM.name(),
-            params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5
+            params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5,
+            targetRule,
+            targetVocab
         );
     }
 
@@ -208,6 +227,26 @@ public class TaskService {
         return taskRepository.findAllAccessibleForUser(user.getId()).stream()
             .map(TaskResponse::fromEntity)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * @brief Assembles and returns comprehensive syllabus topics catalog including mixed challenges and domains.
+     * @return TopicsCatalogResponse populated with level topics, mixed topics, and domains.
+     */
+    public TopicsCatalogResponse getTopicsCatalog() {
+        Map<com.linguaoptima.api.domain.enums.CefrLevel, List<String>> core = new LinkedHashMap<>();
+        Map<com.linguaoptima.api.domain.enums.CefrLevel, List<String>> mixed = new LinkedHashMap<>();
+        for (com.linguaoptima.api.domain.enums.CefrLevel level : com.linguaoptima.api.domain.enums.CefrLevel.values()) {
+            core.put(level, CefrTopicRegistry.getTopicsForLevel(level));
+            mixed.put(level, CefrTopicRegistry.getMixedTopicsForLevel(level));
+        }
+
+        return TopicsCatalogResponse.builder()
+            .topicsByLevel(core)
+            .mixedTopicsByLevel(mixed)
+            .crossLevelTopics(CefrTopicRegistry.getThematicMixedTopics())
+            .domains(CefrTopicRegistry.getCommonDomains())
+            .build();
     }
 
     /**

@@ -40,5 +40,23 @@ class PromptTemplatesTest {
         assertTrue(essayGenPrompt.contains("Technology"));
         assertTrue(essayGenPrompt.contains("ESSAY writing assignment"));
         assertTrue(essayGenPrompt.contains("guiding discussion prompts"));
+
+        // Test with custom targetRule and targetVocabulary
+        String customPrompt = PromptTemplates.buildTaskGenerationPrompt(
+            "B2", "Mixed Conditionals", "Business", "MCQ", "MEDIUM", 5,
+            "If + had + V3, would + V1", "mitigate, lucrative"
+        );
+        assertTrue(customPrompt.contains("TARGET GRAMMAR RULE"));
+        assertTrue(customPrompt.contains("If + had + V3, would + V1"));
+        assertTrue(customPrompt.contains("TARGET VOCABULARY"));
+        assertTrue(customPrompt.contains("mitigate, lucrative"));
+
+        // Test essay with targetRule and targetVocabulary
+        String customEssayPrompt = PromptTemplates.buildTaskGenerationPrompt(
+            "C1", "Advanced Inversion", "Academic", "ESSAY", "HARD", 3,
+            "Seldom + aux + subj + verb", "empirical, substantiate"
+        );
+        assertTrue(customEssayPrompt.contains("Seldom + aux + subj + verb"));
+        assertTrue(customEssayPrompt.contains("empirical, substantiate"));
     }
 }

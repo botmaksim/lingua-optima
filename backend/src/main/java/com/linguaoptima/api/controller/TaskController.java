@@ -8,6 +8,7 @@ import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.response.TaskResponse;
+import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
 import com.linguaoptima.api.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,16 @@ public class TaskController {
 
     /** @brief Field representing task service in TaskController. */
     private final TaskService taskService;
+
+    /**
+     * @brief Retrieves canonical CEFR syllabus topics, dedicated mixed challenges, and common domains.
+     *
+     * @return HTTP 200 with TopicsCatalogResponse.
+     */
+    @GetMapping("/topics")
+    public ResponseEntity<TopicsCatalogResponse> getTopicsCatalog() {
+        return ResponseEntity.ok(taskService.getTopicsCatalog());
+    }
 
     /**
      * @brief Lists available tasks and assignments assigned to the user.

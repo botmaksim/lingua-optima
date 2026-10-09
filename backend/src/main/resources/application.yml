@@ -57,6 +57,8 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:lingua-optima-super-secure-production-ready-jwt-secret-key-256}
+  curriculum:
+    storage-path: ${CURRICULUM_STORAGE_PATH:./data/curriculum}
   encryption:
     key: ${ENCRYPTION_KEY:lingua-optima-aes256-encryption-key-for-api-keys}
   oauth:

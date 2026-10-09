@@ -92,4 +92,18 @@ class TaskControllerTest {
         assertEquals(HttpStatus.OK, assignRes.getStatusCode());
         verify(taskService).assignTask(taskResponse.getId(), assignReq, user);
     }
+
+    /**
+     * @brief Verifies unit test scenario: get topics catalog.
+     */
+    @Test
+    void testGetTopicsCatalog() {
+        com.linguaoptima.api.dto.response.TopicsCatalogResponse catalog =
+            com.linguaoptima.api.dto.response.TopicsCatalogResponse.builder().build();
+        when(taskService.getTopicsCatalog()).thenReturn(catalog);
+
+        ResponseEntity<com.linguaoptima.api.dto.response.TopicsCatalogResponse> res = taskController.getTopicsCatalog();
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(catalog, res.getBody());
+    }
 }

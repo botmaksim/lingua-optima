@@ -29,18 +29,45 @@ public final class PromptTemplates {
      */
     public static String buildTaskGenerationPrompt(String cefrLevel, String grammarTopic, String domain,
                                                    String taskType, String difficulty, int numberOfQuestions) {
+        return buildTaskGenerationPrompt(cefrLevel, grammarTopic, domain, taskType, difficulty, numberOfQuestions, null, null);
+    }
+
+    /**
+     * @brief Constructs task generation prompt with injected grammar rules and target vocabulary context.
+     * @param cefrLevel Target CEFR level.
+     * @param grammarTopic Grammar topic under test.
+     * @param domain Real-world situational context.
+     * @param taskType Task format (e.g. MULTIPLE_CHOICE, FILL_IN_BLANK).
+     * @param difficulty Difficulty tier.
+     * @param numberOfQuestions Target question count.
+     * @param targetRule Pedagogical grammar rules and structural formulas to enforce.
+     * @param targetVocabulary Target vocabulary words, expressions, and collocations to integrate.
+     * @return Formatted prompt string.
+     */
+    public static String buildTaskGenerationPrompt(String cefrLevel, String grammarTopic, String domain,
+                                                   String taskType, String difficulty, int numberOfQuestions,
+                                                   String targetRule, String targetVocabulary) {
+        StringBuilder contextBuilder = new StringBuilder();
+        if (targetRule != null && !targetRule.isBlank()) {
+            contextBuilder.append("\n- TARGET GRAMMAR RULE & FORMULA TO TEST:\n").append(targetRule.trim()).append("\n");
+        }
+        if (targetVocabulary != null && !targetVocabulary.isBlank()) {
+            contextBuilder.append("\n- TARGET VOCABULARY & COLLOCATIONS TO INCORPORATE:\n").append(targetVocabulary.trim()).append("\n");
+        }
+        String extraContext = contextBuilder.toString();
+
         if ("ESSAY".equalsIgnoreCase(taskType)) {
             return """
                 Generate an English essay writing assignment and prompt based on the following parameters:
                 - CEFR Level: %s
                 - Topic/Focus: %s
                 - Domain/Context: %s
-                - Target Difficulty: %s
+                - Target Difficulty: %s%s
 
                 CRITICAL REQUIREMENTS:
                 1. This is an open-ended ESSAY writing assignment, NOT a multiple-choice or gap-fill grammar exercise.
                 2. Do NOT include numbered blanks, bracketed options, or multiple-choice choices in the text.
-                3. The "content" field must contain a rich, student-facing essay topic with background context, debate perspectives, and instructions to compose an essay of at least 250 words.
+                3. The "content" field must contain a rich, student-facing essay topic with background context, debate perspectives, and instructions to compose an essay of at least 250 words. If target vocabulary or grammar rules are provided above, explicitly instruct the student to incorporate them.
                 4. The "questions" array must contain 2 to 4 guiding discussion prompts or structural questions to help the student organize their essay arguments (each with empty options array []).
                 5. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
 
@@ -59,7 +86,7 @@ public final class PromptTemplates {
                   ],
                   "answerKey": []
                 }
-                """.formatted(cefrLevel, grammarTopic, domain, difficulty, grammarTopic);
+                """.formatted(cefrLevel, grammarTopic, domain, difficulty, extraContext, grammarTopic);
         }
 
         return """
@@ -69,10 +96,13 @@ public final class PromptTemplates {
             - Domain/Context: %s
             - Task Type: %s
             - Difficulty: %s
-            - Number of Questions: %d
+            - Number of Questions: %d%s
 
-            CRITICAL: Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
-            The "content" field must contain ONLY student-facing reading material or a clear assignment topic, NEVER system meta-instructions.
+            CRITICAL QUALITY CONTRACT:
+            1. Every question MUST explicitly evaluate the target grammar topic and rules specified above.
+            2. The reading content, question sentences, and options MUST actively utilize and contextualize the target vocabulary if provided.
+            3. The "content" field must contain ONLY student-facing reading material or a clear assignment topic, NEVER system meta-instructions.
+            4. Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
 
             Return ONLY a valid JSON object with the following structure:
             {
@@ -96,7 +126,7 @@ public final class PromptTemplates {
                 }
               ]
             }
-            """.formatted(cefrLevel, grammarTopic, domain, taskType, difficulty, numberOfQuestions);
+            """.formatted(cefrLevel, grammarTopic, domain, taskType, difficulty, numberOfQuestions, extraContext);
     }
 
     /**

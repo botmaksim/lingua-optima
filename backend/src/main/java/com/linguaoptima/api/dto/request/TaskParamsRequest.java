@@ -50,4 +50,16 @@ public class TaskParamsRequest {
 
     /** @brief Field representing model name in TaskParamsRequest. */
     private String modelName;
+
+    /** @brief Optional user-provided custom grammar rules, formulas, or teaching notes. */
+    private String customRule;
+
+    /** @brief Optional user-provided custom target vocabulary words, idioms, or collocations. */
+    private String customVocabulary;
+
+    /** @brief Optional server path of uploaded custom grammar rule file. */
+    private String ruleFilePath;
+
+    /** @brief Optional server path of uploaded custom vocabulary reference file. */
+    private String vocabularyFilePath;
 }

@@ -49,6 +49,8 @@ services:
       - .env
     ports:
       - "${SERVER_PORT:-8080}:${SERVER_PORT:-8080}"
+    volumes:
+      - curriculum_data:/app/data/curriculum
     environment:
       - SERVER_PORT=${SERVER_PORT:-8080}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
@@ -122,6 +124,7 @@ services:
 
 volumes:
   postgres_data:
+  curriculum_data:
 
 networks:
   lingua_network:

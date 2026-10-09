@@ -68,4 +68,61 @@ export const taskApi = {
     const res = await axiosInstance.get<Task>(`/tasks/${taskId}`);
     return res.data;
   },
+
+  /**
+   * @brief Uploads custom curriculum reference file (.txt, .md, .json, .csv) to server.
+   * @param file File object from file input.
+   * @param type Discriminator indicating RULE or VOCABULARY.
+   * @param topic Optional associated grammar topic.
+   * @return Promise resolving to CurriculumUploadResponse.
+   */
+  uploadCurriculumFile: async (
+    file: File,
+    type: 'RULE' | 'VOCABULARY',
+    topic?: string
+  ): Promise<import('../types/task').CurriculumUploadResponse> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('type', type);
+    if (topic) formData.append('topic', topic);
+
+    const res = await axiosInstance.post<import('../types/task').CurriculumUploadResponse>(
+      '/tasks/curriculum/upload',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return res.data;
+  },
+
+  /**
+   * @brief Retrieves canonical or synthesized pedagogical reference material for level and topic.
+   * @param level Target CEFR level.
+   * @param topic Target grammar topic.
+   * @return Promise resolving to CurriculumReferenceResponse.
+   */
+  getCurriculumReference: async (
+    level: string,
+    topic: string
+  ): Promise<import('../types/task').CurriculumReferenceResponse> => {
+    const res = await axiosInstance.get<import('../types/task').CurriculumReferenceResponse>(
+      '/tasks/curriculum/reference',
+      {
+        params: { level, topic },
+      }
+    );
+    return res.data;
+  },
+
+  /**
+   * @brief Fetches hierarchical catalog of standard, mixed, and cross-level topics.
+   * @return Promise resolving to TopicsCatalogResponse.
+   */
+  getTopicsCatalog: async (): Promise<import('../types/task').TopicsCatalogResponse> => {
+    const res = await axiosInstance.get<import('../types/task').TopicsCatalogResponse>('/tasks/topics');
+    return res.data;
+  },
 };

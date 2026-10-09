@@ -90,6 +90,53 @@ export interface TaskParams {
   provider?: string;
   /** @brief Property representing preferred AI model identifier in TaskParams. */
   modelName?: string;
+  /** @brief Optional custom grammar rule text to guide AI generation. */
+  customRule?: string;
+  /** @brief Optional target vocabulary words or collocations to enforce. */
+  customVocabulary?: string;
+  /** @brief Server relative path of uploaded custom rule file. */
+  ruleFilePath?: string;
+  /** @brief Server relative path of uploaded custom vocabulary file. */
+  vocabularyFilePath?: string;
+}
+
+/**
+ * @brief Discriminator for uploaded curriculum files.
+ */
+export type CurriculumFileType = 'RULE' | 'VOCABULARY';
+
+/**
+ * @brief Response payload returned after uploading a curriculum file.
+ */
+export interface CurriculumUploadResponse {
+  fileName: string;
+  fileType: CurriculumFileType;
+  fileSize: number;
+  contentSnippet: string;
+  fullContent: string;
+  serverPath: string;
+  topic?: string;
+}
+
+/**
+ * @brief Reference grammar rule and vocabulary response for a level/topic.
+ */
+export interface CurriculumReferenceResponse {
+  cefrLevel: string;
+  grammarTopic: string;
+  referenceRule: string;
+  referenceVocabulary: string[];
+  source: 'CANONICAL' | 'SYNTHESIZED';
+}
+
+/**
+ * @brief Topics catalog response containing standard, mixed, and cross-level topics.
+ */
+export interface TopicsCatalogResponse {
+  topicsByLevel: Record<string, string[]>;
+  mixedTopicsByLevel: Record<string, string[]>;
+  crossLevelTopics: string[];
+  domains: string[];
 }
 
 /**

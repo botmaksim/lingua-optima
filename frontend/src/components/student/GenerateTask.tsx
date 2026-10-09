@@ -1,18 +1,33 @@
 /**
  * @file GenerateTask.tsx
- * @brief Dynamic task generator interface allowing students to generate CEFR-aligned exercises.
+ * @brief Dynamic task generator interface allowing students to generate CEFR-aligned exercises with custom topics and curriculum context.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, RotateCcw, AlertTriangle, Cpu, Clock, Key } from 'lucide-react';
+import {
+  Sparkles,
+  RotateCcw,
+  AlertTriangle,
+  Cpu,
+  Clock,
+  Key,
+  UploadCloud,
+  FileText,
+  Trash2,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  FileCheck,
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useUsage } from '../../hooks/useUsage';
 import { useUIStore } from '../../store/uiStore';
 import { taskApi } from '../../api/taskApi';
 import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
 import { CefrLevel } from '../../types/user';
-import { TaskType, DifficultyLevel } from '../../types/task';
+import { TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import {
@@ -22,7 +37,7 @@ import {
   useProviderModels,
 } from '../../constants/aiModels';
 
-const CEFR_TOPICS: Record<CefrLevel, string[]> = {
+const DEFAULT_CEFR_TOPICS: Record<CefrLevel, string[]> = {
   A1: [
     'Present Simple (to be & common verbs)',
     'Articles (a, an, the) & Demonstratives',
@@ -75,6 +90,39 @@ const CEFR_TOPICS: Record<CefrLevel, string[]> = {
   ],
 };
 
+const DEFAULT_MIXED_TOPICS: Record<CefrLevel, string[]> = {
+  A1: [
+    'Present Simple vs Present Continuous in Daily Routines',
+    'Articles, Plurals, and Demonstrative Pronouns',
+    'Question Formation with To Be, Do/Does, and Can',
+  ],
+  A2: [
+    'Past Simple vs Past Continuous Narrative Interruption',
+    'Future Plans: Going to vs Present Continuous vs Will',
+    'Comparatives, Superlatives, and As...As Equality',
+  ],
+  B1: [
+    'Narrative Tenses: Past Simple, Continuous, and Perfect',
+    'Mixed Modal Verbs: Obligation, Permission, and Advice',
+    'Zero, First, and Second Conditionals with Unless',
+  ],
+  B2: [
+    'Mixed Conditionals (Past Cause with Present Result)',
+    'Advanced Passive and Causative Structures (Have/Get something done)',
+    'Reported Speech Shifts with Reporting Verbs & Modals',
+  ],
+  C1: [
+    'Negative Inversion and Cleft Sentences Combined',
+    'Participle Clauses with Reduced Relatives & Adverbials',
+    'Subjunctive Mood and Formulaic Mandative Expressions',
+  ],
+  C2: [
+    'Stylistic Inversion, Clefting, and Focal Fronting',
+    'Epistemic Stance, Subtle Modal Nuances, and Hedging',
+    'Advanced Ellipsis, Substitution, and Cohesive Chaining',
+  ],
+};
+
 const DOMAINS = ['Daily Life', 'Business', 'Academic', 'Technology', 'Travel & Culture'];
 
 /**
@@ -87,10 +135,12 @@ export const GenerateTask: React.FC = () => {
   const { openUpgradeWall } = useUIStore();
   const navigate = useNavigate();
 
+  const [catalog, setCatalog] = useState<TopicsCatalogResponse | null>(null);
   const [cefrLevel, setCefrLevel] = useState<CefrLevel>(user?.cefrLevel || 'A1');
-  const [grammarTopic, setGrammarTopic] = useState<string>(
-    CEFR_TOPICS[user?.cefrLevel || 'A1']?.[0] || CEFR_TOPICS.A1[0]
+  const [selectedTopicOption, setSelectedTopicOption] = useState<string>(
+    DEFAULT_CEFR_TOPICS[user?.cefrLevel || 'A1']?.[0] || DEFAULT_CEFR_TOPICS.A1[0]
   );
+  const [customTopicText, setCustomTopicText] = useState<string>('');
   const [domain, setDomain] = useState<string>(DOMAINS[0]);
   const [taskType, setTaskType] = useState<TaskType>('MCQ');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('MEDIUM');
@@ -102,7 +152,38 @@ export const GenerateTask: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Curriculum context state
+  const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
+  const [customRule, setCustomRule] = useState<string>('');
+  const [customVocabulary, setCustomVocabulary] = useState<string>('');
+  const [uploadedRuleFile, setUploadedRuleFile] = useState<{
+    fileName: string;
+    fileSize: number;
+    contentSnippet: string;
+    serverPath: string;
+  } | null>(null);
+  const [uploadedVocabFile, setUploadedVocabFile] = useState<{
+    fileName: string;
+    fileSize: number;
+    contentSnippet: string;
+    serverPath: string;
+  } | null>(null);
+  const [isUploadingRule, setIsUploadingRule] = useState<boolean>(false);
+  const [isUploadingVocab, setIsUploadingVocab] = useState<boolean>(false);
+  const [isLoadingRef, setIsLoadingRef] = useState<boolean>(false);
+  const [refNotice, setRefNotice] = useState<string | null>(null);
+
+  const ruleFileInputRef = useRef<HTMLInputElement>(null);
+  const vocabFileInputRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
+    // Load topics catalog from backend
+    taskApi
+      .getTopicsCatalog()
+      .then((data) => setCatalog(data))
+      .catch((err) => console.warn('Could not load topics catalog from API, using defaults:', err));
+
+    // Load user API keys
     apiKeyApi
       .getKeys()
       .then((keys) => {
@@ -116,6 +197,17 @@ export const GenerateTask: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  const isCustomTopic = selectedTopicOption === '__CUSTOM__';
+  const effectiveGrammarTopic = isCustomTopic
+    ? customTopicText.trim() || 'Custom Practice Topic'
+    : selectedTopicOption;
+
+  const currentLevelTopics =
+    catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel] || [];
+  const currentLevelMixedTopics =
+    catalog?.mixedTopicsByLevel?.[cefrLevel] || DEFAULT_MIXED_TOPICS[cefrLevel] || [];
+  const crossLevelTopics = catalog?.crossLevelTopics || [];
+
   /**
    * @brief Event handler updating selected AI provider and its associated model.
    * @param nextProvider New AI provider identifier.
@@ -127,15 +219,100 @@ export const GenerateTask: React.FC = () => {
   };
 
   /**
-   * @brief Event handler or helper executing handle cefr change.
+   * @brief Event handler updating CEFR level and resetting topic to default.
    */
   const handleCefrChange = (newLevel: CefrLevel) => {
     setCefrLevel(newLevel);
-    setGrammarTopic(CEFR_TOPICS[newLevel][0]);
+    const available = catalog?.topicsByLevel?.[newLevel] || DEFAULT_CEFR_TOPICS[newLevel];
+    if (!isCustomTopic && available && available.length > 0) {
+      setSelectedTopicOption(available[0]);
+    }
   };
 
   /**
-   * @brief Event handler or helper executing handle generate.
+   * @brief Loads canonical or synthesized reference curriculum from server.
+   */
+  const handleLoadReference = async () => {
+    setIsLoadingRef(true);
+    setRefNotice(null);
+    try {
+      const ref = await taskApi.getCurriculumReference(cefrLevel, effectiveGrammarTopic);
+      if (ref.referenceRule) {
+        setCustomRule(ref.referenceRule);
+      }
+      if (ref.referenceVocabulary && ref.referenceVocabulary.length > 0) {
+        setCustomVocabulary(ref.referenceVocabulary.join(', '));
+      }
+      setRefNotice(
+        ref.source === 'CANONICAL'
+          ? 'Loaded canonical curriculum rules & vocabulary from server repository!'
+          : 'Synthesized reference curriculum aligned with CEFR standards.'
+      );
+      setShowCurriculumPanel(true);
+    } catch (err: any) {
+      console.error('Failed to load reference curriculum:', err);
+      setRefNotice('Could not fetch reference curriculum. You can write your own below.');
+    } finally {
+      setIsLoadingRef(false);
+    }
+  };
+
+  /**
+   * @brief Handles file upload for rule or vocabulary context.
+   */
+  const handleFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: 'RULE' | 'VOCABULARY'
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'RULE') {
+      setIsUploadingRule(true);
+    } else {
+      setIsUploadingVocab(true);
+    }
+
+    try {
+      const res = await taskApi.uploadCurriculumFile(file, type, effectiveGrammarTopic);
+      if (type === 'RULE') {
+        setUploadedRuleFile({
+          fileName: res.fileName,
+          fileSize: res.fileSize,
+          contentSnippet: res.contentSnippet,
+          serverPath: res.serverPath,
+        });
+        if (res.fullContent) {
+          setCustomRule(res.fullContent);
+        }
+      } else {
+        setUploadedVocabFile({
+          fileName: res.fileName,
+          fileSize: res.fileSize,
+          contentSnippet: res.contentSnippet,
+          serverPath: res.serverPath,
+        });
+        if (res.fullContent) {
+          setCustomVocabulary(res.fullContent);
+        }
+      }
+      setShowCurriculumPanel(true);
+    } catch (err: any) {
+      console.error('Failed to upload curriculum file:', err);
+      setError(err.response?.data?.message || 'Failed to upload file. Allowed: .txt, .md, .json, .csv');
+    } finally {
+      if (type === 'RULE') {
+        setIsUploadingRule(false);
+        if (ruleFileInputRef.current) ruleFileInputRef.current.value = '';
+      } else {
+        setIsUploadingVocab(false);
+        if (vocabFileInputRef.current) vocabFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  /**
+   * @brief Event handler executing task generation.
    */
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,13 +327,17 @@ export const GenerateTask: React.FC = () => {
     try {
       const task = await taskApi.generateTask({
         cefrLevel,
-        grammarTopic,
+        grammarTopic: effectiveGrammarTopic,
         domain,
         taskType,
         difficulty,
         numberOfQuestions,
         provider,
         modelName,
+        customRule: customRule.trim() || undefined,
+        customVocabulary: customVocabulary.trim() || undefined,
+        ruleFilePath: uploadedRuleFile?.serverPath || undefined,
+        vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
       });
 
       if (taskType === 'ESSAY') {
@@ -177,15 +358,23 @@ export const GenerateTask: React.FC = () => {
   };
 
   /**
-   * @brief Event handler or helper executing handle clear.
+   * @brief Resets all form fields to default values.
    */
   const handleClear = () => {
     setCefrLevel(user?.cefrLevel || 'B1');
-    setGrammarTopic(CEFR_TOPICS[user?.cefrLevel || 'B1'][0]);
+    setSelectedTopicOption(
+      DEFAULT_CEFR_TOPICS[user?.cefrLevel || 'B1']?.[0] || DEFAULT_CEFR_TOPICS.B1[0]
+    );
+    setCustomTopicText('');
     setDomain(DOMAINS[0]);
     setTaskType('MCQ');
     setDifficulty('MEDIUM');
     setNumberOfQuestions(5);
+    setCustomRule('');
+    setCustomVocabulary('');
+    setUploadedRuleFile(null);
+    setUploadedVocabFile(null);
+    setRefNotice(null);
     setError(null);
   };
 
@@ -194,7 +383,7 @@ export const GenerateTask: React.FC = () => {
       <div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Generate Practice Task</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Customize your task parameters and choose your preferred AI provider and model.
+          Customize your task parameters, enter custom topics, inject grammar rules and vocabulary context, and choose your preferred AI engine.
         </p>
       </div>
 
@@ -212,18 +401,23 @@ export const GenerateTask: React.FC = () => {
                 Generating Custom CEFR {cefrLevel} Practice...
               </h3>
               <p className="text-xs text-indigo-700 font-medium">
-                Engine: <span className="font-mono font-semibold">{provider} ({modelName})</span> · Topic: <span className="font-semibold">{grammarTopic}</span>
+                Engine: <span className="font-mono font-semibold">{provider} ({modelName})</span> · Topic: <span className="font-semibold">{effectiveGrammarTopic}</span>
               </p>
             </div>
           </div>
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-3 border border-indigo-100 text-xs text-slate-600 space-y-1.5 leading-relaxed">
             <p className="flex items-center space-x-1.5">
               <Clock className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-              <span>Pedagogical task generation typically takes <strong>5–20 seconds</strong> depending on provider traffic.</span>
+              <span>
+                Applying CEFR {cefrLevel} pedagogical constraints and domain vocabulary...
+              </span>
             </p>
-            <p className="text-[11px] text-slate-500">
-              Please keep this page open. If public AI traffic is elevated, automated failover seamlessly attempts backup high-availability models.
-            </p>
+            {(customRule || customVocabulary) && (
+              <p className="flex items-center space-x-1.5 text-emerald-700 font-medium">
+                <FileCheck className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                <span>Injecting custom pedagogical rule and target vocabulary context...</span>
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -240,9 +434,7 @@ export const GenerateTask: React.FC = () => {
                   ? 'AI Service Queue · High Demand'
                   : 'Generation Error'}
               </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                {error}
-              </p>
+              <p className="text-xs text-slate-600 leading-relaxed">{error}</p>
               <div className="pt-2 flex flex-wrap gap-2 text-xs">
                 <button
                   type="button"
@@ -277,6 +469,7 @@ export const GenerateTask: React.FC = () => {
       )}
 
       <form onSubmit={handleGenerate} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+        {/* AI Engine Selection */}
         <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -332,6 +525,7 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
+        {/* CEFR Level Selection */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Target CEFR Level
@@ -355,23 +549,249 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
+        {/* Topic Selection with Standard, Mixed Challenges, and Custom Topic */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-            Grammar Topic
-          </label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Practice Topic & Mixed Challenges
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                if (isCustomTopic) {
+                  setSelectedTopicOption(currentLevelTopics[0] || 'Present Simple');
+                } else {
+                  setSelectedTopicOption('__CUSTOM__');
+                }
+              }}
+              className="text-xs font-semibold text-primary hover:text-primary-hover transition flex items-center space-x-1"
+            >
+              <span>{isCustomTopic ? '← Switch to Syllabus List' : '✏️ Enter Custom Topic'}</span>
+            </button>
+          </div>
+
           <select
-            value={grammarTopic}
-            onChange={(e) => setGrammarTopic(e.target.value)}
+            value={selectedTopicOption}
+            onChange={(e) => setSelectedTopicOption(e.target.value)}
             className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-white text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
           >
-            {CEFR_TOPICS[cefrLevel].map((topic) => (
-              <option key={topic} value={topic}>
-                {topic}
-              </option>
-            ))}
+            <optgroup label={`Core Syllabus Topics (CEFR ${cefrLevel})`}>
+              {currentLevelTopics.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </optgroup>
+
+            {currentLevelMixedTopics.length > 0 && (
+              <optgroup label={`🔀 Mixed Challenges (CEFR ${cefrLevel})`}>
+                {currentLevelMixedTopics.map((topic) => (
+                  <option key={topic} value={topic}>
+                    {topic}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            {crossLevelTopics.length > 0 && (
+              <optgroup label="🌐 Thematic & Cross-Level Challenges">
+                {crossLevelTopics.map((topic) => (
+                  <option key={topic} value={topic}>
+                    {topic}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+
+            <optgroup label="Custom Practice">
+              <option value="__CUSTOM__">✏️ Custom Topic (Enter your own)...</option>
+            </optgroup>
           </select>
+
+          {isCustomTopic && (
+            <div className="mt-3 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-2 animate-in fade-in duration-200">
+              <label className="block text-xs font-bold text-indigo-900">
+                Custom Practice Subject or Specialized Rule:
+              </label>
+              <input
+                type="text"
+                value={customTopicText}
+                onChange={(e) => setCustomTopicText(e.target.value)}
+                placeholder="e.g. Mixed Conditionals in Contract Law, Medical Passive Voice, Tech Startup Pitch Collocations..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              />
+              <p className="text-[11px] text-indigo-700">
+                💡 Tip: You can also attach your own reference grammar rules and vocabulary lists in the Curriculum Context section below.
+              </p>
+            </div>
+          )}
         </div>
 
+        {/* Curriculum Context (Rules & Vocabulary) Expandable Panel */}
+        <div className="rounded-2xl border border-slate-200/90 overflow-hidden bg-slate-50/50">
+          <button
+            type="button"
+            onClick={() => setShowCurriculumPanel(!showCurriculumPanel)}
+            className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-100/60 transition"
+          >
+            <div className="flex items-center space-x-2.5">
+              <div className="w-7 h-7 rounded-lg bg-indigo-100 text-primary flex items-center justify-center">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Curriculum Rules & Vocabulary Context (Optional)
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  {uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary
+                    ? '✓ Custom rules or vocabulary active'
+                    : 'Inject specific grammar rules, word lists, or upload files (.txt, .md, .json)'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 text-slate-400">
+              {showCurriculumPanel ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </div>
+          </button>
+
+          {showCurriculumPanel && (
+            <div className="p-4 sm:p-5 border-t border-slate-200/80 bg-white space-y-4 animate-in fade-in duration-200">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                <span className="text-xs text-slate-600 font-medium">
+                  Provide exact target rules and vocabulary for the AI engine:
+                </span>
+                <button
+                  type="button"
+                  onClick={handleLoadReference}
+                  disabled={isLoadingRef}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-50"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>{isLoadingRef ? 'Loading Reference...' : '💡 Auto-Fill Canonical Reference'}</span>
+                </button>
+              </div>
+
+              {refNotice && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <span>{refNotice}</span>
+                </div>
+              )}
+
+              {/* Target Grammar Rule Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                    <span>1. Target Grammar Rule / Structural Guide</span>
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      ref={ruleFileInputRef}
+                      type="file"
+                      accept=".txt,.md,.json"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e, 'RULE')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => ruleFileInputRef.current?.click()}
+                      disabled={isUploadingRule}
+                      className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1 disabled:opacity-50"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>{isUploadingRule ? 'Uploading...' : 'Upload Rule File (.md, .txt)'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {uploadedRuleFile && (
+                  <div className="p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200 flex items-center justify-between text-xs">
+                    <div className="flex items-center space-x-2 truncate">
+                      <FileText className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="font-semibold text-slate-800 truncate">{uploadedRuleFile.fileName}</span>
+                      <span className="text-slate-500 font-mono text-[10px]">
+                        ({(uploadedRuleFile.fileSize / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUploadedRuleFile(null)}
+                      className="text-slate-400 hover:text-rose-500 transition ml-2"
+                      title="Remove uploaded rule file"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                <textarea
+                  value={customRule}
+                  onChange={(e) => setCustomRule(e.target.value)}
+                  rows={3}
+                  placeholder="e.g. Focus on Inversion after negative adverbials (Seldom, Rarely, Never before). The auxiliary verb must precede the subject: Seldom had they witnessed..."
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-mono leading-relaxed"
+                />
+              </div>
+
+              {/* Target Vocabulary Section */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 flex items-center space-x-1.5">
+                    <span>2. Target Vocabulary / Lexicon List</span>
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      ref={vocabFileInputRef}
+                      type="file"
+                      accept=".txt,.json,.csv"
+                      className="hidden"
+                      onChange={(e) => handleFileUpload(e, 'VOCABULARY')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => vocabFileInputRef.current?.click()}
+                      disabled={isUploadingVocab}
+                      className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1 disabled:opacity-50"
+                    >
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>{isUploadingVocab ? 'Uploading...' : 'Upload Vocab File (.json, .csv)'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {uploadedVocabFile && (
+                  <div className="p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200 flex items-center justify-between text-xs">
+                    <div className="flex items-center space-x-2 truncate">
+                      <FileText className="w-4 h-4 text-primary flex-shrink-0" />
+                      <span className="font-semibold text-slate-800 truncate">{uploadedVocabFile.fileName}</span>
+                      <span className="text-slate-500 font-mono text-[10px]">
+                        ({(uploadedVocabFile.fileSize / 1024).toFixed(1)} KB)
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUploadedVocabFile(null)}
+                      className="text-slate-400 hover:text-rose-500 transition ml-2"
+                      title="Remove uploaded vocab file"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                <textarea
+                  value={customVocabulary}
+                  onChange={(e) => setCustomVocabulary(e.target.value)}
+                  rows={2}
+                  placeholder="e.g. substantiate, empirical, paradigm, ubiquitous, resilient, compromise, consequence"
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-mono leading-relaxed"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Vocabulary Domain */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Vocabulary Domain
@@ -394,6 +814,7 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
+        {/* Task Type */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Task Type
@@ -423,6 +844,7 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
+        {/* Difficulty and Question Count */}
         {taskType !== 'ESSAY' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
@@ -466,6 +888,7 @@ export const GenerateTask: React.FC = () => {
           </div>
         )}
 
+        {/* Action Buttons */}
         <div className="flex items-center space-x-3 pt-4 border-t border-slate-100">
           <button
             type="submit"
