@@ -8,6 +8,7 @@ import com.linguaoptima.api.exception.OcrException;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.tess4j.ITesseract;
 import net.sourceforge.tess4j.Tesseract;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -33,6 +34,7 @@ public class OCRService {
     /**
      * @brief Default constructor initializing native Tesseract OCR engine using environment configuration.
      */
+    @Autowired
     public OCRService() {
         this(System.getenv("TESSDATA_PREFIX"));
     }

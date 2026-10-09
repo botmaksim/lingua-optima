@@ -8,6 +8,8 @@ import com.linguaoptima.api.domain.SessionState;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.SessionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -38,7 +40,8 @@ public interface SessionStateRepository extends JpaRepository<SessionState, UUID
      * @param assignmentId Filter parameter assignmentId.
      * @return Query result (Optional&lt;SessionState&gt;).
      */
-    Optional<SessionState> findByAssignmentId(UUID assignmentId);
+    @Query("SELECT s FROM SessionState s WHERE s.assignment.id = :assignmentId")
+    Optional<SessionState> findByAssignmentId(@Param("assignmentId") UUID assignmentId);
     /**
      * @brief Queries repository via findAllByStudentIdAndStatus.
      * @param studentId Filter parameter studentId.

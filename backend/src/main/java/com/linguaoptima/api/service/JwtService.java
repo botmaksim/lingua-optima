@@ -7,6 +7,7 @@ package com.linguaoptima.api.service;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,7 @@ public class JwtService {
      * @param secret The configured JWT secret key string from application properties.
      * @throws IllegalStateException if key initialization fails.
      */
+    @Autowired
     public JwtService(@Value("${app.jwt.secret:lingua-optima-super-secret-jwt-signing-key-for-auth-256}") String secret) {
         this(secret, "SHA-256");
     }

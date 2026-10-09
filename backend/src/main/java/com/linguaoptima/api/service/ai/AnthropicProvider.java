@@ -6,6 +6,7 @@ package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -31,6 +32,7 @@ public class AnthropicProvider implements AIProvider {
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
+    @Autowired
     public AnthropicProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this("dummy-claude-key", restTemplate, objectMapper);
     }

@@ -6,6 +6,7 @@ package com.linguaoptima.api.service.ai;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -31,6 +32,7 @@ public class OpenAIProvider implements AIProvider {
      * @param restTemplate RestTemplate HTTP client.
      * @param objectMapper Jackson JSON mapper.
      */
+    @Autowired
     public OpenAIProvider(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this("dummy-openai-key", restTemplate, objectMapper);
     }

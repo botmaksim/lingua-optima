@@ -4,6 +4,7 @@
  */
 package com.linguaoptima.api.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,7 @@ public class EncryptionService {
      * @param secretKeyString Configured master encryption secret string from application properties.
      * @throws IllegalStateException if key initialization fails.
      */
+    @Autowired
     public EncryptionService(@Value("${app.encryption.key:lingua-optima-default-secure-key-32b}") String secretKeyString) {
         this(secretKeyString, "SHA-256");
     }
