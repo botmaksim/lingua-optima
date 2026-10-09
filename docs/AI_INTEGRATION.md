@@ -1,4 +1,6 @@
-# Интеграция ИИ (AI Integration)
+# Lingua Optima: Интеграция ИИ (AI Integration)
+
+> 📚 **Навигация по документации**: [Главный обзор (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Открыть презентацию (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](./generated/html/index.html)
 
 Данный документ описывает архитектуру интеграции искусственного интеллекта для образовательной платформы Lingua Optima.
 

@@ -1,4 +1,6 @@
-# DevOps Documentation: Lingua Optima
+# Lingua Optima: DevOps & Deployment Documentation
+
+> 📚 **Навигация по документации**: [Главный обзор (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Открыть презентацию (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](./generated/html/index.html)
 
 В данном документе описывается архитектура развертывания, процессы CI/CD, инфраструктура Docker, а также политики безопасности и мониторинга для платформы Lingua Optima.
 

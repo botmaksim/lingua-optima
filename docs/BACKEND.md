@@ -1,5 +1,7 @@
 # Lingua Optima: Backend Documentation
 
+> 📚 **Навигация по документации**: [Главный обзор (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Открыть презентацию (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](./generated/html/index.html)
+
 Это подробное руководство по серверной части (Backend) платформы Lingua Optima — сервиса для изучения английского языка с использованием ИИ.
 
 ## Технологический стек (Tech Stack)

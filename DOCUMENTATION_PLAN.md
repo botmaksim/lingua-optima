@@ -106,3 +106,13 @@
 - [x] Auth Components (`LoginPage`, `ForgotPassword`)
 - [x] Pages (`Landing`, `StudentApp`, `TeacherApp`, `ProfilePage`, `SubscriptionPage`, `NotFound`, `App`, `main`)
 - [x] Frontend Test Suites (`setup.ts`, `utils.test.ts`, `stores.test.ts`, `components.test.tsx`)
+
+### Stage 6: Universal Doxygen Coverage (Members, Packages, SQL) & Full-Stack Security/Bug Audit
+- [x] Root `README.md` with links to all `docs/*.md`, `presentation.html`, and Doxygen HTML (`docs/generated/html/index.html`)
+- [x] Cross-linking navigation bars across `docs/README.md`, `docs/BACKEND.md`, `docs/FRONTEND.md`, `docs/AI_INTEGRATION.md`, and `docs/DEVOPS.md`
+- [x] 13 `package-info.java` files documenting all Java packages (`namespaces.html` 100% documented)
+- [x] 6 Flyway SQL migrations (`V1__create_users.sql` .. `V6__create_vocabulary.sql`) with `@file` and table `@brief` Doxygen comments
+- [x] `frontend/public/sw.js`, `frontend/vite.config.ts`, and `frontend/src/vite-env.d.ts` Doxygen documentation
+- [x] 100% member-level Doxygen documentation across all Java fields, enum constants, constructors, entity lifecycle callbacks, and `@Test` methods, plus all TypeScript interfaces, properties, API methods, and React handlers (0 Doxygen warnings)
+- [x] Full-stack security & integration audit (sensitive field `@JsonIgnore` hardening, JWT filter error logging, route guard alignment, endpoint aliases, DTO JSON property alignment, Flyway schema sync, and 95.19% JaCoCo instruction coverage)
+

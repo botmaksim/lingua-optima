@@ -5,18 +5,21 @@ OUTPUT_DIRECTORY       = docs/generated
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 
-INPUT                  = docs/README.md docs/BACKEND.md docs/FRONTEND.md docs/AI_INTEGRATION.md docs/DEVOPS.md backend/src/main/java frontend/src
+INPUT                  = README.md DOCUMENTATION_PLAN.md docs/README.md docs/BACKEND.md docs/FRONTEND.md docs/AI_INTEGRATION.md docs/DEVOPS.md backend/src/main/java backend/src/test/java backend/src/main/resources/db/migration frontend/src frontend/vite.config.ts frontend/public/sw.js
 USE_MDFILE_AS_MAINPAGE = docs/README.md
 HTML_EXTRA_FILES       = presentation.html docs/qr_code.png docs/qr_code.svg
 RECURSIVE              = YES
-FILE_PATTERNS          = *.java *.ts *.tsx *.md
-EXTENSION_MAPPING      = ts=Javascript tsx=Javascript
+FILE_PATTERNS          = *.java *.ts *.tsx *.js *.sql *.md
+EXTENSION_MAPPING      = ts=Javascript tsx=Javascript js=Javascript sql=C
 
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = YES
 EXTRACT_PRIV_VIRTUAL   = YES
 EXTRACT_PACKAGE        = YES
 EXTRACT_STATIC         = YES
+
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = YES
 
 JAVADOC_AUTOBRIEF      = YES
 OPTIMIZE_OUTPUT_JAVA   = YES
