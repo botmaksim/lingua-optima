@@ -262,6 +262,7 @@ class SessionServiceTest {
      */
     @Test
     void testCompleteSession() {
+        sessionState.setAnswersJson("[{\"difficulty\":4,\"isCorrect\":true},{\"difficulty\":1,\"isCorrect\":false}]");
         when(sessionStateRepository.findById(sessionState.getId())).thenReturn(Optional.of(sessionState));
         when(submissionRepository.findByAssignmentId(assignment.getId())).thenReturn(List.of());
         when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
@@ -272,8 +273,14 @@ class SessionServiceTest {
 
         SubmissionResultResponse res = sessionService.completeSession(sessionState.getId(), student);
         assertNotNull(res);
+        assertEquals(80.0, res.getScore(), "Difficulty-weighted CAT score for +4 correct and +1 wrong must equal 80.0%");
         assertEquals(SessionStatus.COMPLETED, sessionState.getStatus());
         verify(gamificationService).onSubmissionCompleted(student);
+
+        sessionState.setStatus(SessionStatus.IN_PROGRESS);
+        sessionState.setAnswersJson(null);
+        SubmissionResultResponse emptyRes = sessionService.completeSession(sessionState.getId(), student);
+        assertEquals(0.0, emptyRes.getScore());
     }
 
     /**

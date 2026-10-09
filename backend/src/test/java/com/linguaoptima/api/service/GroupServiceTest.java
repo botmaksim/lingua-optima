@@ -167,6 +167,11 @@ class GroupServiceTest {
         assertTrue(softDeleted.isActive());
         assertNull(softDeleted.getRemovedAt());
         verify(groupStudentRepository).save(softDeleted);
+
+        reset(groupStudentRepository);
+        when(groupStudentRepository.findByGroupIdAndStudentId(group.getId(), student.getId())).thenReturn(Optional.of(softDeleted));
+        groupService.addStudent(group.getId(), "student@lingua.com", teacher);
+        verify(groupStudentRepository, never()).save(any());
     }
 
     /**

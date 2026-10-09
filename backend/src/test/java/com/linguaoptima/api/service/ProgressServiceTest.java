@@ -198,6 +198,23 @@ class ProgressServiceTest {
         UUID emptyGroupId = UUID.randomUUID();
         when(groupStudentRepository.findByGroupIdAndIsActiveTrue(emptyGroupId)).thenReturn(List.of());
         assertTrue(progressService.getGroupProgress(emptyGroupId).isEmpty());
+
+        ProgressRecord nullTopicRecord = progressService.updateFromSubmission(student, null, false);
+        assertEquals("General Grammar", nullTopicRecord.getGrammarTopic());
+
+        User nullLevelStudent = User.builder().id(UUID.randomUUID()).cefrLevel(null).build();
+        progressService.checkCefrLevelUp(nullLevelStudent);
+
+        student.setCefrLevel(CefrLevel.B1);
+        student.setLevelUpSuggestedAt(LocalDateTime.now().minusDays(10));
+        List<String> b1Topics = CefrTopicRegistry.getTopicsForLevel(CefrLevel.B1);
+        List<ProgressRecord> duplicateAndSubThreshold = new ArrayList<>();
+        duplicateAndSubThreshold.add(ProgressRecord.builder().grammarTopic(b1Topics.get(0)).masteryScore(0.40).build());
+        duplicateAndSubThreshold.add(ProgressRecord.builder().grammarTopic(b1Topics.get(0)).masteryScore(0.84).build());
+        when(progressRecordRepository.findByStudent(student)).thenReturn(duplicateAndSubThreshold);
+
+        progressService.checkCefrLevelUp(student);
+        verify(notificationService, never()).send(eq(student), anyString(), any());
     }
 }
 

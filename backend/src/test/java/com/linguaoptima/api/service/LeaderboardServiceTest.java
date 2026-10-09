@@ -117,6 +117,20 @@ class LeaderboardServiceTest {
         when(groupRepository.findById(missingGroup)).thenReturn(Optional.empty());
         assertThrows(com.linguaoptima.api.exception.ResourceNotFoundException.class,
             () -> leaderboardService.getGroupLeaderboard(missingGroup, teacher));
+
+        User blankAliasStudent = User.builder().id(UUID.randomUUID()).displayAlias("   ").cefrLevel(CefrLevel.B1).role(Role.STUDENT).build();
+        User softDeletedStudent = User.builder().id(UUID.randomUUID()).displayAlias("Ghost").cefrLevel(CefrLevel.C1).role(Role.STUDENT).build();
+        GroupStudent activeGs = GroupStudent.builder().group(group).student(blankAliasStudent).isActive(true).build();
+        Submission activeSub = Submission.builder().student(blankAliasStudent).aiScore(80.0).submittedAt(LocalDateTime.now()).build();
+        Submission ghostSub = Submission.builder().student(softDeletedStudent).aiScore(100.0).submittedAt(LocalDateTime.now()).build();
+
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), blankAliasStudent.getId())).thenReturn(true);
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(activeGs));
+        when(submissionRepository.findActiveGroupSubmissionsSince(eq(group.getId()), any())).thenReturn(List.of(activeSub, ghostSub));
+
+        List<LeaderboardEntryResponse> memberBoard = leaderboardService.getGroupLeaderboard(group.getId(), blankAliasStudent);
+        assertEquals(1, memberBoard.size(), "Soft-deleted student's submissions must be excluded from leaderboard rankings");
+        assertTrue(memberBoard.get(0).getDisplayAlias().startsWith("Linguist #"));
     }
 }
 

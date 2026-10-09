@@ -114,6 +114,7 @@ class AIProvidersTest {
      */
     @Test
     void testProvidersDefaultConstructorsAndHttpErrors() {
+        GroqProvider groq = new GroqProvider("groq-key", restTemplate, objectMapper);
         GeminiProvider gemini = new GeminiProvider("gemini-key", restTemplate, objectMapper);
         OpenAIProvider openai = new OpenAIProvider(restTemplate, objectMapper);
         AnthropicProvider anthropic = new AnthropicProvider(restTemplate, objectMapper);
@@ -121,6 +122,14 @@ class AIProvidersTest {
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.BAD_GATEWAY));
 
+        assertThrows(RuntimeException.class, () -> gemini.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> openai.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> anthropic.complete("prompt"));
+
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
+
+        assertThrows(RuntimeException.class, () -> groq.complete("prompt"));
         assertThrows(RuntimeException.class, () -> gemini.complete("prompt"));
         assertThrows(RuntimeException.class, () -> openai.complete("prompt"));
         assertThrows(RuntimeException.class, () -> anthropic.complete("prompt"));

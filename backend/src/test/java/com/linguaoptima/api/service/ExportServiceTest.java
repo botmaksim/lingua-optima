@@ -157,7 +157,8 @@ class ExportServiceTest {
         assertThrows(RuntimeException.class, () -> exportService.generateGroupReport(group.getId(), "pdf", teacher));
 
         when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
-        when(progressRecordRepository.findByStudent(student)).thenThrow(new RuntimeException("DB read failed"));
+        when(progressRecordRepository.findByStudent(student)).thenReturn(java.util.Collections.singletonList(null));
+        when(submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId())).thenReturn(List.of());
         assertThrows(RuntimeException.class, () -> exportService.generateStudentReport(student.getId(), "csv", teacher));
         assertThrows(RuntimeException.class, () -> exportService.generateStudentReport(student.getId(), "pdf", teacher));
     }

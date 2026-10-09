@@ -83,4 +83,46 @@ class JwtServiceTest {
         JwtService nullJwt = new JwtService(null);
         assertTrue(nullJwt.isTokenValid(nullJwt.generateAccessToken(testUserId, testEmail, testRole)));
     }
+
+    /**
+     * @brief Verifies non-obvious JWT security invariants: tokens missing exp claim, expired tokens, cross-key forgery, missing userId claim, and invalid JCA digest.
+     */
+    @Test
+    void testSecurityInvariantsEternalTokenForgeryAndMissingClaims() {
+        javax.crypto.SecretKey signingKey = (javax.crypto.SecretKey)
+            org.springframework.test.util.ReflectionTestUtils.getField(jwtService, "signingKey");
+
+        String eternalTokenWithoutExp = io.jsonwebtoken.Jwts.builder()
+            .subject(testEmail)
+            .issuedAt(new java.util.Date())
+            .signWith(signingKey)
+            .compact();
+        assertFalse(jwtService.isTokenValid(eternalTokenWithoutExp),
+            "Tokens crafted without an expiration claim must be rejected");
+
+        String tokenWithoutUserId = io.jsonwebtoken.Jwts.builder()
+            .subject(testEmail)
+            .issuedAt(new java.util.Date())
+            .expiration(new java.util.Date(System.currentTimeMillis() + 60_000L))
+            .signWith(signingKey)
+            .compact();
+        assertTrue(jwtService.isTokenValid(tokenWithoutUserId));
+        assertNull(jwtService.extractUserId(tokenWithoutUserId));
+
+        String expiredToken = io.jsonwebtoken.Jwts.builder()
+            .subject(testEmail)
+            .issuedAt(new java.util.Date(System.currentTimeMillis() - 120_000L))
+            .expiration(new java.util.Date(System.currentTimeMillis() - 60_000L))
+            .signWith(signingKey)
+            .compact();
+        assertFalse(jwtService.isTokenValid(expiredToken));
+
+        JwtService attackerJwtService = new JwtService("attacker-different-signing-key-256-bits");
+        String forgedToken = attackerJwtService.generateAccessToken(testUserId, testEmail, "ADMIN");
+        assertFalse(jwtService.isTokenValid(forgedToken),
+            "Tokens signed with a different HMAC secret must be rejected");
+
+        assertThrows(IllegalStateException.class,
+            () -> new JwtService("secret", "UNSUPPORTED-JCA-DIGEST"));
+    }
 }

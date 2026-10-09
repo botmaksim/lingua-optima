@@ -318,7 +318,11 @@ class TaskServiceTest {
             {
               "content": "Fill in the blanks",
               "questions": [
-                { "text": "She ___ to school.", "correctAnswer": "goes" }
+                { "text": "She ___ to school.", "correctAnswer": "goes" },
+                { "text": "He ___ home." }
+              ],
+              "answerKey": [
+                { "questionOrder": 2, "correctOption": "   " }
               ]
             }
             """;
@@ -342,8 +346,20 @@ class TaskServiceTest {
             .numberOfQuestions(4)
             .build();
 
+        User adminUser = User.builder().id(UUID.randomUUID()).email("admin@lingua.com").fullName("Admin").role(Role.ADMIN).build();
         assertNotNull(taskService.previewTask(withTopicAndDomain, studentUser));
         assertNotNull(taskService.saveAsTemplate(withTopicAndDomain, teacherUser));
+        assertNotNull(taskService.saveAsTemplate(withTopicAndDomain, adminUser));
+
+        UUID taskId = UUID.randomUUID();
+        UUID groupId = UUID.randomUUID();
+        Task task = Task.builder().id(taskId).type(TaskType.MCQ).cefrLevel(CefrLevel.B1).build();
+        Group adminGroup = Group.builder().id(groupId).name("Admin Group").teacher(adminUser).build();
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(adminGroup));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of());
+        AssignTaskRequest adminAssignReq = AssignTaskRequest.builder().groupIds(List.of(groupId)).build();
+        assertDoesNotThrow(() -> taskService.assignTask(taskId, adminAssignReq, adminUser));
 
         AssignTaskRequest assignReq = AssignTaskRequest.builder().groupIds(List.of(UUID.randomUUID())).build();
         assertThrows(ForbiddenException.class, () -> taskService.assignTask(UUID.randomUUID(), assignReq, studentUser));

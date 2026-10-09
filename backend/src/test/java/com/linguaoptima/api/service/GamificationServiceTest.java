@@ -139,12 +139,21 @@ class GamificationServiceTest {
         user.setFreezeTokens(0);
         user.setLastActiveDate(LocalDate.now().minusDays(2));
 
-        when(userRepository.findAll()).thenReturn(List.of(user));
+        User zeroStreakUser = User.builder().id(UUID.randomUUID()).email("zero@lingua.com").streakCount(0).lastActiveDate(null).build();
+        User nullDatePositiveStreak = User.builder().id(UUID.randomUUID()).email("nulldate@lingua.com").streakCount(4).freezeTokens(0).lastActiveDate(null).build();
+        User activeYesterdayUser = User.builder().id(UUID.randomUUID()).email("yesterday@lingua.com").streakCount(5).freezeTokens(1).lastActiveDate(LocalDate.now().minusDays(1)).build();
+
+        when(userRepository.findAll()).thenReturn(List.of(user, zeroStreakUser, nullDatePositiveStreak, activeYesterdayUser));
 
         gamificationService.applyDailyStreakCheck();
 
         assertEquals(0, user.getStreakCount());
-        verify(notificationService).send(eq(user), anyString(), eq(NotificationType.SYSTEM));
-        verify(userRepository).save(user);
+        assertEquals(0, zeroStreakUser.getStreakCount());
+        assertEquals(0, nullDatePositiveStreak.getStreakCount());
+        assertEquals(5, activeYesterdayUser.getStreakCount());
+        assertEquals(1, activeYesterdayUser.getFreezeTokens());
+        verify(notificationService, times(2)).send(any(User.class), anyString(), eq(NotificationType.SYSTEM));
+        verify(userRepository, never()).save(zeroStreakUser);
+        verify(userRepository, never()).save(activeYesterdayUser);
     }
 }

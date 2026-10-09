@@ -43,19 +43,29 @@ public class OCRService {
      * @param configuredDatapath Optional path to the tessdata directory.
      */
     public OCRService(String configuredDatapath) {
+        this(Tesseract::new, configuredDatapath,
+            "/usr/share/tessdata",
+            "/usr/share/tesseract-ocr/5/tessdata",
+            "/usr/share/tesseract-ocr/4.00/tessdata",
+            "/tmp");
+    }
+
+    /**
+     * @brief Constructor initializing Tesseract OCR engine using a custom provider factory and candidate paths.
+     *
+     * @param factory Supplier creating the ITesseract instance.
+     * @param configuredDatapath Optional explicit path to the tessdata directory.
+     * @param candidatePaths Fallback filesystem paths to probe for tessdata.
+     */
+    OCRService(java.util.function.Supplier<ITesseract> factory, String configuredDatapath, String... candidatePaths) {
         ITesseract instance = null;
         try {
-            instance = new Tesseract();
+            instance = factory.get();
             instance.setLanguage("eng");
             if (configuredDatapath != null && !configuredDatapath.isBlank()) {
                 instance.setDatapath(configuredDatapath);
             } else {
-                for (String candidate : new String[]{
-                    "/usr/share/tessdata",
-                    "/usr/share/tesseract-ocr/5/tessdata",
-                    "/usr/share/tesseract-ocr/4.00/tessdata",
-                    "/tmp"
-                }) {
+                for (String candidate : candidatePaths) {
                     if (new java.io.File(candidate).exists()) {
                         instance.setDatapath(candidate);
                         break;

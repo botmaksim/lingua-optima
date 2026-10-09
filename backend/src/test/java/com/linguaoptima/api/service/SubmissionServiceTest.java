@@ -389,4 +389,61 @@ class SubmissionServiceTest {
         User stranger = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
         assertThrows(ForbiddenException.class, () -> submissionService.getSubmissionById(sub.getId(), stranger));
     }
+
+    /**
+     * @brief Verifies non-obvious boundary conditions: 69.99 vs 70.0 pass threshold, null AI score, detached null task on assignment, and ADMIN role privileges.
+     */
+    @Test
+    void testPassFailBoundariesNullTaskAndAdminRole() {
+        User admin = User.builder().id(UUID.randomUUID()).email("admin@lingua.com").fullName("Admin").role(Role.ADMIN).build();
+        TaskAssignment detachedAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(null)
+            .student(student)
+            .build();
+
+        when(taskAssignmentRepository.findById(detachedAssignment.getId())).thenReturn(Optional.of(detachedAssignment));
+        when(scoringService.scoreGrammarTask(anyString(), anyString(), eq(student)))
+            .thenReturn(Map.of("score", 69.99));
+        when(scoringService.extractScore(any())).thenReturn(69.99).thenReturn(null);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
+            Submission s = inv.getArgument(0);
+            if (s.getId() == null) {
+                s.setId(UUID.randomUUID());
+            }
+            return s;
+        });
+
+        TextSubmissionRequest failTextReq = TextSubmissionRequest.builder()
+            .assignmentId(detachedAssignment.getId())
+            .text("Almost passing")
+            .type("GRAMMAR")
+            .build();
+        submissionService.submitText(failTextReq, student);
+        verify(progressService).updateFromSubmission(student, "General", false);
+
+        submissionService.submitText(failTextReq, student);
+        verify(progressService, times(2)).updateFromSubmission(student, "General", false);
+
+        MockMultipartFile file = new MockMultipartFile("file", "hw.png", "image/png", new byte[]{1, 2, 3});
+        when(ocrService.extractText(any())).thenReturn("Handwriting");
+        when(scoringService.extractScore(any())).thenReturn(69.9).thenReturn(null);
+
+        submissionService.submitImage(file, detachedAssignment.getId(), student);
+        verify(progressService).updateFromSubmission(student, "OCR Homework", false);
+
+        submissionService.submitImage(file, null, student);
+        verify(progressService, times(2)).updateFromSubmission(student, "OCR Homework", false);
+
+        Submission sub = Submission.builder().id(UUID.randomUUID()).student(student).aiScore(50.0).build();
+        when(submissionRepository.findById(sub.getId())).thenReturn(Optional.of(sub));
+        when(submissionRepository.findAll()).thenReturn(List.of(sub));
+        when(submissionRepository.findActiveGroupSubmissions(any())).thenReturn(List.of(sub));
+
+        OverrideRequest overrideReq = OverrideRequest.builder().overrideScore(95.0).teacherComment("Admin review").build();
+        assertEquals(95.0, submissionService.overrideScore(sub.getId(), overrideReq, admin).getOverrideScore());
+        assertEquals(1, submissionService.getMySubmissions(admin).size());
+        assertEquals(1, submissionService.getGroupSubmissions(UUID.randomUUID(), admin).size());
+        assertEquals(sub.getId(), submissionService.getSubmissionById(sub.getId(), admin).getId());
+    }
 }

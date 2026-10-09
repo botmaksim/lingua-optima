@@ -77,6 +77,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     try {
       await authApi.logout();
+    } catch {
+      // Ignore network error during logout; local state is always cleared in finally
     } finally {
       setAccessToken(null);
       set({ user: null, isAuthenticated: false, isLoading: false });

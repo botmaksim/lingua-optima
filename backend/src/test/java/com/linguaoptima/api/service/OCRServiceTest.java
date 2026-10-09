@@ -96,7 +96,7 @@ class OCRServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: default and datapath constructors.
+     * @brief Verifies unit test scenario: default, datapath, missing candidate paths, and native UnsatisfiedLinkError resilience.
      */
     @Test
     void testDefaultConstructor() {
@@ -106,24 +106,39 @@ class OCRServiceTest {
         assertNotNull(explicitPathSvc);
         OCRService blankPathSvc = new OCRService("   ");
         assertNotNull(blankPathSvc);
+        OCRService nullPathNoCandidates = new OCRService(() -> tesseract, null, "/nonexistent/path/1", "/nonexistent/path/2");
+        assertNotNull(nullPathNoCandidates);
+        OCRService linkageFailureSvc = new OCRService(() -> {
+            throw new UnsatisfiedLinkError("libtesseract.so missing");
+        }, null);
+        assertNotNull(linkageFailureSvc);
+        assertThrows(OcrException.class, () -> linkageFailureSvc.extractText(sampleImageBytes.clone()));
     }
 
     /**
-     * @brief Verifies unit test scenario: null tesseract throws.
+     * @brief Verifies unit test scenario: null tesseract throws and still zeroes RAM buffer.
      */
     @Test
     void testNullTesseractThrows() {
         OCRService svc = new OCRService((ITesseract) null);
-        assertThrows(OcrException.class, () -> svc.extractText(sampleImageBytes));
+        byte[] bufferCopy = sampleImageBytes.clone();
+        assertThrows(OcrException.class, () -> svc.extractText(bufferCopy));
+        for (byte b : bufferCopy) {
+            assertEquals(0, b, "Zero-retention invariant: RAM buffer must be zeroed even when OCR fails");
+        }
     }
 
     /**
-     * @brief Verifies unit test scenario: tesseract throws exception handled.
+     * @brief Verifies unit test scenario: tesseract throws exception handled and zeroes RAM buffer.
      */
     @Test
     void testTesseractThrowsExceptionHandled() throws Exception {
         when(tesseract.doOCR(any(BufferedImage.class))).thenThrow(new RuntimeException("OCR engine failed"));
-        assertThrows(OcrException.class, () -> ocrService.extractText(sampleImageBytes));
+        byte[] bufferCopy = sampleImageBytes.clone();
+        assertThrows(OcrException.class, () -> ocrService.extractText(bufferCopy));
+        for (byte b : bufferCopy) {
+            assertEquals(0, b, "Zero-retention invariant: RAM buffer must be zeroed in finally block after exception");
+        }
     }
 
     /**

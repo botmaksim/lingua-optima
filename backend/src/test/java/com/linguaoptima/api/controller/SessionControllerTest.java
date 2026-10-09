@@ -72,6 +72,7 @@ class SessionControllerTest {
         assertEquals(HttpStatus.OK, res.getStatusCode());
 
         assertThrows(IllegalArgumentException.class, () -> sessionController.startSession(Map.of(), student));
+        assertThrows(IllegalArgumentException.class, () -> sessionController.startSession(Map.of("assignmentId", "   "), student));
     }
 
     /**

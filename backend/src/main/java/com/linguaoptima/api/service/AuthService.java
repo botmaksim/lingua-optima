@@ -397,7 +397,7 @@ public class AuthService {
             }
             return hex.toString();
         } catch (Exception e) {
-            return String.valueOf(token.hashCode());
+            return String.valueOf(java.util.Objects.hashCode(token));
         }
     }
 }

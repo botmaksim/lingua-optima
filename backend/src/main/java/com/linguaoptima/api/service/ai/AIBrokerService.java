@@ -278,7 +278,7 @@ public class AIBrokerService {
             }
             return hexString.toString();
         } catch (Exception e) {
-            return Integer.toHexString(text.hashCode());
+            return Integer.toHexString(java.util.Objects.hashCode(text));
         }
     }
 }

@@ -445,6 +445,87 @@ class AuthServiceTest {
         when(valueOperations.get(anyString())).thenReturn(missingUid.toString());
         when(userRepository.findById(missingUid)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> authService.refreshToken(ref));
+
+        assertThrows(UnauthorizedException.class, () -> authService.refreshToken(null));
+        when(jwtService.isTokenValid("no-redis-ref")).thenReturn(true);
+        when(jwtService.extractUserId("no-redis-ref")).thenReturn(sampleUser.getId());
+        when(userRepository.findById(sampleUser.getId())).thenReturn(Optional.of(sampleUser));
+        assertNotNull(noRedisAuth.refreshToken("no-redis-ref"));
+
+        authService.logout(null);
+        noRedisAuth.logout("tok");
+        noRedisAuth.logoutAll(sampleUser);
+        authService.logoutAll(null);
+
+        String prefix = "refresh_tokens:" + sampleUser.getId() + ":";
+        when(stringRedisTemplate.keys(prefix + "*")).thenReturn(null);
+        authService.logoutAll(sampleUser);
+        when(stringRedisTemplate.keys(prefix + "*")).thenReturn(Set.of());
+        authService.logoutAll(sampleUser);
+        when(stringRedisTemplate.keys(prefix + "*")).thenReturn(Set.of("unrelated_key"));
+        authService.logoutAll(sampleUser);
+
+        doReturn(null).when(valueOperations).increment("rate_limit:student@lingua.com:auth");
+        assertNotNull(authService.login(LoginRequest.builder().email("student@lingua.com").password("password123").build()));
+
+        String fallbackHash = org.springframework.test.util.ReflectionTestUtils.invokeMethod(authService, "hashToken", (Object) null);
+        assertEquals("0", fallbackHash);
+    }
+
+    /**
+     * @brief Verifies non-obvious Google OAuth2 claim edge cases: null body, missing email, missing aud, blank clientId, and blank display name fallback.
+     */
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void testGoogleLoginClaimEdgeCases() {
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken(null).build())
+        );
+
+        RestClient mockClient = mock(RestClient.class);
+        RestClient.RequestHeadersUriSpec uriSpec = mock(RestClient.RequestHeadersUriSpec.class);
+        RestClient.RequestHeadersSpec headersSpec = mock(RestClient.RequestHeadersSpec.class);
+        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+
+        when(mockClient.get()).thenReturn(uriSpec);
+        when(uriSpec.uri(anyString(), any(Object[].class))).thenReturn(headersSpec);
+        when(headersSpec.retrieve()).thenReturn(responseSpec);
+        authService.setGoogleRestClient(mockClient);
+
+        when(responseSpec.body(Map.class)).thenReturn(null);
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken("null-body").build())
+        );
+
+        when(responseSpec.body(Map.class)).thenReturn(Map.of("sub", "123"));
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken("missing-email").build())
+        );
+
+        authService.setGoogleClientId("expected-aud");
+        when(responseSpec.body(Map.class)).thenReturn(Map.of("email", "user@lingua.com"));
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken("missing-aud").build())
+        );
+
+        authService.setGoogleClientId("   ");
+        when(responseSpec.body(Map.class)).thenReturn(Map.of("email", "blankname@lingua.com", "name", "   "));
+        when(userRepository.findByEmail("blankname@lingua.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(anyString())).thenReturn("hash");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(UUID.randomUUID());
+            return u;
+        });
+        when(jwtService.generateAccessToken(any(), any(), any())).thenReturn("acc");
+        when(jwtService.generateRefreshToken(any(), any())).thenReturn("ref");
+
+        TokenResponse res = authService.googleLogin(GoogleAuthRequest.builder().idToken("blank-name-token").build());
+        assertEquals("blankname", res.getUser().getFullName());
+
+        authService.setGoogleClientId(null);
+        TokenResponse nullClientRes = authService.googleLogin(GoogleAuthRequest.builder().idToken("null-client-id-token").build());
+        assertNotNull(nullClientRes);
     }
 }
 

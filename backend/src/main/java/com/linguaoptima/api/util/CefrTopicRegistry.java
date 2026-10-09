@@ -66,6 +66,9 @@ public final class CefrTopicRegistry {
      * @return List of grammar topic titles.
      */
     public static List<String> getTopicsForLevel(CefrLevel level) {
+        if (level == null) {
+            return List.of();
+        }
         return CEFR_GRAMMAR_TOPICS.getOrDefault(level, List.of("General Grammar"));
     }
 

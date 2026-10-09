@@ -344,6 +344,24 @@ class AIBrokerServiceTest {
             null
         );
         assertEquals("{\"ok\": true}", noRedisBroker.generateTaskContent("prompt", null));
+        assertEquals("{\"ok\": true}", noRedisBroker.generateTaskContent("prompt", user));
+
+        User unpersistedUser = User.builder().id(null).build();
+        reset(valueOperations, groqProvider, geminiProvider);
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.increment(anyString())).thenReturn(null);
+        when(valueOperations.get(anyString())).thenReturn("   ");
+        when(groqProvider.complete(anyString())).thenReturn(null);
+        assertNull(aiBrokerService.generateTaskContent("blank-cache-prompt", user));
+        assertNull(aiBrokerService.generateTaskContent("blank-cache-prompt", unpersistedUser));
+
+        when(groqProvider.complete(anyString())).thenThrow(new RuntimeException("Primary down"));
+        when(geminiProvider.complete(anyString())).thenThrow(new RuntimeException("Secondary down"));
+        assertThrows(AIServiceException.class, () -> aiBrokerService.generateTaskContent("fail", null));
+        assertThrows(AIServiceException.class, () -> aiBrokerService.generateTaskContent("fail", unpersistedUser));
+
+        String nullHash = org.springframework.test.util.ReflectionTestUtils.invokeMethod(aiBrokerService, "sha256", (Object) null);
+        assertEquals("0", nullHash);
     }
 }
 

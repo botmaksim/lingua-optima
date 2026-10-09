@@ -72,7 +72,7 @@ docker compose up --build -d
 
 ### 2. Локальная разработка и тестирование
 ```bash
-# Backend: запуск 219 юнит-тестов и проверка покрытия JaCoCo (>= 99%, факт: 99.15% instructions / 99.08% lines)
+# Backend: запуск 222 юнит-тестов и проверка покрытия JaCoCo (100.00% instructions, 100.00% branches, 100.00% lines, 100.00% methods, 100.00% classes)
 cd backend && ./gradlew test jacocoTestCoverageVerification
 
 # Frontend: запуск Vitest тестов и production-сборка

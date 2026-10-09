@@ -50,12 +50,36 @@ class EncryptionServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: invalid decryption throws and blank key fallback.
+     * @brief Verifies non-obvious cryptographic invariants: IV randomness, GCM tag bit-flip detection, corrupted AES key failure, and invalid JCA digest.
      */
     @Test
     void testInvalidDecryptionThrows() {
         assertThrows(RuntimeException.class, () -> encryptionService.decrypt("not-a-valid-base64"));
         EncryptionService fallbackSvc = new EncryptionService("");
         assertEquals("secret", fallbackSvc.decrypt(fallbackSvc.encrypt("secret")));
+        EncryptionService nullKeySvc = new EncryptionService(null);
+        assertEquals("secret", nullKeySvc.decrypt(nullKeySvc.encrypt("secret")));
+
+        String c1 = encryptionService.encrypt("same-plaintext");
+        String c2 = encryptionService.encrypt("same-plaintext");
+        assertNotEquals(c1, c2, "AES-GCM with random 12-byte IV must produce distinct ciphertexts for identical plaintexts");
+        assertEquals("same-plaintext", encryptionService.decrypt(c1));
+        assertEquals("same-plaintext", encryptionService.decrypt(c2));
+
+        byte[] rawCipher = java.util.Base64.getDecoder().decode(c1);
+        rawCipher[rawCipher.length - 1] ^= 0x01;
+        String tamperedCipher = java.util.Base64.getEncoder().encodeToString(rawCipher);
+        assertThrows(RuntimeException.class, () -> encryptionService.decrypt(tamperedCipher),
+            "Flipping 1 bit in the 128-bit GCM authentication tag must fail decryption");
+
+        EncryptionService corruptedKeySvc = new EncryptionService("valid-init-key");
+        org.springframework.test.util.ReflectionTestUtils.setField(
+            corruptedKeySvc, "secretKey", new javax.crypto.spec.SecretKeySpec(new byte[]{1, 2, 3}, "AES")
+        );
+        assertThrows(RuntimeException.class, () -> corruptedKeySvc.encrypt("payload"),
+            "Invalid AES key length must cause encrypt() to throw RuntimeException");
+
+        assertThrows(IllegalStateException.class,
+            () -> new EncryptionService("secret", "INVALID-DIGEST-ALGO"));
     }
 }

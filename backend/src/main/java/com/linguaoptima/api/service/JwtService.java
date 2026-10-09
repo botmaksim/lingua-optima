@@ -33,16 +33,26 @@ public class JwtService {
     private final long refreshTokenValidityMs = 30L * 24 * 60 * 60 * 1000L;
 
     /**
-     * @brief Constructs a JwtService instance configured with a HMAC-SHA signing key.
+     * @brief Constructs a JwtService instance configured with a SHA-256 derived HMAC signing key.
      * @param secret The configured JWT secret key string from application properties.
      * @throws IllegalStateException if key initialization fails.
      */
     public JwtService(@Value("${app.jwt.secret:lingua-optima-super-secret-jwt-signing-key-for-auth-256}") String secret) {
+        this(secret, "SHA-256");
+    }
+
+    /**
+     * @brief Constructs a JwtService instance with an explicit message digest algorithm for key derivation.
+     * @param secret The configured JWT secret key string.
+     * @param digestAlgorithm The JCA message digest algorithm name (e.g. SHA-256).
+     * @throws IllegalStateException if the digest algorithm is unavailable or key initialization fails.
+     */
+    JwtService(String secret, String digestAlgorithm) {
         try {
             String effectiveSecret = (secret == null || secret.isBlank())
                 ? "lingua-optima-super-secret-jwt-signing-key-for-auth-256"
                 : secret;
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            MessageDigest sha = MessageDigest.getInstance(digestAlgorithm);
             byte[] keyBytes = sha.digest(effectiveSecret.getBytes(StandardCharsets.UTF_8));
             this.signingKey = Keys.hmacShaKeyFor(keyBytes);
         } catch (Exception e) {
@@ -134,25 +144,16 @@ public class JwtService {
     }
 
     /**
-     * @brief Checks whether the given token is valid and unexpired.
+     * @brief Checks whether the given token has a valid signature, is unexpired, and contains an expiration claim.
      * @param token Compact serialized JWT token.
-     * @return True if signature is valid and expiration date is in the future; false otherwise.
+     * @return True if signature is valid and a future expiration claim is present; false otherwise.
      */
     public boolean isTokenValid(String token) {
         try {
-            return !isTokenExpired(token);
+            return extractExpiration(token) != null;
         } catch (Exception e) {
             return false;
         }
-    }
-
-    /**
-     * @brief Checks if a token has passed its expiration timestamp.
-     * @param token Compact serialized JWT token.
-     * @return True if token has expired; false otherwise.
-     */
-    private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
     }
 
     /**

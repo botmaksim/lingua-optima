@@ -70,14 +70,7 @@ public class TaskService {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
         usageService.incrementEvaluation(user);
 
-        String prompt = PromptTemplates.buildTaskGenerationPrompt(
-            params.getCefrLevel().name(),
-            params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
-            params.getDomain() != null ? params.getDomain() : "Daily Life",
-            params.getTaskType().name(),
-            params.getDifficulty() != null ? params.getDifficulty().name() : DifficultyLevel.MEDIUM.name(),
-            params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5
-        );
+        String prompt = buildPromptFromParams(params);
 
         String rawJson = aiBrokerService.generateTaskContent(prompt, user);
         Task task = parseAndBuildTask(rawJson, params, user, false);
@@ -107,14 +100,7 @@ public class TaskService {
     public TaskResponse previewTask(TaskParamsRequest params, User user) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
 
-        String prompt = PromptTemplates.buildTaskGenerationPrompt(
-            params.getCefrLevel().name(),
-            params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
-            params.getDomain() != null ? params.getDomain() : "Daily Life",
-            params.getTaskType().name(),
-            params.getDifficulty() != null ? params.getDifficulty().name() : DifficultyLevel.MEDIUM.name(),
-            params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5
-        );
+        String prompt = buildPromptFromParams(params);
 
         String rawJson = aiBrokerService.generateTaskContent(prompt, user);
         Task task = parseAndBuildTask(rawJson, params, user, false);
@@ -135,7 +121,21 @@ public class TaskService {
             throw new ForbiddenException("Only educators can save tasks as templates.");
         }
 
-        String prompt = PromptTemplates.buildTaskGenerationPrompt(
+        String prompt = buildPromptFromParams(params);
+
+        String rawJson = aiBrokerService.generateTaskContent(prompt, teacher);
+        Task task = parseAndBuildTask(rawJson, params, teacher, true);
+        Task saved = taskRepository.save(task);
+        return TaskResponse.fromEntity(saved);
+    }
+
+    /**
+     * @brief Constructs an AI task generation prompt applying safe defaults for optional parameters.
+     * @param params Task generation parameters.
+     * @return Formatted prompt string for the AI provider.
+     */
+    private String buildPromptFromParams(TaskParamsRequest params) {
+        return PromptTemplates.buildTaskGenerationPrompt(
             params.getCefrLevel().name(),
             params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
             params.getDomain() != null ? params.getDomain() : "Daily Life",
@@ -143,11 +143,6 @@ public class TaskService {
             params.getDifficulty() != null ? params.getDifficulty().name() : DifficultyLevel.MEDIUM.name(),
             params.getNumberOfQuestions() > 0 ? params.getNumberOfQuestions() : 5
         );
-
-        String rawJson = aiBrokerService.generateTaskContent(prompt, teacher);
-        Task task = parseAndBuildTask(rawJson, params, teacher, true);
-        Task saved = taskRepository.save(task);
-        return TaskResponse.fromEntity(saved);
     }
 
 

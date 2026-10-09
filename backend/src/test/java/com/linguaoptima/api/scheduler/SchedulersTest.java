@@ -73,17 +73,21 @@ class SchedulersTest {
     @Test
     void testNotificationScheduler() {
         User student = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
+        User strongStudent = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
         User teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
         ProgressRecord weak = ProgressRecord.builder().grammarTopic("Passive Voice").masteryScore(0.4).build();
 
-        when(userRepository.findAll()).thenReturn(List.of(student, teacher));
+        when(userRepository.findAll()).thenReturn(List.of(student, strongStudent, teacher));
         when(progressRecordRepository.findByStudentIdAndMasteryScoreLessThan(student.getId(), 0.6))
             .thenReturn(List.of(weak));
+        when(progressRecordRepository.findByStudentIdAndMasteryScoreLessThan(strongStudent.getId(), 0.6))
+            .thenReturn(List.of());
 
         NotificationScheduler scheduler = new NotificationScheduler(userRepository, progressRecordRepository, notificationService);
         scheduler.sendContextualReminders();
 
         verify(notificationService).send(eq(student), contains("Passive Voice"), eq(NotificationType.CONTEXTUAL));
+        verify(notificationService, never()).send(eq(strongStudent), anyString(), any());
     }
 }
 

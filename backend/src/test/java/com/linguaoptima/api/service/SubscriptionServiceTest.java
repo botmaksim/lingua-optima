@@ -175,6 +175,15 @@ class SubscriptionServiceTest {
         PaymentResultResponse eduRes = subscriptionService.upgrade(user, SubscriptionTier.EDUCATOR, "tok-edu");
         assertTrue(eduRes.isSuccess());
         assertEquals(SubscriptionTier.EDUCATOR, subscription.getTier());
+
+        subscription.setTier(SubscriptionTier.FREE);
+        when(paymentService.processPayment(eq(9.99), eq("declined-tok"))).thenReturn(
+            PaymentResultResponse.builder().success(false).errorMessage("Insufficient funds").build()
+        );
+        PaymentResultResponse failedRes = subscriptionService.upgrade(user, SubscriptionTier.PREMIUM, "declined-tok");
+        assertFalse(failedRes.isSuccess());
+        assertEquals(SubscriptionTier.FREE, subscription.getTier(),
+            "Subscription tier must remain unchanged when payment processor returns success=false");
     }
 }
 

@@ -41,11 +41,21 @@ public class EncryptionService {
      * @throws IllegalStateException if key initialization fails.
      */
     public EncryptionService(@Value("${app.encryption.key:lingua-optima-default-secure-key-32b}") String secretKeyString) {
+        this(secretKeyString, "SHA-256");
+    }
+
+    /**
+     * @brief Constructs an EncryptionService instance using an explicit JCA digest algorithm for key derivation.
+     * @param secretKeyString Configured master encryption secret string.
+     * @param digestAlgorithm JCA message digest algorithm name (e.g. SHA-256).
+     * @throws IllegalStateException if key initialization fails.
+     */
+    EncryptionService(String secretKeyString, String digestAlgorithm) {
         try {
             String effectiveKey = (secretKeyString == null || secretKeyString.isBlank())
                 ? "lingua-optima-default-secure-key-32b"
                 : secretKeyString;
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            MessageDigest sha = MessageDigest.getInstance(digestAlgorithm);
             byte[] keyBytes = sha.digest(effectiveKey.getBytes(StandardCharsets.UTF_8));
             this.secretKey = new SecretKeySpec(keyBytes, "AES");
         } catch (Exception e) {
