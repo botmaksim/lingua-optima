@@ -21,6 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file NotificationControllerTest.java
+ * @brief Unit and slice test suite for NotificationController.
+ */
 @ExtendWith(MockitoExtension.class)
 class NotificationControllerTest {
 

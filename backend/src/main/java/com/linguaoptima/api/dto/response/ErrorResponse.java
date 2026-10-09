@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @file ErrorResponse.java
+ * @brief Standardized API error response payload with HTTP status, code, and validation messages.
+ */
 @Data
 @Builder
 @NoArgsConstructor

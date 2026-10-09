@@ -8,6 +8,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @file PaymentServiceTest.java
+ * @brief Unit and slice test suite for PaymentService.
+ */
 class PaymentServiceTest {
 
     private PaymentService paymentService;

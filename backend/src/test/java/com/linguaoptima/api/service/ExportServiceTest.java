@@ -26,6 +26,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file ExportServiceTest.java
+ * @brief Unit and slice test suite for ExportService.
+ */
 @ExtendWith(MockitoExtension.class)
 class ExportServiceTest {
 

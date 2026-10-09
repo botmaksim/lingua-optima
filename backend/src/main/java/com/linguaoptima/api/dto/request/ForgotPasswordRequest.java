@@ -7,6 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file ForgotPasswordRequest.java
+ * @brief Request DTO for initiating a password reset flow.
+ */
 @Data
 @Builder
 @NoArgsConstructor

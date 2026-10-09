@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * @file SubmissionResultResponse.java
+ * @brief Response DTO representing an evaluated student submission with scores and feedback.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -30,6 +34,11 @@ public class SubmissionResultResponse {
     private String providerUsed;
     private LocalDateTime submittedAt;
 
+    /**
+     * @brief Maps a domain Submission entity to a SubmissionResultResponse DTO.
+     * @param submission Domain entity instance.
+     * @return Mapped SubmissionResultResponse DTO or null if input is null.
+     */
     public static SubmissionResultResponse fromEntity(Submission submission) {
         if (submission == null) return null;
         return SubmissionResultResponse.builder()

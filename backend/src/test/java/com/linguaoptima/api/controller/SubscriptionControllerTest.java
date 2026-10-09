@@ -22,6 +22,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file SubscriptionControllerTest.java
+ * @brief Unit and slice test suite for SubscriptionController.
+ */
 @ExtendWith(MockitoExtension.class)
 class SubscriptionControllerTest {
 

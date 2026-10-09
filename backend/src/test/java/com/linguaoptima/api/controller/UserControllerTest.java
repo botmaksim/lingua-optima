@@ -19,6 +19,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file UserControllerTest.java
+ * @brief Unit and slice test suite for UserController.
+ */
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 

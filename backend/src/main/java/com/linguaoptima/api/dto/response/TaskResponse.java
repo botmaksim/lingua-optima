@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * @file TaskResponse.java
+ * @brief Response DTO representing a generated or assigned pedagogical task.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -33,6 +37,11 @@ public class TaskResponse {
     @Builder.Default
     private List<QuestionResponse> questions = new ArrayList<>();
 
+    /**
+     * @brief Maps a domain Task entity to a TaskResponse DTO.
+     * @param task Domain entity instance.
+     * @return Mapped TaskResponse DTO or null if input is null.
+     */
     public static TaskResponse fromEntity(Task task) {
         if (task == null) return null;
         List<QuestionResponse> questionResponses = task.getQuestions() != null

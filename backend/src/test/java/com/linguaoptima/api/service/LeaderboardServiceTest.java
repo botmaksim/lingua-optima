@@ -28,6 +28,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file LeaderboardServiceTest.java
+ * @brief Unit and slice test suite for LeaderboardService.
+ */
 @ExtendWith(MockitoExtension.class)
 class LeaderboardServiceTest {
 
@@ -69,7 +73,6 @@ class LeaderboardServiceTest {
         when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(gs1, gs2));
         when(submissionRepository.findActiveGroupSubmissionsSince(eq(group.getId()), any())).thenReturn(List.of(sub1, sub2));
 
-        // Accessed by teacher
         List<LeaderboardEntryResponse> board = leaderboardService.getGroupLeaderboard(group.getId(), teacher);
 
         assertEquals(2, board.size());

@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @file EncryptionServiceTest.java
+ * @brief Unit and slice test suite for EncryptionService.
+ */
 class EncryptionServiceTest {
 
     private EncryptionService encryptionService;

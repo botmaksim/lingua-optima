@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file OverrideRequest.java
+ * @brief Request DTO for teacher manual score override and comment.
+ */
 @Data
 @Builder
 @NoArgsConstructor

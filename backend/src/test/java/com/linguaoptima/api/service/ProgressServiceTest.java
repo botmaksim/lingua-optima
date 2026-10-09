@@ -26,6 +26,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file ProgressServiceTest.java
+ * @brief Unit and slice test suite for ProgressService.
+ */
 @ExtendWith(MockitoExtension.class)
 class ProgressServiceTest {
 
@@ -66,13 +70,11 @@ class ProgressServiceTest {
             .thenReturn(Optional.of(existing));
         when(progressRecordRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
-        // Submit correct: total becomes 5, error stays 1 -> 4/5 = 0.8
         ProgressRecord updated = progressService.updateFromSubmission(student, "Conditionals", true);
         assertEquals(5, updated.getTotalAttempts());
         assertEquals(1, updated.getErrorCount());
         assertEquals(0.8, updated.getMasteryScore());
 
-        // Submit incorrect: total becomes 6, error becomes 2 -> 4/6 = 0.67
         ProgressRecord updated2 = progressService.updateFromSubmission(student, "Conditionals", false);
         assertEquals(6, updated2.getTotalAttempts());
         assertEquals(2, updated2.getErrorCount());
@@ -97,7 +99,7 @@ class ProgressServiceTest {
 
     @Test
     void testCefrLevelUpCooldownIgnored() {
-        student.setLevelUpSuggestedAt(LocalDateTime.now().minusDays(3)); // cooldown < 7 days
+        student.setLevelUpSuggestedAt(LocalDateTime.now().minusDays(3));
         progressService.checkCefrLevelUp(student);
         verify(userRepository, never()).save(any());
     }

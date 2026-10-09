@@ -21,6 +21,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file SchedulersTest.java
+ * @brief Unit and slice test suite for Schedulers.
+ */
 @ExtendWith(MockitoExtension.class)
 class SchedulersTest {
 

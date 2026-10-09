@@ -25,6 +25,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file AuthControllerTest.java
+ * @brief Unit and slice test suite for AuthController.
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 

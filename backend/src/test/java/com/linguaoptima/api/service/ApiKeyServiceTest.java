@@ -21,6 +21,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file ApiKeyServiceTest.java
+ * @brief Unit and slice test suite for ApiKeyService.
+ */
 @ExtendWith(MockitoExtension.class)
 class ApiKeyServiceTest {
 

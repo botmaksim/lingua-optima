@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * @file ProgressResponse.java
+ * @brief Response DTO representing student mastery metrics for a grammar topic.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,6 +24,11 @@ public class ProgressResponse {
     private double masteryScore;
     private LocalDateTime updatedAt;
 
+    /**
+     * @brief Maps a domain ProgressRecord entity to a ProgressResponse DTO.
+     * @param record Domain entity instance.
+     * @return Mapped ProgressResponse DTO or null if input is null.
+     */
     public static ProgressResponse fromEntity(ProgressRecord record) {
         if (record == null) return null;
         return ProgressResponse.builder()

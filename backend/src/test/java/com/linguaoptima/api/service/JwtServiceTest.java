@@ -7,6 +7,10 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @file JwtServiceTest.java
+ * @brief Unit and slice test suite for JwtService.
+ */
 class JwtServiceTest {
 
     private JwtService jwtService;

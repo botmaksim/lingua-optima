@@ -23,6 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file SubscriptionServiceTest.java
+ * @brief Unit and slice test suite for SubscriptionService.
+ */
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
 
@@ -98,14 +102,11 @@ class SubscriptionServiceTest {
     void testValidateCefrLevelAccess() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
 
-        // Free tier allows B1 and B2
         assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.B1));
         assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.B2));
 
-        // Free tier blocks C1
         assertThrows(ForbiddenException.class, () -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.C1));
 
-        // Premium allows C1
         subscription.setTier(SubscriptionTier.PREMIUM);
         assertDoesNotThrow(() -> subscriptionService.validateCefrLevelAccess(user, CefrLevel.C1));
     }

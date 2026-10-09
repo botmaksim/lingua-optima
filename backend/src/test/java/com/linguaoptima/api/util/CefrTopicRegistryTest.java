@@ -7,6 +7,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @file CefrTopicRegistryTest.java
+ * @brief Unit and slice test suite for CefrTopicRegistry.
+ */
 class CefrTopicRegistryTest {
 
     @Test

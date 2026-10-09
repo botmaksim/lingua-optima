@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * @file TextSubmissionRequest.java
+ * @brief Request DTO for submitting written essay or grammar exercise text.
+ */
 @Data
 @Builder
 @NoArgsConstructor

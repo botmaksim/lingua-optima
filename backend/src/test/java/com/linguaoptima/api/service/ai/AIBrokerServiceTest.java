@@ -30,6 +30,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file AIBrokerServiceTest.java
+ * @brief Unit and slice test suite for AIBrokerService.
+ */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AIBrokerServiceTest {
@@ -130,7 +134,6 @@ class AIBrokerServiceTest {
 
         String result = aiBrokerService.scoreEssay("Essay body", user);
         assertEquals("{\"score\": 8.0}", result);
-        // Verify cache was not checked or set for essay scoring
         verify(valueOperations, never()).get(startsWith("ai_cache:"));
     }
 
@@ -175,7 +178,6 @@ class AIBrokerServiceTest {
         when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of(key));
         when(encryptionService.decrypt("encKey")).thenReturn("decrypted-openai-key");
 
-        // mock restTemplate for OpenAIProvider
         org.springframework.http.ResponseEntity<String> resp =
             new org.springframework.http.ResponseEntity<>("{\"choices\":[{\"message\":{\"content\":\"OpenAI output\"}}]}", org.springframework.http.HttpStatus.OK);
         when(restTemplate.exchange(eq("https://api.openai.com/v1/chat/completions"), eq(org.springframework.http.HttpMethod.POST), any(org.springframework.http.HttpEntity.class), eq(String.class)))

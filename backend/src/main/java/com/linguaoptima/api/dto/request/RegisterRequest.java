@@ -10,6 +10,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file RegisterRequest.java
+ * @brief Request DTO for new student or teacher account registration.
+ */
 @Data
 @Builder
 @NoArgsConstructor

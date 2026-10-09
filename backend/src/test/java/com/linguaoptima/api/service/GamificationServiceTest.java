@@ -18,6 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file GamificationServiceTest.java
+ * @brief Unit and slice test suite for GamificationService.
+ */
 @ExtendWith(MockitoExtension.class)
 class GamificationServiceTest {
 
@@ -84,7 +88,7 @@ class GamificationServiceTest {
     void testApplyDailyStreakCheckUsesFreezeToken() {
         user.setStreakCount(10);
         user.setFreezeTokens(2);
-        user.setLastActiveDate(LocalDate.now().minusDays(2)); // missed yesterday
+        user.setLastActiveDate(LocalDate.now().minusDays(2));
 
         when(userRepository.findAll()).thenReturn(List.of(user));
 
@@ -100,7 +104,7 @@ class GamificationServiceTest {
     void testApplyDailyStreakCheckResetsStreakWhenNoTokens() {
         user.setStreakCount(10);
         user.setFreezeTokens(0);
-        user.setLastActiveDate(LocalDate.now().minusDays(2)); // missed yesterday
+        user.setLastActiveDate(LocalDate.now().minusDays(2));
 
         when(userRepository.findAll()).thenReturn(List.of(user));
 

@@ -7,6 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file LoginRequest.java
+ * @brief Request DTO for user email and password authentication.
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file CreateGroupRequest.java
+ * @brief Request DTO for creating a new student cohort group.
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * @file LeaderboardEntryResponse.java
+ * @brief Response DTO representing a ranked student entry in an intra-group leaderboard.
+ */
 @Data
 @Builder
 @NoArgsConstructor

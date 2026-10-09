@@ -19,6 +19,10 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file ScoringServiceTest.java
+ * @brief Unit and slice test suite for ScoringService.
+ */
 @ExtendWith(MockitoExtension.class)
 class ScoringServiceTest {
 
@@ -74,7 +78,7 @@ class ScoringServiceTest {
 
         Map<String, Object> result = scoringService.scoreEssay("Essay body...", "B2", user);
         assertNotNull(result);
-        assertEquals(80.0, scoringService.extractScore(result)); // 8.0 * 10
+        assertEquals(80.0, scoringService.extractScore(result));
     }
 
     @Test

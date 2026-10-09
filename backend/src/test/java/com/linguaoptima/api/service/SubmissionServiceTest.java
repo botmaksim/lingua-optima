@@ -34,6 +34,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file SubmissionServiceTest.java
+ * @brief Unit and slice test suite for SubmissionService.
+ */
 @ExtendWith(MockitoExtension.class)
 class SubmissionServiceTest {
 
@@ -160,7 +164,6 @@ class SubmissionServiceTest {
 
         assertNotNull(res);
         assertEquals(SubmissionType.IMAGE, res.getSubmissionType());
-        // Verify only extracted text is preserved
         assertEquals("Recognized handwritten text", res.getOriginalText());
         verify(usageService).incrementOcr(student);
         verify(usageService).incrementEvaluation(student);

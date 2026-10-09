@@ -9,6 +9,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * @file AnswerRequest.java
+ * @brief Request DTO for submitting an answer during an adaptive CAT session.
+ */
 @Data
 @Builder
 @NoArgsConstructor

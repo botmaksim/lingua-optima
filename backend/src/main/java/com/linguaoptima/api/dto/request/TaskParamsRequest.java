@@ -9,6 +9,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file TaskParamsRequest.java
+ * @brief Request DTO specifying CEFR level, topic, domain, and type for AI task generation.
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * @file UsageResponse.java
+ * @brief Response DTO detailing weekly AI evaluation and OCR quota consumption.
+ */
 @Data
 @Builder
 @NoArgsConstructor

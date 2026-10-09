@@ -8,6 +8,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file CreateApiKeyRequest.java
+ * @brief Request DTO for registering a user BYOK API key.
+ */
 @Data
 @Builder
 @NoArgsConstructor

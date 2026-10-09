@@ -13,6 +13,16 @@ import java.util.UUID;
  */
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
+    /**
+     * @brief Queries repository via findByEmail.
+     * @param email Filter parameter email.
+     * @return Query result (Optional&lt;User&gt;).
+     */
     Optional<User> findByEmail(String email);
+    /**
+     * @brief Queries repository via existsByEmail.
+     * @param email Filter parameter email.
+     * @return Query result (boolean).
+     */
     boolean existsByEmail(String email);
 }

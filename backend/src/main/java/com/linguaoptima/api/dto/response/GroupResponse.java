@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file GroupResponse.java
+ * @brief Response DTO representing a teacher study group and its enrolled students.
+ */
 @Data
 @Builder
 @NoArgsConstructor

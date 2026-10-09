@@ -17,6 +17,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file ExportControllerTest.java
+ * @brief Unit and slice test suite for ExportController.
+ */
 @ExtendWith(MockitoExtension.class)
 class ExportControllerTest {
 

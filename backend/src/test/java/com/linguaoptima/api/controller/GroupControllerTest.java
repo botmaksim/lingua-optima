@@ -20,6 +20,10 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file GroupControllerTest.java
+ * @brief Unit and slice test suite for GroupController.
+ */
 @ExtendWith(MockitoExtension.class)
 class GroupControllerTest {
 

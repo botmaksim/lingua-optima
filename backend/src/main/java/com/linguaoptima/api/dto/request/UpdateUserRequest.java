@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file UpdateUserRequest.java
+ * @brief Request DTO for updating user profile attributes and CEFR level.
+ */
 @Data
 @Builder
 @NoArgsConstructor

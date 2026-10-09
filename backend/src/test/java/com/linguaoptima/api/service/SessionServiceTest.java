@@ -32,6 +32,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file SessionServiceTest.java
+ * @brief Unit and slice test suite for SessionService.
+ */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SessionServiceTest {
@@ -159,7 +163,7 @@ class SessionServiceTest {
         AnswerFeedbackResponse res = sessionService.submitAnswer(sessionState.getId(), req, student);
 
         assertTrue(res.isCorrect());
-        assertEquals(3, res.getNewDifficulty()); // 2 -> 3
+        assertEquals(3, res.getNewDifficulty());
         assertEquals(1, res.getCurrentQuestionIndex());
         assertFalse(res.isCompleted());
         verify(progressService).updateFromSubmission(student, "Past Simple", true);
@@ -186,7 +190,7 @@ class SessionServiceTest {
         AnswerFeedbackResponse res = sessionService.submitAnswer(sessionState.getId(), req, student);
 
         assertFalse(res.isCorrect());
-        assertEquals(1, res.getNewDifficulty()); // 2 -> 1
+        assertEquals(1, res.getNewDifficulty());
         verify(progressService).updateFromSubmission(student, "Past Simple", false);
     }
 
@@ -266,11 +270,11 @@ class SessionServiceTest {
 
         AnswerRequest req = AnswerRequest.builder().questionId(tq.getId()).answer("ans").build();
         AnswerFeedbackResponse res = sessionService.submitAnswer(sessionState.getId(), req, student);
-        assertEquals(4, res.getNewDifficulty()); // Clamped at 4 max
+        assertEquals(4, res.getNewDifficulty());
 
         sessionState.setCurrentDifficulty(1);
         req.setAnswer("wrong");
         AnswerFeedbackResponse res2 = sessionService.submitAnswer(sessionState.getId(), req, student);
-        assertEquals(1, res2.getNewDifficulty()); // Clamped at 1 min
+        assertEquals(1, res2.getNewDifficulty());
     }
 }

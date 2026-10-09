@@ -5,6 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file PaymentResultResponse.java
+ * @brief Response DTO representing the outcome of a subscription payment transaction.
+ */
 @Data
 @Builder
 @NoArgsConstructor

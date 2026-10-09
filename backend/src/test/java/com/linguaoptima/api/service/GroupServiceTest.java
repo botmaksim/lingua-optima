@@ -29,6 +29,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file GroupServiceTest.java
+ * @brief Unit and slice test suite for GroupService.
+ */
 @ExtendWith(MockitoExtension.class)
 class GroupServiceTest {
 

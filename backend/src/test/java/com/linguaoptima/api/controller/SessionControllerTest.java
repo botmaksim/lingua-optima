@@ -24,6 +24,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file SessionControllerTest.java
+ * @brief Unit and slice test suite for SessionController.
+ */
 @ExtendWith(MockitoExtension.class)
 class SessionControllerTest {
 

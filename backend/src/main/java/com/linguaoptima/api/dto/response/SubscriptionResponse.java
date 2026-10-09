@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * @file SubscriptionResponse.java
+ * @brief Response DTO representing active user subscription tier and remaining quotas.
+ */
 @Data
 @Builder
 @NoArgsConstructor

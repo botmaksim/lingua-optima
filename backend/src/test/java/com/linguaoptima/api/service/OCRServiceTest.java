@@ -16,6 +16,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file OCRServiceTest.java
+ * @brief Unit and slice test suite for OCRService.
+ */
 @ExtendWith(MockitoExtension.class)
 class OCRServiceTest {
 

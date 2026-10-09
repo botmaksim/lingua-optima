@@ -5,6 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file AnswerFeedbackResponse.java
+ * @brief Response DTO containing immediate feedback and updated CAT difficulty after an answer.
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -14,6 +14,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * @file NotificationScheduler.java
+ * @brief Scheduled background component dispatching daily contextual learning notifications.
+ */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -24,8 +28,7 @@ public class NotificationScheduler {
     private final NotificationService notificationService;
 
     /**
-     * Executes daily at 09:00 AM:
-     * Analyzes students' ProgressRecords and sends contextual recommendations for weak topics (mastery &lt; 0.6).
+     * @brief Executes daily at 09:00 AM to analyze student ProgressRecords and send contextual recommendations for weak topics (mastery &lt; 0.6).
      */
     @Scheduled(cron = "0 0 9 * * *")
     public void sendContextualReminders() {

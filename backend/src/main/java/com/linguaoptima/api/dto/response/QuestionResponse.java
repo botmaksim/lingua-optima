@@ -12,6 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file QuestionResponse.java
+ * @brief Response DTO representing an individual question within a task or CAT session.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -28,6 +32,11 @@ public class QuestionResponse {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    /**
+     * @brief Maps a domain TaskQuestion entity to a QuestionResponse DTO.
+     * @param question Domain entity instance.
+     * @return Mapped QuestionResponse DTO or null if input is null.
+     */
     public static QuestionResponse fromEntity(TaskQuestion question) {
         if (question == null) return null;
         List<String> parsedOptions = new ArrayList<>();

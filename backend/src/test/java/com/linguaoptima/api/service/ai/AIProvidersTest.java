@@ -16,6 +16,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file AIProvidersTest.java
+ * @brief Unit and slice test suite for AIProviders.
+ */
 @ExtendWith(MockitoExtension.class)
 class AIProvidersTest {
 

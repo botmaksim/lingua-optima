@@ -9,6 +9,10 @@ public enum CefrLevel {
     B2,
     C1;
 
+    /**
+     * @brief Returns the next higher CEFR level in the progression ladder.
+     * @return Next CEFR proficiency level (or C1 if already at maximum).
+     */
     public CefrLevel getNextLevel() {
         return switch (this) {
             case B1 -> B2;

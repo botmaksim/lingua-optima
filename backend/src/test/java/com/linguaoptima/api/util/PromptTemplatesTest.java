@@ -7,6 +7,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @file PromptTemplatesTest.java
+ * @brief Unit and slice test suite for PromptTemplates.
+ */
 class PromptTemplatesTest {
 
     @Test

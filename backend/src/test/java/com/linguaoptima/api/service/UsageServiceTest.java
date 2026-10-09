@@ -23,6 +23,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file UsageServiceTest.java
+ * @brief Unit and slice test suite for UsageService.
+ */
 @ExtendWith(MockitoExtension.class)
 class UsageServiceTest {
 
@@ -96,8 +100,8 @@ class UsageServiceTest {
 
         UsageResponse freeUsage = usageService.getUsage(user);
         assertEquals(4, freeUsage.getWeekEvaluations());
-        assertEquals(6, freeUsage.getEvaluationsRemaining()); // 10 - 4
-        assertEquals(2, freeUsage.getOcrRemaining()); // 3 - 1
+        assertEquals(6, freeUsage.getEvaluationsRemaining());
+        assertEquals(2, freeUsage.getOcrRemaining());
 
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.PREMIUM).build()));
         UsageResponse premUsage = usageService.getUsage(user);

@@ -115,7 +115,6 @@ public class JwtService {
 
     /**
      * @brief Resolves an arbitrary claim from a token using a functional resolver.
-     * @param <T> Expected type of the extracted claim.
      * @param token Compact serialized JWT token.
      * @param claimsResolver Function to resolve the target claim from Claims payload.
      * @return The resolved claim value.

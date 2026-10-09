@@ -7,6 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file AddStudentRequest.java
+ * @brief Request DTO for enrolling a student into a cohort group by email.
+ */
 @Data
 @Builder
 @NoArgsConstructor

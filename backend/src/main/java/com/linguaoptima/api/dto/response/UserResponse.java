@@ -12,6 +12,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * @file UserResponse.java
+ * @brief Response DTO representing a user profile.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -30,6 +34,11 @@ public class UserResponse {
     private LocalDateTime levelUpSuggestedAt;
     private LocalDateTime createdAt;
 
+    /**
+     * @brief Maps a domain User entity to a UserResponse DTO.
+     * @param user Domain entity instance.
+     * @return Mapped UserResponse DTO or null if input is null.
+     */
     public static UserResponse fromEntity(User user) {
         if (user == null) return null;
         return UserResponse.builder()

@@ -27,6 +27,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file UserServiceTest.java
+ * @brief Unit and slice test suite for UserService.
+ */
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 

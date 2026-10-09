@@ -31,6 +31,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * @file TaskServiceTest.java
+ * @brief Unit and slice test suite for TaskService.
+ */
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
 
@@ -112,7 +116,6 @@ class TaskServiceTest {
         assertEquals(CefrLevel.B1, response.getCefrLevel());
         verify(usageService).incrementEvaluation(studentUser);
         verify(subscriptionService).validateCefrLevelAccess(studentUser, CefrLevel.B1);
-        // Self-service verification: taskAssignment created with assignedBy = studentUser
         verify(taskAssignmentRepository).save(argThat(assignment ->
             assignment.getStudent().getId().equals(studentUser.getId()) &&
             assignment.getAssignedBy().getId().equals(studentUser.getId())

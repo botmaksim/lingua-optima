@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * @file AssignTaskRequest.java
+ * @brief Request DTO for assigning a generated task to one or more student groups.
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -7,6 +7,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * @file ChangePasswordRequest.java
+ * @brief Request DTO for authenticated password update.
+ */
 @Data
 @Builder
 @NoArgsConstructor

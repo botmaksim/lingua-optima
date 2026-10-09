@@ -18,6 +18,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * @file GlobalExceptionHandlerTest.java
+ * @brief Unit and slice test suite for GlobalExceptionHandler.
+ */
 class GlobalExceptionHandlerTest {
 
     private GlobalExceptionHandler handler;
