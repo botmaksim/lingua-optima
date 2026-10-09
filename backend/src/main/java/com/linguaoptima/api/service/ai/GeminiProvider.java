@@ -104,6 +104,10 @@ public class GeminiProvider implements AIProvider {
      */
     @Override
     public String complete(String prompt) throws Exception {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("Gemini API key is not configured");
+        }
+
         List<String> modelsToTry = new java.util.ArrayList<>();
         modelsToTry.add(modelName);
         for (String m : List.of("gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite")) {
@@ -136,6 +140,9 @@ public class GeminiProvider implements AIProvider {
                 lastException = new RuntimeException("Gemini API returned error status: " + response.getStatusCode());
             } catch (Exception e) {
                 log.warn("Gemini model {} failed ({}), attempting fallback if available...", model, e.getMessage());
+                if (e.getMessage() != null && e.getMessage().contains("API_KEY_INVALID")) {
+                    throw e;
+                }
                 lastException = e;
             }
         }

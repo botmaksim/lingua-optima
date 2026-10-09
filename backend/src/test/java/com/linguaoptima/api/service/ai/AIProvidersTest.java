@@ -62,6 +62,44 @@ class AIProvidersTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: groq provider missing or blank key throws.
+     */
+    @Test
+    void testGroqProviderMissingKeyThrows() {
+        GroqProvider providerNull = new GroqProvider(null, restTemplate, objectMapper);
+        assertThrows(IllegalStateException.class, () -> providerNull.complete("hello"));
+
+        GroqProvider providerBlank = new GroqProvider("   ", restTemplate, objectMapper);
+        assertThrows(IllegalStateException.class, () -> providerBlank.complete("hello"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: gemini provider missing or blank key throws.
+     */
+    @Test
+    void testGeminiProviderMissingKeyThrows() {
+        GeminiProvider providerNull = new GeminiProvider(null, restTemplate, objectMapper);
+        assertThrows(IllegalStateException.class, () -> providerNull.complete("hello"));
+
+        GeminiProvider providerBlank = new GeminiProvider("   ", restTemplate, objectMapper);
+        assertThrows(IllegalStateException.class, () -> providerBlank.complete("hello"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: gemini provider invalid api key aborts fallback loop.
+     */
+    @Test
+    void testGeminiProviderInvalidApiKeyAbortsFallback() {
+        GeminiProvider provider = new GeminiProvider("gemini-key", restTemplate, objectMapper);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenThrow(new RuntimeException("API_KEY_INVALID: Key is invalid"));
+
+        assertThrows(RuntimeException.class, () -> provider.complete("hello"));
+        org.mockito.Mockito.verify(restTemplate, org.mockito.Mockito.times(1))
+            .exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
+    }
+
+    /**
      * @brief Verifies unit test scenario: gemini provider success.
      */
     @Test

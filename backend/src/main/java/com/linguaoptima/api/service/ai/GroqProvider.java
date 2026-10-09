@@ -104,6 +104,10 @@ public class GroqProvider implements AIProvider {
      */
     @Override
     public String complete(String prompt) throws Exception {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("Groq API key is not configured");
+        }
+
         String url = baseUrl.replaceAll("/+$", "") + "/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();

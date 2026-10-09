@@ -33,12 +33,15 @@ public class WebConfig {
     }
 
     /**
-     * @brief Instantiates standard Spring RestTemplate client for third-party HTTP requests.
+     * @brief Instantiates standard Spring RestTemplate client with connect and read timeouts for third-party HTTP requests.
      * @return Configured RestTemplate bean.
      */
     @Bean
     public RestTemplate restTemplate() {
-        return new RestTemplate();
+        org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(java.time.Duration.ofSeconds(5));
+        factory.setReadTimeout(java.time.Duration.ofSeconds(15));
+        return new RestTemplate(factory);
     }
 
     /**
