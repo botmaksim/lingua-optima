@@ -218,5 +218,44 @@ class ProgressServiceTest {
         progressService.checkCefrLevelUp(student);
         verify(notificationService, never()).send(eq(student), anyString(), any());
     }
+
+    /**
+     * @brief Verifies unit test scenario: updateFromTaskSubmission correctly computes mastery from multi-question attempts and errors.
+     */
+    @Test
+    void testUpdateFromTaskSubmissionMultiQuestion() {
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "Present Perfect vs Past Simple"))
+            .thenReturn(Optional.empty());
+        when(progressRecordRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        // 5 questions, 1 error (80% score)
+        ProgressRecord record = progressService.updateFromTaskSubmission(student, "Present Perfect vs Past Simple", 5, 1);
+        assertEquals(5, record.getTotalAttempts());
+        assertEquals(1, record.getErrorCount());
+        assertEquals(0.80, record.getMasteryScore());
+
+        // Subsequent task with 5 questions, 0 errors
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "Present Perfect vs Past Simple"))
+            .thenReturn(Optional.of(record));
+
+        ProgressRecord second = progressService.updateFromTaskSubmission(student, "Present Perfect vs Past Simple", 5, 0);
+        assertEquals(10, second.getTotalAttempts());
+        assertEquals(1, second.getErrorCount());
+        assertEquals(0.90, second.getMasteryScore());
+
+        // Test safe boundary clamping with negative errors and excessive errors
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "Boundary Topic"))
+            .thenReturn(Optional.empty());
+
+        ProgressRecord clamped = progressService.updateFromTaskSubmission(student, "Boundary Topic", 0, -2);
+        assertEquals(1, clamped.getTotalAttempts());
+        assertEquals(0, clamped.getErrorCount());
+
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "Boundary Topic Upper"))
+            .thenReturn(Optional.empty());
+        ProgressRecord clampedUpper = progressService.updateFromTaskSubmission(student, "Boundary Topic Upper", 3, 10);
+        assertEquals(3, clampedUpper.getTotalAttempts());
+        assertEquals(3, clampedUpper.getErrorCount());
+    }
 }
 

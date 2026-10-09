@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.Task;
 import com.linguaoptima.api.domain.TaskAssignment;
+import com.linguaoptima.api.domain.TaskQuestion;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.CefrLevel;
@@ -185,7 +186,7 @@ class SubmissionServiceTest {
         SubmissionResultResponse res = submissionService.submitText(req, student);
         assertNotNull(res);
         assertEquals(90.0, res.getScore());
-        verify(progressService).updateFromSubmission(student, "Reported Speech", true);
+        verify(progressService).updateFromTaskSubmission(eq(student), eq("Reported Speech"), anyInt(), anyInt());
 
         // Test with createdBy == null
         t.setCreatedBy(null);
@@ -479,20 +480,20 @@ class SubmissionServiceTest {
             .type("GRAMMAR")
             .build();
         submissionService.submitText(failTextReq, student);
-        verify(progressService).updateFromSubmission(student, "General", false);
+        verify(progressService).updateFromTaskSubmission(eq(student), eq("General"), anyInt(), anyInt());
 
         submissionService.submitText(failTextReq, student);
-        verify(progressService, times(2)).updateFromSubmission(student, "General", false);
+        verify(progressService, times(2)).updateFromTaskSubmission(eq(student), eq("General"), anyInt(), anyInt());
 
         MockMultipartFile file = new MockMultipartFile("file", "hw.png", "image/png", new byte[]{1, 2, 3});
         when(ocrService.extractText(any())).thenReturn("Handwriting");
         when(scoringService.extractScore(any())).thenReturn(69.9).thenReturn(null);
 
         submissionService.submitImage(file, detachedAssignment.getId(), student);
-        verify(progressService).updateFromSubmission(student, "OCR Homework", false);
+        verify(progressService).updateFromTaskSubmission(eq(student), eq("OCR Homework"), anyInt(), anyInt());
 
         submissionService.submitImage(file, null, student);
-        verify(progressService, times(2)).updateFromSubmission(student, "OCR Homework", false);
+        verify(progressService, times(2)).updateFromTaskSubmission(eq(student), eq("OCR Homework"), anyInt(), anyInt());
 
         Submission sub = Submission.builder().id(UUID.randomUUID()).student(student).aiScore(50.0).build();
         when(submissionRepository.findById(sub.getId())).thenReturn(Optional.of(sub));
@@ -796,5 +797,107 @@ class SubmissionServiceTest {
         SubmissionResultResponse nullMaxRes = submissionService.submitText(req, student);
         assertNotNull(nullMaxRes);
         assertEquals(3, exhaustedAssign.getAttemptsUsed());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: submitting a task with explicit questions records progress with actual question count and score-derived errors.
+     */
+    @Test
+    void testSubmitTaskWithExplicitQuestionsAndScore() {
+        Task task = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Present Perfect vs Past Simple")
+            .answerKey("key")
+            .questions(List.of(
+                TaskQuestion.builder().questionOrder(1).questionText("Q1").correctAnswer("went").grammarRule("Past Simple").build(),
+                TaskQuestion.builder().questionOrder(2).questionText("Q2").correctAnswer("have seen").grammarRule("Present Perfect").build(),
+                TaskQuestion.builder().questionOrder(3).questionText("Q3").correctAnswer("woke").grammarRule("Past Simple").build(),
+                TaskQuestion.builder().questionOrder(4).questionText("Q4").correctAnswer("has visited").grammarRule("Present Perfect").build(),
+                TaskQuestion.builder().questionOrder(5).questionText("Q5").correctAnswer("did").grammarRule("Past Simple").build()
+            ))
+            .build();
+
+        TaskAssignment assign = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(student)
+            .maxAttempts(0)
+            .attemptsUsed(0)
+            .build();
+
+        when(taskAssignmentRepository.findById(assign.getId())).thenReturn(Optional.of(assign));
+        when(scoringService.scoreGrammarTask(anyString(), anyString(), eq(student)))
+            .thenReturn(Map.of("score", 80.0, "feedback", "4/5 correct"));
+        when(scoringService.extractScore(any())).thenReturn(80.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
+            Submission s = inv.getArgument(0);
+            s.setId(UUID.randomUUID());
+            return s;
+        });
+
+        TextSubmissionRequest req = TextSubmissionRequest.builder()
+            .assignmentId(assign.getId())
+            .text("1. went\n2. saw\n3. woke\n4. has visited\n5. did")
+            .type("GRAMMAR")
+            .build();
+
+        SubmissionResultResponse res = submissionService.submitText(req, student);
+        assertNotNull(res);
+        assertEquals(80.0, res.getScore());
+        verify(progressService).updateFromTaskSubmission(eq(student), eq("Present Perfect vs Past Simple"), eq(5), eq(1));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: extracting items from rubric map when questions are not bound to entity.
+     */
+    @Test
+    void testExtractRubricItemsAndNullScoreFallback() {
+        Map<String, Object> rubricWithItems = Map.of(
+            "score", 70.0,
+            "items", List.of(
+                Map.of("questionNumber", 1, "sentence", "Sentence 1", "studentAnswer", "a", "correctAnswer", "a", "isCorrect", true, "grammarRule", "Rule 1"),
+                Map.of("questionNumber", 2, "sentence", "Sentence 2", "studentAnswer", "b", "correctAnswer", "c", "isCorrect", false, "grammarRule", "Rule 2")
+            )
+        );
+
+        SubmissionResultResponse res = SubmissionResultResponse.builder().build();
+        Submission sub = Submission.builder().id(UUID.randomUUID()).build();
+        submissionService.enrichSubmissionResult(res, sub, rubricWithItems);
+
+        assertNotNull(res.getItems());
+        assertEquals(2, res.getItems().size());
+        assertTrue(res.getItems().get(0).isCorrect());
+        assertFalse(res.getItems().get(1).isCorrect());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: submitting text when AI score is null falls back to counting item accuracy.
+     */
+    @Test
+    void testSubmitTextNullScoreWithRubricItems() {
+        when(scoringService.scoreGrammarTask(anyString(), anyString(), eq(student)))
+            .thenReturn(Map.of(
+                "items", List.of(
+                    Map.of("questionNumber", 1, "sentence", "Sentence 1", "studentAnswer", "a", "correctAnswer", "a", "isCorrect", true),
+                    Map.of("questionNumber", 2, "sentence", "Sentence 2", "studentAnswer", "b", "correctAnswer", "c", "isCorrect", false)
+                )
+            ));
+        when(scoringService.extractScore(any())).thenReturn(null);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
+            Submission s = inv.getArgument(0);
+            s.setId(UUID.randomUUID());
+            return s;
+        });
+
+        TextSubmissionRequest req = TextSubmissionRequest.builder()
+            .text("raw text")
+            .type("GRAMMAR")
+            .build();
+
+        SubmissionResultResponse res = submissionService.submitText(req, student);
+        assertNotNull(res);
+        assertNull(res.getScore());
+        assertEquals(2, res.getItems().size());
+        verify(progressService).updateFromTaskSubmission(eq(student), eq("General"), eq(2), eq(1));
     }
 }

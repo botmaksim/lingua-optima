@@ -152,13 +152,16 @@ public class SubmissionService {
 
         Submission saved = submissionRepository.save(submission);
 
-        boolean passed = score != null && score >= 70.0;
-        progressService.updateFromSubmission(student, grammarTopic, passed);
-        gamificationService.onSubmissionCompleted(student);
-
         SubmissionResultResponse response = SubmissionResultResponse.fromEntity(saved);
         response.setRubric(scoring);
         enrichSubmissionResult(response, saved, scoring);
+
+        Task currentTask = (assignment != null) ? assignment.getTask() : null;
+        if (currentTask == null && request.getTaskId() != null) {
+            currentTask = taskRepository.findById(request.getTaskId()).orElse(null);
+        }
+        recordSubmissionProgress(student, grammarTopic, score, response, currentTask);
+        gamificationService.onSubmissionCompleted(student);
         return response;
     }
 
@@ -225,13 +228,13 @@ public class SubmissionService {
 
         Submission saved = submissionRepository.save(submission);
 
-        boolean passed = score != null && score >= 70.0;
-        progressService.updateFromSubmission(student, grammarTopic, passed);
-        gamificationService.onSubmissionCompleted(student);
-
         SubmissionResultResponse response = SubmissionResultResponse.fromEntity(saved);
         response.setRubric(scoring);
         enrichSubmissionResult(response, saved, scoring);
+
+        Task currentTask = (assignment != null) ? assignment.getTask() : null;
+        recordSubmissionProgress(student, grammarTopic, score, response, currentTask);
+        gamificationService.onSubmissionCompleted(student);
         return response;
     }
 
@@ -374,7 +377,7 @@ public class SubmissionService {
 
         // 3. Extract from Rubric
         if (rubric != null) {
-            extractFromRubric(rubric, corrections, weaknesses, strengths);
+            extractFromRubric(rubric, corrections, weaknesses, strengths, items);
         }
 
         // 4. Extract from Feedback if it contains JSON
@@ -611,9 +614,10 @@ public class SubmissionService {
      * @param corrections Target list of sentence corrections.
      * @param weaknesses Target list of weaknesses.
      * @param strengths Target list of strengths.
+     * @param items Target list of evaluated question items.
      */
     @SuppressWarnings("unchecked")
-    private void extractFromRubric(Map<String, Object> rubric, List<SentenceCorrectionResponse> corrections, List<String> weaknesses, List<String> strengths) {
+    private void extractFromRubric(Map<String, Object> rubric, List<SentenceCorrectionResponse> corrections, List<String> weaknesses, List<String> strengths, List<SubmissionItemResponse> items) {
         Object corrObj = rubric.get("corrections");
         if (corrObj instanceof List<?> list) {
             for (Object item : list) {
@@ -636,6 +640,23 @@ public class SubmissionService {
         Object sObj = rubric.get("strengths");
         if (sObj instanceof List<?> list) {
             list.forEach(s -> strengths.add(String.valueOf(s)));
+        }
+
+        Object itemsObj = rubric.get("items");
+        if (itemsObj instanceof List<?> list && items.isEmpty()) {
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> m) {
+                    items.add(SubmissionItemResponse.builder()
+                        .questionNumber(m.get("questionNumber") instanceof Number n ? n.intValue() : items.size() + 1)
+                        .sentence(m.get("sentence") != null ? String.valueOf(m.get("sentence")) : "")
+                        .studentAnswer(m.get("studentAnswer") != null ? String.valueOf(m.get("studentAnswer")) : "")
+                        .correctAnswer(m.get("correctAnswer") != null ? String.valueOf(m.get("correctAnswer")) : "")
+                        .isCorrect(Boolean.TRUE.equals(m.get("isCorrect")))
+                        .explanation(m.get("explanation") != null ? String.valueOf(m.get("explanation")) : "")
+                        .grammarRule(m.get("grammarRule") != null ? String.valueOf(m.get("grammarRule")) : "")
+                        .build());
+                }
+            }
         }
     }
 
@@ -725,5 +746,34 @@ public class SubmissionService {
             return List.of(response.getGrammarTopic() + " (Advanced Practice)");
         }
         return List.of("Grammar & Sentence Structure");
+    }
+
+    /**
+     * @brief Updates student progress records reflecting actual question attempts and errors.
+     * @param student The student submitting the work.
+     * @param grammarTopic Grammar topic or skill category.
+     * @param score Numerical AI score (0-100).
+     * @param response Evaluated submission response containing parsed items.
+     * @param task Associated educational task entity if present.
+     */
+    private void recordSubmissionProgress(User student, String grammarTopic, Double score, SubmissionResultResponse response, Task task) {
+        int attempts = 5;
+        if (task != null && task.getQuestions() != null && !task.getQuestions().isEmpty()) {
+            attempts = task.getQuestions().size();
+        } else if (response != null && response.getItems() != null && !response.getItems().isEmpty()) {
+            attempts = response.getItems().size();
+        }
+
+        int errors;
+        if (score != null) {
+            double normalizedScore = Math.max(0.0, Math.min(100.0, score));
+            errors = (int) Math.round(attempts * (1.0 - (normalizedScore / 100.0)));
+        } else if (response != null && response.getItems() != null && !response.getItems().isEmpty()) {
+            errors = (int) response.getItems().stream().filter(it -> !it.isCorrect()).count();
+        } else {
+            errors = 0;
+        }
+
+        progressService.updateFromTaskSubmission(student, grammarTopic, attempts, errors);
     }
 }

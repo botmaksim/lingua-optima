@@ -41,15 +41,18 @@ public class ProgressService {
     private final NotificationService notificationService;
 
     /**
-     * @brief Updates topic mastery record based on a student submission answer and evaluates level-up readiness.
+     * @brief Updates topic progress from a completed submission with attempt count, error count, and mastery score.
      * @param student The student completing the exercise.
      * @param grammarTopic Grammar topic or skill category.
-     * @param isCorrect Whether the answer or submission was evaluated as correct/passed.
+     * @param attemptsCount Total number of questions or items attempted in this submission.
+     * @param errorsCount Total number of incorrect questions or errors in this submission.
      * @return Updated ProgressRecord entity.
      */
     @Transactional
-    public ProgressRecord updateFromSubmission(User student, String grammarTopic, boolean isCorrect) {
+    public ProgressRecord updateFromTaskSubmission(User student, String grammarTopic, int attemptsCount, int errorsCount) {
         final String topic = (grammarTopic == null || grammarTopic.isBlank()) ? "General Grammar" : grammarTopic;
+        final int safeAttempts = Math.max(1, attemptsCount);
+        final int safeErrors = Math.max(0, Math.min(safeAttempts, errorsCount));
 
         ProgressRecord record = progressRecordRepository.findByStudentAndGrammarTopic(student, topic)
             .orElseGet(() -> ProgressRecord.builder()
@@ -61,10 +64,8 @@ public class ProgressService {
                 .updatedAt(LocalDateTime.now())
                 .build());
 
-        record.setTotalAttempts(record.getTotalAttempts() + 1);
-        if (!isCorrect) {
-            record.setErrorCount(record.getErrorCount() + 1);
-        }
+        record.setTotalAttempts(record.getTotalAttempts() + safeAttempts);
+        record.setErrorCount(record.getErrorCount() + safeErrors);
 
         double mastery = (double) (record.getTotalAttempts() - record.getErrorCount()) / record.getTotalAttempts();
         record.setMasteryScore(Math.round(mastery * 100.0) / 100.0);
@@ -73,6 +74,18 @@ public class ProgressService {
         ProgressRecord saved = progressRecordRepository.save(record);
         checkCefrLevelUp(student);
         return saved;
+    }
+
+    /**
+     * @brief Updates topic mastery record based on a student submission answer and evaluates level-up readiness.
+     * @param student The student completing the exercise.
+     * @param grammarTopic Grammar topic or skill category.
+     * @param isCorrect Whether the answer or submission was evaluated as correct/passed.
+     * @return Updated ProgressRecord entity.
+     */
+    @Transactional
+    public ProgressRecord updateFromSubmission(User student, String grammarTopic, boolean isCorrect) {
+        return updateFromTaskSubmission(student, grammarTopic, 1, isCorrect ? 0 : 1);
     }
 
     /**
