@@ -586,4 +586,163 @@ class SubmissionServiceTest {
         assertEquals("bad", rubricResp.getCorrections().get(0).getOriginal());
         assertTrue(rubricResp.getAiAnalysis().getWeaknesses().contains("Essay Weakness"));
     }
+
+    /**
+     * @brief Tests fallback branches, null cases, edge cases, and JSON error handling in enrichSubmissionResult.
+     */
+    @Test
+    void testEnrichSubmissionResultEdgeCasesAndFallbacks() {
+        // 1. Assignment is null
+        Submission subNoAssign = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("Hello world")
+            .aiScore(75.0)
+            .aiFeedback("{\"corrections\":[{\"original\":\"bad\",\"corrected\":\"good\",\"explanation\":\"fix\",\"grammarRule\":\"rule\"}],\"weaknesses\":[\"W1\"],\"strengths\":[\"S1\"]}")
+            .build();
+        SubmissionResultResponse respNoAssign = SubmissionResultResponse.fromEntity(subNoAssign);
+        submissionService.enrichSubmissionResult(respNoAssign, subNoAssign, null);
+        assertNotNull(respNoAssign.getCorrections());
+        assertEquals(1, respNoAssign.getCorrections().size());
+        assertTrue(respNoAssign.getAiAnalysis().getSummary().contains("Essay evaluated against CEFR criteria"));
+        assertTrue(respNoAssign.getAiAnalysis().getRecommendations().contains("W1"));
+
+        // 2. No items, no corrections, no weaknesses, but has strengths
+        Submission subStrengthsOnly = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("Clean essay")
+            .aiScore(100.0)
+            .aiFeedback("{\"strengths\":[\"Punctuation\"]}")
+            .build();
+        SubmissionResultResponse respStrengthsOnly = SubmissionResultResponse.fromEntity(subStrengthsOnly);
+        submissionService.enrichSubmissionResult(respStrengthsOnly, subStrengthsOnly, null);
+        assertTrue(respStrengthsOnly.getAiAnalysis().getSummary().contains("Overall score: 100/100"));
+        assertTrue(respStrengthsOnly.getAiAnalysis().getRecommendations().contains("Punctuation"));
+        assertEquals(List.of("Grammar & Sentence Structure"), respStrengthsOnly.getAiAnalysis().getSuggestedTopics());
+
+        // 3. Neither weaknesses nor strengths
+        Submission subEmptyFeedback = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("Empty")
+            .aiScore(90.0)
+            .aiFeedback("Good effort without json.")
+            .build();
+        SubmissionResultResponse respEmpty = SubmissionResultResponse.fromEntity(subEmptyFeedback);
+        submissionService.enrichSubmissionResult(respEmpty, subEmptyFeedback, null);
+        assertTrue(respEmpty.getAiAnalysis().getRecommendations().contains("Great effort!"));
+
+        // 4. Task with null questions, empty questions
+        Task emptyTask = Task.builder().id(UUID.randomUUID()).questions(null).build();
+        TaskAssignment assignEmptyTask = TaskAssignment.builder().id(UUID.randomUUID()).task(emptyTask).build();
+        Submission subEmptyTask = Submission.builder().id(UUID.randomUUID()).assignment(assignEmptyTask).student(student).studentText("").build();
+        SubmissionResultResponse respEmptyTask = SubmissionResultResponse.fromEntity(subEmptyTask);
+        submissionService.enrichSubmissionResult(respEmptyTask, subEmptyTask, null);
+        assertTrue(respEmptyTask.getItems().isEmpty());
+
+        // 5. Questions with no grammar rule, task with no grammar topic, blank student answers, comma-delimited correct answers
+        Task customTask = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic(null)
+            .answerKey("[{\"questionId\":1,\"explanation\":\"\"},{\"invalidJson")
+            .build();
+        com.linguaoptima.api.domain.TaskQuestion tq1 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(1)
+            .questionText("Fill in comma-delimited")
+            .correctAnswer("alpha, beta")
+            .grammarRule(null)
+            .build();
+        com.linguaoptima.api.domain.TaskQuestion tq2 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(2)
+            .questionText("Fill in slash-delimited")
+            .correctAnswer("gamma / delta")
+            .grammarRule("")
+            .build();
+        com.linguaoptima.api.domain.TaskQuestion tq3 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(3)
+            .questionText("No student answer")
+            .correctAnswer("omega")
+            .grammarRule("Omega Rule")
+            .build();
+        customTask.setQuestions(List.of(tq1, tq2, tq3));
+
+        TaskAssignment customAssign = TaskAssignment.builder().id(UUID.randomUUID()).task(customTask).build();
+        Submission subCustom = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(customAssign)
+            .student(student)
+            .studentText("   \nalpha\nQuestion 2: gamma\n")
+            .aiScore(66.0)
+            .aiFeedback("{not valid json")
+            .build();
+
+        SubmissionResultResponse respCustom = SubmissionResultResponse.fromEntity(subCustom);
+        submissionService.enrichSubmissionResult(respCustom, subCustom, null);
+        assertEquals(3, respCustom.getItems().size());
+        assertTrue(respCustom.getItems().get(0).isCorrect());
+        assertTrue(respCustom.getItems().get(1).isCorrect());
+        assertFalse(respCustom.getItems().get(2).isCorrect());
+        assertEquals("No answer", respCustom.getItems().get(2).getStudentAnswer());
+        assertTrue(respCustom.getItems().get(0).getExplanation().contains("Correct! Accurately applies the rule: Grammar"));
+        assertTrue(respCustom.getItems().get(2).getExplanation().contains("Incorrect. The expected answer is 'omega'"));
+
+        // 6. CAT session with incorrect answers and malformed JSON
+        com.linguaoptima.api.domain.SessionState catFail = com.linguaoptima.api.domain.SessionState.builder()
+            .answersJson("[{\"questionText\":\"CAT Hard Q\",\"answer\":\"wrong\",\"correctAnswer\":\"right\",\"isCorrect\":false,\"grammarRule\":\"Conditionals\",\"difficulty\":4}]")
+            .build();
+        when(sessionStateRepository.findByAssignmentId(customAssign.getId())).thenReturn(Optional.of(catFail));
+        SubmissionResultResponse respCatFail = SubmissionResultResponse.fromEntity(subCustom);
+        submissionService.enrichSubmissionResult(respCatFail, subCustom, null);
+        assertEquals(1, respCatFail.getItems().size());
+        assertFalse(respCatFail.getItems().get(0).isCorrect());
+        assertTrue(respCatFail.getItems().get(0).getExplanation().contains("The expected answer is 'right'"));
+
+        // Malformed CAT JSON
+        com.linguaoptima.api.domain.SessionState catMalformed = com.linguaoptima.api.domain.SessionState.builder()
+            .answersJson("{invalid json")
+            .build();
+        when(sessionStateRepository.findByAssignmentId(customAssign.getId())).thenReturn(Optional.of(catMalformed));
+        SubmissionResultResponse respCatMalformed = SubmissionResultResponse.fromEntity(subCustom);
+        submissionService.enrichSubmissionResult(respCatMalformed, subCustom, null);
+        // Should fall back to task questions since CAT parsing produced 0 items
+        assertEquals(3, respCatMalformed.getItems().size());
+
+        // 7. Grammar topic with no weaknesses
+        Submission subTopicOnly = Submission.builder().id(UUID.randomUUID()).build();
+        SubmissionResultResponse respTopicOnly = SubmissionResultResponse.builder()
+            .grammarTopic("Reported Speech")
+            .build();
+        submissionService.enrichSubmissionResult(respTopicOnly, subTopicOnly, null);
+        assertEquals(List.of("Reported Speech (Advanced Practice)"), respTopicOnly.getAiAnalysis().getSuggestedTopics());
+
+        // 8. Null guard checks
+        submissionService.enrichSubmissionResult(null, subCustom, null);
+        submissionService.enrichSubmissionResult(respTopicOnly, null, null);
+
+        // 9. Comma/slash matching second variants, number overflow fallback, and empty strings
+        com.linguaoptima.api.domain.TaskQuestion emptyQ = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(1)
+            .questionText("Empty Q")
+            .correctAnswer("")
+            .build();
+        com.linguaoptima.api.domain.TaskQuestion commaQ = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(2)
+            .questionText("Comma Q")
+            .correctAnswer("first, second")
+            .build();
+        Task matchTask = Task.builder().id(UUID.randomUUID()).questions(List.of(emptyQ, commaQ)).build();
+        TaskAssignment matchAssign = TaskAssignment.builder().id(UUID.randomUUID()).task(matchTask).build();
+        Submission matchSub = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(matchAssign)
+            .student(student)
+            .studentText("Q1: \nQ2: second\nQ999999999999999999999999: BigNum\n")
+            .build();
+        SubmissionResultResponse matchResp = SubmissionResultResponse.fromEntity(matchSub);
+        submissionService.enrichSubmissionResult(matchResp, matchSub, null);
+        assertEquals(2, matchResp.getItems().size());
+        assertFalse(matchResp.getItems().get(0).isCorrect());
+        assertTrue(matchResp.getItems().get(1).isCorrect());
+    }
 }

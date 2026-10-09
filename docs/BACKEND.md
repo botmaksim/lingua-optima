@@ -32,6 +32,8 @@ This is a comprehensive guide to the server-side (Backend) architecture of the L
 9. **AI keys encryption:** User-supplied BYOK AI provider keys are encrypted using AES-256-GCM before being persisted to the database.
 10. **JWT configuration:** The access token is valid for 15 minutes. The refresh token is valid for 30 days (stored in an `HttpOnly` cookie), and its SHA-256 hash is stored in Redis to support immediate server-side revocation.
 11. **Email Verification on Registration:** Traditional email/password registration mandates a 2-step confirmation workflow. A 6-digit verification code is generated with `SecureRandom` and emailed via Gmail SMTP (`EmailService`). Codes are protected with a 60-second rate-limiting cooldown and 10-minute expiry in Redis. Google OAuth2 registration remains streamlined and bypasses manual code entry.
+12. **Sentence-by-Sentence Evaluation & AI Gap Analysis:** Every submission across all task formats (MCQ, Gap-Fill, Rewrite, Short-Answer, Essay, OCR Image, and Adaptive CAT) is enriched with structured sentence-by-sentence comparisons (student answer vs. correct answer, status badge, grammar rule, and detailed pedagogical explanation). An AI diagnostic summary provides strengths, weaknesses, personalized tips, and 1-click suggested next practice topics.
+13. **Task Repeatability for Mastery:** In line with deliberate practice pedagogy, tasks remain permanently replayable in the catalog. After submission, historical scores are recorded, but students can retry any task at any time to turn weaknesses into strengths.
 
 ---
 
@@ -90,7 +92,10 @@ backend/
 │   │       ├── TaskResponse.java      — id, type, cefrLevel, content, questions
 │   │       ├── QuestionResponse.java  — id, questionText, options (for MCQ), difficulty
 │   │       ├── AnswerFeedbackResponse.java — isCorrect, correctAnswer, explanation, newDifficulty
-│   │       ├── SubmissionResultResponse.java — originalText, corrections, score, feedback, rubric breakdown
+│   │       ├── SubmissionResultResponse.java — originalText, items, corrections, score, feedback, rubric breakdown, aiAnalysis
+│   │       ├── SubmissionItemResponse.java — questionNumber, sentence, studentAnswer, correctAnswer, isCorrect, explanation, grammarRule
+│   │       ├── SentenceCorrectionResponse.java — original, corrected, explanation, grammarRule
+│   │       ├── AiAnalysisResponse.java — summary, weaknesses[], strengths[], recommendations, suggestedTopics[]
 │   │       ├── ProgressResponse.java  — grammarTopic, totalAttempts, errorCount, masteryScore
 │   │       ├── GroupResponse.java     — id, name, studentCount, avgScore
 │   │       ├── LeaderboardEntryResponse.java — rank, displayAlias, weeklyScore, cefrLevel

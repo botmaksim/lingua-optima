@@ -118,7 +118,7 @@ public class SubmissionResultResponse {
         return SubmissionResultResponse.builder()
             .id(submission.getId())
             .assignmentId(submission.getAssignment() != null ? submission.getAssignment().getId() : null)
-            .studentId(submission.getStudent().getId())
+            .studentId(submission.getStudent() != null ? submission.getStudent().getId() : null)
             .submissionType(submission.getSubmissionType())
             .originalText(submission.getStudentText())
             .score(submission.getAiScore() != null ? submission.getAiScore() : submission.getEffectiveScore())
