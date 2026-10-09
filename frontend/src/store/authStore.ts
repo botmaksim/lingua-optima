@@ -21,7 +21,13 @@ interface AuthState {
   /** @brief Authenticates user with email and password */
   login: (email: string, password: string) => Promise<void>;
   /** @brief Registers a new user account */
-  register: (email: string, password: string, fullName: string, role: string) => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    fullName: string,
+    role: string,
+    verificationCode?: string
+  ) => Promise<void>;
   /** @brief Authenticates or registers user via Google OAuth2 ID token */
   googleLogin: (idToken: string, role?: string) => Promise<void>;
   /** @brief Terminates the active session and clears tokens */
@@ -51,10 +57,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  register: async (email, password, fullName, role) => {
+  register: async (email, password, fullName, role, verificationCode) => {
     set({ isLoading: true });
     try {
-      const data = await authApi.register(email, password, fullName, role);
+      const data = await authApi.register(email, password, fullName, role, verificationCode);
       set({ user: data.user, isAuthenticated: true, isLoading: false });
     } catch (err) {
       set({ isLoading: false });

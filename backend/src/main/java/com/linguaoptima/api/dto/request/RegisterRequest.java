@@ -44,4 +44,7 @@ public class RegisterRequest {
 
     /** @brief Optional initial CEFR proficiency level (defaults to A1). */
     private CefrLevel cefrLevel;
+
+    /** @brief 6-digit email verification code sent to the registration email. */
+    private String verificationCode;
 }

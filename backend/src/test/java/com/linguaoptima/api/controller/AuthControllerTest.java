@@ -10,6 +10,7 @@ import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
 import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
+import com.linguaoptima.api.dto.request.SendVerificationCodeRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.dto.response.UserResponse;
 import com.linguaoptima.api.service.AuthService;
@@ -27,6 +28,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,11 +71,26 @@ class AuthControllerTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: sendVerificationCode.
+     */
+    @Test
+    void testSendVerificationCode() {
+        SendVerificationCodeRequest req = SendVerificationCodeRequest.builder().email("auth@lingua.com").build();
+        doNothing().when(authService).sendRegistrationVerificationCode(anyString());
+
+        ResponseEntity<Map<String, String>> entity = authController.sendVerificationCode(req);
+
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals("auth@lingua.com", entity.getBody().get("email"));
+        verify(authService).sendRegistrationVerificationCode("auth@lingua.com");
+    }
+
+    /**
      * @brief Verifies unit test scenario: register.
      */
     @Test
     void testRegister() {
-        RegisterRequest req = RegisterRequest.builder().email("auth@lingua.com").password("pass").fullName("Auth").role(Role.STUDENT).build();
+        RegisterRequest req = RegisterRequest.builder().email("auth@lingua.com").password("pass").fullName("Auth").role(Role.STUDENT).verificationCode("123456").build();
         when(authService.register(any())).thenReturn(sampleToken);
         when(jwtService.generateRefreshToken(any(), any())).thenReturn("refresh123");
 

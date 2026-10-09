@@ -32,10 +32,12 @@ import org.springframework.web.client.RestClient;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @brief Authentication and user onboarding service.
@@ -57,6 +59,20 @@ public class AuthService {
     private final JwtService jwtService;
     /** @brief Field representing string redis template in AuthService. */
     private final StringRedisTemplate stringRedisTemplate;
+    /** @brief Field representing email service in AuthService. */
+    private final EmailService emailService;
+
+    /** @brief Cryptographically secure random generator for 6-digit confirmation codes. */
+    private final SecureRandom secureRandom = new SecureRandom();
+    /** @brief In-memory fallback storage for email verification codes when Redis is unavailable. */
+    private final Map<String, VerificationEntry> fallbackVerificationCodes = new ConcurrentHashMap<>();
+
+    /**
+     * @brief Internal record storing verification code and expiration timestamp.
+     * @param code 6-digit confirmation code.
+     * @param expiresAt Expiration timestamp.
+     */
+    private record VerificationEntry(String code, LocalDateTime expiresAt) {}
 
     /** @brief Configured Google OAuth2 Client ID for verifying token audience. */
     @Value("${app.oauth.google.client-id:}")
@@ -74,19 +90,22 @@ public class AuthService {
      * @param passwordEncoder BCrypt password encoder for secure hashing.
      * @param jwtService Service for creating and validating JWT tokens.
      * @param stringRedisTemplate Optional Redis template for session token storage and rate limiting.
+     * @param emailService Service for dispatching verification emails.
      */
     public AuthService(
             UserRepository userRepository,
             SubscriptionRepository subscriptionRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            @Autowired(required = false) StringRedisTemplate stringRedisTemplate
+            @Autowired(required = false) StringRedisTemplate stringRedisTemplate,
+            EmailService emailService
     ) {
         this.userRepository = userRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.stringRedisTemplate = stringRedisTemplate;
+        this.emailService = emailService;
     }
 
     /**
@@ -106,22 +125,32 @@ public class AuthService {
     }
 
     /**
-     * @brief Registers a new user account and assigns initial subscription tier.
-     * @param request Registration payload containing email, password, full name, and requested role.
+     * @brief Registers a new user account verifying the email confirmation code and assigns initial subscription tier.
+     * @param request Registration payload containing email, password, full name, requested role, and 6-digit confirmation code.
      * @return TokenResponse containing access token and user profile information.
-     * @throws IllegalArgumentException if the email is already registered in the system.
+     * @throws IllegalArgumentException if the email is already registered or verification code is missing.
+     * @throws BadCredentialsException if the confirmation code is invalid or expired.
      */
     @Transactional
     public TokenResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("User with email already exists: " + request.getEmail());
+        String email = request.getEmail().toLowerCase().trim();
+        if (userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("User with email already exists: " + email);
+        }
+
+        String code = request.getVerificationCode() != null ? request.getVerificationCode().trim() : "";
+        if (code.isBlank()) {
+            throw new IllegalArgumentException("Verification code is required for email registration");
+        }
+        if (!verifyAndConsumeCode(email, code)) {
+            throw new BadCredentialsException("Invalid or expired verification code");
         }
 
         Role role = request.getRole() != null ? request.getRole() : Role.STUDENT;
         CefrLevel cefrLevel = request.getCefrLevel() != null ? request.getCefrLevel() : CefrLevel.A1;
 
         User user = User.builder()
-            .email(request.getEmail().toLowerCase().trim())
+            .email(email)
             .passwordHash(passwordEncoder.encode(request.getPassword()))
             .fullName(request.getFullName().trim())
             .role(role)
@@ -147,6 +176,100 @@ public class AuthService {
             .refreshToken(refreshToken)
             .user(UserResponse.fromEntity(savedUser))
             .build();
+    }
+
+    /**
+     * @brief Dispatches a 6-digit email confirmation code for new registration accounts.
+     * @param email Recipient email address.
+     * @throws IllegalArgumentException if email is missing or already taken.
+     * @throws QuotaExceededException if code requests are throttled (more than 1 per 60 seconds).
+     */
+    public void sendRegistrationVerificationCode(String email) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("Valid email address is required");
+        }
+        String normalizedEmail = email.toLowerCase().trim();
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new IllegalArgumentException("User with email already exists: " + normalizedEmail);
+        }
+
+        checkVerificationCodeRateLimit(normalizedEmail);
+
+        int randomPin = secureRandom.nextInt(900_000) + 100_000;
+        String code = String.valueOf(randomPin);
+
+        saveVerificationCode(normalizedEmail, code);
+        emailService.sendVerificationCode(normalizedEmail, code);
+        log.info("Registration verification code sent to {}", normalizedEmail);
+    }
+
+    /**
+     * @brief Enforces a 60-second cooldown per email for verification code requests.
+     * @param email Target email address.
+     * @throws QuotaExceededException if a code was already requested within 60 seconds.
+     */
+    private void checkVerificationCodeRateLimit(String email) {
+        if (stringRedisTemplate != null) {
+            try {
+                String key = "rate_limit:" + email + ":verification_send";
+                Boolean wasSet = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", Duration.ofSeconds(60));
+                if (Boolean.FALSE.equals(wasSet)) {
+                    throw new QuotaExceededException("A verification code was recently sent. Please wait 60 seconds before requesting a new code.");
+                }
+            } catch (QuotaExceededException q) {
+                throw q;
+            } catch (Exception e) {
+                log.warn("Redis verification rate limit check skipped: {}", e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * @brief Persists an active verification code in Redis with a 10-minute TTL and in-memory fallback.
+     * @param email Recipient email.
+     * @param code 6-digit confirmation code.
+     */
+    private void saveVerificationCode(String email, String code) {
+        if (stringRedisTemplate != null) {
+            try {
+                stringRedisTemplate.opsForValue().set("verification_code:" + email, code, Duration.ofMinutes(10));
+            } catch (Exception e) {
+                log.warn("Failed to persist verification code in Redis: {}", e.getMessage());
+            }
+        }
+        fallbackVerificationCodes.put(email, new VerificationEntry(code, LocalDateTime.now().plusMinutes(10)));
+    }
+
+    /**
+     * @brief Verifies and consumes a 6-digit verification code.
+     * @param email Recipient email.
+     * @param code 6-digit code presented by user.
+     * @return true if valid and consumed, false otherwise.
+     */
+    private boolean verifyAndConsumeCode(String email, String code) {
+        String cleanCode = code.trim();
+
+        if (stringRedisTemplate != null) {
+            try {
+                String key = "verification_code:" + email;
+                String stored = stringRedisTemplate.opsForValue().get(key);
+                if (cleanCode.equals(stored)) {
+                    stringRedisTemplate.delete(key);
+                    fallbackVerificationCodes.remove(email);
+                    return true;
+                }
+            } catch (Exception e) {
+                log.warn("Failed to read verification code from Redis: {}", e.getMessage());
+            }
+        }
+
+        VerificationEntry entry = fallbackVerificationCodes.get(email);
+        if (entry != null && LocalDateTime.now().isBefore(entry.expiresAt()) && cleanCode.equals(entry.code())) {
+            fallbackVerificationCodes.remove(email);
+            return true;
+        }
+
+        return false;
     }
 
     /**

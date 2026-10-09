@@ -31,6 +31,7 @@ This is a comprehensive guide to the server-side (Backend) architecture of the L
 8. **Zero-Retention OCR:** Uploaded image bytes are processed exclusively in volatile memory (RAM) and are never persisted to disk.
 9. **AI keys encryption:** User-supplied BYOK AI provider keys are encrypted using AES-256-GCM before being persisted to the database.
 10. **JWT configuration:** The access token is valid for 15 minutes. The refresh token is valid for 30 days (stored in an `HttpOnly` cookie), and its SHA-256 hash is stored in Redis to support immediate server-side revocation.
+11. **Email Verification on Registration:** Traditional email/password registration mandates a 2-step confirmation workflow. A 6-digit verification code is generated with `SecureRandom` and emailed via Gmail SMTP (`EmailService`). Codes are protected with a 60-second rate-limiting cooldown and 10-minute expiry in Redis. Google OAuth2 registration remains streamlined and bypasses manual code entry.
 
 ---
 
@@ -53,7 +54,7 @@ backend/
 │   │   └── WebConfig.java             — Multipart file size limit (10MB)
 │   │
 │   ├── controller/
-│   │   ├── AuthController.java        — POST /register, /login, /google, /refresh, /logout, /logout-all, /forgot-password
+│   │   ├── AuthController.java        — POST /register, /login, /google, /refresh, /logout, /logout-all, /forgot-password, /send-verification-code
 │   │   ├── UserController.java        — GET /me, PUT /me, PUT /me/password, DELETE /me (GDPR)
 │   │   ├── TaskController.java        — POST /generate, /preview, /{id}/assign, /template; GET / (list), /{id}
 │   │   ├── SessionController.java     — POST /start; GET /active, /{id}/next-question; POST /{id}/answer, /{id}/complete
@@ -139,7 +140,8 @@ backend/
 │   │   └── UsageCounterRepository.java — findByUser()
 │   │
 │   ├── service/
-│   │   ├── AuthService.java           — register(), login(), googleLogin(), refreshToken(), logout(), logoutAll(), forgotPassword()
+│   │   ├── AuthService.java           — register() (verifies 6-digit code), login(), googleLogin(), refreshToken(), logout(), logoutAll(), forgotPassword(), sendRegistrationVerificationCode()
+│   │   ├── EmailService.java          — sendVerificationCodeEmail(to, code) — HTML email dispatch via Spring Boot Starter Mail & SMTP
 │   │   ├── JwtService.java            — generateToken(15min), generateRefreshToken(30d), extractEmail(), isTokenValid()
 │   │   ├── UserService.java           — getCurrentUser(), updateUser(), changePassword(), deleteAccount() (GDPR cascade)
 │   │   ├── TaskService.java           — generateTask() (calls AIBroker), previewTask() (no save), assignTask() (creates TaskAssignments + notifications), saveAsTemplate(), getTasksForUser()
@@ -245,7 +247,8 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 
 | Controller | Method | Path | Auth | Role | Request Body | Response | Description |
 |---|---|---|---|---|---|---|---|
-| **Auth** | POST | `/api/auth/register` | No | ALL | `RegisterRequest` | `TokenResponse` | Register a new user with email and password |
+| **Auth** | POST | `/api/auth/send-verification-code` | No | ALL | `SendVerificationCodeRequest` | 200 OK | Send 6-digit confirmation code to email (60s cooldown rate-limit) |
+| **Auth** | POST | `/api/auth/register` | No | ALL | `RegisterRequest` | `TokenResponse` | Register a new user with verified 6-digit email code and password |
 | **Auth** | POST | `/api/auth/login` | No | ALL | `LoginRequest` | `TokenResponse` | Authenticate with email and password and issue tokens |
 | **Auth** | POST | `/api/auth/google` | No | ALL | `GoogleAuthRequest` | `TokenResponse` | Authenticate or auto-register via Google OAuth2 ID Token |
 | **Auth** | POST | `/api/auth/refresh` | No | ALL | (Refresh Cookie) | `TokenResponse` | Refresh the short-lived access token |

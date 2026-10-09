@@ -22,6 +22,7 @@ import com.linguaoptima.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -72,6 +73,10 @@ class AuthServiceTest {
     @Mock
     private ValueOperations<String, String> valueOperations;
 
+    /** @brief Test fixture or mock dependency for email service. */
+    @Mock
+    private EmailService emailService;
+
     /** @brief Test fixture or mock dependency for auth service. */
     private AuthService authService;
 
@@ -84,7 +89,7 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
-        authService = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, stringRedisTemplate);
+        authService = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, stringRedisTemplate, emailService);
 
         sampleUser = User.builder()
             .id(UUID.randomUUID())
@@ -100,11 +105,14 @@ class AuthServiceTest {
      */
     @Test
     void testRegisterStudentSuccess() {
+        when(valueOperations.get("verification_code:student@lingua.com")).thenReturn("123456");
+
         RegisterRequest req = RegisterRequest.builder()
             .email("student@lingua.com")
             .password("password123")
             .fullName("John Doe")
             .role(Role.STUDENT)
+            .verificationCode("123456")
             .build();
 
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
@@ -119,6 +127,7 @@ class AuthServiceTest {
         assertEquals("access-token", response.getAccessToken());
         assertEquals("student@lingua.com", response.getUser().getEmail());
         verify(subscriptionRepository).save(argThat(sub -> sub.getTier() == SubscriptionTier.FREE));
+        verify(stringRedisTemplate).delete("verification_code:student@lingua.com");
     }
 
     /**
@@ -126,12 +135,15 @@ class AuthServiceTest {
      */
     @Test
     void testRegisterTeacherSuccess() {
+        when(valueOperations.get("verification_code:teacher@lingua.com")).thenReturn("654321");
+
         RegisterRequest req = RegisterRequest.builder()
             .email("teacher@lingua.com")
             .password("password123")
             .fullName("Jane Teacher")
             .role(Role.TEACHER)
             .cefrLevel(CefrLevel.C1)
+            .verificationCode("654321")
             .build();
 
         User teacher = User.builder()
@@ -163,10 +175,208 @@ class AuthServiceTest {
             .password("pass")
             .fullName("Name")
             .role(Role.STUDENT)
+            .verificationCode("123456")
             .build();
 
         when(userRepository.existsByEmail("existing@lingua.com")).thenReturn(true);
         assertThrows(IllegalArgumentException.class, () -> authService.register(req));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: register with missing verification code throws.
+     */
+    @Test
+    void testRegisterMissingVerificationCodeThrows() {
+        RegisterRequest req = RegisterRequest.builder()
+            .email("new@lingua.com")
+            .password("pass")
+            .fullName("Name")
+            .role(Role.STUDENT)
+            .verificationCode("")
+            .build();
+
+        when(userRepository.existsByEmail("new@lingua.com")).thenReturn(false);
+        assertThrows(IllegalArgumentException.class, () -> authService.register(req));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: register with invalid verification code throws BadCredentialsException.
+     */
+    @Test
+    void testRegisterInvalidVerificationCodeThrows() {
+        when(valueOperations.get("verification_code:wrong@lingua.com")).thenReturn("999999");
+        RegisterRequest req = RegisterRequest.builder()
+            .email("wrong@lingua.com")
+            .password("pass")
+            .fullName("Name")
+            .role(Role.STUDENT)
+            .verificationCode("111111")
+            .build();
+
+        when(userRepository.existsByEmail("wrong@lingua.com")).thenReturn(false);
+        assertThrows(BadCredentialsException.class, () -> authService.register(req));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: register fallback in-memory cache verification success.
+     */
+    @Test
+    void testRegisterFallbackCacheSuccess() {
+        AuthService serviceWithoutRedis = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, null, emailService);
+        when(userRepository.existsByEmail("fallback@lingua.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPass");
+        when(userRepository.save(any(User.class))).thenReturn(sampleUser);
+        when(jwtService.generateAccessToken(any(), any(), any())).thenReturn("access-token");
+        when(jwtService.generateRefreshToken(any(), any())).thenReturn("refresh-token");
+
+        serviceWithoutRedis.sendRegistrationVerificationCode("fallback@lingua.com");
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendVerificationCode(eq("fallback@lingua.com"), codeCaptor.capture());
+
+        RegisterRequest req = RegisterRequest.builder()
+            .email("fallback@lingua.com")
+            .password("password123")
+            .fullName("John Doe")
+            .role(Role.STUDENT)
+            .verificationCode(codeCaptor.getValue())
+            .build();
+
+        TokenResponse response = serviceWithoutRedis.register(req);
+        assertNotNull(response);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: fallback cache verification fails when wrong code is presented.
+     */
+    @Test
+    void testRegisterFallbackCacheWrongCodeThrows() {
+        AuthService serviceWithoutRedis = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, null, emailService);
+        when(userRepository.existsByEmail("wrong_fb@lingua.com")).thenReturn(false);
+
+        serviceWithoutRedis.sendRegistrationVerificationCode("wrong_fb@lingua.com");
+
+        RegisterRequest req = RegisterRequest.builder()
+            .email("wrong_fb@lingua.com")
+            .password("password123")
+            .fullName("John Doe")
+            .role(Role.STUDENT)
+            .verificationCode("000000")
+            .build();
+
+        assertThrows(BadCredentialsException.class, () -> serviceWithoutRedis.register(req));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: register with null verification code throws IllegalArgumentException.
+     */
+    @Test
+    void testRegisterNullVerificationCodeThrows() {
+        RegisterRequest req = RegisterRequest.builder()
+            .email("nullcode@lingua.com")
+            .password("pass")
+            .fullName("Name")
+            .role(Role.STUDENT)
+            .verificationCode(null)
+            .build();
+
+        when(userRepository.existsByEmail("nullcode@lingua.com")).thenReturn(false);
+        assertThrows(IllegalArgumentException.class, () -> authService.register(req));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: Redis write exception during saveVerificationCode is handled gracefully.
+     */
+    @Test
+    void testSaveVerificationCodeRedisWriteExceptionHandled() {
+        when(userRepository.existsByEmail("save_err@lingua.com")).thenReturn(false);
+        when(valueOperations.setIfAbsent(any(), any(), any())).thenReturn(true);
+        doThrow(new RuntimeException("Redis write fail")).when(valueOperations).set(eq("verification_code:save_err@lingua.com"), anyString(), any());
+
+        assertDoesNotThrow(() -> authService.sendRegistrationVerificationCode("save_err@lingua.com"));
+        verify(emailService).sendVerificationCode(eq("save_err@lingua.com"), anyString());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: Redis read exception during verifyAndConsumeCode falls back to memory cache.
+     */
+    @Test
+    void testVerifyAndConsumeCodeRedisReadExceptionHandled() {
+        when(userRepository.existsByEmail("redis_read_err@lingua.com")).thenReturn(false);
+        when(valueOperations.setIfAbsent(eq("rate_limit:redis_read_err@lingua.com:verification_send"), any(), any())).thenReturn(true);
+        when(passwordEncoder.encode(anyString())).thenReturn("encodedPass");
+        when(userRepository.save(any(User.class))).thenReturn(sampleUser);
+        when(jwtService.generateAccessToken(any(), any(), any())).thenReturn("access-token");
+        when(jwtService.generateRefreshToken(any(), any())).thenReturn("refresh-token");
+
+        authService.sendRegistrationVerificationCode("redis_read_err@lingua.com");
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendVerificationCode(eq("redis_read_err@lingua.com"), captor.capture());
+
+        when(valueOperations.get("verification_code:redis_read_err@lingua.com")).thenThrow(new RuntimeException("Redis read fail"));
+
+        RegisterRequest req = RegisterRequest.builder()
+            .email("redis_read_err@lingua.com")
+            .password("password123")
+            .fullName("John Doe")
+            .role(Role.STUDENT)
+            .verificationCode(captor.getValue())
+            .build();
+
+        TokenResponse response = authService.register(req);
+        assertNotNull(response);
+    }
+
+    /**
+     * @brief Verifies successful dispatch of registration verification code.
+     */
+    @Test
+    void testSendRegistrationVerificationCodeSuccess() {
+        when(userRepository.existsByEmail("valid@lingua.com")).thenReturn(false);
+        when(valueOperations.setIfAbsent(eq("rate_limit:valid@lingua.com:verification_send"), any(), any())).thenReturn(true);
+
+        assertDoesNotThrow(() -> authService.sendRegistrationVerificationCode("valid@lingua.com"));
+        verify(emailService).sendVerificationCode(eq("valid@lingua.com"), anyString());
+    }
+
+    /**
+     * @brief Verifies that sending verification code to null or empty email throws IllegalArgumentException.
+     */
+    @Test
+    void testSendRegistrationVerificationCodeNullOrBlankThrows() {
+        assertThrows(IllegalArgumentException.class, () -> authService.sendRegistrationVerificationCode(""));
+        assertThrows(IllegalArgumentException.class, () -> authService.sendRegistrationVerificationCode(null));
+    }
+
+    /**
+     * @brief Verifies that sending verification code for already registered email throws IllegalArgumentException.
+     */
+    @Test
+    void testSendRegistrationVerificationCodeExistingEmailThrows() {
+        when(userRepository.existsByEmail("existing@lingua.com")).thenReturn(true);
+        assertThrows(IllegalArgumentException.class, () -> authService.sendRegistrationVerificationCode("existing@lingua.com"));
+    }
+
+    /**
+     * @brief Verifies that requesting verification codes too rapidly triggers rate limiting.
+     */
+    @Test
+    void testSendRegistrationVerificationCodeRateLimitedThrows() {
+        when(userRepository.existsByEmail("rate@lingua.com")).thenReturn(false);
+        when(valueOperations.setIfAbsent(eq("rate_limit:rate@lingua.com:verification_send"), any(), any())).thenReturn(false);
+
+        assertThrows(QuotaExceededException.class, () -> authService.sendRegistrationVerificationCode("rate@lingua.com"));
+    }
+
+    /**
+     * @brief Verifies that Redis exceptions during verification code generation are gracefully handled.
+     */
+    @Test
+    void testSendRegistrationVerificationCodeRedisExceptionHandled() {
+        when(userRepository.existsByEmail("redisdown@lingua.com")).thenReturn(false);
+        when(valueOperations.setIfAbsent(any(), any(), any())).thenThrow(new RuntimeException("Redis connection error"));
+
+        assertDoesNotThrow(() -> authService.sendRegistrationVerificationCode("redisdown@lingua.com"));
+        verify(emailService).sendVerificationCode(eq("redisdown@lingua.com"), anyString());
     }
 
     /**
@@ -417,15 +627,19 @@ class AuthServiceTest {
      */
     @Test
     void testRedisNullAndErrorBranches() {
-        AuthService noRedisAuth = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, null);
+        AuthService noRedisAuth = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, null, emailService);
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPass");
         when(userRepository.save(any(User.class))).thenReturn(sampleUser);
         when(jwtService.generateAccessToken(any(), any(), any())).thenReturn("acc");
         when(jwtService.generateRefreshToken(any(), any())).thenReturn("ref");
 
+        noRedisAuth.sendRegistrationVerificationCode("norole@lingua.com");
+        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
+        verify(emailService, atLeastOnce()).sendVerificationCode(eq("norole@lingua.com"), captor.capture());
+
         TokenResponse regNoRole = noRedisAuth.register(
-            RegisterRequest.builder().email("norole@lingua.com").password("pass123").fullName("No Role").role(null).build()
+            RegisterRequest.builder().email("norole@lingua.com").password("pass123").fullName("No Role").role(null).verificationCode(captor.getValue()).build()
         );
         assertNotNull(regNoRole);
 

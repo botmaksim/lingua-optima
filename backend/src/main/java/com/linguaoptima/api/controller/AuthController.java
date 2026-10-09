@@ -9,6 +9,7 @@ import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
 import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
+import com.linguaoptima.api.dto.request.SendVerificationCodeRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.service.AuthService;
 import com.linguaoptima.api.service.JwtService;
@@ -25,6 +26,8 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.util.Map;
+
 /**
  * @brief REST controller managing user authentication, registration, and tokens.
  *
@@ -40,6 +43,23 @@ public class AuthController {
     private final AuthService authService;
     /** @brief Field representing jwt service in AuthController. */
     private final JwtService jwtService;
+
+    /**
+     * @brief Dispatches a 6-digit email confirmation code for registration.
+     *
+     * @param request Payload containing destination email address.
+     * @return HTTP 200 with confirmation message and target email.
+     */
+    @PostMapping("/send-verification-code")
+    public ResponseEntity<Map<String, String>> sendVerificationCode(
+        @Valid @RequestBody SendVerificationCodeRequest request
+    ) {
+        authService.sendRegistrationVerificationCode(request.getEmail());
+        return ResponseEntity.ok(Map.of(
+            "message", "Verification code sent successfully",
+            "email", request.getEmail().toLowerCase().trim()
+        ));
+    }
 
     /**
      * @brief Registers a new user and sets a secure HttpOnly refresh token cookie.

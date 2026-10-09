@@ -23,11 +23,22 @@ export const authApi = {
   },
 
   /**
+   * @brief Dispatches a 6-digit email confirmation code for new registration accounts.
+   * @param email Target recipient email address.
+   * @return Promise resolving to status payload.
+   */
+  sendVerificationCode: async (email: string): Promise<{ message: string; email: string }> => {
+    const res = await axiosInstance.post<{ message: string; email: string }>('/auth/send-verification-code', { email });
+    return res.data;
+  },
+
+  /**
    * @brief Registers a new user account.
    * @param email Email address.
    * @param password Password.
    * @param fullName Full legal name.
    * @param role User role ('STUDENT' or 'TEACHER').
+   * @param verificationCode 6-digit confirmation code sent to email.
    * @param cefrLevel Optional initial CEFR proficiency level.
    * @return Promise resolving to AuthResponse.
    */
@@ -36,6 +47,7 @@ export const authApi = {
     password: string,
     fullName: string,
     role: string,
+    verificationCode?: string,
     cefrLevel?: CefrLevel
   ): Promise<AuthResponse> => {
     const res = await axiosInstance.post<AuthResponse>('/auth/register', {
@@ -43,6 +55,7 @@ export const authApi = {
       password,
       fullName,
       role,
+      verificationCode,
       cefrLevel,
     });
     setAccessToken(res.data.accessToken);

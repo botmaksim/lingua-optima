@@ -12,6 +12,7 @@ Comprehensive documentation for the frontend application of **Lingua Optima** �
 4. **Axios Interceptor:** Implements silent JWT refresh — the response interceptor catches HTTP 401 errors, refreshes the access token in the background, and transparently retries the original request without interrupting the user experience.
 5. **Real-Time Notifications:** Uses Server-Sent Events (SSE) to receive live notifications in real time.
 6. **Strictly Scoped `localStorage` Usage:** Used exclusively for essay drafts (auto-saved every 30 seconds), non-sensitive UI preferences, and storing the last selected CEFR level.
+7. **2-Step Email Registration:** When registering via email and password, the interface enforces a 2-step flow. First, user details are submitted to dispatch a 6-digit confirmation code via Gmail SMTP; second, the user enters the received code with a 60-second resend cooldown timer to complete account creation. Google OAuth2 registration provides seamless 1-click onboarding.
 
 ## Complete File Structure
 
@@ -33,7 +34,7 @@ frontend/
 │   │
 │   ├── api/                   — HTTP layer (all backend communication)
 │   │   ├── axiosInstance.ts   — Base axios config, JWT interceptor (silent refresh), error handling
-│   │   ├── authApi.ts         — login(), register(), googleLogin(), refresh(), logout()
+│   │   ├── authApi.ts         — login(), register(code), googleLogin(), refresh(), logout(), sendVerificationCode()
 │   │   ├── taskApi.ts         — generateTask(), getTasks(), assignTask(), previewTask()
 │   │   ├── sessionApi.ts      — startSession(), getNextQuestion(), submitAnswer(), completeSession(), getActiveSession()
 │   │   ├── submissionApi.ts   — submitText(), submitImage(), getSubmissions(), overrideScore()
@@ -80,7 +81,7 @@ frontend/
 │   │   │   └── ExportReports.tsx      — Group selector, date range picker, format (CSV/PDF). Buttons: [Generate Report] [Download Last]
 │   │   │
 │   │   └── auth/              — Auth pages
-│   │       ├── LoginPage.tsx          — Tab: Log In / Register. Email + password inputs. Buttons: [Log In] [Create Account] [Google OAuth] [Forgot Password]
+│   │       ├── LoginPage.tsx          — Tab: Log In / Register. Log In (email/pass + Google OAuth). Register: 2-step flow (Step 1: details + code dispatch via Gmail SMTP; Step 2: 6-digit confirmation code input with 60s cooldown timer + submit) or 1-click Google OAuth
 │   │       └── ForgotPassword.tsx     — Email input, [Send Reset Link] button
 │   │
 │   ├── hooks/                 — Custom React hooks

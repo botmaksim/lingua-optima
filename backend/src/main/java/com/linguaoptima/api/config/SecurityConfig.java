@@ -50,6 +50,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                     "/api/auth/register",
+                    "/api/auth/send-verification-code",
                     "/api/auth/login",
                     "/api/auth/google",
                     "/api/auth/refresh",
