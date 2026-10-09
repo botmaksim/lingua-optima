@@ -36,12 +36,13 @@ const AppContent: React.FC = () => {
     <div className="flex flex-col min-h-screen bg-surface">
       <Navbar />
 
-      <div className="fixed top-20 right-4 z-50 flex flex-col space-y-2 max-w-sm w-full pointer-events-none">
+      <div className="fixed top-20 right-4 sm:right-6 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none">
         {toasts.map((toast) => (
           <div key={toast.id} className="pointer-events-auto">
             <Toast
               id={toast.id}
               type={toast.type}
+              title={toast.title}
               message={toast.message}
               onClose={removeToast}
             />

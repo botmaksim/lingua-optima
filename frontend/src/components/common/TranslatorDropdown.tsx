@@ -209,7 +209,8 @@ export const TranslatorDropdown: React.FC = () => {
 
       {/* Popover Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3">
+        <div className="absolute right-0 mt-2 w-80 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-3.5 pt-4 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
           {/* Header */}
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <div className="flex items-center space-x-2">

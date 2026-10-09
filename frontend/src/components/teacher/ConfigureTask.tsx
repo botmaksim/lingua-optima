@@ -28,6 +28,7 @@ import { Task, TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../ty
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 import { CustomSelect } from '../common/CustomSelect';
+import { useNotificationStore } from '../../store/notificationStore';
 import { sanitizeTaskContent } from '../../utils/textSanitizer';
 import {
   AI_PROVIDER_CATALOG,
@@ -128,6 +129,7 @@ const DEFAULT_MIXED_TOPICS: Record<CefrLevel, string[]> = {
  */
 export const ConfigureTask: React.FC = () => {
   const navigate = useNavigate();
+  const { addToast } = useNotificationStore();
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
@@ -364,7 +366,12 @@ export const ConfigureTask: React.FC = () => {
    */
   const handleDeploy = async () => {
     if (selectedGroupIds.length === 0) {
-      alert('Please select at least one cohort group to deploy this assignment.');
+      addToast({
+        type: 'warning',
+        title: 'Cohort Required',
+        message: 'Please select at least one cohort group before deploying this assignment.',
+      });
+      setStatusMessage('Please select at least one cohort group to deploy this assignment.');
       return;
     }
 
@@ -375,10 +382,21 @@ export const ConfigureTask: React.FC = () => {
       const task = await taskApi.generateTask(buildTaskParams());
       await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined, maxAttempts);
 
+      addToast({
+        type: 'success',
+        title: 'Assignment Deployed',
+        message: 'Assignment successfully deployed to selected student cohorts!',
+      });
       setStatusMessage('Assignment deployed successfully to selected cohort groups!');
       setTimeout(() => navigate('/teacher/dashboard'), 1500);
     } catch (err: any) {
-      setStatusMessage(err.response?.data?.message || 'Failed to deploy assignment.');
+      const errMsg = err.response?.data?.message || 'Failed to deploy assignment.';
+      addToast({
+        type: 'error',
+        title: 'Deployment Failed',
+        message: errMsg,
+      });
+      setStatusMessage(errMsg);
     } finally {
       setIsLoading(false);
     }

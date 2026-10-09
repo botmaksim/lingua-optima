@@ -4,23 +4,26 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+import { FileText, Download, FileSpreadsheet, CheckCircle2, AlertCircle } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { exportApi } from '../../api/exportApi';
 import { Group } from '../../types/group';
 import { CustomSelect } from '../common/CustomSelect';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { useNotificationStore } from '../../store/notificationStore';
 
 /**
  * @brief Panel allowing educators to export cohort progress reports in PDF and CSV format.
  * @return JSX report export view.
  */
 export const ExportReports: React.FC = () => {
+  const { addToast } = useNotificationStore();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [format, setFormat] = useState<'csv' | 'pdf'>('pdf');
   const [isLoading, setIsLoading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     groupApi
@@ -39,6 +42,7 @@ export const ExportReports: React.FC = () => {
     if (!selectedGroupId) return;
     setIsLoading(true);
     setDownloadSuccess(false);
+    setErrorMessage(null);
 
     try {
       const blob = await exportApi.downloadGroupReport(selectedGroupId, format);
@@ -52,10 +56,20 @@ export const ExportReports: React.FC = () => {
       document.body.removeChild(a);
 
       setDownloadSuccess(true);
+      addToast({
+        type: 'success',
+        title: 'Report Exported',
+        message: `Your ${format.toUpperCase()} cohort report has been downloaded.`,
+      });
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (err) {
       console.error('Failed to download report:', err);
-      alert('Failed to generate report.');
+      setErrorMessage('Failed to generate report. Please try again shortly.');
+      addToast({
+        type: 'error',
+        title: 'Export Failed',
+        message: 'Could not generate the cohort report. Please try again.',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -129,9 +143,16 @@ export const ExportReports: React.FC = () => {
         </div>
 
         {downloadSuccess && (
-          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex items-center space-x-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex items-center space-x-2 border border-emerald-200/80 animate-in fade-in duration-150">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>Report downloaded successfully!</span>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="p-3 bg-rose-50 text-rose-800 rounded-xl text-xs flex items-center space-x-2 border border-rose-200/80 animate-in fade-in duration-150">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{errorMessage}</span>
           </div>
         )}
 

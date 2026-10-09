@@ -202,7 +202,8 @@ export const Navbar: React.FC = () => {
                     </button>
 
                     {isMoreMenuOpen && (
-                      <div className="absolute left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 animate-in fade-in zoom-in-95 duration-150 z-50">
+                      <div className="absolute left-0 mt-2 w-64 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-2.5 pt-3.5 animate-in fade-in zoom-in-95 duration-150 z-50">
+                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500" />
                         <div className="px-2.5 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                           {isTeacher ? 'Teacher Tools' : 'Learning Tools'}
                         </div>
@@ -274,32 +275,48 @@ export const Navbar: React.FC = () => {
                 >
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">
+                    <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center shadow-sm shadow-rose-500/30">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </button>
 
                 {isNotifOpen && (
-                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 p-3 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100 px-2">
-                      <span className="text-sm font-bold text-slate-900">Notifications</span>
-                      <span className="text-xs text-slate-500 font-medium">{unreadCount} unread</span>
+                  <div className="absolute right-0 mt-2 w-80 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-3.5 pt-4 animate-in fade-in zoom-in-95 duration-150 z-50">
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-rose-500" />
+                    <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 px-1.5">
+                      <div className="flex items-center gap-2">
+                        <Bell className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-black text-slate-900 tracking-tight">Notifications</span>
+                      </div>
+                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                        {unreadCount} unread
+                      </span>
                     </div>
-                    <div className="max-h-72 overflow-y-auto divide-y divide-slate-50 py-1">
+                    <div className="max-h-72 overflow-y-auto space-y-1 py-1.5">
                       {notifications.length === 0 ? (
-                        <p className="text-xs text-slate-500 text-center py-6">No notifications yet</p>
+                        <div className="py-8 text-center">
+                          <Bell className="w-6 h-6 text-slate-300 mx-auto mb-1.5" />
+                          <p className="text-xs text-slate-500 font-medium">No notifications yet</p>
+                        </div>
                       ) : (
                         notifications.slice(0, 10).map((n) => (
                           <div
                             key={n.id}
                             onClick={() => !n.isRead && markAsRead(n.id)}
-                            className={`p-2.5 rounded-lg text-xs cursor-pointer transition ${
-                              n.isRead ? 'text-slate-500 hover:bg-slate-50' : 'bg-indigo-50/50 text-slate-800 font-medium'
+                            className={`p-2.5 rounded-xl text-xs cursor-pointer transition flex items-start gap-2.5 ${
+                              n.isRead
+                                ? 'text-slate-500 hover:bg-slate-50'
+                                : 'bg-indigo-50/70 text-slate-800 font-medium border border-indigo-100/80'
                             }`}
                           >
-                            <p>{n.message}</p>
-                            <span className="text-[10px] text-slate-400 mt-1 block">{formatDate(n.createdAt)}</span>
+                            {!n.isRead && (
+                              <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="leading-snug">{n.message}</p>
+                              <span className="text-[10px] text-slate-400 mt-1 block">{formatDate(n.createdAt)}</span>
+                            </div>
                           </div>
                         ))
                       )}
@@ -313,18 +330,19 @@ export const Navbar: React.FC = () => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center space-x-2 p-1.5 rounded-xl hover:bg-slate-100 transition"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-sm shadow-indigo-500/20">
                     {user.fullName.charAt(0).toUpperCase()}
                   </div>
                   {user.cefrLevel && <CefrBadge level={user.cefrLevel} size="sm" />}
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute right-0 mt-2 w-64 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-2.5 pt-3.5 animate-in fade-in zoom-in-95 duration-150 z-50">
+                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500" />
                     <div className="px-3 py-2 border-b border-slate-100">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-bold text-slate-900 truncate">{user.fullName}</p>
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-50 text-primary uppercase">
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-indigo-50 text-primary uppercase border border-indigo-200/60">
                           {user.role}
                         </span>
                       </div>

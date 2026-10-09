@@ -8,6 +8,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { Toast } from '../components/common/Toast';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { LoginPage } from '../components/auth/LoginPage';
 import { TranslatorDropdown } from '../components/common/TranslatorDropdown';
 import { AIReview } from '../components/student/AIReview';
@@ -27,21 +28,52 @@ describe('CefrBadge component', () => {
 });
 
 describe('Toast component', () => {
-  it('renders message and calls onClose when dismiss button clicked', () => {
+  it('renders title, message, and calls onClose when dismiss button clicked', () => {
     const handleClose = vi.fn();
     render(
       <Toast
         id="toast-1"
         type="success"
+        title="Action Complete"
         message="Saved successfully"
         onClose={handleClose}
       />
     );
 
+    expect(screen.getByText('Action Complete')).toBeInTheDocument();
     expect(screen.getByText('Saved successfully')).toBeInTheDocument();
     const closeBtn = screen.getByRole('button', { name: /dismiss toast/i });
     fireEvent.click(closeBtn);
     expect(handleClose).toHaveBeenCalledWith('toast-1');
+  });
+});
+
+describe('ConfirmDialog component', () => {
+  it('renders destructive confirmation modal and handles confirm and Escape actions', () => {
+    const handleConfirm = vi.fn();
+    const handleCancel = vi.fn();
+
+    render(
+      <ConfirmDialog
+        isOpen={true}
+        title="Delete Cohort Group"
+        message="Are you sure you want to delete this group?"
+        confirmText="Delete Group"
+        isDestructive={true}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
+    );
+
+    expect(screen.getByText('Destructive Action')).toBeInTheDocument();
+    expect(screen.getByText('Delete Cohort Group')).toBeInTheDocument();
+    expect(screen.getByText('Are you sure you want to delete this group?')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Delete Group'));
+    expect(handleConfirm).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(handleCancel).toHaveBeenCalledTimes(1);
   });
 });
 

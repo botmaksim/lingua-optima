@@ -27,7 +27,9 @@ import { authApi } from '../api/authApi';
 import { apiKeyApi, ApiKeyItem } from '../api/apiKeyApi';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { CustomSelect } from '../components/common/CustomSelect';
+import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { useNotificationStore } from '../store/notificationStore';
 import { CefrLevel, Role } from '../types/user';
 import {
   AI_PROVIDER_CATALOG,
@@ -52,8 +54,10 @@ const CEFR_LEVEL_METADATA: Record<CefrLevel, { title: string; desc: string }> = 
 export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAuthStore();
+  const { addToast } = useNotificationStore();
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [keyToDelete, setKeyToDelete] = useState<string | null>(null);
 
   const [selectedProvider, setSelectedProvider] = useState<AIProviderType>('DEEPSEEK');
   const [selectedModel, setSelectedModel] = useState<string>(getDefaultModelForProvider('DEEPSEEK'));
@@ -198,13 +202,32 @@ export const ProfilePage: React.FC = () => {
   /**
    * @brief Event handler or helper executing handle delete key.
    */
-  const handleDeleteKey = async (id: string) => {
-    if (!confirm('Remove this custom API key?')) return;
+  const handleDeleteKey = (id: string) => {
+    setKeyToDelete(id);
+  };
+
+  /**
+   * @brief Confirms deletion of the selected BYOK key.
+   */
+  const handleConfirmDeleteKey = async () => {
+    if (!keyToDelete) return;
+    const id = keyToDelete;
+    setKeyToDelete(null);
     try {
       await apiKeyApi.deleteKey(id);
+      addToast({
+        type: 'info',
+        title: 'API Key Removed',
+        message: 'Custom BYOK API key has been deleted.',
+      });
       await loadKeys();
     } catch (err) {
       console.error('Failed to delete key:', err);
+      addToast({
+        type: 'error',
+        title: 'Deletion Failed',
+        message: 'Failed to delete API key.',
+      });
     }
   };
 
@@ -559,6 +582,16 @@ export const ProfilePage: React.FC = () => {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={Boolean(keyToDelete)}
+        title="Remove Custom API Key"
+        message="Are you sure you want to remove this custom API key? Future AI requests will fall back to platform evaluation quotas unless another key is added."
+        confirmText="Remove Key"
+        isDestructive={true}
+        onConfirm={handleConfirmDeleteKey}
+        onCancel={() => setKeyToDelete(null)}
+      />
     </div>
   );
 };

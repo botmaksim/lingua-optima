@@ -9,12 +9,15 @@ import { groupApi } from '../../api/groupApi';
 import { Group } from '../../types/group';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { ConfirmDialog } from '../common/ConfirmDialog';
+import { useNotificationStore } from '../../store/notificationStore';
 
 /**
  * @brief Cohort management panel for educators to organize groups, add students, and monitor enrollment.
  * @return JSX cohort management view.
  */
 export const StudentGroups: React.FC = () => {
+  const { addToast } = useNotificationStore();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -25,6 +28,20 @@ export const StudentGroups: React.FC = () => {
   const [studentEmail, setStudentEmail] = useState('');
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    isDestructive?: boolean;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   /**
    * @brief Event handler or helper executing load groups.
@@ -68,11 +85,21 @@ export const StudentGroups: React.FC = () => {
     setIsCreatingGroup(true);
     try {
       const created = await groupApi.createGroup({ name: newGroupName.trim() });
+      addToast({
+        type: 'success',
+        title: 'Cohort Created',
+        message: `Group "${created.name}" created successfully.`,
+      });
       setNewGroupName('');
       await loadGroups();
       await loadGroupDetails(created.id);
     } catch (err) {
       console.error('Failed to create group:', err);
+      addToast({
+        type: 'error',
+        title: 'Creation Failed',
+        message: 'Could not create cohort group.',
+      });
     } finally {
       setIsCreatingGroup(false);
     }
@@ -89,6 +116,11 @@ export const StudentGroups: React.FC = () => {
 
     try {
       await groupApi.addStudent(selectedGroup.id, studentEmail.trim());
+      addToast({
+        type: 'success',
+        title: 'Student Enrolled',
+        message: `${studentEmail.trim()} is now enrolled in "${selectedGroup.name}".`,
+      });
       setStudentEmail('');
       setActionMessage('Student enrolled (or restored from archive) successfully!');
       setTimeout(() => setActionMessage(null), 3000);
@@ -96,7 +128,13 @@ export const StudentGroups: React.FC = () => {
       await loadGroups();
     } catch (err: any) {
       console.error('Failed to add student:', err);
-      setActionMessage(err.response?.data?.message || 'Failed to add student.');
+      const errMsg = err.response?.data?.message || 'Failed to add student.';
+      setActionMessage(errMsg);
+      addToast({
+        type: 'error',
+        title: 'Enrollment Failed',
+        message: errMsg,
+      });
     } finally {
       setIsAddingStudent(false);
     }
@@ -105,35 +143,72 @@ export const StudentGroups: React.FC = () => {
   /**
    * @brief Event handler or helper executing handle remove student.
    */
-  const handleRemoveStudent = async (studentId: string) => {
+  const handleRemoveStudent = (studentId: string) => {
     if (!selectedGroup) return;
-    if (!confirm('Remove student from group? Their historical records will remain safe and restored if re-added.')) {
-      return;
-    }
-
-    try {
-      await groupApi.removeStudent(selectedGroup.id, studentId);
-      await loadGroupDetails(selectedGroup.id);
-      await loadGroups();
-    } catch (err) {
-      console.error('Failed to remove student:', err);
-    }
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Remove Student from Cohort',
+      message: 'Their historical records will remain safe and restored if re-added.',
+      confirmText: 'Remove Student',
+      isDestructive: true,
+      onConfirm: async () => {
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        try {
+          await groupApi.removeStudent(selectedGroup.id, studentId);
+          addToast({
+            type: 'info',
+            title: 'Student Removed',
+            message: 'Student has been removed from this cohort.',
+          });
+          await loadGroupDetails(selectedGroup.id);
+          await loadGroups();
+        } catch (err) {
+          console.error('Failed to remove student:', err);
+          addToast({
+            type: 'error',
+            title: 'Action Failed',
+            message: 'Failed to remove student from cohort.',
+          });
+        }
+      },
+    });
   };
 
   /**
    * @brief Event handler or helper executing handle delete group.
    */
-  const handleDeleteGroup = async () => {
+  const handleDeleteGroup = () => {
     if (!selectedGroup) return;
-    if (!confirm(`Are you sure you want to delete "${selectedGroup.name}"?`)) return;
+    const groupName = selectedGroup.name;
+    const groupId = selectedGroup.id;
 
-    try {
-      await groupApi.deleteGroup(selectedGroup.id);
-      setSelectedGroup(null);
-      await loadGroups();
-    } catch (err) {
-      console.error('Failed to delete group:', err);
-    }
+    setConfirmConfig({
+      isOpen: true,
+      title: 'Delete Cohort Group',
+      message: `Are you sure you want to delete "${groupName}"? Student submission histories will be preserved.`,
+      confirmText: 'Delete Group',
+      isDestructive: true,
+      onConfirm: async () => {
+        setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        try {
+          await groupApi.deleteGroup(groupId);
+          addToast({
+            type: 'info',
+            title: 'Group Deleted',
+            message: `Cohort "${groupName}" has been deleted.`,
+          });
+          setSelectedGroup(null);
+          await loadGroups();
+        } catch (err) {
+          console.error('Failed to delete group:', err);
+          addToast({
+            type: 'error',
+            title: 'Action Failed',
+            message: 'Failed to delete cohort group.',
+          });
+        }
+      },
+    });
   };
 
   if (isLoading) {
@@ -300,6 +375,16 @@ export const StudentGroups: React.FC = () => {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmConfig.isOpen}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText={confirmConfig.confirmText}
+        isDestructive={confirmConfig.isDestructive}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };
