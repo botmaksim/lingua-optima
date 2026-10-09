@@ -18,6 +18,9 @@ import {
   Sparkles,
   HelpCircle,
   ArrowRight,
+  Edit2,
+  Check,
+  X,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { authApi } from '../api/authApi';
@@ -60,6 +63,28 @@ export const ProfilePage: React.FC = () => {
 
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [profileMessage, setProfileMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState('');
+
+  /**
+   * @brief Updates the user's full name.
+   */
+  const handleSaveName = async () => {
+    if (!nameInput.trim() || !user) return;
+    setIsUpdatingProfile(true);
+    setProfileMessage(null);
+    try {
+      const updated = await authApi.updateProfile({ fullName: nameInput.trim() });
+      setUser(updated);
+      setIsEditingName(false);
+      setProfileMessage({ text: 'Full name successfully updated.', type: 'success' });
+      setTimeout(() => setProfileMessage(null), 3000);
+    } catch (err: any) {
+      setProfileMessage({ text: err.response?.data?.message || 'Failed to update name.', type: 'error' });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
 
   /**
    * @brief Switches the authenticated user's role between STUDENT and TEACHER.
@@ -219,8 +244,54 @@ export const ProfilePage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h2 className="text-lg font-bold text-slate-900">{user.fullName}</h2>
-                {user.cefrLevel && <CefrBadge level={user.cefrLevel} size="sm" />}
+                {isEditingName ? (
+                  <div className="flex items-center space-x-1.5">
+                    <input
+                      type="text"
+                      value={nameInput}
+                      onChange={(e) => setNameInput(e.target.value)}
+                      className="px-2.5 py-1 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-semibold text-slate-900 bg-white"
+                      placeholder="Your full name"
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveName}
+                      disabled={isUpdatingProfile}
+                      className="p-1.5 bg-primary text-white rounded-lg hover:bg-primary-hover transition"
+                      title="Save name"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNameInput(user.fullName);
+                        setIsEditingName(false);
+                      }}
+                      className="p-1.5 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition"
+                      title="Cancel"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="text-lg font-bold text-slate-900">{user.fullName}</h2>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNameInput(user.fullName);
+                        setIsEditingName(true);
+                      }}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded-md transition"
+                      title="Edit full name"
+                    >
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </button>
+                    {user.cefrLevel && <CefrBadge level={user.cefrLevel} size="sm" />}
+                  </>
+                )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
               <div className="flex items-center space-x-2 mt-2">
