@@ -6,6 +6,7 @@ package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
+import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 /**
  * @brief REST controller managing user authentication, registration, and tokens.
  *
- * Implements JWT access token generation, HttpOnly cookie refresh token rotation,
+ * Implements JWT access token generation, Google OAuth2 sign-in, HttpOnly cookie refresh token rotation,
  * multi-device logout, and password recovery workflows.
  */
 @RestController
@@ -69,6 +70,24 @@ public class AuthController {
         setRefreshTokenCookie(response, tokenResponse);
         return ResponseEntity.ok(tokenResponse);
     }
+
+    /**
+     * @brief Authenticates or registers a user via Google OAuth2 ID token and sets a refresh cookie.
+     *
+     * @param request Google OAuth2 payload containing the ID token and optional role for new accounts.
+     * @param response HTTP servlet response for setting the HttpOnly refresh cookie.
+     * @return HTTP 200 with TokenResponse containing access token and user details.
+     */
+    @PostMapping("/google")
+    public ResponseEntity<TokenResponse> googleLogin(
+        @Valid @RequestBody GoogleAuthRequest request,
+        HttpServletResponse response
+    ) {
+        TokenResponse tokenResponse = authService.googleLogin(request);
+        setRefreshTokenCookie(response, tokenResponse);
+        return ResponseEntity.ok(tokenResponse);
+    }
+
 
     /**
      * @brief Refreshes an expired access token using the HttpOnly refresh token.

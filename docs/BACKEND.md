@@ -241,9 +241,11 @@ flowchart TD
 
 | Controller | Method | Path | Auth | Role | Request Body | Response | Description |
 |---|---|---|---|---|---|---|---|
-| **Auth** | POST | `/api/auth/register` | No | ALL | `RegisterRequest` | `TokenResponse` | Регистрация нового пользователя |
-| | POST | `/api/auth/login` | No | ALL | `LoginRequest` | `TokenResponse` | Авторизация и выдача токенов |
+| **Auth** | POST | `/api/auth/register` | No | ALL | `RegisterRequest` | `TokenResponse` | Регистрация нового пользователя по Email и паролю |
+| | POST | `/api/auth/login` | No | ALL | `LoginRequest` | `TokenResponse` | Авторизация по Email и паролю и выдача токенов |
+| | POST | `/api/auth/google` | No | ALL | `GoogleAuthRequest` | `TokenResponse` | Авторизация / авторегистрация через Google OAuth2 ID Token |
 | | POST | `/api/auth/refresh` | No | ALL | (Refresh Cookie) | `TokenResponse` | Обновление access-токена |
+
 | | POST | `/api/auth/logout` | Yes | ALL | | 200 OK | Выход с текущего устройства |
 | | POST | `/api/auth/logout-all` | Yes | ALL | | 200 OK | Выход со всех устройств |
 | | POST | `/api/auth/forgot-password` | No | ALL | `ForgotPasswordRequest` | 200 OK | Сброс пароля |

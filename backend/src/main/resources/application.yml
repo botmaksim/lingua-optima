@@ -5,6 +5,9 @@ spring:
   application:
     name: lingua-optima-api
 
+  config:
+    import: optional:file:../.env[.properties],optional:file:.env[.properties]
+
   profiles:
     active: dev
 
@@ -39,6 +42,10 @@ app:
     secret: ${JWT_SECRET:lingua-optima-super-secure-production-ready-jwt-secret-key-256}
   encryption:
     key: ${ENCRYPTION_KEY:lingua-optima-aes256-encryption-key-for-api-keys}
+  oauth:
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
+      client-secret: ${GOOGLE_CLIENT_SECRET:}
   ai:
     groq:
       api-key: ${GROQ_API_KEY:mock-groq-key}
@@ -55,3 +62,4 @@ management:
   endpoint:
     health:
       show-details: always
+

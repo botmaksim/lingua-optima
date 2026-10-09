@@ -7,6 +7,7 @@ package com.linguaoptima.api.controller;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
+import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
@@ -98,6 +99,23 @@ class AuthControllerTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: Google OAuth2 login.
+     */
+    @Test
+    void testGoogleLogin() {
+        GoogleAuthRequest req = GoogleAuthRequest.builder().idToken("google-id-token").role(Role.STUDENT).build();
+        when(authService.googleLogin(any())).thenReturn(sampleToken);
+        when(jwtService.generateRefreshToken(any(), any())).thenReturn("refresh123");
+
+        MockHttpServletResponse res = new MockHttpServletResponse();
+        ResponseEntity<TokenResponse> entity = authController.googleLogin(req, res);
+
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertEquals("access123", entity.getBody().getAccessToken());
+        assertTrue(res.containsHeader("Set-Cookie"));
+    }
+
+    /**
      * @brief Verifies unit test scenario: refresh.
      */
     @Test
@@ -140,3 +158,4 @@ class AuthControllerTest {
         verify(authService).forgotPassword(req);
     }
 }
+

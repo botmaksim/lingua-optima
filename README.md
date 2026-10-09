@@ -34,7 +34,8 @@
    - **Progress & Gap Analytics** — радар-чарты освоения тем, выявление пробелов (`masteryScore < 60%`) и автоматическая рекомендация повышения уровня CEFR (`>= 80%` по всем темам уровня).
    - **Educator Portal** — управление учебными группами (до 200 студентов), деплой заданий, ручная корректировка AI-оценок (*Teacher Override*) и экспорт отчётов в **PDF / CSV**.
 
-2. **Безопасность и приватность (Security by Design)**:
+2. **Безопасность, аутентификация и приватность (Security by Design)**:
+   - **Двойная аутентификация (Email + Google OAuth2)** — поддержка классического входа/регистрации по электронной почте и паролю (`POST /api/auth/login`, `POST /api/auth/register`) и быстрого входа через **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) с проверкой ID-токена (`email_verified`, `aud`) через Google `tokeninfo` API и автоматическим созданием профиля при первом входе.
    - **In-Memory Access JWT (15 мин)** + **HttpOnly Strict Refresh Cookie (30 дней)** с хранением SHA-256 хешей сессий в Redis.
    - **AES-256-GCM шифрование** пользовательских BYOK API-ключей (12-байтный случайный IV + 128-битный тег аутентификации).
    - **Приватный групповой лидерборд** — отсутствие глобального лидерборда; рейтинг рассчитывается только внутри учебной группы преподавателя под псевдонимами (`displayAlias`).
@@ -52,8 +53,10 @@
 - `SPRING_REDIS_HOST`, `SPRING_REDIS_PORT`, `REDIS_HOST`, `REDIS_PORT`
 - `SERVER_PORT`, `CORS_ORIGINS`, `VITE_API_URL`
 - `JWT_SECRET`, `ENCRYPTION_KEY`
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_GOOGLE_CLIENT_ID` *(для входа через Google OAuth2 укажите ваш OAuth 2.0 Client ID из Google Cloud Console в `GOOGLE_CLIENT_ID` и `VITE_GOOGLE_CLIENT_ID`, а также секрет в `GOOGLE_CLIENT_SECRET`)*
 - `GROQ_API_KEY`, `GEMINI_API_KEY`
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
+
 
 ---
 

@@ -189,6 +189,8 @@ server {
 | `DB_PASS` | Пароль базы данных |
 | `REDIS_HOST` | Хост сервера Redis |
 | `JWT_SECRET` | Секретный ключ для подписи JWT токенов |
+| `GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID из Google Cloud Console для проверки `aud` в ID-токене |
+| `GOOGLE_CLIENT_SECRET` | OAuth 2.0 Client Secret из Google Cloud Console |
 | `GROQ_API_KEY` | API ключ для Groq (LLM) |
 | `GEMINI_API_KEY` | API ключ для Google Gemini (Multimodal AI) |
 | `ENCRYPTION_KEY` | AES-256-GCM ключ шифрования для API ключей пользователей |
@@ -198,6 +200,8 @@ server {
 | Variable | Description |
 |---|---|
 | `VITE_API_URL` | URL для API backend (e.g. `http://localhost:8080` или `/api`) |
+| `VITE_GOOGLE_CLIENT_ID` | OAuth 2.0 Client ID для кнопки входа через Google Identity Services |
+
 
 ### PostgreSQL
 | Variable | Description |

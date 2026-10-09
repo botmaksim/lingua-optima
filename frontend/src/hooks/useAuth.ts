@@ -10,7 +10,7 @@ import { useAuthStore } from '../store/authStore';
  * @return Auth context object.
  */
 export const useAuth = () => {
-  const { user, isAuthenticated, isLoading, login, register, logout } = useAuthStore();
+  const { user, isAuthenticated, isLoading, login, register, googleLogin, logout } = useAuthStore();
   const isStudent = user?.role === 'STUDENT';
   const isTeacher = user?.role === 'TEACHER' || user?.role === 'ADMIN';
 
@@ -22,6 +22,8 @@ export const useAuth = () => {
     isTeacher,
     login,
     register,
+    googleLogin,
     logout,
   };
 };
+

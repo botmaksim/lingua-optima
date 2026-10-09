@@ -47,6 +47,8 @@ services:
       - SPRING_REDIS_HOST=redis
       - SPRING_REDIS_PORT=6379
       - JWT_SECRET=${JWT_SECRET:-dGhpc2lzYXZlcnlsb25nc2VjcmV0a2V5Zm9yand0c2lnbmluZ211c3RiZTMyYnl0ZXM=}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
       - GROQ_API_KEY=${GROQ_API_KEY:-dummy-groq-key}
       - GEMINI_API_KEY=${GEMINI_API_KEY:-dummy-gemini-key}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef}
@@ -68,6 +70,7 @@ services:
       - "5173:80"
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8080}
+      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID:-}
     depends_on:
       - backend
     networks:

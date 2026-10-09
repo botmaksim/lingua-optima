@@ -517,9 +517,11 @@ erDiagram
 | Метод | Путь | Роль | Описание |
 |---|---|---|---|
 | **Auth** | | | |
-| POST | `/api/auth/register` | Public | Регистрация |
-| POST | `/api/auth/login` | Public | Вход → JWT |
+| POST | `/api/auth/register` | Public | Регистрация по Email и паролю |
+| POST | `/api/auth/login` | Public | Вход по Email и паролю → JWT |
+| POST | `/api/auth/google` | Public | Вход / регистрация через Google OAuth2 ID Token → JWT |
 | POST | `/api/auth/refresh` | Cookie | Обновление access token |
+
 | POST | `/api/auth/logout` | Any | Выход (удаление refresh из Redis) |
 | DELETE | `/api/auth/logout-all` | Any | Выход со всех устройств |
 | POST | `/api/auth/forgot-password` | Public | Запрос сброса пароля |

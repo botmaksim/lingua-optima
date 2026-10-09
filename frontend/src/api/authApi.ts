@@ -37,6 +37,19 @@ export const authApi = {
   },
 
   /**
+   * @brief Authenticates or registers a user via a Google OAuth2 ID token.
+   * @param idToken Signed Google ID token returned by Google Identity Services.
+   * @param role Optional role ('STUDENT' or 'TEACHER') for newly created accounts.
+   * @return Promise resolving to AuthResponse containing JWT and user profile.
+   */
+  googleLogin: async (idToken: string, role?: string): Promise<AuthResponse> => {
+    const res = await axiosInstance.post<AuthResponse>('/auth/google', { idToken, role });
+    setAccessToken(res.data.accessToken);
+    return res.data;
+  },
+
+
+  /**
    * @brief Exchanges valid HttpOnly cookie refresh token for a new access token.
    * @return Promise resolving to refreshed AuthResponse.
    */

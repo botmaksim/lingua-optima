@@ -1,11 +1,13 @@
 /**
  * @file stores.test.ts
- * @brief Unit tests for Zustand state stores (useUIStore, useNotificationStore).
+ * @brief Unit tests for Zustand state stores (useUIStore, useNotificationStore, useAuthStore).
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useUIStore } from '../store/uiStore';
 import { useNotificationStore } from '../store/notificationStore';
+import { useAuthStore } from '../store/authStore';
+import { authApi } from '../api/authApi';
 
 describe('useUIStore', () => {
   beforeEach(() => {
@@ -76,3 +78,53 @@ describe('useNotificationStore', () => {
     expect(state.notifications[0].message).toBe('New task assigned');
   });
 });
+
+describe('useAuthStore', () => {
+  beforeEach(() => {
+    useAuthStore.setState({
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    });
+    vi.restoreAllMocks();
+  });
+
+  it('authenticates user via email and password', async () => {
+    vi.spyOn(authApi, 'login').mockResolvedValue({
+      accessToken: 'jwt-email',
+      user: {
+        id: 'u-1',
+        email: 'user@example.com',
+        fullName: 'Email User',
+        role: 'STUDENT',
+        cefrLevel: 'B1',
+        streakCount: 1,
+        createdAt: new Date().toISOString(),
+      },
+    });
+
+    await useAuthStore.getState().login('user@example.com', 'secret123');
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    expect(useAuthStore.getState().user?.email).toBe('user@example.com');
+  });
+
+  it('authenticates user via Google OAuth2 ID token', async () => {
+    vi.spyOn(authApi, 'googleLogin').mockResolvedValue({
+      accessToken: 'jwt-google',
+      user: {
+        id: 'u-2',
+        email: 'google@example.com',
+        fullName: 'Google User',
+        role: 'STUDENT',
+        cefrLevel: 'B2',
+        streakCount: 3,
+        createdAt: new Date().toISOString(),
+      },
+    });
+
+    await useAuthStore.getState().googleLogin('google-id-token-xyz', 'STUDENT');
+    expect(useAuthStore.getState().isAuthenticated).toBe(true);
+    expect(useAuthStore.getState().user?.email).toBe('google@example.com');
+  });
+});
+

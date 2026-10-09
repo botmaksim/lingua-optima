@@ -1,12 +1,15 @@
 /**
  * @file components.test.tsx
- * @brief Unit tests for common React UI components (CefrBadge, Toast).
+ * @brief Unit tests for common React UI components (CefrBadge, Toast, LoginPage).
  */
 
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { Toast } from '../components/common/Toast';
+import { LoginPage } from '../components/auth/LoginPage';
+import { useAuthStore } from '../store/authStore';
 
 describe('CefrBadge component', () => {
   it('renders level text and badge correctly', () => {
@@ -38,3 +41,24 @@ describe('Toast component', () => {
     expect(handleClose).toHaveBeenCalledWith('toast-1');
   });
 });
+
+describe('LoginPage component', () => {
+  it('renders both email/password form and Google OAuth2 sign-in button', () => {
+    useAuthStore.setState({ user: null, isAuthenticated: false, isLoading: false });
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByPlaceholderText('name@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Sign In with Email')).toBeInTheDocument();
+    const googleBtn = screen.getByTestId('google-oauth-button');
+    expect(googleBtn).toBeInTheDocument();
+    expect(screen.getByText('Continue with Google')).toBeInTheDocument();
+
+    fireEvent.click(googleBtn);
+    expect(screen.getByText(/VITE_GOOGLE_CLIENT_ID/i)).toBeInTheDocument();
+  });
+});
+

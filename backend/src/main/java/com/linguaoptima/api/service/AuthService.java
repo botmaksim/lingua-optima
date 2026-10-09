@@ -9,6 +9,7 @@ import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubscriptionTier;
 import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
+import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
@@ -20,23 +21,26 @@ import com.linguaoptima.api.repository.SubscriptionRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * @brief Authentication and user onboarding service.
  *
- * Handles account registration, credential authentication, JWT token refresh,
- * Redis session persistence, logout revocation, and rate limiting for authentication attempts.
+ * Handles account registration, email/password authentication, Google OAuth2 authentication,
+ * JWT token refresh, Redis session persistence, logout revocation, and rate limiting.
  */
 @Slf4j
 @Service
@@ -52,6 +56,15 @@ public class AuthService {
     private final JwtService jwtService;
     /** @brief Field representing string redis template in AuthService. */
     private final StringRedisTemplate stringRedisTemplate;
+
+    /** @brief Configured Google OAuth2 Client ID for verifying token audience. */
+    @Value("${app.oauth.google.client-id:}")
+    private String googleClientId = "";
+
+    /** @brief HTTP client for verifying Google OAuth2 ID tokens against Google's tokeninfo endpoint. */
+    private RestClient googleRestClient = RestClient.builder()
+        .baseUrl("https://oauth2.googleapis.com")
+        .build();
 
     /**
      * @brief Constructs an AuthService instance with injected repositories, encoders, and services.
@@ -73,6 +86,22 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.stringRedisTemplate = stringRedisTemplate;
+    }
+
+    /**
+     * @brief Sets the Google OAuth2 Client ID used for audience verification.
+     * @param googleClientId Configured Google OAuth2 Client ID.
+     */
+    public void setGoogleClientId(String googleClientId) {
+        this.googleClientId = googleClientId;
+    }
+
+    /**
+     * @brief Overrides the RestClient used for Google OAuth2 token verification.
+     * @param googleRestClient Custom or mock RestClient instance.
+     */
+    public void setGoogleRestClient(RestClient googleRestClient) {
+        this.googleRestClient = googleRestClient;
     }
 
     /**
@@ -146,6 +175,93 @@ public class AuthService {
             .user(UserResponse.fromEntity(user))
             .build();
     }
+
+    /**
+     * @brief Authenticates or auto-provisions a user via a verified Google OAuth2 ID token.
+     * @param request Google OAuth2 payload containing the ID token and optional role for new accounts.
+     * @return TokenResponse containing access token, refresh token, and user profile details.
+     * @throws UnauthorizedException if the Google ID token is missing, invalid, unverified, or has an audience mismatch.
+     */
+    @Transactional
+    public TokenResponse googleLogin(GoogleAuthRequest request) {
+        if (request == null || request.getIdToken() == null || request.getIdToken().isBlank()) {
+            throw new UnauthorizedException("Google ID token is required");
+        }
+
+        Map<String, Object> tokenInfo = verifyGoogleIdToken(request.getIdToken().trim());
+        String email = String.valueOf(tokenInfo.get("email")).toLowerCase().trim();
+        checkAuthRateLimit(email);
+
+        User user = userRepository.findByEmail(email).orElseGet(() -> {
+            Role role = request.getRole() != null ? request.getRole() : Role.STUDENT;
+            String rawName = tokenInfo.get("name") != null ? String.valueOf(tokenInfo.get("name")).trim() : "";
+            String fullName = !rawName.isBlank() ? rawName : email.split("@")[0];
+
+            User newUser = userRepository.save(User.builder()
+                .email(email)
+                .passwordHash(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .fullName(fullName)
+                .role(role)
+                .createdAt(LocalDateTime.now())
+                .build());
+
+            SubscriptionTier initialTier = (role == Role.TEACHER) ? SubscriptionTier.EDUCATOR : SubscriptionTier.FREE;
+            subscriptionRepository.save(Subscription.builder()
+                .user(newUser)
+                .tier(initialTier)
+                .createdAt(LocalDateTime.now())
+                .build());
+            return newUser;
+        });
+
+        String accessToken = jwtService.generateAccessToken(user.getId(), user.getEmail(), user.getRole().name());
+        String refreshToken = jwtService.generateRefreshToken(user.getId(), user.getEmail());
+        saveRefreshTokenInRedis(user.getId(), refreshToken);
+
+        return TokenResponse.builder()
+            .accessToken(accessToken)
+            .refreshToken(refreshToken)
+            .user(UserResponse.fromEntity(user))
+            .build();
+    }
+
+    /**
+     * @brief Verifies a Google OAuth2 ID token against Google's tokeninfo endpoint and checks audience and email verification claims.
+     * @param idToken Raw Google ID token string.
+     * @return Parsed map of claims returned by Google tokeninfo.
+     * @throws UnauthorizedException if token verification fails, email is unverified, or audience does not match GOOGLE_CLIENT_ID.
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> verifyGoogleIdToken(String idToken) {
+        Map<String, Object> tokenInfo;
+        try {
+            tokenInfo = googleRestClient.get()
+                .uri("/tokeninfo?id_token={token}", idToken)
+                .retrieve()
+                .body(Map.class);
+        } catch (Exception e) {
+            throw new UnauthorizedException("Invalid or expired Google OAuth token");
+        }
+
+        if (tokenInfo == null || tokenInfo.get("email") == null || String.valueOf(tokenInfo.get("email")).isBlank()) {
+            throw new UnauthorizedException("Google token does not contain a valid email");
+        }
+
+        Object emailVerified = tokenInfo.get("email_verified");
+        if (emailVerified != null && !"true".equalsIgnoreCase(String.valueOf(emailVerified))) {
+            throw new UnauthorizedException("Google account email is not verified");
+        }
+
+        if (googleClientId != null && !googleClientId.isBlank()) {
+            String aud = tokenInfo.get("aud") != null ? String.valueOf(tokenInfo.get("aud")) : "";
+            if (!googleClientId.trim().equals(aud)) {
+                throw new UnauthorizedException("Google token audience mismatch");
+            }
+        }
+
+        return tokenInfo;
+    }
+
 
     /**
      * @brief Issues a new access token using a valid refresh token.

@@ -22,6 +22,8 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>;
   /** @brief Registers a new user account */
   register: (email: string, password: string, fullName: string, role: string) => Promise<void>;
+  /** @brief Authenticates or registers user via Google OAuth2 ID token */
+  googleLogin: (idToken: string, role?: string) => Promise<void>;
   /** @brief Terminates the active session and clears tokens */
   logout: () => Promise<void>;
   /** @brief Restores active session on app startup via refresh token */
@@ -59,6 +61,18 @@ export const useAuthStore = create<AuthState>((set) => ({
       throw err;
     }
   },
+
+  googleLogin: async (idToken, role) => {
+    set({ isLoading: true });
+    try {
+      const data = await authApi.googleLogin(idToken, role);
+      set({ user: data.user, isAuthenticated: true, isLoading: false });
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
+    }
+  },
+
 
   logout: async () => {
     try {

@@ -9,6 +9,7 @@ import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubscriptionTier;
 import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
+import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
@@ -20,20 +21,19 @@ import com.linguaoptima.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestClient;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
-
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -230,6 +230,109 @@ class AuthServiceTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: Google OAuth2 login for existing user and new student/teacher accounts.
+     */
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void testGoogleLoginExistingAndNewUsers() {
+        RestClient mockClient = mock(RestClient.class);
+        RestClient.RequestHeadersUriSpec uriSpec = mock(RestClient.RequestHeadersUriSpec.class);
+        RestClient.RequestHeadersSpec headersSpec = mock(RestClient.RequestHeadersSpec.class);
+        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+
+        when(mockClient.get()).thenReturn(uriSpec);
+        when(uriSpec.uri(anyString(), any(Object[].class))).thenReturn(headersSpec);
+        when(headersSpec.retrieve()).thenReturn(responseSpec);
+
+        authService.setGoogleRestClient(mockClient);
+        authService.setGoogleClientId("my-google-client-id");
+
+        when(responseSpec.body(Map.class)).thenReturn(Map.of(
+            "email", "student@lingua.com",
+            "email_verified", "true",
+            "aud", "my-google-client-id",
+            "name", "John Doe"
+        ));
+        when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(sampleUser));
+        when(jwtService.generateAccessToken(any(), any(), any())).thenReturn("google-access");
+        when(jwtService.generateRefreshToken(any(), any())).thenReturn("google-refresh");
+
+        TokenResponse existingRes = authService.googleLogin(GoogleAuthRequest.builder().idToken("valid-id-token").build());
+        assertEquals("google-access", existingRes.getAccessToken());
+
+        when(responseSpec.body(Map.class)).thenReturn(Map.of(
+            "email", "newstudent@lingua.com",
+            "email_verified", "true",
+            "aud", "my-google-client-id",
+            "name", "New Student"
+        ));
+        when(userRepository.findByEmail("newstudent@lingua.com")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(anyString())).thenReturn("randomHash");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(UUID.randomUUID());
+            return u;
+        });
+
+        TokenResponse newStudentRes = authService.googleLogin(GoogleAuthRequest.builder().idToken("valid-id-token-2").build());
+        assertEquals("newstudent@lingua.com", newStudentRes.getUser().getEmail());
+
+        when(responseSpec.body(Map.class)).thenReturn(Map.of(
+            "email", "newteacher@lingua.com",
+            "email_verified", "true",
+            "aud", "my-google-client-id"
+        ));
+        when(userRepository.findByEmail("newteacher@lingua.com")).thenReturn(Optional.empty());
+
+        TokenResponse newTeacherRes = authService.googleLogin(
+            GoogleAuthRequest.builder().idToken("valid-id-token-3").role(Role.TEACHER).build()
+        );
+        assertEquals(Role.TEACHER, newTeacherRes.getUser().getRole());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: Google OAuth2 invalid token, unverified email, and audience mismatch errors.
+     */
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    void testGoogleLoginValidationErrors() {
+        assertThrows(UnauthorizedException.class, () -> authService.googleLogin(null));
+        assertThrows(UnauthorizedException.class, () -> authService.googleLogin(GoogleAuthRequest.builder().idToken(" ").build()));
+
+        RestClient mockClient = mock(RestClient.class);
+        RestClient.RequestHeadersUriSpec uriSpec = mock(RestClient.RequestHeadersUriSpec.class);
+        RestClient.RequestHeadersSpec headersSpec = mock(RestClient.RequestHeadersSpec.class);
+        RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+
+        when(mockClient.get()).thenReturn(uriSpec);
+        when(uriSpec.uri(anyString(), any(Object[].class))).thenReturn(headersSpec);
+        when(headersSpec.retrieve()).thenReturn(responseSpec);
+        authService.setGoogleRestClient(mockClient);
+
+        when(responseSpec.body(Map.class)).thenThrow(new RuntimeException("HTTP 400"));
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken("bad-token").build())
+        );
+
+        reset(responseSpec);
+        when(responseSpec.body(Map.class)).thenReturn(Map.of("email", ""));
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken("no-email-token").build())
+        );
+
+        when(responseSpec.body(Map.class)).thenReturn(Map.of("email", "a@b.com", "email_verified", "false"));
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken("unverified-token").build())
+        );
+
+        authService.setGoogleClientId("expected-client-id");
+        when(responseSpec.body(Map.class)).thenReturn(Map.of("email", "a@b.com", "email_verified", "true", "aud", "wrong-aud"));
+        assertThrows(UnauthorizedException.class, () ->
+            authService.googleLogin(GoogleAuthRequest.builder().idToken("wrong-aud-token").build())
+        );
+    }
+
+    /**
      * @brief Verifies unit test scenario: refresh token success.
      */
     @Test
@@ -307,3 +410,4 @@ class AuthServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> authService.forgotPassword(ForgotPasswordRequest.builder().email("none@lingua.com").build()));
     }
 }
+
