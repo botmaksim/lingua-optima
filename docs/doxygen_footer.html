@@ -130,9 +130,19 @@ $generatedby&#160;<a href="https://www.doxygen.org/index.html"><img class="foote
     }
   }
 
+  function autoExpandPackages() {
+    if (typeof window.toggleLevel === 'function') {
+      window.toggleLevel(4);
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', renderMermaidDiagrams);
+    document.addEventListener('DOMContentLoaded', function() {
+      autoExpandPackages();
+      renderMermaidDiagrams();
+    });
   } else {
+    autoExpandPackages();
     renderMermaidDiagrams();
   }
 })();
