@@ -72,6 +72,7 @@
 | Level Progression | **Full CEFR scale (A1–C2)** starting from A1 Beginner with automatic promotion recommendations | Accommodates learners of all proficiencies from foundational to native-like mastery |
 | Task vs Essay Prompts | **Dedicated prompt contracts:** Essays use open-ended topics (250+ words, guiding discussion questions, zero blanks) | Prevents LLMs from generating gap-fill brackets or multiple-choice questions for writing essays |
 | AI Resilience & Queue UX | **Multi-tier fallback + In-flight status & Queue banners:** Fallback cascade (Groq ↔ Gemini Lite ↔ DB queue) with real-time UI status | Eliminates confusion during 5–25s inference latency and guides students during upstream provider rate limits |
+| Email Verification | **2-step registration with Gmail SMTP** | Requires 6-digit confirmation code with 60s cooldown rate-limiting and 10-minute expiry in Redis. Verifies email ownership and prevents bot signups, while Google OAuth2 provides seamless 1-click onboarding. |
 
 ---
 
@@ -529,7 +530,8 @@ erDiagram
 | Method | Path | Role | Description |
 |---|---|---|---|
 | **Auth** | | | |
-| POST | `/api/auth/register` | Public | Register a new account with email and password |
+| POST | `/api/auth/send-verification-code` | Public | Send 6-digit confirmation code via Gmail SMTP (60s rate-limit cooldown) |
+| POST | `/api/auth/register` | Public | Register a new account with verified 6-digit email code and password |
 | POST | `/api/auth/login` | Public | Authenticate with email and password → returns JWT |
 | POST | `/api/auth/google` | Public | Sign in or register via Google OAuth2 ID Token → returns JWT |
 | POST | `/api/auth/refresh` | Cookie | Rotate and refresh the short-lived access token |
@@ -753,6 +755,7 @@ While the stub never throws these errors during normal operation, both the front
 | API Key Leakage | AES-256-GCM authenticated encryption; keys are decrypted strictly in RAM for the duration of the outbound request |
 | Biometric Privacy | Zero-Retention OCR: `byte[]` processed in RAM → explicitly zeroed (`0x00`) in `finally` → garbage collected |
 | Brute-Force Attacks | BCrypt(12) password hashing and Redis rate limiting (10 attempts / 15 minutes) |
+| Fake Registration / Bot Spam | 2-step registration with Gmail SMTP: 6-digit confirmation code with 60s cooldown rate-limit and 10-minute expiry |
 | Multi-Tenant Data Isolation | Role-Based Access Control (RBAC): teachers can only view active students (`is_active = true`) in their own groups |
 | GDPR Compliance | `DELETE /api/users/me`: full erasure of personal data (PII) and anonymization of historical submissions |
 
@@ -763,6 +766,8 @@ While the stub never throws these errors during normal operation, both the front
 | `refresh_tokens:{userId}:{device}` | STRING | 30 days | SHA-256 hash of the active refresh token |
 | `rate_limit:{userId}:ai` | STRING | 24 hours | Daily per-user AI request counter |
 | `rate_limit:{userId}:auth` | STRING | 15 minutes | Authentication attempt rate limiter |
+| `verification_code:{email}` | STRING | 10 minutes | 6-digit registration confirmation code |
+| `verification_cooldown:{email}` | STRING | 60 seconds | Cooldown timer between verification code dispatches |
 | `ai_cache:{sha256(prompt)}` | STRING | 1 hour | Content-addressable cache for identical task prompts |
 | `notifications:{userId}` | LIST | 7 days | Pending notification queue for SSE delivery |
 

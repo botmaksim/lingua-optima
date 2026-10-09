@@ -37,7 +37,7 @@
    - **Self-Service Role Switching** — instant switching between Student and Educator modes via Profile (`PUT /api/users/me`), allowing users to both learn and teach.
 
 2. **Security, Authentication & Privacy (Security by Design)**:
-   - **Dual Authentication (Email + Google OAuth2)** — supports classic email and password sign-in/registration (`POST /api/auth/login`, `POST /api/auth/register`) as well as one-click sign-in via **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) with ID token verification (`email_verified`, `aud`) via the Google `tokeninfo` API and automatic profile provisioning on first login.
+   - **Dual Authentication (Email + Google OAuth2) with 2-Step Email Verification** — supports classic email and password registration with mandatory 2-step verification (`POST /api/auth/send-verification-code` dispatches a 6-digit confirmation code via Gmail SMTP with a 60-second rate-limiting cooldown and 10-minute expiry; `POST /api/auth/register` verifies the code) as well as seamless one-click sign-in via **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) with automatic profile provisioning on first login.
    - **In-Memory Access JWT (15 min)** + **HttpOnly Strict Refresh Cookie (30 days)** backed by SHA-256 session token hashes in Redis.
    - **AES-256-GCM Encryption & Multi-Model BYOK** for user-supplied API keys (`provider` + `model_name`, 12-byte random IV + 128-bit authentication tag).
    - **Cloudflare Edge AI Reverse-Proxy & Live Vendor Model Sync** (`cloudflare-proxy/worker.js` at `https://ai-proxy.mybsu.online`) — routes Western AI API traffic through Cloudflare Edge (`*_BASE_URL`) to bypass regional GeoIP restrictions, supports direct low-latency Chinese providers (`DEEPSEEK`, `QWEN`, `KIMI`), and dynamically scrapes official vendor documentation (`/models/:provider`) so the UI always displays the latest models.
@@ -61,6 +61,7 @@ The repository root contains the template [`.env.example`](./.env.example) and t
 - `GROQ_API_KEY`, `GROQ_BASE_URL`, `GEMINI_API_KEY`, `GEMINI_BASE_URL`
 - `OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL`
 - `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL`, `QWEN_API_KEY`, `QWEN_BASE_URL`, `KIMI_API_KEY`, `KIMI_BASE_URL`
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` *(Gmail SMTP credentials for dispatching 6-digit registration confirmation emails)*
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
 
 

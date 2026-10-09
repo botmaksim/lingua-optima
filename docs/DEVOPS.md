@@ -84,6 +84,10 @@ services:
       - KIMI_API_KEY=${KIMI_API_KEY:-}
       - KIMI_BASE_URL=${KIMI_BASE_URL:-https://api.moonshot.cn/v1}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:5173}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
     depends_on:
       db:
         condition: service_healthy
@@ -384,7 +388,8 @@ Database schema versioning is managed via **Flyway**, integrated directly into S
 
 - [x] **HTTPS only in production:** All traffic between clients and the load balancer is encrypted via TLS.
 - [x] **CORS whitelist:** Only trusted origins are permitted to perform cross-origin API requests.
-- [x] **Rate limiting (Redis):** Request rate limiting protects authentication and AI endpoints against brute-force and DoS attacks.
+- [x] **Rate limiting (Redis):** Request rate limiting protects authentication, verification code dispatch (60s cooldown), and AI endpoints against brute-force and DoS attacks.
+- [x] **Email Verification on Registration:** Rate-limited 6-digit confirmation codes sent via Gmail SMTP with 10-minute expiry to verify real email ownership.
 - [x] **SQL injection prevention:** Parameterized queries enforced via Spring Data JPA / Hibernate.
 - [x] **XSS prevention:** React automatic output escaping combined with strict Content Security Policy (CSP) headers.
 - [x] **JWT in memory:** Access tokens are held exclusively in JS memory (and refresh tokens in `HttpOnly` cookies), avoiding insecure `localStorage` token persistence.
