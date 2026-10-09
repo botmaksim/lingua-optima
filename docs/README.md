@@ -33,6 +33,9 @@
 11. [Subscriptions & Billing (Stub)](#sec11)
 12. [Security](#sec12)
 13. [DevOps & Deployment](#sec13)
+14. [Background Workers & Schedulers](#sec14)
+15. [Role Switching & Cohort Management](#sec15)
+16. [CEFR Progression Ladder & Placement](#sec16)
 
 ---
 
@@ -47,11 +50,11 @@
 
 | # | Component | Description |
 |---|---|---|
-| 1 | Self-Service Task Generator | Exercise generation via Llama 3.3 70B / Llama 4 & multi-model selector |
+| 1 | Self-Service Task Generator | Exercise generation via Groq Qwen 3.8 / GPT-OSS 120B / Llama 4 & multi-model selector |
 | 2 | Homework OCR Check | Photo upload → Tesseract OCR → AI grammar evaluation |
-| 3 | AI Essay Scoring | Rubric-based grading: Task Achievement, Coherence, Lexical Resource, Grammatical Range |
+| 3 | AI Essay Scoring | Rubric-based grading: Task Achievement, Coherence, Lexical Resource, Grammatical Range via Gemini 3.8 Flash |
 | 4 | Adaptive Tests | CAT algorithm: question difficulty adapts in real time |
-| 5 | Progress Dashboard | Grammar gap tracking and mastery radar chart |
+| 5 | Progress Dashboard | Grammar gap tracking and mastery radar chart across A1–C2 |
 | 6 | Educator Portal | Task deployment, grade overrides, and report exports |
 
 ---
@@ -63,9 +66,10 @@
 | Leaderboard | **Group-only** (no global leaderboard) | Protects student privacy and focuses on the teacher's classroom group |
 | Removing a student from a group | **Soft delete** (`is_active=false`). Submissions are hidden. When re-added, history is **restored** | Teachers do not lose historical records if a student returns to the group |
 | Billing / Payments | **Stub** — full error handling infrastructure, while the stub always approves | Designed for testing; real payment processing requires legal and PCI compliance setup |
-| AI Provider Strategy | **Combo:** Groq (tasks) + Gemini (essays) + Tesseract (OCR). 100% free tier | $0 operational budget |
+| AI Provider Strategy | **Combo:** Groq (tasks) + Gemini (essays) + Tesseract (OCR). 100% free tier + BYOK for 7 vendors | $0 operational budget |
 | Self-service tasks | Automatic self-assignment (`assigned_by = student`) | Unifies the execution and grading flow for both student-created and teacher-assigned tasks |
 | Image Storage | **Zero-Retention OCR** — photos exist strictly in RAM and are never written to disk | GDPR compliance and handwriting biometric privacy |
+| Level Progression | **Full CEFR scale (A1–C2)** starting from A1 Beginner with automatic promotion recommendations | Accommodates learners of all proficiencies from foundational to native-like mastery |
 
 ---
 
@@ -88,8 +92,8 @@ flowchart LR
     end
 
     subgraph AI ["AI Layer"]
-        Groq["Groq API (Llama 3.3 70B)"]
-        Gemini["Gemini 2.5 Flash"]
+        Groq["Groq API (Llama 3.3 / Qwen 3.8)"]
+        Gemini["Gemini 3.8 Flash / Extended Thinking"]
         Tess["Tesseract OCR (tess4j)"]
     end
 
@@ -786,6 +790,71 @@ docker compose up --build
 ```
 
 Services: `backend` (Java 21 + Tesseract OCR), `frontend` (Nginx PWA), `db` (PostgreSQL 16), `redis` (Redis 7).
+
+---
+
+## 14. Background Workers & Schedulers {#sec14}
+
+Lingua Optima maintains three automated Spring Boot CRON schedulers along with an asynchronous Cloudflare Edge Worker for distributed tasks:
+
+1. **Streak Validation Worker (`StreakScheduler.java`)**:
+   - **CRON**: `@Scheduled(cron = "0 0 1 * * *")` (Daily at 01:00 UTC).
+   - **Logic**: Inspects all active students via `GamificationService.applyDailyStreakCheck()`. If a student did not complete any learning task or test yesterday:
+     - Automatically spends one freeze token (`freezeTokens - 1`) to protect their study streak.
+     - If no freeze tokens remain, resets their streak counter (`streakCount = 0`).
+
+2. **Weekly Quota Reset Worker (`UsageResetScheduler.java`)**:
+   - **CRON**: `@Scheduled(cron = "0 0 0 * * MON")` (Weekly Mondays at 00:00 UTC).
+   - **Logic**: Calls `UsageService.resetWeeklyCounters()`. Resets all free-tier evaluation (`weekEvaluations`) and handwriting OCR (`weekOcrUploads`) counters to zero.
+
+3. **Contextual Diagnostic Reminder Worker (`NotificationScheduler.java`)**:
+   - **CRON**: `@Scheduled(cron = "0 0 9 * * *")` (Daily at 09:00 UTC).
+   - **Logic**: Scans `ProgressRecord` entries across all registered students. Identifies grammar topics where mastery is below 60% (`masteryScore < 0.6`) and dispatches tailored contextual notifications via SSE encouraging students to generate focused practice exercises.
+
+4. **Cloudflare Edge Background Worker (`cloudflare-proxy/worker.js`)**:
+   - Deployed at `https://ai-proxy.mybsu.online`.
+   - **Live Vendor Documentation Scraping (`GET /models/:provider`)**: Automatically scrapes public documentation pages of major AI providers (Google, OpenAI, Anthropic, Groq, DeepSeek, Alibaba, Moonshot) with 1-hour Cloudflare edge caching, dynamically injecting newly released models into the frontend selector.
+   - **Transparent Reverse-Proxying**: Routes requests through Cloudflare's US/EU edge IPs, strips identifying client headers, and prevents regional GeoIP blocking.
+
+---
+
+## 15. Role Switching & Cohort Management {#sec15}
+
+### Self-Service Role Switching
+Users can switch between **Student** (`Role.STUDENT`) and **Educator** (`Role.TEACHER`) at any time directly through their Profile:
+- **API Endpoint**: `PUT /api/users/me` with `{"role": "TEACHER"}` or `{"role": "STUDENT"}`.
+- **Data Preservation**: Switching roles does not discard progress, submissions, or created groups; when in Educator mode, the user gains access to the Teacher Dashboard, Group Management, and Task Assignment.
+
+### Study Cohort (Group) Lifecycle
+1. **Cohort Creation**: Educators create a group via `POST /api/groups` (`{"name": "Upper-Intermediate Group A"}`). The system generates a unique invite code.
+2. **Student Enrollment**: Educators enroll students by email (`POST /api/groups/{id}/students` with `{"email": "student@domain.com"}`).
+   - If the student was previously enrolled and removed, the system restores their membership and unhides their historical submissions.
+3. **Soft Deletion**: Removing a student (`DELETE /api/groups/{id}/students/{studentId}`) sets `is_active = false`. The student's past submissions are safely hidden from the teacher's group view while protecting student privacy.
+4. **Task Deployment**: Educators deploy AI-customized tasks to their cohorts via `POST /api/tasks/{id}/assign` with target group IDs and optional due dates. Students receive instant in-app notifications.
+5. **Teacher Score Overrides**: Educators can review AI assessments and adjust grades via `POST/PUT /api/submissions/{id}/override` (`{"overrideScore": 95.0, "teacherComment": "..."}`).
+   - The response preserves the initial AI evaluation (`score`) while updating `effectiveScore: 95.0`, allowing the UI to display clear teacher feedback.
+6. **Academic Export**: Educators can download individual student or cohort performance reports in PDF or CSV formats (`GET /api/export/student/{id}?format=csv|pdf`). Strict authorization checks verify that the requester is the student, an admin, or the teacher of an active group containing that student, completely preventing IDOR access.
+
+---
+
+## 16. CEFR Progression Ladder & Placement {#sec16}
+
+Lingua Optima supports the complete 6-level Common European Framework of Reference for Languages (**CEFR**) scale:
+
+| Level | CEFR Designation | Target Competency & Grammar Scope |
+|---|---|---|
+| **A1** | Beginner | Present Simple, to be, basic pronouns, daily routines, foundational vocabulary |
+| **A2** | Elementary | Past Simple, Present Continuous, comparative adjectives, modal verbs for permission |
+| **B1** | Intermediate | Present Perfect, conditionals (0 & 1), passive voice basics, relative clauses |
+| **B2** | Upper-Intermediate | Mixed conditionals, indirect questions, passive forms, advanced phrasal verbs |
+| **C1** | Advanced | Inversion, subjunctive mood, cleft sentences, nuanced idiom and discourse markers |
+| **C2** | Mastery | Native-like stylistic variations, subtle irony, archaic structures, complex rhetoric |
+
+### Placement & Progression Mechanics
+- **Default Starting Level**: Every new account starts at **A1 Beginner** by default, ensuring all foundational grammar skills are systematically covered. Users can also select their starting proficiency upon registration.
+- **Adaptive CAT Testing**: Computerized Adaptive Testing dynamically adjusts question difficulty between scale 1 (EASY) and 5 (EXPERT) based on student performance in real time. Sessions can be started either with an assignment ID or directly with a task ID.
+- **Automated Level-Up Recommendations**: When a student demonstrates mastery (`masteryScore >= 85%`) across at least 80% of the grammar topics for their current level, the system triggers a level-up prompt.
+- **Confirmation Endpoint**: The student confirms promotion via `POST /api/progress/level-up/confirm`, which advances their level (e.g. A1 → A2) and returns the updated `User` profile directly to update the UI without delay.
 
 ---
 

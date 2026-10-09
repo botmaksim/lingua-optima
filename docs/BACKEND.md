@@ -114,7 +114,7 @@ backend/
 │   │   ├── UsageCounter.java          — id, user, weekEvaluations, weekOcrUploads, weekResetAt
 │   │   └── enums/
 │   │       ├── Role.java              — STUDENT, TEACHER, ADMIN
-│   │       ├── CefrLevel.java         — B1, B2, C1
+│   │       ├── CefrLevel.java         — A1, A2, B1, B2, C1, C2 (Complete 6-level CEFR scale)
 │   │       ├── TaskType.java          — MCQ, GAP_FILL, ESSAY, REWRITE, SHORT_ANSWER
 │   │       ├── DifficultyLevel.java   — EASY, MEDIUM, HARD, EXPERT
 │   │       ├── SubmissionType.java    — TEXT, IMAGE
@@ -143,18 +143,18 @@ backend/
 │   │   ├── JwtService.java            — generateToken(15min), generateRefreshToken(30d), extractEmail(), isTokenValid()
 │   │   ├── UserService.java           — getCurrentUser(), updateUser(), changePassword(), deleteAccount() (GDPR cascade)
 │   │   ├── TaskService.java           — generateTask() (calls AIBroker), previewTask() (no save), assignTask() (creates TaskAssignments + notifications), saveAsTemplate(), getTasksForUser()
-│   │   ├── SessionService.java        — startSession() (creates SessionState), getNextQuestion() (CAT algorithm: adjusts difficulty), submitAnswer(), completeSession() (→ creates Submission), getActiveSession()
-│   │   ├── SubmissionService.java     — submitText(), submitImage() (calls OCR then Scoring), overrideScore()
+│   │   ├── SessionService.java        — startSession() (creates SessionState, supports assignmentId or taskId), getNextQuestion() (CAT algorithm: adjusts difficulty), submitAnswer(), completeSession() (idempotent, creates Submission), getActiveSession()
+│   │   ├── SubmissionService.java     — submitText() (supports taskId), submitImage() (calls OCR then Scoring), overrideScore()
 │   │   ├── ScoringService.java        — scoreGrammarTask() (compares with answerKey via AI), scoreEssay() (rubric: TA, Coherence, LR, GR)
 │   │   ├── OCRService.java            — extractText(byte[]) via Tesseract (tess4j), zero-retention RAM wipe. Throws OcrException on failure.
-│   │   ├── ProgressService.java       — updateFromSubmission(), updateFromOverride(), getGapsForStudent(), getGroupProgress(), checkCefrLevelUp()
+│   │   ├── ProgressService.java       — updateFromSubmission(), updateFromOverride(), getGapsForStudent(), getGroupProgress(), checkCefrLevelUp(), confirmLevelUp()
 │   │   ├── GroupService.java          — createGroup(), addStudent() (checks if student was previously in group and reactivates them), removeStudent() (SOFT DELETE: sets is_active=false, removed_at=now()), deleteGroup()
 │   │   ├── NotificationService.java   — send(), sendToGroup(), getUnreadCount(), markAsRead(), SSE emitter management
 │   │   ├── GamificationService.java   — onSubmissionCompleted() (streak +1, freeze token every 7 days), applyDailyStreakCheck() (called by scheduler)
 │   │   ├── SubscriptionService.java   — getSubscription(), upgrade() (calls PaymentService), downgrade(), checkQuota(), isFeatureAllowed()
 │   │   ├── PaymentService.java        — processPayment() — STUB: always returns success. Has full PaymentResult with transactionId and error handling infrastructure.
 │   │   ├── UsageService.java          — incrementEvaluation(), incrementOcr(), getRemainingUsage(), resetWeeklyCounters() (called by scheduler)
-│   │   ├── ExportService.java         — generateGroupReport(format), generateStudentReport(format) — PDF via OpenPDF, CSV via OpenCSV. Streamed, not persisted.
+│   │   ├── ExportService.java         — generateGroupReport(format), generateStudentReport(format) — PDF via OpenPDF, CSV via OpenCSV with strict IDOR protection. Streamed, not persisted.
 │   │   ├── ApiKeyService.java         — saveKey(encrypt + modelName), getDecryptedKey(), deleteKey()
 │   │   ├── EncryptionService.java     — encrypt(AES-256-GCM), decrypt(). Key from env variable.
 │   │   ├── LeaderboardService.java    — getGroupLeaderboard(groupId) — queries submissions within group for current week, returns ranked list
@@ -162,12 +162,12 @@ backend/
 │   │       ├── AIBrokerService.java    — generateTaskContent(), scoreEssay(), checkGrammar(). Selects provider & model (preferredProvider/preferredModel or user BYOK key, else system fallback chain: Groq → Gemini → retry → queue). Caches identical prompts in Redis (1h TTL). Rate limits per user.
 │   │       ├── AIProvider.java        — Interface: complete(prompt) → String
 │   │       ├── GroqProvider.java       — Implements AIProvider. REST client for Groq API (Llama 3.3 70B / Llama 4, proxied via Cloudflare)
-│   │       ├── GeminiProvider.java     — Implements AIProvider. REST client for Gemini 2.5 Flash / 3.0 (direct or proxied)
-│   │       ├── OpenAIProvider.java     — Implements AIProvider. For user-provided BYOK keys (GPT-5, GPT-4.1, o4-mini, o3)
-│   │       ├── AnthropicProvider.java  — Implements AIProvider. For user-provided BYOK keys (Claude Sonnet 4.6, Opus 4.6)
-│   │       ├── DeepSeekProvider.java   — Implements AIProvider. For user-provided BYOK keys (DeepSeek V3.2 / R1)
-│   │       ├── QwenProvider.java       — Implements AIProvider. For user-provided BYOK keys (Alibaba Qwen 3 235B / QwQ Plus)
-│   │       └── KimiProvider.java       — Implements AIProvider. For user-provided BYOK keys (Moonshot Kimi K2 / 128K)
+│   │       ├── GeminiProvider.java     — Implements AIProvider. REST client for Gemini 3.8 Flash / Extended Thinking (direct or proxied)
+│   │       ├── OpenAIProvider.java     — Implements AIProvider. For user-provided BYOK keys (GPT-6 Astra, GPT-6.1 Sol, o4-mini)
+│   │       ├── AnthropicProvider.java  — Implements AIProvider. For user-provided BYOK keys (Claude Fable 5.1, Opus 5.5, Sonnet 5.5)
+│   │       ├── DeepSeekProvider.java   — Implements AIProvider. For user-provided BYOK keys (DeepSeek V4.1 Flash, V4 Pro)
+│   │       ├── QwenProvider.java       — Implements AIProvider. For user-provided BYOK keys (Alibaba Qwen 3.8 Max / Flash)
+│   │       └── KimiProvider.java       — Implements AIProvider. For user-provided BYOK keys (Moonshot Kimi K3 / K2.7)
 │   │
 │   ├── scheduler/
 │   │   ├── StreakScheduler.java        — @Scheduled(cron='0 0 1 * * *') daily: check last_active_date, apply freeze or reset streak
@@ -233,7 +233,7 @@ flowchart TD
     
     Repository --> DB[("PostgreSQL 16")]
     
-    AIBrokerService --> Providers["AI Providers\n(Groq, Gemini, OpenAI, Anthropic)"]
+    AIBrokerService --> Providers["AI Providers\n(Groq, Gemini, OpenAI, Anthropic, DeepSeek, Qwen, Kimi)"]
     OCRService --> Tesseract["Tesseract\n(tess4j)"]
 ```
 
@@ -250,37 +250,38 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **Auth** | POST | `/api/auth/google` | No | ALL | `GoogleAuthRequest` | `TokenResponse` | Authenticate or auto-register via Google OAuth2 ID Token |
 | **Auth** | POST | `/api/auth/refresh` | No | ALL | (Refresh Cookie) | `TokenResponse` | Refresh the short-lived access token |
 | **Auth** | POST | `/api/auth/logout` | Yes | ALL | — | 200 OK | Log out from the current device |
-| **Auth** | DELETE | `/api/auth/logout-all` | Yes | ALL | — | 200 OK | Log out from all active devices |
+| **Auth** | DELETE | `/api/auth/logout-all` | Yes | ALL | — | 204 No Content | Log out from all active devices |
 | **Auth** | POST | `/api/auth/forgot-password` | No | ALL | `ForgotPasswordRequest` | 200 OK | Request a password reset link |
 | **User** | GET | `/api/users/me` | Yes | ALL | — | `UserResponse` | Retrieve the current authenticated user's profile |
-| **User** | PUT | `/api/users/me` | Yes | ALL | `UpdateProfileRequest` | `UserResponse` | Update user profile details |
+| **User** | PUT | `/api/users/me` | Yes | ALL | `UpdateProfileRequest` | `UserResponse` | Update user profile (name, avatar, role switch: STUDENT ↔ TEACHER) |
 | **User** | PUT | `/api/users/me/password` | Yes | ALL | `ChangePasswordRequest` | 200 OK | Change account password |
-| **User** | DELETE | `/api/users/me` | Yes | ALL | — | 204 No Content | Delete account and anonymize data (GDPR) |
-| **Task** | GET | `/api/tasks` | Yes | ALL | — | `List<TaskResponse>` | List accessible tasks for the current user |
+| **User** | DELETE | `/api/users/me` | Yes | ALL | — | 204 No Content | Delete account and cascade assignments/submissions (GDPR) |
+| **Task** | GET | `/api/tasks` | Yes | ALL | — | `List<TaskResponse>` | List accessible tasks (templates, self-created, assigned) |
 | **Task** | GET | `/api/tasks/{id}` | Yes | ALL | — | `TaskResponse` | Retrieve task details by ID |
-| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task |
+| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task (with self-assignment for students) |
 | **Task** | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Preview an AI-generated task without persisting |
 | **Task** | POST | `/api/tasks/template` | Yes | TEACHER | `TaskParamsRequest` | `TaskResponse` | Save a task as a reusable template |
 | **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups |
-| **Session** | POST | `/api/sessions/start` | Yes | STUDENT | `assignmentId` | `SessionStateResponse` | Start an adaptive test session |
+| **Session** | POST | `/api/sessions/start` | Yes | STUDENT | `StartSessionRequest` (`assignmentId` or `taskId`) | `SessionStateResponse` | Start an adaptive test session (auto-creates assignment if needed) |
 | **Session** | GET | `/api/sessions/active` | Yes | STUDENT | — | `SessionStateResponse` | Retrieve the active unfinished session (resume) |
 | **Session** | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT | — | `QuestionResponse` | Fetch the next question via the CAT algorithm |
 | **Session** | POST | `/api/sessions/{id}/answer` | Yes | STUDENT | `AnswerRequest` | `AnswerFeedbackResponse` | Submit an answer to the current question |
-| **Session** | POST | `/api/sessions/{id}/complete` | Yes | STUDENT | — | `SubmissionResultResponse` | Complete the adaptive session and calculate score |
-| **Submissions** | POST | `/api/submissions/text` | Yes | STUDENT | `TextSubmissionRequest` | `SubmissionResultResponse` | Submit text or an essay for AI grading |
-| **Submissions** | POST | `/api/submissions/image` | Yes | STUDENT | `MultipartFile` | `SubmissionResultResponse` | Upload a handwritten response image (OCR) |
+| **Session** | POST | `/api/sessions/{id}/complete` | Yes | STUDENT | — | `SubmissionResultResponse` | Complete the adaptive session (idempotent, streak +1) |
+| **Submissions** | POST | `/api/submissions/text` | Yes | STUDENT | `TextSubmissionRequest` (`text`, `taskId`?) | `SubmissionResultResponse` | Submit text or essay for AI grading (links or creates assignment) |
+| **Submissions** | POST | `/api/submissions/image` | Yes | STUDENT | `MultipartFile` | `SubmissionResultResponse` | Upload a handwritten response image (Zero-Retention OCR) |
 | **Submissions** | GET | `/api/submissions/{id}` | Yes | ALL | — | `SubmissionResultResponse` | Retrieve submission evaluation details |
-| **Submissions** | GET | `/api/submissions/my` | Yes | STUDENT | — | `List<SubmissionResultResponse>` | List all submissions by the current student |
-| **Submissions** | PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` | `SubmissionResultResponse` | Override AI score and add teacher feedback |
-| **Group** | GET | `/api/groups` | Yes | TEACHER | — | `List<GroupResponse>` | List the teacher's groups |
-| **Group** | GET | `/api/groups/{id}` | Yes | TEACHER | — | `GroupResponse` | Retrieve group details |
-| **Group** | POST | `/api/groups` | Yes | TEACHER | `CreateGroupRequest` | `GroupResponse` | Create a new student group |
-| **Group** | POST | `/api/groups/{id}/students` | Yes | TEACHER | `AddStudentRequest` | 200 OK | Add a student to a group |
-| **Group** | DELETE | `/api/groups/{id}/students/{uid}` | Yes | TEACHER | — | 204 No Content | Remove a student from a group (soft delete) |
+| **Submissions** | GET | `/api/submissions/my`, `/me` | Yes | ALL | — | `List<SubmissionResultResponse>` | List student submissions (or all group submissions for teachers) |
+| **Submissions** | POST/PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` (`overrideScore`, `comment`) | `SubmissionResultResponse` | Override AI score (updates effectiveScore, preserves original aiScore) |
+| **Group** | GET | `/api/groups` | Yes | TEACHER | — | `List<GroupResponse>` | List the teacher's student cohorts |
+| **Group** | GET | `/api/groups/{id}` | Yes | TEACHER | — | `GroupResponse` | Retrieve group details and student roster |
+| **Group** | POST | `/api/groups` | Yes | TEACHER | `CreateGroupRequest` (`name`) | `GroupResponse` | Create a new student cohort |
+| **Group** | POST | `/api/groups/{id}/students` | Yes | TEACHER | `AddStudentRequest` (`email`) | 200 OK | Enroll student into group (reactivates if previously removed) |
+| **Group** | DELETE | `/api/groups/{id}/students/{uid}` | Yes | TEACHER | — | 204 No Content | Remove a student from a group (soft delete, hides submissions) |
 | **Group** | DELETE | `/api/groups/{id}` | Yes | TEACHER | — | 204 No Content | Delete a group |
-| **Progress** | GET | `/api/progress/me` | Yes | STUDENT | — | `List<ProgressResponse>` | Retrieve personal grammar mastery progress |
+| **Progress** | GET | `/api/progress/me` | Yes | STUDENT | — | `List<ProgressResponse>` | Retrieve personal grammar mastery progress across A1–C2 |
 | **Progress** | GET | `/api/progress/student/{id}` | Yes | TEACHER | — | `List<ProgressResponse>` | Retrieve progress for a specific student |
 | **Progress** | GET | `/api/progress/group/{id}` | Yes | TEACHER | — | `List<ProgressResponse>` | Retrieve aggregated progress for a group |
+| **Progress** | POST | `/api/progress/level-up/confirm` | Yes | STUDENT | — | `User` | Confirm CEFR level promotion (returns updated User profile) |
 | **Notifications** | GET | `/api/notifications/stream` | Yes | ALL | — | SSE Stream | Subscribe to real-time notifications (Server-Sent Events) |
 | **Notifications** | GET | `/api/notifications/unread-count` | Yes | ALL | — | `Integer` | Retrieve unread notification count |
 | **Notifications** | PATCH | `/api/notifications/{id}/read` | Yes | ALL | — | 200 OK | Mark a notification as read |
@@ -288,12 +289,12 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **Subscriptions** | POST | `/api/subscriptions/upgrade` | Yes | ALL | `UpgradeRequest` | `PaymentResultResponse` | Upgrade subscription tier |
 | **Subscriptions** | POST | `/api/subscriptions/downgrade` | Yes | ALL | — | 200 OK | Downgrade subscription tier |
 | **Subscriptions** | GET | `/api/subscriptions/usage` | Yes | ALL | — | `UsageResponse` | Retrieve weekly quota usage (evaluations, OCR) |
-| **API Keys** | GET | `/api/api-keys` | Yes | ALL | — | `List<ApiKeyResponse>` | List saved BYOK API keys |
-| **API Keys** | POST | `/api/api-keys` | Yes | ALL | `CreateApiKeyRequest` | 200 OK | Save and encrypt a new API key |
+| **API Keys** | GET | `/api/api-keys` | Yes | ALL | — | `List<ApiKey>` | List saved BYOK API keys (masked) |
+| **API Keys** | POST | `/api/api-keys` | Yes | ALL | `CreateApiKeyRequest` (`provider`, `rawKey`, `modelName`) | `ApiKey` | Save and encrypt a new API key (returns created ApiKey) |
 | **API Keys** | DELETE | `/api/api-keys/{id}` | Yes | ALL | — | 204 No Content | Delete a saved API key |
-| **Leaderboard** | GET | `/api/leaderboard/group/{id}` | Yes | ALL | — | `List<LeaderboardEntryResponse>` | Intra-group weekly leaderboard (NO global) |
-| **Export** | GET | `/api/export/report/group/{id}` | Yes | TEACHER | — | File (PDF/CSV) | Export a group performance report |
-| **Export** | GET | `/api/export/report/student/{id}` | Yes | TEACHER | — | File (PDF/CSV) | Export an individual student report |
+| **Leaderboard** | GET | `/api/leaderboard/group/{id}` | Yes | ALL | — | `List<LeaderboardEntryResponse>` | Intra-group weekly leaderboard (anonymized aliases, NO global) |
+| **Export** | GET | `/api/export/group/{id}`, `/report/group/{id}` | Yes | TEACHER | `?format=pdf\|csv` | File (PDF/CSV) | Export a group performance report |
+| **Export** | GET | `/api/export/student/{id}`, `/report/student/{id}` | Yes | ALL | `?format=pdf\|csv` | File (PDF/CSV) | Export student academic report (IDOR protected: student/admin/teacher) |
 
 ---
 
