@@ -11,7 +11,7 @@ import { axiosInstance } from './axiosInstance';
  */
 export interface ApiKeyItem {
   id: string;
-  provider: 'GROQ' | 'GEMINI' | 'OPENAI' | 'ANTHROPIC';
+  provider: 'GROQ' | 'GEMINI' | 'OPENAI' | 'ANTHROPIC' | 'DEEPSEEK' | 'QWEN' | 'KIMI';
   createdAt: string;
 }
 

@@ -233,6 +233,9 @@ public class AIBrokerService {
             case GEMINI -> Optional.of((AIProvider) new GeminiProvider(decryptedKey, restTemplate, objectMapper));
             case OPENAI -> Optional.of((AIProvider) new OpenAIProvider(decryptedKey, restTemplate, objectMapper));
             case ANTHROPIC -> Optional.of((AIProvider) new AnthropicProvider(decryptedKey, restTemplate, objectMapper));
+            case DEEPSEEK -> Optional.of((AIProvider) new DeepSeekProvider(decryptedKey, restTemplate, objectMapper));
+            case QWEN -> Optional.of((AIProvider) new QwenProvider(decryptedKey, restTemplate, objectMapper));
+            case KIMI -> Optional.of((AIProvider) new KimiProvider(decryptedKey, restTemplate, objectMapper));
         };
     }
 

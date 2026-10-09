@@ -120,7 +120,7 @@ backend/
 │   │       ├── SubmissionType.java    — TEXT, IMAGE
 │   │       ├── AssignmentStatus.java  — PENDING, IN_PROGRESS, SUBMITTED, GRADED
 │   │       ├── SubscriptionTier.java  — FREE, PREMIUM, EDUCATOR
-│   │       ├── AIProvider.java        — GROQ, GEMINI, OPENAI, ANTHROPIC
+│   │       ├── AIProvider.java        — GROQ, GEMINI, OPENAI, ANTHROPIC, DEEPSEEK, QWEN, KIMI
 │   │       ├── NotificationType.java  — TASK, GRADE, SYSTEM, CONTEXTUAL
 │   │       └── PaymentErrorCode.java  — PAYMENT_FAILED, CARD_DECLINED, INSUFFICIENT_FUNDS, EXPIRED_CARD, NETWORK_ERROR, PROVIDER_ERROR
 │   │
@@ -161,10 +161,13 @@ backend/
 │   │   └── ai/
 │   │       ├── AIBrokerService.java    — generateTaskContent(), scoreEssay(), checkGrammar(). Selects provider (own key → user's, else system). Fallback chain: Groq → Gemini → retry → queue. Caches identical prompts in Redis (1h TTL). Rate limits per user.
 │   │       ├── AIProvider.java        — Interface: complete(prompt) → String
-│   │       ├── GroqProvider.java       — Implements AIProvider. REST client for Groq API (Llama 3.1 70B)
-│   │       ├── GeminiProvider.java     — Implements AIProvider. REST client for Gemini 1.5 Flash
-│   │       ├── OpenAIProvider.java     — Implements AIProvider. For user-provided keys
-│   │       └── AnthropicProvider.java  — Implements AIProvider. For user-provided keys
+│   │       ├── GroqProvider.java       — Implements AIProvider. REST client for Groq API (Llama 3.1 70B, proxied via Cloudflare)
+│   │       ├── GeminiProvider.java     — Implements AIProvider. REST client for Gemini 1.5 Flash (direct or proxied)
+│   │       ├── OpenAIProvider.java     — Implements AIProvider. For user-provided BYOK keys (GPT-4o mini)
+│   │       ├── AnthropicProvider.java  — Implements AIProvider. For user-provided BYOK keys (Claude 3.5 Sonnet)
+│   │       ├── DeepSeekProvider.java   — Implements AIProvider. For user-provided BYOK keys (DeepSeek-V3 / R1)
+│   │       ├── QwenProvider.java       — Implements AIProvider. For user-provided BYOK keys (Alibaba Qwen-Plus)
+│   │       └── KimiProvider.java       — Implements AIProvider. For user-provided BYOK keys (Moonshot Kimi v1-8k)
 │   │
 │   ├── scheduler/
 │   │   ├── StreakScheduler.java        — @Scheduled(cron='0 0 1 * * *') daily: check last_active_date, apply freeze or reset streak

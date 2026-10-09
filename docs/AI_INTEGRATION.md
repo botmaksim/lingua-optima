@@ -8,21 +8,80 @@ This document describes the artificial intelligence and OCR integration architec
 The platform leverages external AI APIs. We do not use self-hosted models or fine-tuning ($0 infrastructure budget).
 
 ## AI Provider Strategy
-- **Task Generation (grammar exercises):** Groq API → Llama 3.1 70B (free tier: 14,400 req/day)
-- **Essay Scoring + Grammar Check:** Google Gemini 1.5 Flash (free tier: 1,500 req/day)
-- **OCR:** Tesseract via `tess4j` (local execution inside the Java Docker container)
-- **User's own key (BYOK):** If a user provides their own API key (`OpenAI`, `Anthropic`, `Groq`, or `Gemini`), the system uses it instead of the system-level keys.
+- **Task Generation (grammar exercises):** Groq API → Llama 3.1 70B (free tier: 14,400 req/day, proxied via Cloudflare Edge to bypass Cloudflare GeoIP restrictions).
+- **Essay Scoring + Grammar Check:** Google Gemini 1.5 Flash (free tier: 1,500 req/day, direct or proxied).
+- **OCR:** Tesseract via `tess4j` (local in-memory zero-retention execution inside Java container).
+- **User's own key (BYOK):** Supports 7 distinct providers:
+  - **Western Providers:** OpenAI (`gpt-4o-mini`), Anthropic (`claude-3-5-sonnet`), Groq (`llama-3.1-70b`), Google Gemini (`gemini-1.5-flash`).
+  - **Chinese Providers (No Geo-blocks for RU/BY):**
+    - **DeepSeek** (`deepseek-chat` / DeepSeek-V3 & `deepseek-reasoner` / R1): Direct access without VPN from RU/BY, state-of-the-art reasoning, ultra-low cost (~$0.14/1M tokens).
+    - **Alibaba Qwen (DashScope)** (`qwen-plus` / `qwen-turbo` / `qwen-max`): Full OpenAI compatibility, high throughput.
+    - **Moonshot Kimi** (`moonshot-v1-8k` / `32k` / `128k`): Exceptional long-context comprehension.
 
 ---
 
-## 1. AIBrokerService Architecture
+## 1. Cloudflare Edge Reverse-Proxy Architecture
+
+To guarantee high availability and bypass regional geo-blocking (e.g. Cloudflare GeoIP blocks affecting Groq in certain countries or host IP restrictions on OpenAI/Anthropic), Lingua Optima integrates a **dedicated Cloudflare Worker reverse-proxy** (`cloudflare-proxy/worker.js` bound to `ai-proxy.mybsu.online` or `*.workers.dev`).
+
+### Proxy Routing Table
+
+| Local Provider Route | Upstream Provider API | .env Parameter | Default Value |
+| :--- | :--- | :--- | :--- |
+| `https://ai-proxy.mybsu.online/groq/*` | `https://api.groq.com/*` | `GROQ_BASE_URL` | `https://api.groq.com/openai/v1` |
+| `https://ai-proxy.mybsu.online/gemini/*` | `https://generativelanguage.googleapis.com/*` | `GEMINI_BASE_URL` | `https://generativelanguage.googleapis.com` |
+| `https://ai-proxy.mybsu.online/openai/*` | `https://api.openai.com/*` | `OPENAI_BASE_URL` | `https://api.openai.com/v1` |
+| `https://ai-proxy.mybsu.online/anthropic/*` | `https://api.anthropic.com/*` | `ANTHROPIC_BASE_URL` | `https://api.anthropic.com/v1` |
+| `https://ai-proxy.mybsu.online/deepseek/*` | `https://api.deepseek.com/*` | `DEEPSEEK_BASE_URL` | `https://api.deepseek.com` |
+| `https://ai-proxy.mybsu.online/qwen/*` | `https://dashscope-intl.aliyuncs.com/*` | `QWEN_BASE_URL` | `https://dashscope-intl.aliyuncs.com/compatible-mode/v1` |
+| `https://ai-proxy.mybsu.online/kimi/*` | `https://api.moonshot.cn/*` | `KIMI_BASE_URL` | `https://api.moonshot.cn/v1` |
+
+### Proxy Topology & Security Mechanics
+
+1. **Origin IP Sanitization:** The Cloudflare Worker explicitly strips origin client headers (`cf-connecting-ip`, `x-real-ip`, `x-forwarded-for`).
+2. **Egress IP Geolocation:** Outbound requests originate from Cloudflare's US/EU data center edge IPs.
+3. **Zero Retention:** The proxy does not log request payloads or API keys; transactions stream ephemerally through RAM.
+
+```mermaid
+flowchart LR
+    subgraph Host["Backend Server (Any Region / Localhost / VPS)"]
+        Backend["Spring Boot Backend<br/>(AIBrokerService)"]
+    end
+
+    subgraph Edge["Cloudflare Edge Network"]
+        Worker["Cloudflare Worker<br/>ai-proxy.mybsu.online<br/>(worker.js)"]
+    end
+
+    subgraph Upstream["Target AI Services"]
+        Groq["Groq API<br/>api.groq.com"]
+        Gemini["Google Gemini<br/>googleapis.com"]
+        OpenAI["OpenAI<br/>api.openai.com"]
+        Claude["Anthropic<br/>api.anthropic.com"]
+        DeepSeek["DeepSeek API<br/>api.deepseek.com"]
+        Qwen["Alibaba Qwen<br/>dashscope.aliyuncs.com"]
+        Kimi["Moonshot Kimi<br/>api.moonshot.cn"]
+    end
+
+    Backend -->|"HTTPS (GROQ_BASE_URL)"| Worker
+    Backend -.->|"Direct HTTPS (No Block)"| DeepSeek
+    Worker -->|"US/EU Egress IP"| Groq
+    Worker -->|"US/EU Egress IP"| OpenAI
+    Worker -->|"US/EU Egress IP"| Claude
+    Worker -->|"US/EU Egress IP"| Gemini
+    Worker -->|"Optional Edge Proxy"| Qwen
+    Worker -->|"Optional Edge Proxy"| Kimi
+```
+
+---
+
+## 2. AIBrokerService Architecture
 
 The central component for interacting with Large Language Models is `AIBrokerService`. It relies on the `AIProvider` interface exposing a single unified method `complete(String prompt): String`.
 
-Four provider implementations are available: `GroqProvider`, `GeminiProvider`, `OpenAIProvider`, and `AnthropicProvider`.
+Seven provider implementations are available: `GroqProvider`, `GeminiProvider`, `OpenAIProvider`, `AnthropicProvider`, `DeepSeekProvider`, `QwenProvider`, and `KimiProvider`.
 
 **Provider Selection Logic:**
-1. Does the user have a custom API key configured? → Route to the user's configured provider.
+1. Does the user have a custom API key configured? → Route to the user's configured provider (AES-256-GCM decrypted at runtime).
 2. No custom key? → Route to the system default provider (Groq for task generation, Gemini for essay scoring).
 
 ```mermaid
@@ -30,33 +89,57 @@ classDiagram
     class AIBrokerService {
         -AIProvider defaultTaskProvider
         -AIProvider defaultEssayProvider
-        +generateTask(TaskParams params, User user) Task
-        +scoreEssay(String essay, String cefrLevel, User user) EssayScore
-        -getProvider(User user, TaskType type) AIProvider
+        +generateTaskContent(String prompt, User user) String
+        +scoreEssay(String essay, User user) String
+        +checkGrammar(String text, User user) String
+        -getUserCustomProvider(User user) Optional~AIProvider~
     }
     
     class AIProvider {
         <<interface>>
         +complete(String prompt) String
+        +getProviderName() String
     }
     
     class GroqProvider {
         -String apiKey
+        -String baseUrl
         +complete(String prompt) String
     }
     
     class GeminiProvider {
         -String apiKey
+        -String baseUrl
         +complete(String prompt) String
     }
     
     class OpenAIProvider {
         -String apiKey
+        -String baseUrl
         +complete(String prompt) String
     }
     
     class AnthropicProvider {
         -String apiKey
+        -String baseUrl
+        +complete(String prompt) String
+    }
+
+    class DeepSeekProvider {
+        -String apiKey
+        -String baseUrl
+        +complete(String prompt) String
+    }
+
+    class QwenProvider {
+        -String apiKey
+        -String baseUrl
+        +complete(String prompt) String
+    }
+
+    class KimiProvider {
+        -String apiKey
+        -String baseUrl
         +complete(String prompt) String
     }
     
@@ -65,6 +148,9 @@ classDiagram
     AIProvider <|.. GeminiProvider
     AIProvider <|.. OpenAIProvider
     AIProvider <|.. AnthropicProvider
+    AIProvider <|.. DeepSeekProvider
+    AIProvider <|.. QwenProvider
+    AIProvider <|.. KimiProvider
 ```
 
 ---

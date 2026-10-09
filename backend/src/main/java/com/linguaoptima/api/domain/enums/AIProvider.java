@@ -14,6 +14,12 @@ public enum AIProvider {
     GEMINI,
     /** @brief Constant or enum value representing openai in AIProvider. */
     OPENAI,
-    ANTHROPIC
-/** @brief Constant or enum value representing anthropic in AIProvider. */
+    /** @brief Constant or enum value representing anthropic in AIProvider. */
+    ANTHROPIC,
+    /** @brief Constant or enum value representing deepseek in AIProvider. */
+    DEEPSEEK,
+    /** @brief Constant or enum value representing qwen in AIProvider. */
+    QWEN,
+    /** @brief Constant or enum value representing kimi in AIProvider. */
+    KIMI
 }

@@ -110,7 +110,55 @@ class AIProvidersTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: default constructors and non-2xx HTTP error branches for Gemini, OpenAI, and Anthropic.
+     * @brief Verifies unit test scenario: deepseek provider success.
+     */
+    @Test
+    void testDeepSeekProviderSuccess() throws Exception {
+        DeepSeekProvider provider = new DeepSeekProvider("deepseek-key", restTemplate, objectMapper);
+        assertEquals("DEEPSEEK", provider.getProviderName());
+
+        String json = "{\"choices\":[{\"message\":{\"content\":\"DeepSeek response\"}}]}";
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenReturn(new ResponseEntity<>(json, HttpStatus.OK));
+
+        String res = provider.complete("hello");
+        assertEquals("DeepSeek response", res);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: qwen provider success.
+     */
+    @Test
+    void testQwenProviderSuccess() throws Exception {
+        QwenProvider provider = new QwenProvider("qwen-key", restTemplate, objectMapper);
+        assertEquals("QWEN", provider.getProviderName());
+
+        String json = "{\"choices\":[{\"message\":{\"content\":\"Qwen response\"}}]}";
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenReturn(new ResponseEntity<>(json, HttpStatus.OK));
+
+        String res = provider.complete("hello");
+        assertEquals("Qwen response", res);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: kimi provider success.
+     */
+    @Test
+    void testKimiProviderSuccess() throws Exception {
+        KimiProvider provider = new KimiProvider("kimi-key", restTemplate, objectMapper);
+        assertEquals("KIMI", provider.getProviderName());
+
+        String json = "{\"choices\":[{\"message\":{\"content\":\"Kimi response\"}}]}";
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+            .thenReturn(new ResponseEntity<>(json, HttpStatus.OK));
+
+        String res = provider.complete("hello");
+        assertEquals("Kimi response", res);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: default constructors and non-2xx HTTP error branches.
      */
     @Test
     void testProvidersDefaultConstructorsAndHttpErrors() {
@@ -118,6 +166,9 @@ class AIProvidersTest {
         GeminiProvider gemini = new GeminiProvider("gemini-key", restTemplate, objectMapper);
         OpenAIProvider openai = new OpenAIProvider(restTemplate, objectMapper);
         AnthropicProvider anthropic = new AnthropicProvider(restTemplate, objectMapper);
+        DeepSeekProvider deepseek = new DeepSeekProvider(restTemplate, objectMapper);
+        QwenProvider qwen = new QwenProvider(restTemplate, objectMapper);
+        KimiProvider kimi = new KimiProvider(restTemplate, objectMapper);
 
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>(HttpStatus.BAD_GATEWAY));
@@ -125,6 +176,9 @@ class AIProvidersTest {
         assertThrows(RuntimeException.class, () -> gemini.complete("prompt"));
         assertThrows(RuntimeException.class, () -> openai.complete("prompt"));
         assertThrows(RuntimeException.class, () -> anthropic.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> deepseek.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> qwen.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> kimi.complete("prompt"));
 
         when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
             .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
@@ -133,6 +187,9 @@ class AIProvidersTest {
         assertThrows(RuntimeException.class, () -> gemini.complete("prompt"));
         assertThrows(RuntimeException.class, () -> openai.complete("prompt"));
         assertThrows(RuntimeException.class, () -> anthropic.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> deepseek.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> qwen.complete("prompt"));
+        assertThrows(RuntimeException.class, () -> kimi.complete("prompt"));
     }
 }
 

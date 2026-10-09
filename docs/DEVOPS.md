@@ -406,13 +406,48 @@ Step-by-step guide to running the project locally:
 
 ---
 
-## 11. Project Directory Structure
+---
+
+## 11. Cloudflare Edge Reverse-Proxy Setup
+
+To ensure continuous operation for deployments in geo-restricted regions (e.g. RU/BY), a lightweight Cloudflare Worker reverse-proxy is included in [`cloudflare-proxy/`](../cloudflare-proxy).
+
+### Deployment
+
+1. **Option A (Automated via Wrangler):**
+   ```bash
+   cd cloudflare-proxy
+   export CLOUDFLARE_API_TOKEN="<your-token>"
+   export CLOUDFLARE_ACCOUNT_ID="<your-account-id>"
+   npx wrangler deploy
+   ```
+2. **Option B (Web Dashboard in 2 minutes):**
+   - Cloudflare Dashboard → Workers & Pages → Create Application.
+   - Quick Edit → Paste [`cloudflare-proxy/worker.js`](../cloudflare-proxy/worker.js) → Save & Deploy.
+   - Add Custom Domain (e.g. `ai-proxy.mybsu.online`).
+
+### Linking with Backend
+In the root `.env` file, specify:
+```env
+GROQ_BASE_URL=https://ai-proxy.mybsu.online/groq/openai/v1
+GEMINI_BASE_URL=https://ai-proxy.mybsu.online/gemini
+OPENAI_BASE_URL=https://ai-proxy.mybsu.online/openai/v1
+ANTHROPIC_BASE_URL=https://ai-proxy.mybsu.online/anthropic/v1
+DEEPSEEK_BASE_URL=https://ai-proxy.mybsu.online/deepseek
+QWEN_BASE_URL=https://ai-proxy.mybsu.online/qwen/compatible-mode/v1
+KIMI_BASE_URL=https://ai-proxy.mybsu.online/kimi/v1
+```
+
+---
+
+## 12. Project Directory Structure
 
 ```text
 lingua_optima/
 ├── backend/                — Java 21 + Spring Boot 3
 ├── frontend/               — React 18 + TypeScript + Vite
-├── docker-compose.yml      — All services orchestration
+├── cloudflare-proxy/       — Cloudflare Edge AI reverse-proxy (worker.js, wrangler.toml)
+├── docker-compose.yml      — All services orchestration (parameterized via .env)
 ├── docs/                   — Documentation & presentation
 │   ├── presentation.html   — Interactive pitch deck
 │   ├── README.md           — Master index
@@ -423,6 +458,6 @@ lingua_optima/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml
-├── .env.example
+├── .env.example            — Comprehensive template with all AI endpoints and secrets
 └── .gitignore
 ```

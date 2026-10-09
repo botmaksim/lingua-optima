@@ -58,6 +58,15 @@ app:
       base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
     anthropic:
       base-url: ${ANTHROPIC_BASE_URL:https://api.anthropic.com/v1}
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:mock-deepseek-key}
+      base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+    qwen:
+      api-key: ${QWEN_API_KEY:mock-qwen-key}
+      base-url: ${QWEN_BASE_URL:https://dashscope-intl.aliyuncs.com/compatible-mode/v1}
+    kimi:
+      api-key: ${KIMI_API_KEY:mock-kimi-key}
+      base-url: ${KIMI_BASE_URL:https://api.moonshot.cn/v1}
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:*,https://*}
 

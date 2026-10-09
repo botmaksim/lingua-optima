@@ -14,6 +14,9 @@ Cloudflare Worker исполняется на глобальной сети Clou
 | `https://<твой-домен>/gemini/*` | `https://generativelanguage.googleapis.com/*` | `GEMINI_BASE_URL=https://<твой-домен>/gemini` |
 | `https://<твой-домен>/openai/*` | `https://api.openai.com/*` | `OPENAI_BASE_URL=https://<твой-домен>/openai/v1` |
 | `https://<твой-домен>/anthropic/*` | `https://api.anthropic.com/*` | `ANTHROPIC_BASE_URL=https://<твой-домен>/anthropic/v1` |
+| `https://<твой-домен>/deepseek/*` | `https://api.deepseek.com/*` | `DEEPSEEK_BASE_URL=https://<твой-домен>/deepseek` |
+| `https://<твой-домен>/qwen/*` | `https://dashscope-intl.aliyuncs.com/*` | `QWEN_BASE_URL=https://<твой-домен>/qwen/compatible-mode/v1` |
+| `https://<твой-домен>/kimi/*` | `https://api.moonshot.cn/*` | `KIMI_BASE_URL=https://<твой-домен>/kimi/v1` |
 | `https://<твой-домен>/health` | Проверка работоспособности | Возвращает `{"status":"UP"}` |
 
 ---

@@ -19,7 +19,7 @@ export const ProfilePage: React.FC = () => {
   const [keys, setKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [selectedProvider, setSelectedProvider] = useState<'GROQ' | 'GEMINI' | 'OPENAI' | 'ANTHROPIC'>('OPENAI');
+  const [selectedProvider, setSelectedProvider] = useState<'GROQ' | 'GEMINI' | 'OPENAI' | 'ANTHROPIC' | 'DEEPSEEK' | 'QWEN' | 'KIMI'>('DEEPSEEK');
   const [rawKey, setRawKey] = useState('');
   const [isSavingKey, setIsSavingKey] = useState(false);
   const [keyMessage, setKeyMessage] = useState<string | null>(null);
@@ -143,6 +143,9 @@ export const ProfilePage: React.FC = () => {
                 onChange={(e) => setSelectedProvider(e.target.value as any)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               >
+                <option value="DEEPSEEK">DeepSeek (DeepSeek-V3 / R1)</option>
+                <option value="QWEN">Alibaba Qwen (Qwen-Plus / Max)</option>
+                <option value="KIMI">Moonshot Kimi (v1-8k)</option>
                 <option value="OPENAI">OpenAI (GPT-4o mini)</option>
                 <option value="ANTHROPIC">Anthropic (Claude 3.5 Sonnet)</option>
                 <option value="GEMINI">Google Gemini 1.5 Flash</option>

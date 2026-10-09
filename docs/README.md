@@ -670,10 +670,12 @@ flowchart TD
 
 | Task | Primary Provider | Free-Tier Limit | Fallback Chain |
 |---|---|---|---|
-| Task Generation | Groq (Llama 3.1 70B) | 14,400 req/day | → Gemini → retry → queue |
-| Essay Scoring | Gemini 1.5 Flash | 1,500 req/day | → Groq → retry → queue |
-| Homework OCR | Tesseract (tess4j, local) | Unlimited | `OcrException` → HTTP 422 |
-| User's Own Key (BYOK) | OpenAI / Anthropic / Groq / Gemini | Per user's provider plan | Key failure → HTTP 402 |
+| Task Generation | Groq (Llama 3.1 70B, proxied via Cloudflare) | 14,400 req/day | → Gemini → retry → queue |
+| Essay Scoring | Gemini 1.5 Flash (direct or proxied) | 1,500 req/day | → Groq → retry → queue |
+| Homework OCR | Tesseract (tess4j, local in-memory) | Unlimited | `OcrException` → HTTP 422 |
+| User's Own Key (BYOK) | **7 Providers Supported**:<br/>• OpenAI (GPT-4o mini)<br/>• Anthropic (Claude 3.5 Sonnet)<br/>• DeepSeek (V3 / R1 - no geo-block)<br/>• Alibaba Qwen (DashScope - no geo-block)<br/>• Moonshot Kimi (no geo-block)<br/>• Groq (Llama 3.1 70B)<br/>• Gemini (1.5 Flash) | Per user's plan | Key failure → HTTP 402 |
+
+> 🌐 **Cloudflare Edge AI Proxy**: To bypass regional IP restrictions (e.g. Cloudflare GeoIP blocks affecting Groq or regional bans in RU/BY), all outgoing AI requests can be routed through an edge reverse-proxy (`ai-proxy.mybsu.online` or `*.workers.dev`) defined in `cloudflare-proxy/worker.js`. Parameters are fully configurable via `.env` (`GROQ_BASE_URL`, `DEEPSEEK_BASE_URL`, etc.). Chinese providers (DeepSeek, Qwen, Kimi) work directly without restrictions.
 
 ### Fallback Chain
 

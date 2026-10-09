@@ -282,6 +282,42 @@ class AIBrokerServiceTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: custom keys for Chinese providers DeepSeek, Qwen, and Kimi.
+     */
+    @Test
+    void testCustomKeyChineseProviders() throws Exception {
+        when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+
+        // DeepSeek
+        ApiKey keyDeepSeek = ApiKey.builder().id(UUID.randomUUID()).user(user).provider(AIProvider.DEEPSEEK).encryptedKey("encKey").build();
+        when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of(keyDeepSeek));
+        when(encryptionService.decrypt("encKey")).thenReturn("ds-key");
+        org.springframework.http.ResponseEntity<String> dsResp =
+            new org.springframework.http.ResponseEntity<>("{\"choices\":[{\"message\":{\"content\":\"DS response\"}}]}", org.springframework.http.HttpStatus.OK);
+        when(restTemplate.exchange(contains("deepseek.com"), eq(org.springframework.http.HttpMethod.POST), any(org.springframework.http.HttpEntity.class), eq(String.class)))
+            .thenReturn(dsResp);
+        assertEquals("DS response", aiBrokerService.scoreEssay("Essay", user));
+
+        // Qwen
+        ApiKey keyQwen = ApiKey.builder().id(UUID.randomUUID()).user(user).provider(AIProvider.QWEN).encryptedKey("encKey").build();
+        when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of(keyQwen));
+        org.springframework.http.ResponseEntity<String> qwenResp =
+            new org.springframework.http.ResponseEntity<>("{\"choices\":[{\"message\":{\"content\":\"Qwen response\"}}]}", org.springframework.http.HttpStatus.OK);
+        when(restTemplate.exchange(contains("dashscope"), eq(org.springframework.http.HttpMethod.POST), any(org.springframework.http.HttpEntity.class), eq(String.class)))
+            .thenReturn(qwenResp);
+        assertEquals("Qwen response", aiBrokerService.scoreEssay("Essay", user));
+
+        // Kimi
+        ApiKey keyKimi = ApiKey.builder().id(UUID.randomUUID()).user(user).provider(AIProvider.KIMI).encryptedKey("encKey").build();
+        when(apiKeyRepository.findAllByUserId(user.getId())).thenReturn(List.of(keyKimi));
+        org.springframework.http.ResponseEntity<String> kimiResp =
+            new org.springframework.http.ResponseEntity<>("{\"choices\":[{\"message\":{\"content\":\"Kimi response\"}}]}", org.springframework.http.HttpStatus.OK);
+        when(restTemplate.exchange(contains("moonshot.cn"), eq(org.springframework.http.HttpMethod.POST), any(org.springframework.http.HttpEntity.class), eq(String.class)))
+            .thenReturn(kimiResp);
+        assertEquals("Kimi response", aiBrokerService.scoreEssay("Essay", user));
+    }
+
+    /**
      * @brief Verifies unit test scenario: custom key failure throws payment exception.
      */
     @Test

@@ -45,6 +45,15 @@ export default {
     } else if (pathname.startsWith("/anthropic/")) {
       targetHost = "api.anthropic.com";
       targetPath = pathname.replace(/^\/anthropic/, "");
+    } else if (pathname.startsWith("/deepseek/")) {
+      targetHost = "api.deepseek.com";
+      targetPath = pathname.replace(/^\/deepseek/, "");
+    } else if (pathname.startsWith("/qwen/")) {
+      targetHost = "dashscope-intl.aliyuncs.com";
+      targetPath = pathname.replace(/^\/qwen/, "");
+    } else if (pathname.startsWith("/kimi/")) {
+      targetHost = "api.moonshot.cn";
+      targetPath = pathname.replace(/^\/kimi/, "");
     } else if (pathname === "/" || pathname === "/health") {
       return new Response(JSON.stringify({ status: "UP", service: "Lingua Optima AI Proxy" }), {
         status: 200,
@@ -53,7 +62,7 @@ export default {
     } else {
       return new Response(
         JSON.stringify({
-          error: "Unknown route. Use /groq/*, /gemini/*, /openai/*, or /anthropic/*",
+          error: "Unknown route. Use /groq/*, /gemini/*, /openai/*, /anthropic/*, /deepseek/*, /qwen/*, or /kimi/*",
         }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );

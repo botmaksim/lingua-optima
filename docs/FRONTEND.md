@@ -114,7 +114,7 @@ frontend/
 │       ├── Landing.tsx        — Hero block, 6 feature cards, [Get Started] [Log In] [View Demo] buttons
 │       ├── StudentApp.tsx     — Layout wrapper for student routes
 │       ├── TeacherApp.tsx     — Layout wrapper for teacher routes
-│       ├── ProfilePage.tsx    — Avatar, name, email, CEFR level, AI Provider section (toggle + key input + provider select), notification prefs, display_alias for leaderboard. Buttons: [Save Changes] [Change Password] [Delete Account]
+│       ├── ProfilePage.tsx    — Avatar, name, email, CEFR level, AI Provider BYOK section (7 providers: OpenAI, Anthropic, Gemini, Groq, DeepSeek, Qwen, Kimi with AES-256-GCM encryption), notification prefs, display_alias for leaderboard. Buttons: [Save Changes] [Change Password] [Delete Account]
 │       ├── SubscriptionPage.tsx — Free/Premium/Educator tier cards, current plan highlight, [Upgrade] buttons, payment stub
 │       └── NotFound.tsx
 │
