@@ -1,6 +1,7 @@
 # Stage 1: Build
 FROM gradle:8.10-jdk21 AS build
 WORKDIR /app
+ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx1024m -Dorg.gradle.workers.max=2"
 COPY build.gradle settings.gradle ./
 RUN gradle dependencies --no-daemon
 COPY src ./src

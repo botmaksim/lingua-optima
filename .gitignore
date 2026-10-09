@@ -25,6 +25,7 @@ doxygen_output/
 .env.*.local
 !.env.example
 
-# Temporary files
+# Temporary files & local deployment scripts
 /tmp/
 *.tmp
+redeploy*.sh
