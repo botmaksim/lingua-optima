@@ -298,5 +298,153 @@ describe('Student account renaming', () => {
   });
 });
 
+describe('SubmissionsReview component', () => {
+  it('renders submissions, filters by search, and toggles hide/unhide', async () => {
+    const { groupApi } = await import('../api/groupApi');
+    const { SubmissionsReview } = await import('../components/teacher/SubmissionsReview');
+
+    vi.spyOn(submissionApi, 'getTeacherSubmissions').mockResolvedValue([
+      {
+        id: 'sub-1',
+        studentId: 'stud-1',
+        studentName: 'Alice Smith',
+        studentEmail: 'alice@example.com',
+        submissionType: 'TEXT',
+        originalText: 'She went to Paris.',
+        score: 95,
+        submittedAt: '2026-10-10T00:00:00Z',
+        grammarTopic: 'Past Simple',
+      },
+      {
+        id: 'sub-2',
+        studentId: 'stud-2',
+        studentName: 'Bob Jones',
+        studentEmail: 'bob@example.com',
+        submissionType: 'TEXT',
+        originalText: 'They have arrived.',
+        score: 80,
+        submittedAt: '2026-10-10T01:00:00Z',
+        grammarTopic: 'Present Perfect',
+      },
+    ] as any);
+
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([
+      {
+        id: 'grp-1',
+        name: 'Group Alpha',
+        studentCount: 1,
+        students: [
+          {
+            id: 'stud-1',
+            fullName: 'Alice Smith',
+            email: 'alice@example.com',
+            role: 'STUDENT',
+          },
+        ],
+        createdAt: '2026-10-01T00:00:00Z',
+      },
+    ] as any);
+
+    render(
+      <MemoryRouter>
+        <SubmissionsReview />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Alice Smith')).toBeInTheDocument();
+    expect(screen.getByText('Bob Jones')).toBeInTheDocument();
+    expect(screen.getByText('Group Alpha')).toBeInTheDocument();
+
+    // Search filter test
+    const searchInput = screen.getByPlaceholderText(/search student, cohort, topic/i);
+    fireEvent.change(searchInput, { target: { value: 'Past Simple' } });
+    expect(screen.getByText('Alice Smith')).toBeInTheDocument();
+    expect(screen.queryByText('Bob Jones')).not.toBeInTheDocument();
+
+    // Clear search
+    fireEvent.change(searchInput, { target: { value: '' } });
+    expect(screen.getByText('Bob Jones')).toBeInTheDocument();
+
+    // Hide submission test
+    const hideButtons = screen.getAllByTitle(/hide from active queue/i);
+    fireEvent.click(hideButtons[0]);
+
+    // Hidden tab shows the hidden item (sub-2 Bob Jones is newer than sub-1 Alice Smith)
+    const hiddenTabBtn = screen.getByRole('button', { name: /hidden 1/i });
+    fireEvent.click(hiddenTabBtn);
+    expect(screen.getByText('Bob Jones')).toBeInTheDocument();
+    expect(screen.getByTitle(/restore to active queue/i)).toBeInTheDocument();
+  });
+});
+
+describe('StudentGroups component', () => {
+  it('renders cohort students, filters by CEFR and hides/unhides student', async () => {
+    const { groupApi } = await import('../api/groupApi');
+    const { StudentGroups } = await import('../components/teacher/StudentGroups');
+
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([
+      {
+        id: 'grp-1',
+        name: 'Evening B2',
+        studentCount: 2,
+        createdAt: '2026-10-01T00:00:00Z',
+      },
+    ] as any);
+
+    vi.spyOn(groupApi, 'getGroupDetails').mockResolvedValue({
+      id: 'grp-1',
+      name: 'Evening B2',
+      studentCount: 2,
+      createdAt: '2026-10-01T00:00:00Z',
+      students: [
+        {
+          id: 's-1',
+          fullName: 'Maria Garcia',
+          email: 'maria@example.com',
+          role: 'STUDENT',
+          cefrLevel: 'B2',
+        },
+        {
+          id: 's-2',
+          fullName: 'John Miller',
+          email: 'john@example.com',
+          role: 'STUDENT',
+          cefrLevel: 'A2',
+        },
+      ],
+      pendingStudents: [],
+    } as any);
+
+    render(
+      <MemoryRouter>
+        <StudentGroups />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Maria Garcia')).toBeInTheDocument();
+    expect(screen.getByText('John Miller')).toBeInTheDocument();
+
+    // Filter by search
+    const searchInput = screen.getByPlaceholderText(/search student name or email/i);
+    fireEvent.change(searchInput, { target: { value: 'Maria' } });
+    expect(screen.getByText('Maria Garcia')).toBeInTheDocument();
+    expect(screen.queryByText('John Miller')).not.toBeInTheDocument();
+
+    // Clear search
+    fireEvent.change(searchInput, { target: { value: '' } });
+    expect(screen.getByText('John Miller')).toBeInTheDocument();
+
+    // Hide student test
+    const hideBtn = screen.getAllByTitle(/hide student from active list/i)[0];
+    fireEvent.click(hideBtn);
+
+    // Switch to Hidden tab
+    const hiddenTabBtn = screen.getByRole('button', { name: /hidden 1/i });
+    fireEvent.click(hiddenTabBtn);
+    expect(screen.getByTitle(/unhide student/i)).toBeInTheDocument();
+  });
+});
+
+
 
 
