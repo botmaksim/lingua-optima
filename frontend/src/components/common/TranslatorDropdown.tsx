@@ -1,6 +1,6 @@
 /**
  * @file TranslatorDropdown.tsx
- * @brief Website translation dropdown integrating official Google Translate and Yandex Translate in-page widgets.
+ * @brief Website translation dropdown integrating official Google Translate in-page widget with responsive mobile layout.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -10,7 +10,6 @@ import {
   RotateCcw,
   Check,
   Languages,
-  ExternalLink,
 } from 'lucide-react';
 
 interface LanguageOption {
@@ -30,12 +29,12 @@ const SUPPORTED_LANGUAGES: LanguageOption[] = [
 ];
 
 /**
- * @brief Component providing Google Translate and Yandex Translate in-page translation controls.
+ * @brief Component providing Google Translate in-page translation controls.
  * @return React component element.
  */
 export const TranslatorDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeEngine, setActiveEngine] = useState<'none' | 'google' | 'yandex'>('none');
+  const [activeEngine, setActiveEngine] = useState<'none' | 'google'>('none');
   const [currentLang, setCurrentLang] = useState<string>('en');
   const [isMoreLangsOpen, setIsMoreLangsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -49,9 +48,6 @@ export const TranslatorDropdown: React.FC = () => {
     if (match && match[1] && match[1] !== 'en') {
       setActiveEngine('google');
       setCurrentLang(match[1]);
-    } else if (localStorage.getItem('lingua_translate_engine') === 'yandex') {
-      setActiveEngine('yandex');
-      setCurrentLang('ru');
     }
   }, []);
 
@@ -156,9 +152,6 @@ export const TranslatorDropdown: React.FC = () => {
    */
   const handleTranslateGoogle = (lang = 'ru') => {
     localStorage.removeItem('lingua_translate_engine');
-    if ((window as any).ya?.translate?.changeLang) {
-      (window as any).ya.translate.changeLang('en');
-    }
     setGoogleTranslateCookie(lang);
     localStorage.setItem('lingua_translate_engine', 'google');
     setActiveEngine('google');
@@ -190,16 +183,6 @@ export const TranslatorDropdown: React.FC = () => {
   };
 
   /**
-   * @brief Opens webpage translation via official Yandex Translate web service in a new tab.
-   */
-  const handleTranslateYandex = () => {
-    setIsOpen(false);
-    const targetUrl = window.location.href;
-    const yandexUrl = `https://translate.yandex.ru/translate?url=${encodeURIComponent(targetUrl)}&lang=en-ru`;
-    window.open(yandexUrl, '_blank', 'noopener,noreferrer');
-  };
-
-  /**
    * @brief Reverts the webpage back to original English.
    */
   const handleRevertOriginal = () => {
@@ -208,17 +191,13 @@ export const TranslatorDropdown: React.FC = () => {
     setActiveEngine('none');
     setCurrentLang('en');
     setIsOpen(false);
-    if ((window as any).ya?.translate?.changeLang) {
-      (window as any).ya.translate.changeLang('en');
-    }
     window.location.reload();
   };
 
   return (
     <div className="relative notranslate" translate="no" ref={dropdownRef}>
-      {/* Hidden containers required by Google and Yandex widget scripts */}
+      {/* Hidden container required by Google Translate script */}
       <div id="google_translate_element" className="hidden" />
-      <div id="ytWidget" className="hidden" />
 
       {/* Main Navbar Button */}
       <button
@@ -229,16 +208,12 @@ export const TranslatorDropdown: React.FC = () => {
             ? 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100 ring-2 ring-emerald-200'
             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
         }`}
-        title="Translate webpage with Google or Yandex"
+        title="Translate webpage with Google Translate"
         aria-label="Translate page"
       >
         <Globe className={`w-3.5 h-3.5 ${activeEngine !== 'none' ? 'text-emerald-600' : 'text-indigo-600'}`} />
         <span className="hidden sm:inline">
-          {activeEngine === 'google'
-            ? `Google: ${currentLang.toUpperCase()}`
-            : activeEngine === 'yandex'
-            ? 'Yandex: RU'
-            : 'Translate'}
+          {activeEngine === 'google' ? `Google: ${currentLang.toUpperCase()}` : 'Translate'}
         </span>
         {activeEngine !== 'none' && (
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -248,127 +223,114 @@ export const TranslatorDropdown: React.FC = () => {
 
       {/* Popover Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-3.5 pt-4 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3">
-          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
-          {/* Header */}
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <div className="flex items-center space-x-2">
-              <Languages className="w-4 h-4 text-primary" />
-              <span className="text-xs font-bold text-slate-900">Translate Webpage</span>
-            </div>
-            {activeEngine !== 'none' && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                Active: {activeEngine === 'google' ? 'Google' : 'Yandex'}
-              </span>
-            )}
-          </div>
+        <>
+          {/* Mobile backdrop */}
+          <div
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-2xs sm:hidden"
+            onClick={() => setIsOpen(false)}
+          />
 
-          <p className="text-[11px] text-slate-500 leading-snug">
-            Translate the entire application interface and exercises in-place using official automated widgets:
-          </p>
-
-          {/* Service 1: Google Translate */}
-          <div className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 transition space-y-2">
-            <div className="flex items-center justify-between">
+          <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 max-w-[calc(100vw-1.5rem)] overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-3.5 pt-4 z-50 animate-in fade-in zoom-in-95 duration-150 space-y-3">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500" />
+            {/* Header */}
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <div className="flex items-center space-x-2">
-                <span className="w-5 h-5 rounded-md bg-blue-600 text-white font-black text-[11px] flex items-center justify-center">
-                  G
-                </span>
-                <span className="text-xs font-bold text-slate-900">Google Translate</span>
+                <Languages className="w-4 h-4 text-primary" />
+                <span className="text-xs font-bold text-slate-900">Translate Webpage</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">In-Page Widget</span>
-            </div>
-
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={() => handleTranslateGoogle('ru')}
-                className={`w-full py-1.5 px-3 text-[11px] font-semibold rounded-lg border transition text-left flex items-center justify-between ${
-                  activeEngine === 'google' && currentLang === 'ru'
-                    ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs font-bold'
-                    : 'bg-white hover:bg-blue-50/50 text-slate-700 border-slate-200'
-                }`}
-              >
-                <span>🇷🇺 Russian (RU)</span>
-                {activeEngine === 'google' && currentLang === 'ru' ? (
-                  <Check className="w-3.5 h-3.5 text-blue-600" />
-                ) : (
-                  <span className="text-[10px] text-slate-400 font-normal">Translate</span>
-                )}
-              </button>
-            </div>
-
-            {/* Expandable more languages */}
-            <div>
-              <button
-                type="button"
-                onClick={() => setIsMoreLangsOpen(!isMoreLangsOpen)}
-                className="text-[11px] font-bold text-primary hover:underline flex items-center space-x-1"
-              >
-                <span>{isMoreLangsOpen ? 'Hide other languages' : 'More languages (ES, DE, FR, ZH)...'}</span>
-                <ChevronDown className={`w-3 h-3 transition-transform ${isMoreLangsOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {isMoreLangsOpen && (
-                <div className="grid grid-cols-2 gap-1 mt-2 pt-2 border-t border-slate-200">
-                  {SUPPORTED_LANGUAGES.map((l) => (
-                    <button
-                      key={l.code}
-                      type="button"
-                      onClick={() => handleTranslateGoogle(l.code)}
-                      className={`py-1 px-2 text-[10px] font-medium rounded-md text-left transition flex items-center justify-between ${
-                        activeEngine === 'google' && currentLang === l.code
-                          ? 'bg-blue-100 text-blue-800 font-bold'
-                          : 'bg-white hover:bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      <span className="truncate">{l.flag} {l.name.split(' ')[0]}</span>
-                      {activeEngine === 'google' && currentLang === l.code && (
-                        <Check className="w-2.5 h-2.5 text-blue-600 flex-shrink-0" />
-                      )}
-                    </button>
-                  ))}
-                </div>
+              {activeEngine !== 'none' && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Active: Google
+                </span>
               )}
             </div>
-          </div>
 
-          {/* Service 2: Yandex Translate */}
-          <div className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 transition space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <span className="w-5 h-5 rounded-md bg-red-600 text-white font-black text-[11px] flex items-center justify-center">
-                  Я
-                </span>
-                <span className="text-xs font-bold text-slate-900">Yandex Translate</span>
+            <p className="text-[11px] text-slate-500 leading-snug">
+              Translate the entire application interface and exercises in-place using Google Translate:
+            </p>
+
+            {/* Google Translate Options */}
+            <div className="p-2.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 transition space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <span className="w-5 h-5 rounded-md bg-blue-600 text-white font-black text-[11px] flex items-center justify-center">
+                    G
+                  </span>
+                  <span className="text-xs font-bold text-slate-900">Google Translate</span>
+                </div>
+                <span className="text-[10px] font-semibold text-slate-400">In-Page Widget</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">Web Translation</span>
+
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleTranslateGoogle('ru')}
+                  className={`w-full py-2 px-3 text-[11px] font-semibold rounded-lg border transition text-left flex items-center justify-between ${
+                    activeEngine === 'google' && currentLang === 'ru'
+                      ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs font-bold'
+                      : 'bg-white hover:bg-blue-50/50 text-slate-700 border-slate-200'
+                  }`}
+                >
+                  <span className="flex items-center gap-1.5">
+                    <span>🇷🇺</span>
+                    <span>Russian (Русский)</span>
+                  </span>
+                  {activeEngine === 'google' && currentLang === 'ru' ? (
+                    <Check className="w-3.5 h-3.5 text-blue-600" />
+                  ) : (
+                    <span className="text-[10px] text-slate-400 font-normal">Translate</span>
+                  )}
+                </button>
+              </div>
+
+              {/* Expandable more languages */}
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setIsMoreLangsOpen(!isMoreLangsOpen)}
+                  className="text-[11px] font-bold text-primary hover:underline flex items-center space-x-1 pt-1"
+                >
+                  <span>{isMoreLangsOpen ? 'Hide other languages' : 'Other languages (ES, DE, FR, ZH, AR, TR)...'}</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${isMoreLangsOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {isMoreLangsOpen && (
+                  <div className="grid grid-cols-2 gap-1.5 mt-2 pt-2 border-t border-slate-200">
+                    {SUPPORTED_LANGUAGES.filter((l) => l.code !== 'ru').map((l) => (
+                      <button
+                        key={l.code}
+                        type="button"
+                        onClick={() => handleTranslateGoogle(l.code)}
+                        className={`py-1.5 px-2 text-[10px] font-medium rounded-md text-left transition flex items-center justify-between ${
+                          activeEngine === 'google' && currentLang === l.code
+                            ? 'bg-blue-100 text-blue-800 font-bold'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100'
+                        }`}
+                      >
+                        <span className="truncate">{l.flag} {l.name.split(' ')[0]}</span>
+                        {activeEngine === 'google' && currentLang === l.code && (
+                          <Check className="w-2.5 h-2.5 text-blue-600 flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div className="pt-1">
+            {/* Revert / Original English Button */}
+            {activeEngine !== 'none' && (
               <button
                 type="button"
-                onClick={handleTranslateYandex}
-                className="w-full py-2 px-3 text-[11px] font-semibold rounded-lg border bg-white hover:bg-red-50/50 text-slate-700 hover:text-red-700 hover:border-red-300 border-slate-200 transition text-left flex items-center justify-between group"
+                onClick={handleRevertOriginal}
+                className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm"
               >
-                <span>🇷🇺 Translate on Yandex.ru</span>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-red-600 transition" />
+                <RotateCcw className="w-3.5 h-3.5 text-slate-200" />
+                <span>Show Original (English)</span>
               </button>
-            </div>
+            )}
           </div>
-
-          {/* Revert / Original English Button */}
-          {activeEngine !== 'none' && (
-            <button
-              type="button"
-              onClick={handleRevertOriginal}
-              className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm"
-            >
-              <RotateCcw className="w-3.5 h-3.5 text-slate-200" />
-              <span>Show Original (English)</span>
-            </button>
-          )}
-        </div>
+        </>
       )}
     </div>
   );

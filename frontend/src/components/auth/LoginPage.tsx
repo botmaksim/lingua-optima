@@ -41,6 +41,8 @@ export const LoginPage: React.FC = () => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [gisReady, setGisReady] = useState<boolean>(false);
+  const googleBtnRef = React.useRef<HTMLDivElement>(null);
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -52,18 +54,71 @@ export const LoginPage: React.FC = () => {
     return () => clearInterval(timer);
   }, [resendCooldown]);
 
+  /**
+   * @brief Initializes Google Identity Services and renders the official, mobile-compatible Sign-In button.
+   */
   useEffect(() => {
     if (!googleClientId || typeof document === 'undefined') return;
-    const existingScript = document.getElementById('google-gsi-client');
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.id = 'google-gsi-client';
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
+
+    const renderGoogleBtn = () => {
+      if (!window.google?.accounts?.id || !googleBtnRef.current) return;
+      try {
+        window.google.accounts.id.initialize({
+          client_id: googleClientId,
+          callback: async (response) => {
+            if (!response?.credential) return;
+            try {
+              setError(null);
+              await googleLogin(response.credential, role);
+              redirectAuthenticatedUser();
+            } catch (err: any) {
+              console.error('Google OAuth failure:', err);
+              setError(err.response?.data?.message || 'Google authentication failed.');
+            }
+          },
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+
+        const container = googleBtnRef.current;
+        const targetWidth = Math.min(380, Math.max(250, container.clientWidth || 320));
+        container.innerHTML = '';
+        window.google.accounts.id.renderButton(container, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'continue_with',
+          shape: 'pill',
+          logo_alignment: 'left',
+          width: targetWidth,
+        });
+        setGisReady(true);
+      } catch (err) {
+        console.warn('GIS render error:', err);
+      }
+    };
+
+    if (window.google?.accounts?.id) {
+      renderGoogleBtn();
+      return;
     }
-  }, [googleClientId]);
+
+    const checkInterval = setInterval(() => {
+      if (window.google?.accounts?.id) {
+        renderGoogleBtn();
+        clearInterval(checkInterval);
+      }
+    }, 150);
+
+    const timeout = setTimeout(() => {
+      clearInterval(checkInterval);
+    }, 4000);
+
+    return () => {
+      clearInterval(checkInterval);
+      clearTimeout(timeout);
+    };
+  }, [googleClientId, role, isRegister]);
 
   /**
    * @brief Redirects the authenticated user to the appropriate Student or Teacher dashboard.
@@ -207,10 +262,10 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl shadow-xl shadow-slate-100 border border-slate-100">
+    <div className="min-h-[85vh] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-6 bg-white p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-primary text-white font-black text-xl flex items-center justify-center mx-auto shadow-md shadow-indigo-100">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md shadow-indigo-100">
             LO
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -471,33 +526,44 @@ export const LoginPage: React.FC = () => {
           <div className="border-t border-slate-200 w-full" />
         </div>
 
-        <button
-          type="button"
-          onClick={handleGoogleSignIn}
-          disabled={isLoading}
-          data-testid="google-oauth-button"
-          className="w-full py-3.5 px-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm border border-slate-200 transition shadow-sm flex items-center justify-center space-x-2.5 disabled:opacity-50"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              fill="#4285F4"
-              d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"
-            />
-          </svg>
-          <span>Continue with Google</span>
-        </button>
+        <div className="w-full flex flex-col items-center justify-center min-h-[44px]">
+          {/* Official Google Identity Services button container (renders iframe when GIS loaded) */}
+          <div
+            ref={googleBtnRef}
+            className={`w-full flex justify-center items-center ${gisReady ? 'block' : 'hidden'}`}
+          />
+
+          {/* Interactive fallback / initial button (active while GIS is loading or in test environment) */}
+          {!gisReady && (
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              data-testid="google-oauth-button"
+              className="w-full py-3 px-4 rounded-full bg-white hover:bg-slate-50 active:bg-slate-100 text-slate-700 font-semibold text-sm border border-slate-300 transition-all shadow-sm flex items-center justify-center space-x-3 disabled:opacity-50"
+            >
+              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  fill="#4285F4"
+                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.96H1.29v3.14C3.26 21.3 7.31 24 12 24z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.28 14.24c-.24-.72-.38-1.49-.38-2.24s.14-1.52.38-2.24V6.62H1.29C.47 8.24 0 10.06 0 12s.47 3.76 1.29 5.38l3.99-3.14z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.99 3.14c.95-2.85 3.6-4.96 6.72-4.96z"
+                />
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

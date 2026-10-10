@@ -630,9 +630,8 @@ erDiagram
 
 - **Streamlined Navigation Bar**: Retains key primary links on the top bar while bundling secondary practice modes and educator actions into a clean `More ▾` dropdown menu to prevent visual clutter across screen sizes.
 - **Automated External Translation (`🌐 Translate ▾`)**: Rather than maintaining fragile, custom translation dictionaries, the platform provides a global translator dropdown directly in the Navbar integrating:
-  1. **Google Translate**: In-page automated translation across Russian, Spanish, German, French, Chinese, Arabic, and Turkish with failover link to Google Web proxy.
-  2. **Yandex Translate**: In-page translation widget tailored for CIS/Russian language nuances with failover link to Yandex Web proxy.
-  3. **Show Original (English)**: Single-click instant reversion restoring the default English interface.
+  1. **Google Translate**: In-page automated translation across Russian, Spanish, German, French, Chinese, Arabic, and Turkish.
+  2. **Show Original (English)**: Single-click instant reversion restoring the default English interface.
 
 ---
 

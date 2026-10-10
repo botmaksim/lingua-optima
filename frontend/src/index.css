@@ -46,8 +46,29 @@ code, pre {
   background: #94A3B8;
 }
 
+/* Chrome & Safari Autofill clean slate styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0px 1000px #f8fafc inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Ensure Google Identity Services iframes and containers are always visible */
+iframe[src*="accounts.google.com"],
+iframe[title*="Google"],
+.g_id_signin {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 /* =========================================================================
-   External Translation Widgets Styling (Google Translate & Yandex Translate)
+   External Translation Widgets Styling (Google Translate)
    Completely suppresses intrusive banner iframes, tooltips, and body shifts.
    ========================================================================= */
 
@@ -92,12 +113,6 @@ body {
   background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
-}
-
-/* Prevent Yandex Translate floating badge if rendered outside container */
-#yt-widget .yt-servicelink,
-.yt-servicelink {
-  display: none !important;
 }
 
 /* Branded customizable select fallback styling */
