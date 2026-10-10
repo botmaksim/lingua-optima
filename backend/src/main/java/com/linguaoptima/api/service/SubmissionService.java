@@ -273,7 +273,12 @@ public class SubmissionService {
             .orElseThrow(() -> new ResourceNotFoundException("Submission not found: " + submissionId));
 
         submission.setOverrideScore(request.getOverrideScore());
-        submission.setTeacherComment(request.getTeacherComment());
+        if (request.getTeacherComment() != null) {
+            submission.setTeacherComment(request.getTeacherComment());
+        }
+        if (request.getFeedback() != null) {
+            submission.setAiFeedback(request.getFeedback());
+        }
         Submission saved = submissionRepository.save(submission);
 
         if (saved.getAssignment() != null) {
@@ -285,7 +290,9 @@ public class SubmissionService {
             "👨‍🏫 Your grade was reviewed by " + teacher.getFullName() + ". New score: " + request.getOverrideScore(),
             NotificationType.GRADE);
 
-        return SubmissionResultResponse.fromEntity(saved);
+        SubmissionResultResponse response = SubmissionResultResponse.fromEntity(saved);
+        enrichSubmissionResult(response, saved, null);
+        return response;
     }
 
     /**
@@ -318,7 +325,11 @@ public class SubmissionService {
             throw new ForbiddenException("Only educators can view group submissions.");
         }
         return submissionRepository.findActiveGroupSubmissions(groupId).stream()
-            .map(SubmissionResultResponse::fromEntity)
+            .map(sub -> {
+                SubmissionResultResponse res = SubmissionResultResponse.fromEntity(sub);
+                enrichSubmissionResult(res, sub, null);
+                return res;
+            })
             .collect(Collectors.toList());
     }
 
@@ -336,7 +347,11 @@ public class SubmissionService {
             throw new ForbiddenException("Only educators can access the educator submissions review queue.");
         }
         return submissionRepository.findTeacherStudentSubmissions(teacher.getId()).stream()
-            .map(SubmissionResultResponse::fromEntity)
+            .map(sub -> {
+                SubmissionResultResponse res = SubmissionResultResponse.fromEntity(sub);
+                enrichSubmissionResult(res, sub, null);
+                return res;
+            })
             .collect(Collectors.toList());
     }
 
@@ -398,7 +413,12 @@ public class SubmissionService {
             extractFromRubric(rubric, corrections, weaknesses, strengths, items);
         }
 
-        // 4. Extract from Feedback if it contains JSON
+        // 4. Synthesize questions from studentText only if items still empty and student text contains explicit question markers (e.g. Q1:, Question 1:)
+        if (items.isEmpty() && submission.getStudentText() != null && hasQuestionMarkers(submission.getStudentText())) {
+            enrichFromParsedStudentAnswers(submission.getStudentText(), submission.getAiFeedback(), items, weaknesses, strengths);
+        }
+
+        // 5. Extract from Feedback if it contains JSON
         extractFromFeedback(submission.getAiFeedback(), corrections, weaknesses, strengths);
 
         // Deduplicate
@@ -427,6 +447,61 @@ public class SubmissionService {
         response.setItems(items);
         response.setCorrections(corrections);
         response.setAiAnalysis(analysis);
+    }
+
+    /**
+     * @brief Checks if student text contains explicit question number indicators (e.g. Q1:, Question 1:, Q2.).
+     * @param text Student text.
+     * @return True if question indicators are detected.
+     */
+    private boolean hasQuestionMarkers(String text) {
+        if (text == null || text.isBlank()) return false;
+        Pattern pattern = Pattern.compile("(?:^|\\s)(?:Q|Question\\s*)\\d+[:.)\\-\\s]+", Pattern.CASE_INSENSITIVE);
+        return pattern.matcher(text).find();
+    }
+
+    /**
+     * @brief Synthesizes question breakdown items from student text when structured task questions were not linked.
+     * @param studentText Raw student text.
+     * @param feedback Diagnostic feedback string.
+     * @param items Target items list.
+     * @param weaknesses Target weaknesses list.
+     * @param strengths Target strengths list.
+     */
+    private void enrichFromParsedStudentAnswers(String studentText, String feedback, List<SubmissionItemResponse> items, List<String> weaknesses, List<String> strengths) {
+        Map<Integer, String> studentAnswers = parseStudentAnswers(studentText);
+        if (studentAnswers.isEmpty()) return;
+
+        List<Integer> sortedKeys = new ArrayList<>(studentAnswers.keySet());
+        java.util.Collections.sort(sortedKeys);
+
+        String lowerFeedback = feedback != null ? feedback.toLowerCase() : "";
+
+        for (int qNum : sortedKeys) {
+            String ans = studentAnswers.get(qNum);
+            boolean mentionsError = lowerFeedback.contains("q" + qNum) && (lowerFeedback.contains("incorrect") || lowerFeedback.contains("wrong") || lowerFeedback.contains("error"));
+            boolean isCorrect = !mentionsError;
+
+            String rule = "Question " + qNum + " Application";
+            String explanation = isCorrect ? "Accurate application of grammatical rule." : "Needs review: see diagnostic feedback.";
+
+            items.add(SubmissionItemResponse.builder()
+                .questionNumber(qNum)
+                .sentence("Question " + qNum + ": " + ans)
+                .studentAnswer(ans)
+                .correctAnswer(isCorrect ? ans : "See feedback")
+                .isCorrect(isCorrect)
+                .explanation(explanation)
+                .grammarRule(rule)
+                .options(new ArrayList<>())
+                .build());
+
+            if (isCorrect) {
+                strengths.add(rule);
+            } else {
+                weaknesses.add(rule);
+            }
+        }
     }
 
     /**
@@ -465,6 +540,8 @@ public class SubmissionService {
                 }
             }
 
+            List<String> options = parseOptions(q.getOptionsJson());
+
             items.add(SubmissionItemResponse.builder()
                 .questionNumber(qOrder)
                 .sentence(q.getQuestionText())
@@ -473,6 +550,7 @@ public class SubmissionService {
                 .isCorrect(isCorrect)
                 .explanation(explanation)
                 .grammarRule(rule)
+                .options(options)
                 .build());
 
             if (isCorrect) {
@@ -481,6 +559,27 @@ public class SubmissionService {
                 weaknesses.add(rule);
             }
         }
+    }
+
+    /**
+     * @brief Parses option choices from serialized JSON string.
+     * @param optionsJson Serialized options JSON.
+     * @return List of option strings.
+     */
+    private List<String> parseOptions(String optionsJson) {
+        if (optionsJson == null || optionsJson.isBlank()) return new ArrayList<>();
+        List<String> list = new ArrayList<>();
+        try {
+            JsonNode root = objectMapper.readTree(optionsJson);
+            if (root.isArray()) {
+                for (JsonNode n : root) {
+                    list.add(n.asText());
+                }
+            }
+        } catch (Exception ignored) {
+            log.debug("Failed to parse options JSON: {}", optionsJson);
+        }
+        return list;
     }
 
     /**
@@ -531,6 +630,23 @@ public class SubmissionService {
     private Map<Integer, String> parseStudentAnswers(String studentText) {
         Map<Integer, String> answers = new HashMap<>();
         if (studentText == null || studentText.isBlank()) return answers;
+
+        Pattern inlinePattern = Pattern.compile("(?:Q|Question\\s*)?(\\d+)[:.)\\-\\s]+(.*?)(?=(?:\\s+(?:Q|Question\\s*)?\\d+[:.)\\-\\s]+)|$)", Pattern.CASE_INSENSITIVE);
+        Matcher inlineMatcher = inlinePattern.matcher(studentText);
+        int matchCount = 0;
+        Map<Integer, String> inlineAnswers = new HashMap<>();
+        while (inlineMatcher.find()) {
+            try {
+                int qNum = Integer.parseInt(inlineMatcher.group(1));
+                String ans = inlineMatcher.group(2).trim();
+                inlineAnswers.put(qNum, ans);
+                matchCount++;
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        if (matchCount > 1) {
+            return inlineAnswers;
+        }
 
         String[] lines = studentText.split("\\r?\\n");
         Pattern pattern = Pattern.compile("^(?:Q|Question\\s*)?(\\d+)[:.)\\-\\s]+(.*)$", Pattern.CASE_INSENSITIVE);
@@ -605,6 +721,13 @@ public class SubmissionService {
                         ? "Correct! Demonstrated mastery at CAT difficulty level " + diff + "/4. Tested rule: " + rule + "."
                         : "Incorrect. The expected answer is '" + corr + "'. Tested rule: " + rule + ".";
 
+                    List<String> options = new ArrayList<>();
+                    if (node.has("options") && node.get("options").isArray()) {
+                        for (JsonNode opt : node.get("options")) {
+                            options.add(opt.asText());
+                        }
+                    }
+
                     items.add(SubmissionItemResponse.builder()
                         .questionNumber(qNum)
                         .sentence(qText)
@@ -613,6 +736,7 @@ public class SubmissionService {
                         .isCorrect(isCorr)
                         .explanation(exp)
                         .grammarRule(rule)
+                        .options(options)
                         .build());
 
                     if (isCorr) {

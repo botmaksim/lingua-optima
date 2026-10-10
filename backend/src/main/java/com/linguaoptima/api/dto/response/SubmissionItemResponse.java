@@ -9,6 +9,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @brief Response DTO representing an individual evaluated sentence or exercise question.
  */
@@ -38,4 +41,8 @@ public class SubmissionItemResponse {
 
     /** @brief Targeted grammar rule or linguistic concept tested. */
     private String grammarRule;
+
+    /** @brief Multiple-choice options or answer choices, if applicable. */
+    @Builder.Default
+    private List<String> options = new ArrayList<>();
 }

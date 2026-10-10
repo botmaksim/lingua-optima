@@ -270,6 +270,7 @@ class SubmissionServiceTest {
         OverrideRequest req = OverrideRequest.builder()
             .overrideScore(85.0)
             .teacherComment("Good effort, improved grade.")
+            .feedback("Updated AI feedback by teacher.")
             .build();
 
         when(submissionRepository.findById(sub.getId())).thenReturn(Optional.of(sub));
@@ -280,6 +281,7 @@ class SubmissionServiceTest {
         assertNotNull(res);
         assertEquals(85.0, res.getOverrideScore());
         assertEquals("Good effort, improved grade.", res.getTeacherComment());
+        assertEquals("Updated AI feedback by teacher.", res.getFeedback());
         verify(notificationService).send(eq(student), anyString(), any());
     }
 
@@ -523,6 +525,7 @@ class SubmissionServiceTest {
             .questionText("He ___ (wake) up early.")
             .correctAnswer("woke")
             .grammarRule("Past Simple Irregular Verbs")
+            .optionsJson("[\"woke\", \"waked\", \"woken\"]")
             .build();
 
         com.linguaoptima.api.domain.TaskQuestion q2 = com.linguaoptima.api.domain.TaskQuestion.builder()
@@ -530,6 +533,7 @@ class SubmissionServiceTest {
             .questionText("She ___ (go) home.")
             .correctAnswer("went / had gone")
             .grammarRule("Past Simple Auxiliary Usage")
+            .optionsJson("invalid-json")
             .build();
 
         task.setQuestions(List.of(q1, q2));
@@ -557,6 +561,8 @@ class SubmissionServiceTest {
         assertTrue(resp.getItems().get(0).isCorrect());
         assertEquals("woke", resp.getItems().get(0).getStudentAnswer());
         assertEquals("Irregular past form of wake", resp.getItems().get(0).getExplanation());
+        assertEquals(List.of("woke", "waked", "woken"), resp.getItems().get(0).getOptions());
+        assertTrue(resp.getItems().get(1).getOptions().isEmpty());
 
         assertFalse(resp.getItems().get(1).isCorrect());
         assertEquals("did went", resp.getItems().get(1).getStudentAnswer());
@@ -566,7 +572,7 @@ class SubmissionServiceTest {
 
         // Test CAT session enrichment
         com.linguaoptima.api.domain.SessionState catSession = com.linguaoptima.api.domain.SessionState.builder()
-            .answersJson("[{\"questionText\":\"CAT Q1\",\"answer\":\"A\",\"correctAnswer\":\"A\",\"isCorrect\":true,\"grammarRule\":\"CAT Rule\",\"difficulty\":3}]")
+            .answersJson("[{\"questionText\":\"CAT Q1\",\"answer\":\"A\",\"correctAnswer\":\"A\",\"isCorrect\":true,\"grammarRule\":\"CAT Rule\",\"difficulty\":3,\"options\":[\"A\",\"B\"]}]")
             .build();
         when(sessionStateRepository.findByAssignmentId(assign.getId())).thenReturn(Optional.of(catSession));
 
@@ -574,6 +580,7 @@ class SubmissionServiceTest {
         submissionService.enrichSubmissionResult(catResp, subWithTask, null);
         assertEquals(1, catResp.getItems().size());
         assertEquals("CAT Q1", catResp.getItems().get(0).getSentence());
+        assertEquals(List.of("A", "B"), catResp.getItems().get(0).getOptions());
 
         // Test rubric corrections and AI feedback JSON parsing
         when(sessionStateRepository.findByAssignmentId(assign.getId())).thenReturn(Optional.empty());
@@ -945,5 +952,47 @@ class SubmissionServiceTest {
     @Test
     void testGetTeacherSubmissionsForbiddenForStudent() {
         assertThrows(ForbiddenException.class, () -> submissionService.getTeacherSubmissions(student));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: synthesizing itemized questions from numbered student text fallback.
+     */
+    @Test
+    void testEnrichFromParsedStudentAnswersFallback() {
+        Submission subNumbered = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("Q1: must be examined Q2: have presented")
+            .aiScore(60.0)
+            .aiFeedback("Q2 is incorrect. Review auxiliary verb.")
+            .build();
+
+        SubmissionResultResponse resp = SubmissionResultResponse.fromEntity(subNumbered);
+        submissionService.enrichSubmissionResult(resp, subNumbered, null);
+
+        assertNotNull(resp.getItems());
+        assertEquals(2, resp.getItems().size());
+        assertEquals("must be examined", resp.getItems().get(0).getStudentAnswer());
+        assertTrue(resp.getItems().get(0).isCorrect());
+        assertEquals("have presented", resp.getItems().get(1).getStudentAnswer());
+        assertFalse(resp.getItems().get(1).isCorrect());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: score override with null teacher comment and null feedback.
+     */
+    @Test
+    void testOverrideScoreNullCommentAndFeedback() {
+        Submission sub = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .aiScore(60.0)
+            .build();
+        OverrideRequest req = OverrideRequest.builder().overrideScore(70.0).build();
+        when(submissionRepository.findById(sub.getId())).thenReturn(Optional.of(sub));
+        when(submissionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        SubmissionResultResponse res = submissionService.overrideScore(sub.getId(), req, teacher);
+        assertEquals(70.0, res.getOverrideScore());
     }
 }

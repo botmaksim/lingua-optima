@@ -26,6 +26,8 @@ export interface SubmissionItem {
   explanation: string;
   /** @brief Tested grammar rule or linguistic syllabus topic. */
   grammarRule?: string;
+  /** @brief Multiple-choice options or choices if applicable. */
+  options?: string[];
 }
 
 /**
@@ -118,4 +120,6 @@ export interface OverrideRequest {
   overrideScore: number;
   /** @brief Property representing teacher comment in OverrideRequest. */
   teacherComment?: string;
+  /** @brief Optional revised AI diagnostic feedback comment. */
+  feedback?: string;
 }

@@ -25,4 +25,7 @@ public class OverrideRequest {
 
     /** @brief Field representing teacher comment in OverrideRequest. */
     private String teacherComment;
+
+    /** @brief Optional revised AI diagnostic feedback / evaluation comment. */
+    private String feedback;
 }

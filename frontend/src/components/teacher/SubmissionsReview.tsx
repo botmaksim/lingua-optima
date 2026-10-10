@@ -1,11 +1,13 @@
 /**
  * @file SubmissionsReview.tsx
- * @brief Educator submission grading, search, filtering, hide/archive toggles, pagination, and AI evaluation override interface.
+ * @brief Educator submission grading, search, filtering, hide/archive toggles, pagination, detailed question breakdown, and feedback editing interface.
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   CheckCircle,
+  CheckCircle2,
+  XCircle,
   Edit3,
   ChevronDown,
   ChevronUp,
@@ -19,6 +21,11 @@ import {
   Filter,
   RotateCcw,
   Users,
+  BookOpen,
+  Bot,
+  Lightbulb,
+  Save,
+  Sparkles,
 } from 'lucide-react';
 import { submissionApi } from '../../api/submissionApi';
 import { userApi } from '../../api/userApi';
@@ -30,7 +37,7 @@ import { useNotificationStore } from '../../store/notificationStore';
 import { formatDate } from '../../utils/formatDate';
 
 /**
- * @brief Educator component reviewing student homework, adjusting scores, and filtering submissions.
+ * @brief Educator component reviewing student homework, adjusting scores, inspecting question options, and editing comments.
  * @return React component element.
  */
 export const SubmissionsReview: React.FC = () => {
@@ -40,11 +47,20 @@ export const SubmissionsReview: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Score override state
+  // Score override modal state
   const [editingSub, setEditingSub] = useState<SubmissionResult | null>(null);
   const [newScore, setNewScore] = useState<number>(85);
   const [teacherComment, setTeacherComment] = useState<string>('');
+  const [aiFeedbackDraft, setAiFeedbackDraft] = useState<string>('');
   const [isSubmittingOverride, setIsSubmittingOverride] = useState(false);
+
+  // Inline comment & feedback editing states
+  const [editingFeedbackId, setEditingFeedbackId] = useState<string | null>(null);
+  const [feedbackDraft, setFeedbackDraft] = useState<string>('');
+
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [commentDraft, setCommentDraft] = useState<string>('');
+  const [isSavingInline, setIsSavingInline] = useState(false);
 
   // Student renaming state
   const [renamingStudent, setRenamingStudent] = useState<{ id: string; name: string } | null>(null);
@@ -127,6 +143,31 @@ export const SubmissionsReview: React.FC = () => {
   }, [groups]);
 
   /**
+   * @brief Toggles expansion of a submission row and fetches enriched details if needed.
+   * @param sub Target submission record.
+   */
+  const handleToggleExpand = async (sub: SubmissionResult) => {
+    if (expandedId === sub.id) {
+      setExpandedId(null);
+      return;
+    }
+
+    setExpandedId(sub.id);
+
+    // If items are not loaded yet, fetch single enriched submission
+    if (!sub.items || sub.items.length === 0) {
+      try {
+        const enriched = await submissionApi.getSubmissionById(sub.id);
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === sub.id ? { ...s, ...enriched } : s))
+        );
+      } catch (err) {
+        console.warn('Could not fetch enriched submission details:', err);
+      }
+    }
+  };
+
+  /**
    * @brief Toggles hidden/archived state for a given submission ID with localStorage persistence.
    * @param id Submission unique identifier.
    */
@@ -205,34 +246,50 @@ export const SubmissionsReview: React.FC = () => {
   };
 
   /**
-   * @brief Opens score and feedback override modal for a submission.
+   * @brief Opens score, feedback, and teacher comment override modal for a submission.
    * @param sub Target submission object.
    */
   const handleOpenOverride = (sub: SubmissionResult) => {
     setEditingSub(sub);
     setNewScore(sub.overrideScore ?? sub.score);
     setTeacherComment(sub.teacherComment || 'Great improvement. Well reasoned argument.');
+    setAiFeedbackDraft(sub.feedback || '');
   };
 
   /**
-   * @brief Saves overridden score and educator comments.
+   * @brief Saves overridden score, AI feedback, and educator comments from modal.
    */
   const handleSaveOverride = async () => {
     if (!editingSub) return;
     setIsSubmittingOverride(true);
     try {
-      await submissionApi.overrideScore(editingSub.id, {
+      const updated = await submissionApi.overrideScore(editingSub.id, {
         overrideScore: Number(newScore),
         teacherComment,
+        feedback: aiFeedbackDraft,
       });
+
+      setSubmissions((prev) =>
+        prev.map((s) =>
+          s.id === editingSub.id
+            ? {
+                ...s,
+                score: updated.score,
+                effectiveScore: updated.effectiveScore,
+                overrideScore: updated.overrideScore,
+                teacherComment: updated.teacherComment,
+                feedback: updated.feedback,
+              }
+            : s
+        )
+      );
+
       setEditingSub(null);
       addToast({
         type: 'success',
-        title: 'Grade Updated',
-        message: 'Student score and teacher feedback have been saved.',
+        title: 'Grade & Feedback Updated',
+        message: 'Student score, AI comment, and teacher advice have been saved.',
       });
-      const updatedList = await submissionApi.getTeacherSubmissions();
-      setSubmissions(updatedList);
     } catch (err) {
       console.error('Failed to save score override:', err);
       addToast({
@@ -246,6 +303,74 @@ export const SubmissionsReview: React.FC = () => {
   };
 
   /**
+   * @brief Saves inline edit of AI diagnostic comment directly from expanded card.
+   * @param sub Target submission.
+   */
+  const handleSaveInlineFeedback = async (sub: SubmissionResult) => {
+    setIsSavingInline(true);
+    try {
+      const updated = await submissionApi.overrideScore(sub.id, {
+        overrideScore: sub.overrideScore ?? sub.score,
+        teacherComment: sub.teacherComment,
+        feedback: feedbackDraft,
+      });
+
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === sub.id ? { ...s, feedback: updated.feedback } : s))
+      );
+      setEditingFeedbackId(null);
+      addToast({
+        type: 'success',
+        title: 'AI Comment Updated',
+        message: 'AI diagnostic evaluation feedback has been updated.',
+      });
+    } catch (err) {
+      console.error('Failed to update AI feedback:', err);
+      addToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Could not update AI diagnostic feedback.',
+      });
+    } finally {
+      setIsSavingInline(false);
+    }
+  };
+
+  /**
+   * @brief Saves inline edit of teacher advice / comment directly from expanded card.
+   * @param sub Target submission.
+   */
+  const handleSaveInlineComment = async (sub: SubmissionResult) => {
+    setIsSavingInline(true);
+    try {
+      const updated = await submissionApi.overrideScore(sub.id, {
+        overrideScore: sub.overrideScore ?? sub.score,
+        teacherComment: commentDraft,
+        feedback: sub.feedback,
+      });
+
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === sub.id ? { ...s, teacherComment: updated.teacherComment } : s))
+      );
+      setEditingCommentId(null);
+      addToast({
+        type: 'success',
+        title: 'Teacher Advice Saved',
+        message: 'Personalized student advice has been saved.',
+      });
+    } catch (err) {
+      console.error('Failed to update teacher comment:', err);
+      addToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Could not update teacher advice.',
+      });
+    } finally {
+      setIsSavingInline(false);
+    }
+  };
+
+  /**
    * @brief Approves AI generated grade without manual numerical adjustments.
    * @param sub Target submission object.
    */
@@ -253,7 +378,7 @@ export const SubmissionsReview: React.FC = () => {
     try {
       await submissionApi.overrideScore(sub.id, {
         overrideScore: sub.score,
-        teacherComment: 'AI grade approved by teacher.',
+        teacherComment: sub.teacherComment || 'AI grade approved by teacher.',
       });
       addToast({
         type: 'success',
@@ -368,7 +493,7 @@ export const SubmissionsReview: React.FC = () => {
         <div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Submissions Review</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Review student exercises and essays. Override scores, approve grades, search cohorts, and archive reviewed items.
+            Inspect student answers and options, edit AI evaluations, provide personalized guidance, and override grades.
           </p>
         </div>
 
@@ -602,6 +727,12 @@ export const SubmissionsReview: React.FC = () => {
                           {sub.submissionType}
                         </span>
 
+                        {sub.grammarTopic && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                            {sub.grammarTopic}
+                          </span>
+                        )}
+
                         <span className="text-xs text-slate-400">
                           {formatDate(sub.submittedAt)}
                         </span>
@@ -668,9 +799,9 @@ export const SubmissionsReview: React.FC = () => {
 
                         <button
                           type="button"
-                          onClick={() => setExpandedId(isExpanded ? null : sub.id)}
+                          onClick={() => handleToggleExpand(sub)}
                           className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 transition"
-                          title={isExpanded ? 'Collapse' : 'Expand'}
+                          title={isExpanded ? 'Collapse breakdown' : 'Detailed breakdown'}
                         >
                           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                         </button>
@@ -678,27 +809,304 @@ export const SubmissionsReview: React.FC = () => {
                     </div>
                   </div>
 
+                  {/* Detailed Expanded Breakdown */}
                   {isExpanded && (
-                    <div className="pt-3 border-t border-slate-100 space-y-3 text-xs animate-in fade-in duration-150">
-                      <div>
-                        <span className="font-bold text-slate-500 uppercase">Student Answer Text:</span>
-                        <div className="p-3 mt-1 bg-slate-50 rounded-xl font-mono text-slate-700 whitespace-pre-wrap">
-                          {sub.originalText}
+                    <div className="pt-4 border-t border-slate-100 space-y-4 text-xs animate-in fade-in duration-150">
+                      {/* Assignment Task & Context Passage */}
+                      {sub.taskContent && (
+                        <div className="p-4 bg-indigo-50/40 rounded-2xl border border-indigo-100/70 space-y-1.5">
+                          <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <BookOpen className="w-3.5 h-3.5" />
+                            <span>Assignment Task & Context Context</span>
+                          </span>
+                          <p className="text-xs text-slate-800 whitespace-pre-wrap leading-relaxed font-sans">
+                            {sub.taskContent}
+                          </p>
                         </div>
-                      </div>
+                      )}
 
-                      <div>
-                        <span className="font-bold text-slate-500 uppercase">AI Diagnostic Feedback:</span>
-                        <div className="p-3 mt-1 bg-indigo-50/50 rounded-xl text-slate-700 leading-relaxed whitespace-pre-wrap">
-                          {sub.feedback}
+                      {/* Question Breakdown and Answer Choices */}
+                      {sub.items && sub.items.length > 0 ? (
+                        <div className="space-y-3">
+                          <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-primary" />
+                            <span>Question-by-Question Diagnostic Evaluation ({sub.items.length} items)</span>
+                          </h4>
+
+                          <div className="grid grid-cols-1 gap-2.5">
+                            {sub.items.map((item) => (
+                              <div
+                                key={item.questionNumber}
+                                className={`p-4 rounded-2xl border transition space-y-2.5 ${
+                                  item.isCorrect
+                                    ? 'bg-emerald-50/30 border-emerald-100/80'
+                                    : 'bg-rose-50/30 border-rose-100/80'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="font-mono font-bold text-slate-700 text-xs">
+                                    Question {item.questionNumber}
+                                  </span>
+
+                                  {item.isCorrect ? (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                      <span>Correct</span>
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
+                                      <XCircle className="w-3 h-3 text-rose-600" />
+                                      <span>Incorrect</span>
+                                    </span>
+                                  )}
+                                </div>
+
+                                <p className="text-xs font-semibold text-slate-800">
+                                  {item.sentence}
+                                </p>
+
+                                {/* Answer choices / options if present */}
+                                {item.options && item.options.length > 0 && (
+                                  <div className="space-y-1">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                      Answer Options:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {item.options.map((opt, optIdx) => {
+                                        const optTrim = opt.trim().toLowerCase();
+                                        const isStudentChoice = optTrim === (item.studentAnswer || '').trim().toLowerCase();
+                                        const isCorrectChoice = optTrim === (item.correctAnswer || '').trim().toLowerCase();
+
+                                        let badgeStyle = 'bg-white text-slate-600 border-slate-200';
+                                        if (isStudentChoice && item.isCorrect) {
+                                          badgeStyle = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
+                                        } else if (isStudentChoice && !item.isCorrect) {
+                                          badgeStyle = 'bg-rose-100 text-rose-900 border-rose-300 font-bold';
+                                        } else if (isCorrectChoice) {
+                                          badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold';
+                                        }
+
+                                        return (
+                                          <div
+                                            key={optIdx}
+                                            className={`px-2.5 py-1 rounded-xl border text-xs flex items-center gap-1.5 ${badgeStyle}`}
+                                          >
+                                            <span>{opt}</span>
+                                            {isStudentChoice && (
+                                              <span className="text-[9px] px-1 py-0.2 rounded bg-black/10 font-bold">
+                                                {item.isCorrect ? 'Student Pick (✓)' : 'Student Pick (✗)'}
+                                              </span>
+                                            )}
+                                            {!isStudentChoice && isCorrectChoice && (
+                                              <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-200 text-emerald-900 font-bold">
+                                                Correct
+                                              </span>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Student Answer vs Correct Answer Summary */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 bg-white/80 rounded-xl border border-slate-100 text-xs">
+                                  <div>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Student Answer:</span>
+                                    <p className={`font-mono font-bold mt-0.5 ${item.isCorrect ? 'text-emerald-700' : 'text-rose-600'}`}>
+                                      {item.studentAnswer || 'No answer'}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Expected Answer:</span>
+                                    <p className="font-mono font-bold text-emerald-700 mt-0.5">
+                                      {item.correctAnswer}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Item explanation & rule */}
+                                {item.explanation && (
+                                  <div className="p-2.5 rounded-xl bg-slate-50 text-slate-600 text-xs leading-relaxed space-y-0.5">
+                                    <p>
+                                      <span className="font-bold text-slate-700">Diagnostic Rule: </span>
+                                      {item.explanation}
+                                    </p>
+                                    {item.grammarRule && (
+                                      <span className="inline-block text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-indigo-50 border border-indigo-100">
+                                        {item.grammarRule}
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-
-                      {sub.teacherComment && (
+                      ) : (
                         <div>
-                          <span className="font-bold text-amber-700 uppercase">Teacher Comment:</span>
-                          <div className="p-3 mt-1 bg-amber-50 rounded-xl text-amber-900 italic">
+                          <span className="font-bold text-slate-500 uppercase">Student Answer Text:</span>
+                          <div className="p-3 mt-1 bg-slate-50 rounded-xl font-mono text-slate-700 whitespace-pre-wrap">
+                            {sub.originalText}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* AI Diagnostic Comment Section with Inline Edit */}
+                      <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/70 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5 text-[11px]">
+                            <Bot className="w-3.5 h-3.5 text-primary" />
+                            <span>AI Evaluation & Diagnostic Comment</span>
+                          </span>
+
+                          {editingFeedbackId !== sub.id ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingFeedbackId(sub.id);
+                                setFeedbackDraft(sub.feedback || '');
+                              }}
+                              className="inline-flex items-center space-x-1 text-xs font-bold text-primary hover:text-primary-hover px-2 py-1 rounded-lg hover:bg-indigo-100/60 transition"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                              <span>Edit AI Comment</span>
+                            </button>
+                          ) : (
+                            <div className="flex items-center space-x-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setEditingFeedbackId(null)}
+                                className="px-2 py-0.5 text-xs text-slate-500 hover:text-slate-700 font-semibold"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveInlineFeedback(sub)}
+                                disabled={isSavingInline}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-primary text-white text-xs font-bold hover:bg-primary-hover transition disabled:opacity-50"
+                              >
+                                <Save className="w-3 h-3" />
+                                <span>Save</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {editingFeedbackId === sub.id ? (
+                          <textarea
+                            rows={3}
+                            value={feedbackDraft}
+                            onChange={(e) => setFeedbackDraft(e.target.value)}
+                            className="w-full p-3 rounded-xl border border-indigo-200 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                            placeholder="Edit AI evaluation feedback..."
+                          />
+                        ) : (
+                          <div className="text-slate-700 leading-relaxed whitespace-pre-wrap text-xs">
+                            {sub.feedback || 'No AI commentary recorded.'}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Teacher Advice / Comment for Student with Inline Edit */}
+                      <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5 text-[11px]">
+                            <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Teacher Advice & Guidance for Student</span>
+                          </span>
+
+                          {editingCommentId !== sub.id ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingCommentId(sub.id);
+                                setCommentDraft(sub.teacherComment || '');
+                              }}
+                              className="inline-flex items-center space-x-1 text-xs font-bold text-amber-800 hover:text-amber-900 px-2 py-1 rounded-lg hover:bg-amber-100 transition"
+                            >
+                              <Edit3 className="w-3 h-3" />
+                              <span>Edit Advice</span>
+                            </button>
+                          ) : (
+                            <div className="flex items-center space-x-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setEditingCommentId(null)}
+                                className="px-2 py-0.5 text-xs text-slate-500 hover:text-slate-700 font-semibold"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveInlineComment(sub)}
+                                disabled={isSavingInline}
+                                className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 transition disabled:opacity-50"
+                              >
+                                <Save className="w-3 h-3" />
+                                <span>Save</span>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {editingCommentId === sub.id ? (
+                          <textarea
+                            rows={3}
+                            value={commentDraft}
+                            onChange={(e) => setCommentDraft(e.target.value)}
+                            className="w-full p-3 rounded-xl border border-amber-300 bg-white text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition"
+                            placeholder="Write personalized guidance or praise for the student..."
+                          />
+                        ) : sub.teacherComment ? (
+                          <div className="text-amber-950 leading-relaxed whitespace-pre-wrap text-xs italic bg-white/70 p-3 rounded-xl border border-amber-100">
                             "{sub.teacherComment}"
+                          </div>
+                        ) : (
+                          <p className="text-xs text-amber-800/70 italic">
+                            No personalized advice added yet. Click "Edit Advice" above or "Override" to give customized guidance.
+                          </p>
+                        )}
+                      </div>
+
+                      {/* AI Gap Analysis Summary if present */}
+                      {sub.aiAnalysis && (
+                        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70 space-y-2">
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                            AI Diagnostic Synthesis
+                          </span>
+
+                          {sub.aiAnalysis.summary && (
+                            <p className="text-xs text-slate-700">{sub.aiAnalysis.summary}</p>
+                          )}
+
+                          <div className="flex flex-wrap gap-4 pt-1">
+                            {sub.aiAnalysis.strengths && sub.aiAnalysis.strengths.length > 0 && (
+                              <div className="space-y-1">
+                                <span className="text-[10px] font-bold text-emerald-700 uppercase">Strengths:</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {sub.aiAnalysis.strengths.map((str, i) => (
+                                    <span key={i} className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                                      {str}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {sub.aiAnalysis.weaknesses && sub.aiAnalysis.weaknesses.length > 0 && (
+                              <div className="space-y-1">
+                                <span className="text-[10px] font-bold text-rose-700 uppercase">Areas to Practice:</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {sub.aiAnalysis.weaknesses.map((w, i) => (
+                                    <span key={i} className="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold">
+                                      {w}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -750,7 +1158,7 @@ export const SubmissionsReview: React.FC = () => {
         )}
       </div>
 
-      {/* Grade and Feedback Override Modal */}
+      {/* Grade, AI Feedback, and Teacher Comment Override Modal */}
       {editingSub && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-md p-4 animate-in fade-in duration-150"
@@ -760,7 +1168,7 @@ export const SubmissionsReview: React.FC = () => {
           aria-labelledby="override-modal-title"
         >
           <div
-            className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl shadow-slate-950/25 border border-slate-200/80 ring-1 ring-slate-900/5 space-y-5 animate-in zoom-in-95 duration-150"
+            className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl shadow-slate-950/25 border border-slate-200/80 ring-1 ring-slate-900/5 space-y-4 animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500" />
@@ -789,11 +1197,11 @@ export const SubmissionsReview: React.FC = () => {
             </div>
 
             <div className="bg-slate-50/90 rounded-2xl p-3 border border-slate-200/70 flex items-center justify-between text-xs">
-              <span className="text-slate-600 truncate max-w-[220px]">
+              <span className="text-slate-600 truncate max-w-[240px]">
                 {editingSub.grammarTopic || 'Grammar Practice'}
               </span>
               <span className="font-mono font-bold text-slate-500">
-                AI Score: <span className="text-primary font-black">{editingSub.score}%</span>
+                Original Score: <span className="text-primary font-black">{editingSub.score}%</span>
               </span>
             </div>
 
@@ -813,14 +1221,27 @@ export const SubmissionsReview: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wider">
-                Teacher Comment for Student
+                AI Diagnostic Evaluation Comment
               </label>
               <textarea
-                rows={4}
+                rows={3}
+                value={aiFeedbackDraft}
+                onChange={(e) => setAiFeedbackDraft(e.target.value)}
+                placeholder="Edit or refine the AI's diagnostic comment..."
+                className="w-full p-3 rounded-xl border border-slate-200/90 bg-white text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wider">
+                Teacher Advice & Commentary for Student
+              </label>
+              <textarea
+                rows={3}
                 value={teacherComment}
                 onChange={(e) => setTeacherComment(e.target.value)}
-                placeholder="Write specific feedback to help the student improve..."
-                className="w-full p-3.5 rounded-xl border border-slate-200/90 bg-white text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                placeholder="Write specific advice and suggestions to guide the student's progress..."
+                className="w-full p-3 rounded-xl border border-slate-200/90 bg-white text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
               />
             </div>
 
@@ -838,7 +1259,7 @@ export const SubmissionsReview: React.FC = () => {
                 disabled={isSubmittingOverride}
                 className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white transition shadow-md shadow-indigo-500/20 disabled:opacity-50"
               >
-                {isSubmittingOverride ? 'Saving...' : 'Apply Grade'}
+                {isSubmittingOverride ? 'Saving...' : 'Apply Changes'}
               </button>
             </div>
           </div>

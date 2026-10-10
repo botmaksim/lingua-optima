@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { CefrBadge } from '../components/common/CefrBadge';
 import { Toast } from '../components/common/Toast';
@@ -374,6 +374,115 @@ describe('SubmissionsReview component', () => {
     fireEvent.click(hiddenTabBtn);
     expect(screen.getByText('Bob Jones')).toBeInTheDocument();
     expect(screen.getByTitle(/restore to active queue/i)).toBeInTheDocument();
+  });
+
+  it('expands detailed question breakdown with options and edits AI feedback & teacher advice inline', async () => {
+    const { groupApi } = await import('../api/groupApi');
+    const { SubmissionsReview } = await import('../components/teacher/SubmissionsReview');
+
+    const mockSub = {
+      id: 'sub-detail-1',
+      studentId: 'stud-10',
+      studentName: 'Clara Oswald',
+      studentEmail: 'clara@tardis.com',
+      submissionType: 'TEXT',
+      originalText: 'Q1: went\nQ2: has gone',
+      taskContent: 'Complete the sentences with correct past tense forms.',
+      score: 75,
+      effectiveScore: 75,
+      feedback: 'Original AI diagnostic feedback comment.',
+      teacherComment: 'Original educator advice.',
+      submittedAt: '2026-10-10T02:00:00Z',
+      grammarTopic: 'Past Tenses',
+      items: [
+        {
+          questionNumber: 1,
+          sentence: 'Yesterday she ___ to London.',
+          studentAnswer: 'went',
+          correctAnswer: 'went',
+          isCorrect: true,
+          options: ['go', 'went', 'gone'],
+          explanation: 'Past simple for finished action in the past.',
+          grammarRule: 'Past Simple',
+        },
+        {
+          questionNumber: 2,
+          sentence: 'She ___ never ___ there before.',
+          studentAnswer: 'has gone',
+          correctAnswer: 'had gone',
+          isCorrect: false,
+          options: ['had gone', 'has gone', 'went'],
+          explanation: 'Past perfect indicates action before another past event.',
+          grammarRule: 'Past Perfect',
+        },
+      ],
+    };
+
+    vi.spyOn(submissionApi, 'getTeacherSubmissions').mockResolvedValue([mockSub] as any);
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([]);
+    const overrideSpy = vi.spyOn(submissionApi, 'overrideScore').mockResolvedValue({
+      ...mockSub,
+      feedback: 'Updated AI diagnostic evaluation.',
+      teacherComment: 'Updated teacher recommendation.',
+    } as any);
+
+    render(
+      <MemoryRouter>
+        <SubmissionsReview />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Clara Oswald')).toBeInTheDocument();
+
+    // Click expand button
+    const expandBtn = screen.getByTitle('Detailed breakdown');
+    fireEvent.click(expandBtn);
+
+    // Verify task content
+    expect(screen.getByText('Complete the sentences with correct past tense forms.')).toBeInTheDocument();
+
+    // Verify questions and options
+    expect(screen.getByText('Yesterday she ___ to London.')).toBeInTheDocument();
+    expect(screen.getByText('She ___ never ___ there before.')).toBeInTheDocument();
+    expect(screen.getByText('Student Pick (✓)')).toBeInTheDocument();
+    expect(screen.getByText('Student Pick (✗)')).toBeInTheDocument();
+    expect(screen.getAllByText('Expected Answer:').length).toBe(2);
+
+    // Test inline edit of AI comment
+    const editAiBtn = screen.getByRole('button', { name: /edit ai comment/i });
+    fireEvent.click(editAiBtn);
+    const aiTextarea = screen.getByPlaceholderText(/edit ai evaluation feedback/i);
+    fireEvent.change(aiTextarea, { target: { value: 'Updated AI diagnostic evaluation.' } });
+    const saveAiBtn = screen.getByRole('button', { name: /^save$/i });
+    fireEvent.click(saveAiBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByPlaceholderText(/edit ai evaluation feedback/i)).not.toBeInTheDocument();
+    });
+
+    expect(overrideSpy).toHaveBeenCalledWith('sub-detail-1', {
+      overrideScore: 75,
+      teacherComment: 'Original educator advice.',
+      feedback: 'Updated AI diagnostic evaluation.',
+    });
+
+    // Test inline edit of teacher advice
+    const editAdviceBtn = screen.getByRole('button', { name: /edit advice/i });
+    fireEvent.click(editAdviceBtn);
+    const adviceTextarea = screen.getByPlaceholderText(/write personalized guidance/i);
+    fireEvent.change(adviceTextarea, { target: { value: 'Updated teacher recommendation.' } });
+    const saveAdviceBtn = screen.getByRole('button', { name: /^save$/i });
+    fireEvent.click(saveAdviceBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByPlaceholderText(/write personalized guidance/i)).not.toBeInTheDocument();
+    });
+
+    expect(overrideSpy).toHaveBeenCalledWith('sub-detail-1', {
+      overrideScore: 75,
+      teacherComment: 'Updated teacher recommendation.',
+      feedback: 'Updated AI diagnostic evaluation.',
+    });
   });
 });
 
