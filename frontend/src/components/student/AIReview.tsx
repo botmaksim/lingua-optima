@@ -47,7 +47,6 @@ export const AIReview: React.FC = () => {
       .finally(() => setIsLoading(false));
   }, [submissionId]);
 
-  const effectiveScore = submission?.effectiveScore ?? submission?.score ?? 0;
   const rubric = submission?.rubric || {};
 
   /**
@@ -73,7 +72,7 @@ export const AIReview: React.FC = () => {
           const qNum = parseInt(match[1], 10);
           const studentAns = match[2].trim();
           const mentionsError = new RegExp(`(?:question\\s*${qNum}|Q${qNum})[^.!?]*?(?:error|wrong|incorrect|added|instead)`, 'i').test(submission.feedback || '');
-          const isCorrect = !mentionsError && (effectiveScore >= 95 || !submission.feedback?.toLowerCase().includes(`question ${qNum}`));
+          const isCorrect = !mentionsError && ((submission.effectiveScore ?? submission.score ?? 0) >= 95 || !submission.feedback?.toLowerCase().includes(`question ${qNum}`));
 
           parsed.push({
             questionNumber: qNum,
@@ -92,7 +91,21 @@ export const AIReview: React.FC = () => {
     }
 
     return [];
-  }, [submission, effectiveScore]);
+  }, [submission]);
+
+  const effectiveScore = React.useMemo(() => {
+    if (submission?.overrideScore != null) {
+      return submission.overrideScore;
+    }
+    if (itemsToRender.length > 0) {
+      const totalWeight = itemsToRender.reduce((sum, item) => sum + (item.points && item.points > 0 ? item.points : 1), 0);
+      const earnedWeight = itemsToRender
+        .filter((item) => item.isCorrect)
+        .reduce((sum, item) => sum + (item.points && item.points > 0 ? item.points : 1), 0);
+      return totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
+    }
+    return submission?.effectiveScore ?? submission?.score ?? 0;
+  }, [submission, itemsToRender]);
 
   /**
    * @brief Resolves sentence corrections from submission or rubric.

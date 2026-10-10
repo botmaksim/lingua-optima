@@ -128,12 +128,13 @@ public class SubmissionService {
         }
 
         Map<String, Object> scoring;
-        String provider = "AI_GEMINI";
+        String provider = student.getPreferredProvider() != null
+            ? "AI_" + student.getPreferredProvider().name()
+            : "AI_GEMINI";
         if ("ESSAY".equalsIgnoreCase(request.getType())) {
             scoring = scoringService.scoreEssay(request.getText(), student.getCefrLevel().name(), student);
         } else {
             scoring = scoringService.scoreGrammarTask(request.getText(), answerKey, student);
-            provider = "AI_GROQ";
         }
 
         long estimatedTokens = UsageService.estimateTokens(request.getText()) + 600L;
@@ -163,7 +164,7 @@ public class SubmissionService {
         if (currentTask == null && request.getTaskId() != null) {
             currentTask = taskRepository.findById(request.getTaskId()).orElse(null);
         }
-        recordSubmissionProgress(student, grammarTopic, score, response, currentTask);
+        recordSubmissionProgress(student, grammarTopic, response.getEffectiveScore(), response, currentTask);
         gamificationService.onSubmissionCompleted(student);
         return response;
     }
@@ -304,7 +305,7 @@ public class SubmissionService {
         enrichSubmissionResult(response, saved, scoring);
 
         Task currentTask = (assignment != null) ? assignment.getTask() : null;
-        recordSubmissionProgress(student, grammarTopic, score, response, currentTask);
+        recordSubmissionProgress(student, grammarTopic, response.getEffectiveScore(), response, currentTask);
         gamificationService.onSubmissionCompleted(student);
 
         return response;
@@ -520,6 +521,30 @@ public class SubmissionService {
             .filter(s -> s != null && !s.isBlank())
             .distinct()
             .collect(Collectors.toList());
+
+        if (!items.isEmpty()) {
+            int totalWeight = items.stream().mapToInt(it -> (it.getPoints() != null && it.getPoints() > 0) ? it.getPoints() : 1).sum();
+            int earnedWeight = items.stream().filter(SubmissionItemResponse::isCorrect).mapToInt(it -> (it.getPoints() != null && it.getPoints() > 0) ? it.getPoints() : 1).sum();
+            double objectiveScore = totalWeight > 0
+                ? Math.round(((double) earnedWeight / totalWeight) * 1000.0) / 10.0
+                : 0.0;
+
+            if (submission.getOverrideScore() == null) {
+                if (submission.getAiScore() != null) {
+                    submission.setAiScore(objectiveScore);
+                    try {
+                        submissionRepository.save(submission);
+                    } catch (Exception e) {
+                        log.debug("Failed to persist updated submission score: {}", e.getMessage());
+                    }
+                    response.setScore(objectiveScore);
+                }
+                response.setEffectiveScore(objectiveScore);
+            } else {
+                response.setScore(objectiveScore);
+                response.setEffectiveScore(submission.getOverrideScore());
+            }
+        }
 
         String summary = buildSummary(response, items, corrections);
         String recommendations = buildRecommendations(response, dedupWeaknesses, dedupStrengths);
@@ -1031,11 +1056,11 @@ public class SubmissionService {
         }
 
         int errors;
-        if (score != null) {
+        if (response != null && response.getItems() != null && !response.getItems().isEmpty()) {
+            errors = (int) response.getItems().stream().filter(it -> !it.isCorrect()).count();
+        } else if (score != null) {
             double normalizedScore = Math.max(0.0, Math.min(100.0, score));
             errors = (int) Math.round(attempts * (1.0 - (normalizedScore / 100.0)));
-        } else if (response != null && response.getItems() != null && !response.getItems().isEmpty()) {
-            errors = (int) response.getItems().stream().filter(it -> !it.isCorrect()).count();
         } else {
             errors = 0;
         }
