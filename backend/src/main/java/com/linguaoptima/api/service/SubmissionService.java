@@ -292,6 +292,11 @@ public class SubmissionService {
 
         SubmissionResultResponse response = SubmissionResultResponse.fromEntity(saved);
         enrichSubmissionResult(response, saved, null);
+
+        Task currentTask = (saved.getAssignment() != null) ? saved.getAssignment().getTask() : null;
+        String grammarTopic = currentTask != null ? currentTask.getGrammarTopic() : "General";
+        recordSubmissionProgress(saved.getStudent(), grammarTopic, request.getOverrideScore(), response, currentTask);
+
         return response;
     }
 

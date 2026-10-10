@@ -252,7 +252,11 @@ export const SubmissionsReview: React.FC = () => {
   const handleOpenOverride = (sub: SubmissionResult) => {
     setEditingSub(sub);
     setNewScore(sub.overrideScore ?? sub.score);
-    setTeacherComment(sub.teacherComment || 'Great improvement. Well reasoned argument.');
+    setTeacherComment(
+      sub.teacherComment && sub.teacherComment !== 'AI grade approved by teacher.'
+        ? sub.teacherComment
+        : sub.teacherComment || ''
+    );
     setAiFeedbackDraft(sub.feedback || '');
   };
 
@@ -270,18 +274,7 @@ export const SubmissionsReview: React.FC = () => {
       });
 
       setSubmissions((prev) =>
-        prev.map((s) =>
-          s.id === editingSub.id
-            ? {
-                ...s,
-                score: updated.score,
-                effectiveScore: updated.effectiveScore,
-                overrideScore: updated.overrideScore,
-                teacherComment: updated.teacherComment,
-                feedback: updated.feedback,
-              }
-            : s
-        )
+        prev.map((s) => (s.id === editingSub.id ? { ...s, ...updated } : s))
       );
 
       setEditingSub(null);
@@ -316,7 +309,7 @@ export const SubmissionsReview: React.FC = () => {
       });
 
       setSubmissions((prev) =>
-        prev.map((s) => (s.id === sub.id ? { ...s, feedback: updated.feedback } : s))
+        prev.map((s) => (s.id === sub.id ? { ...s, ...updated } : s))
       );
       setEditingFeedbackId(null);
       addToast({
@@ -350,7 +343,7 @@ export const SubmissionsReview: React.FC = () => {
       });
 
       setSubmissions((prev) =>
-        prev.map((s) => (s.id === sub.id ? { ...s, teacherComment: updated.teacherComment } : s))
+        prev.map((s) => (s.id === sub.id ? { ...s, ...updated } : s))
       );
       setEditingCommentId(null);
       addToast({
@@ -376,17 +369,19 @@ export const SubmissionsReview: React.FC = () => {
    */
   const handleApproveAiGrade = async (sub: SubmissionResult) => {
     try {
-      await submissionApi.overrideScore(sub.id, {
-        overrideScore: sub.score,
+      const updated = await submissionApi.overrideScore(sub.id, {
+        overrideScore: sub.overrideScore ?? sub.score,
         teacherComment: sub.teacherComment || 'AI grade approved by teacher.',
+        feedback: sub.feedback,
       });
       addToast({
         type: 'success',
         title: 'Grade Approved',
         message: 'AI evaluation score confirmed for this submission.',
       });
-      const updatedList = await submissionApi.getTeacherSubmissions();
-      setSubmissions(updatedList);
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === sub.id ? { ...s, ...updated } : s))
+      );
     } catch (err) {
       console.error('Failed to approve AI grade:', err);
       addToast({
@@ -773,14 +768,24 @@ export const SubmissionsReview: React.FC = () => {
                           <span>Override</span>
                         </button>
 
-                        <button
-                          type="button"
-                          onClick={() => handleApproveAiGrade(sub)}
-                          className="flex items-center space-x-1 py-1.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold transition"
-                        >
-                          <CheckCircle className="w-3.5 h-3.5" />
-                          <span>Approve</span>
-                        </button>
+                        {sub.overrideScore == null ? (
+                          <button
+                            type="button"
+                            onClick={() => handleApproveAiGrade(sub)}
+                            className="flex items-center space-x-1 py-1.5 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold transition"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            <span>Approve</span>
+                          </button>
+                        ) : (
+                          <span
+                            className="inline-flex items-center space-x-1 py-1.5 px-2.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-semibold border border-emerald-200/60"
+                            title="Grade approved by teacher"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Approved</span>
+                          </span>
+                        )}
 
                         {/* Hide / Unhide Action */}
                         <button
