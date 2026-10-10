@@ -14,6 +14,10 @@ import { TranslatorDropdown } from '../components/common/TranslatorDropdown';
 import { AIReview } from '../components/student/AIReview';
 import { submissionApi } from '../api/submissionApi';
 import { useAuthStore } from '../store/authStore';
+import { Footer } from '../components/common/Footer';
+import { PrivacyPolicy } from '../pages/PrivacyPolicy';
+import { TermsOfService } from '../pages/TermsOfService';
+import { HelpCenter } from '../pages/HelpCenter';
 
 describe('CefrBadge component', () => {
   it('renders level text and badge correctly', () => {
@@ -710,6 +714,102 @@ describe('ExportReports component', () => {
     clickSpy.mockRestore();
     window.URL.createObjectURL = originalCreateObjectURL;
     window.URL.revokeObjectURL = originalRevokeObjectURL;
+  });
+});
+
+describe('Footer component', () => {
+  it('renders branding and navigation links to privacy, terms, help, and pricing', () => {
+    render(
+      <MemoryRouter>
+        <Footer />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Lingua Optima')).toBeInTheDocument();
+    expect(screen.getByText('Presentation')).toHaveAttribute('href', '/presentation.html');
+    expect(screen.getByRole('link', { name: /privacy policy/i })).toHaveAttribute('href', '/privacy');
+    expect(screen.getByRole('link', { name: /terms of service/i })).toHaveAttribute('href', '/terms');
+    expect(screen.getByRole('link', { name: /help center/i })).toHaveAttribute('href', '/help');
+    expect(screen.getByRole('link', { name: /pricing/i })).toHaveAttribute('href', '/subscription');
+  });
+});
+
+describe('PrivacyPolicy page', () => {
+  it('renders Zero-Retention OCR guarantee and key privacy policy sections', () => {
+    render(
+      <MemoryRouter>
+        <PrivacyPolicy />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: /privacy policy/i })).toBeInTheDocument();
+    expect(screen.getByText(/zero-retention ocr architecture guarantee/i)).toBeInTheDocument();
+    expect(screen.getByText(/ephemeral volatile memory \(RAM\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\. Information We Collect/i)).toBeInTheDocument();
+    expect(screen.getByText(/2\. Artificial Intelligence & Diagnostic Processing/i)).toBeInTheDocument();
+    expect(screen.getByText(/3\. Data Storage & Cryptographic Security/i)).toBeInTheDocument();
+    expect(screen.getByText(/4\. Your Data Rights \(GDPR & CCPA Compliance\)/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/');
+  });
+});
+
+describe('TermsOfService page', () => {
+  it('renders core terms summary cards and detailed terms sections', () => {
+    render(
+      <MemoryRouter>
+        <TermsOfService />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: /terms of service/i })).toBeInTheDocument();
+    expect(screen.getByText('Academic Integrity')).toBeInTheDocument();
+    expect(screen.getByText('Educator Authority')).toBeInTheDocument();
+    expect(screen.getByText('Fair Usage Quotas')).toBeInTheDocument();
+    expect(screen.getByText(/1\. Acceptance of Agreement/i)).toBeInTheDocument();
+    expect(screen.getByText(/2\. Account Roles and Conduct/i)).toBeInTheDocument();
+    expect(screen.getByText(/3\. AI Diagnostic Evaluations & Pedagogical Advice/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /back to home/i })).toHaveAttribute('href', '/');
+  });
+});
+
+describe('HelpCenter page', () => {
+  it('renders FAQ list, filters by search query and category, and toggles accordions', () => {
+    render(
+      <MemoryRouter>
+        <HelpCenter />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { level: 1, name: /help center & knowledge base/i })).toBeInTheDocument();
+
+    // Check initial questions
+    expect(screen.getByText(/How does Zero-Retention OCR work/i)).toBeInTheDocument();
+    expect(screen.getByText(/What is the difference between Free and Pro plans/i)).toBeInTheDocument();
+
+    // Filter by search query
+    const searchInput = screen.getByPlaceholderText(/search questions by keyword/i);
+    fireEvent.change(searchInput, { target: { value: 'Eco Mode' } });
+    expect(screen.getByText(/What is Eco Mode when creating educational tasks/i)).toBeInTheDocument();
+    expect(screen.queryByText(/How does Zero-Retention OCR work/i)).not.toBeInTheDocument();
+
+    // Clear search
+    fireEvent.change(searchInput, { target: { value: '' } });
+
+    // Filter by category: For Educators
+    const teacherTab = screen.getByRole('button', { name: /for educators/i });
+    fireEvent.click(teacherTab);
+    expect(screen.getByText(/How do educators create cohort groups and invite students/i)).toBeInTheDocument();
+    expect(screen.queryByText(/How is my CEFR language level evaluated/i)).not.toBeInTheDocument();
+
+    // Toggle accordion
+    const questionBtn = screen.getByRole('button', { name: /How do educators create cohort groups and invite students/i });
+    // Expand the question
+    fireEvent.click(questionBtn);
+    expect(screen.getByText(/From the Teacher Dashboard, open "Student Cohorts"/i)).toBeInTheDocument();
+
+    // Collapse the question
+    fireEvent.click(questionBtn);
+    expect(screen.queryByText(/From the Teacher Dashboard, open "Student Cohorts"/i)).not.toBeInTheDocument();
   });
 });
 

@@ -22,6 +22,9 @@ import { StudentApp } from './pages/StudentApp';
 import { TeacherApp } from './pages/TeacherApp';
 import { ProfilePage } from './pages/ProfilePage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsOfService } from './pages/TermsOfService';
+import { HelpCenter } from './pages/HelpCenter';
 import { NotFound } from './pages/NotFound';
 
 /**
@@ -58,6 +61,9 @@ const AppContent: React.FC = () => {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/help" element={<HelpCenter />} />
 
             <Route
               path="/student/*"

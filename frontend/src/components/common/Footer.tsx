@@ -32,15 +32,15 @@ export const Footer: React.FC = () => {
             >
               Presentation
             </a>
-            <a href="#privacy" className="hover:text-primary transition">
+            <Link to="/privacy" className="hover:text-primary transition">
               Privacy Policy
-            </a>
-            <a href="#terms" className="hover:text-primary transition">
+            </Link>
+            <Link to="/terms" className="hover:text-primary transition">
               Terms of Service
-            </a>
-            <a href="#help" className="hover:text-primary transition">
+            </Link>
+            <Link to="/help" className="hover:text-primary transition">
               Help Center
-            </a>
+            </Link>
             <Link to="/subscription" className="hover:text-primary transition">
               Pricing
             </Link>
