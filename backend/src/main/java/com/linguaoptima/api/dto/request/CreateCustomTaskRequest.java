@@ -56,6 +56,9 @@ public class CreateCustomTaskRequest {
     @Builder.Default
     private List<CustomQuestionRequest> questions = new ArrayList<>();
 
+    /** @brief Field representing total points / max score in CreateCustomTaskRequest. */
+    private Integer totalPoints;
+
     /** @brief Field representing is template in CreateCustomTaskRequest. */
     private boolean isTemplate;
 

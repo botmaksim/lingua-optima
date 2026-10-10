@@ -45,6 +45,10 @@ public class TaskParamsRequest {
     @Builder.Default
     private int numberOfQuestions = 5;
 
+    /** @brief Field representing total points / max score in TaskParamsRequest. */
+    @Builder.Default
+    private Integer totalPoints = 100;
+
     /** @brief Field representing provider in TaskParamsRequest. */
     private AIProvider provider;
 

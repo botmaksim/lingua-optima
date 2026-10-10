@@ -38,6 +38,8 @@ public class QuestionResponse {
     private String correctAnswer;
     /** @brief Field representing difficulty in QuestionResponse. */
     private int difficulty;
+    /** @brief Field representing points awarded in QuestionResponse. */
+    private int points;
     /** @brief Field representing grammar rule in QuestionResponse. */
     private String grammarRule;
 
@@ -65,6 +67,7 @@ public class QuestionResponse {
             .correctAnswer(question.getCorrectAnswer())
             .options(parsedOptions)
             .difficulty(question.getDifficulty())
+            .points(question.getPoints())
             .grammarRule(question.getGrammarRule())
             .build();
     }
@@ -90,6 +93,7 @@ public class QuestionResponse {
             .correctAnswer(null)
             .options(parsedOptions)
             .difficulty(question.getDifficulty())
+            .points(question.getPoints())
             .grammarRule(question.getGrammarRule())
             .build();
     }

@@ -170,12 +170,21 @@ public class TaskService {
             ? request.getDifficulty()
             : DifficultyLevel.MEDIUM;
 
+        int sumPoints = 0;
+        for (CustomQuestionRequest qReq : request.getQuestions()) {
+            sumPoints += qReq.getPoints() > 0 ? qReq.getPoints() : 10;
+        }
+        int effectiveTotal = (request.getTotalPoints() != null && request.getTotalPoints() > 0)
+            ? request.getTotalPoints()
+            : (sumPoints > 0 ? sumPoints : 100);
+
         Task task = Task.builder()
             .type(request.getTaskType())
             .cefrLevel(request.getCefrLevel())
             .grammarTopic(topic)
             .domain(domain)
             .difficulty(diff)
+            .totalPoints(effectiveTotal)
             .content(request.getContent() != null ? request.getContent().trim() : "")
             .createdBy(teacher)
             .isTemplate(request.isTemplate())
@@ -195,6 +204,7 @@ public class TaskService {
             }
 
             int diffVal = qReq.getDifficulty() > 0 ? qReq.getDifficulty() : 2;
+            int qPoints = qReq.getPoints() > 0 ? qReq.getPoints() : Math.max(1, effectiveTotal / Math.max(1, request.getQuestions().size()));
             String ruleVal = (qReq.getGrammarRule() != null && !qReq.getGrammarRule().isBlank())
                 ? qReq.getGrammarRule().trim()
                 : task.getGrammarTopic();
@@ -206,6 +216,7 @@ public class TaskService {
                 .correctAnswer(qReq.getCorrectAnswer().trim())
                 .optionsJson(optionsJson)
                 .difficulty(diffVal)
+                .points(qPoints)
                 .grammarRule(ruleVal)
                 .build();
             questions.add(tq);
@@ -424,12 +435,17 @@ public class TaskService {
      * @return Populated Task entity.
      */
     private Task parseAndBuildTask(String rawJson, TaskParamsRequest params, User user, boolean isTemplate) {
+        int reqTotal = (params.getTotalPoints() != null && params.getTotalPoints() > 0)
+            ? params.getTotalPoints()
+            : 100;
+
         Task task = Task.builder()
             .type(params.getTaskType())
             .cefrLevel(params.getCefrLevel())
             .grammarTopic(params.getGrammarTopic())
             .domain(params.getDomain())
             .difficulty(params.getDifficulty() != null ? params.getDifficulty() : DifficultyLevel.MEDIUM)
+            .totalPoints(reqTotal)
             .createdBy(user)
             .isTemplate(isTemplate)
             .createdAt(LocalDateTime.now())
@@ -458,6 +474,9 @@ public class TaskService {
             JsonNode questionsNode = root.path("questions");
             List<TaskQuestion> questions = new ArrayList<>();
             if (questionsNode.isArray()) {
+                int qCount = Math.max(1, questionsNode.size());
+                int basePoints = reqTotal / qCount;
+                int remainder = reqTotal % qCount;
                 int order = 1;
                 for (JsonNode qNode : questionsNode) {
                     int currentOrder = order++;
@@ -473,6 +492,8 @@ public class TaskService {
                         )
                     );
 
+                    int qPoints = basePoints + (currentOrder == 1 ? remainder : 0);
+
                     TaskQuestion tq = TaskQuestion.builder()
                         .id(UUID.randomUUID())
                         .task(task)
@@ -481,6 +502,7 @@ public class TaskService {
                         .correctAnswer(resolvedAnswer)
                         .optionsJson(optionsJson)
                         .difficulty(qNode.path("difficulty").asInt(2))
+                        .points(qPoints > 0 ? qPoints : 10)
                         .grammarRule(qNode.path("grammarRule").asText(params.getGrammarTopic()))
                         .build();
                     questions.add(tq);
@@ -491,6 +513,7 @@ public class TaskService {
             log.warn("Error parsing task JSON, using defaults: {}", e.getMessage());
             task.setContent("Practice exercise for " + params.getCefrLevel());
             task.setAnswerKey("[]");
+            task.setTotalPoints(reqTotal);
         }
 
         return task;

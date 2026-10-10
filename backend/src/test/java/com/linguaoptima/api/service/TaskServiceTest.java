@@ -208,6 +208,7 @@ class TaskServiceTest {
             .correctAnswer("is spoken")
             .options(List.of("is spoken", "speaks", "was spoken"))
             .difficulty(2)
+            .points(25)
             .grammarRule("Passive Voice")
             .build();
 
@@ -216,6 +217,7 @@ class TaskServiceTest {
             .questionText("Rewrite: They built the bridge.")
             .correctAnswer("The bridge was built.")
             .difficulty(3)
+            .points(25)
             .build();
 
         CreateCustomTaskRequest req = CreateCustomTaskRequest.builder()
@@ -224,6 +226,7 @@ class TaskServiceTest {
             .domain("Academic")
             .taskType(TaskType.MCQ)
             .difficulty(DifficultyLevel.MEDIUM)
+            .totalPoints(50)
             .content("Complete the sentences.")
             .questions(List.of(q1, q2))
             .isTemplate(false)
@@ -240,6 +243,9 @@ class TaskServiceTest {
         assertEquals(2, res.getQuestions().size());
         assertEquals("is spoken", res.getQuestions().get(0).getCorrectAnswer());
         assertEquals("The bridge was built.", res.getQuestions().get(1).getCorrectAnswer());
+        assertEquals(50, res.getTotalPoints());
+        assertEquals(25, res.getQuestions().get(0).getPoints());
+        assertEquals(25, res.getQuestions().get(1).getPoints());
         verify(taskRepository).save(any(Task.class));
     }
 
@@ -277,6 +283,8 @@ class TaskServiceTest {
         assertEquals("Custom Topic", res.getGrammarTopic());
         assertEquals("General", res.getDomain());
         assertEquals(DifficultyLevel.MEDIUM, res.getDifficulty());
+        assertEquals(10, res.getTotalPoints());
+        assertEquals(10, res.getQuestions().get(0).getPoints());
     }
 
     /**

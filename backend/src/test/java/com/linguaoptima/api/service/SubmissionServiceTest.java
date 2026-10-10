@@ -526,6 +526,7 @@ class SubmissionServiceTest {
             .correctAnswer("woke")
             .grammarRule("Past Simple Irregular Verbs")
             .optionsJson("[\"woke\", \"waked\", \"woken\"]")
+            .points(15)
             .build();
 
         com.linguaoptima.api.domain.TaskQuestion q2 = com.linguaoptima.api.domain.TaskQuestion.builder()
@@ -534,6 +535,7 @@ class SubmissionServiceTest {
             .correctAnswer("went / had gone")
             .grammarRule("Past Simple Auxiliary Usage")
             .optionsJson("invalid-json")
+            .points(25)
             .build();
 
         task.setQuestions(List.of(q1, q2));
@@ -562,6 +564,8 @@ class SubmissionServiceTest {
         assertEquals("woke", resp.getItems().get(0).getStudentAnswer());
         assertEquals("Irregular past form of wake", resp.getItems().get(0).getExplanation());
         assertEquals(List.of("woke", "waked", "woken"), resp.getItems().get(0).getOptions());
+        assertEquals(15, resp.getItems().get(0).getPoints());
+        assertEquals(25, resp.getItems().get(1).getPoints());
         assertTrue(resp.getItems().get(1).getOptions().isEmpty());
 
         assertFalse(resp.getItems().get(1).isCorrect());

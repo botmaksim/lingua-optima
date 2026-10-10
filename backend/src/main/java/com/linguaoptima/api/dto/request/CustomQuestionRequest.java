@@ -41,6 +41,10 @@ public class CustomQuestionRequest {
     @Builder.Default
     private int difficulty = 2;
 
+    /** @brief Field representing points awarded in CustomQuestionRequest. */
+    @Builder.Default
+    private int points = 10;
+
     /** @brief Field representing grammar rule in CustomQuestionRequest. */
     private String grammarRule;
 }

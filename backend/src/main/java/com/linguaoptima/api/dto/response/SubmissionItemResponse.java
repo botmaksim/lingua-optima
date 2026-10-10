@@ -42,6 +42,9 @@ public class SubmissionItemResponse {
     /** @brief Targeted grammar rule or linguistic concept tested. */
     private String grammarRule;
 
+    /** @brief Point value / weight of this question item. */
+    private Integer points;
+
     /** @brief Multiple-choice options or answer choices, if applicable. */
     @Builder.Default
     private List<String> options = new ArrayList<>();

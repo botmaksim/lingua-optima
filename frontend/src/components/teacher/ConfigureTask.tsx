@@ -65,6 +65,7 @@ export const ConfigureTask: React.FC = () => {
   const [taskType, setTaskType] = useState<TaskType>('MCQ');
   const difficulty: DifficultyLevel = 'MEDIUM';
   const numberOfQuestions = 5;
+  const [totalPoints, setTotalPoints] = useState<number>(100);
   const [dueDate, setDueDate] = useState<string>('');
   const [maxAttempts, setMaxAttempts] = useState<number>(1);
   const [provider, setProvider] = useState<AIProviderType>('GEMINI');
@@ -239,6 +240,7 @@ export const ConfigureTask: React.FC = () => {
     taskType,
     difficulty,
     numberOfQuestions,
+    totalPoints,
     provider,
     modelName,
     customRule: customRule.trim() || undefined,
@@ -256,12 +258,82 @@ export const ConfigureTask: React.FC = () => {
     setStatusMessage(null);
     try {
       const task = await taskApi.previewTask(buildTaskParams());
-      setPreviewTask(task);
+      const effTotal = task.totalPoints || totalPoints || 100;
+      const qLen = task.questions && task.questions.length > 0 ? task.questions.length : 1;
+      const basePoints = Math.floor(effTotal / qLen);
+      const remPoints = effTotal % qLen;
+      const enrichedQuestions = (task.questions || []).map((q, idx) => ({
+        ...q,
+        points: q.points && q.points > 0 ? q.points : Math.max(1, basePoints + (idx === 0 ? remPoints : 0)),
+      }));
+
+      setPreviewTask({
+        ...task,
+        totalPoints: effTotal,
+        questions: enrichedQuestions,
+      });
     } catch (err: any) {
       setStatusMessage(err.response?.data?.message || 'Failed to preview task.');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  /**
+   * @brief Updates total points for the preview task and maintains form state.
+   */
+  const handleUpdateTotalPoints = (newTotal: number) => {
+    const val = Math.max(1, newTotal);
+    setTotalPoints(val);
+    if (previewTask) {
+      setPreviewTask({ ...previewTask, totalPoints: val });
+    }
+  };
+
+  /**
+   * @brief Updates points / price for a specific question in the preview task.
+   */
+  const handleUpdateQuestionPoints = (qIndex: number, newPoints: number) => {
+    if (!previewTask || !previewTask.questions) return;
+    const val = Math.max(1, newPoints);
+    handleUpdateQuestion(qIndex, { points: val });
+  };
+
+  /**
+   * @brief Evenly distributes the total points across all questions in the preview.
+   */
+  const handleDistributePointsEvenly = () => {
+    if (!previewTask || !previewTask.questions || previewTask.questions.length === 0) return;
+    const effTotal = previewTask.totalPoints || totalPoints || 100;
+    const count = previewTask.questions.length;
+    const base = Math.floor(effTotal / count);
+    const rem = effTotal % count;
+    const updated = previewTask.questions.map((q, idx) => ({
+      ...q,
+      points: Math.max(1, base + (idx === 0 ? rem : 0)),
+    }));
+    setPreviewTask({ ...previewTask, questions: updated });
+    addToast({
+      type: 'info',
+      title: 'Points Distributed',
+      message: `Distributed ${effTotal} total points across ${count} questions.`,
+    });
+  };
+
+  /**
+   * @brief Automatically sums question points and sets total points to that sum.
+   */
+  const handleSyncTotalFromQuestions = () => {
+    if (!previewTask || !previewTask.questions) return;
+    const sum = previewTask.questions.reduce((acc, q) => acc + (q.points || 0), 0);
+    const val = Math.max(1, sum);
+    setTotalPoints(val);
+    setPreviewTask({ ...previewTask, totalPoints: val });
+    addToast({
+      type: 'info',
+      title: 'Total Points Updated',
+      message: `Total points updated to match sum of questions (${val} pts).`,
+    });
   };
 
   /**
@@ -344,6 +416,8 @@ export const ConfigureTask: React.FC = () => {
   const handleAddQuestion = () => {
     if (!previewTask) return;
     const currentQuestions = previewTask.questions || [];
+    const effTotal = previewTask.totalPoints || totalPoints || 100;
+    const defaultQPoints = Math.max(1, Math.floor(effTotal / (currentQuestions.length + 1)));
     const newQ: TaskQuestion = {
       id: `custom-${Date.now()}`,
       questionOrder: currentQuestions.length + 1,
@@ -351,6 +425,7 @@ export const ConfigureTask: React.FC = () => {
       correctAnswer: previewTask.type === 'MCQ' ? 'Option A' : '',
       options: previewTask.type === 'MCQ' ? ['Option A', 'Option B', 'Option C', 'Option D'] : [],
       difficulty: 0.5,
+      points: defaultQPoints,
       grammarRule: previewTask.grammarTopic || '',
     };
     setPreviewTask({
@@ -387,6 +462,7 @@ export const ConfigureTask: React.FC = () => {
           domain: previewTask.domain,
           taskType: previewTask.type,
           difficulty: previewTask.difficulty,
+          totalPoints: previewTask.totalPoints || totalPoints,
           content: previewTask.content,
           questions: previewTask.questions.map((q, idx) => ({
             questionOrder: idx + 1,
@@ -394,6 +470,7 @@ export const ConfigureTask: React.FC = () => {
             correctAnswer: q.correctAnswer,
             options: q.options || [],
             difficulty: q.difficulty,
+            points: q.points || 10,
             grammarRule: q.grammarRule,
           })),
           isTemplate: true,
@@ -446,6 +523,7 @@ export const ConfigureTask: React.FC = () => {
           domain: previewTask.domain,
           taskType: previewTask.type,
           difficulty: previewTask.difficulty,
+          totalPoints: previewTask.totalPoints || totalPoints,
           content: previewTask.content,
           questions: previewTask.questions.map((q, idx) => ({
             questionOrder: idx + 1,
@@ -453,6 +531,7 @@ export const ConfigureTask: React.FC = () => {
             correctAnswer: q.correctAnswer,
             options: q.options || [],
             difficulty: q.difficulty,
+            points: q.points || 10,
             grammarRule: q.grammarRule,
           })),
           groupIds: selectedGroupIds,
@@ -925,6 +1004,43 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
+          {/* Total Assignment Points / Max Score */}
+          <div className="p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/80 space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Total Assignment Points / Max Score
+              </label>
+              <span className="text-xs font-mono font-bold text-primary bg-white px-2 py-0.5 rounded-lg border border-indigo-100 shadow-sm">
+                {totalPoints} pts
+              </span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="relative w-36">
+                <input
+                  type="number"
+                  min="1"
+                  max="1000"
+                  aria-label="Total Assignment Points"
+                  value={totalPoints}
+                  onChange={(e) => {
+                    const val = Math.max(1, parseInt(e.target.value) || 100);
+                    setTotalPoints(val);
+                    if (previewTask) {
+                      setPreviewTask({ ...previewTask, totalPoints: val });
+                    }
+                  }}
+                  className="w-full pl-3 pr-9 py-2 rounded-xl border border-indigo-200 bg-white text-xs font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                  pts
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                Overall maximum score for this homework. Automatically distributed across questions during preview.
+              </p>
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
             <button
@@ -980,27 +1096,95 @@ export const ConfigureTask: React.FC = () => {
 
           {previewTask ? (
             <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
-              {/* Header Badges */}
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
-                <div className="flex items-center space-x-2">
-                  <CefrBadge level={previewTask.cefrLevel} size="sm" />
-                  <span className="text-xs font-bold text-slate-800 px-2.5 py-1 rounded-lg bg-slate-100">
-                    {previewTask.type}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-500">
-                    {previewTask.grammarTopic}
+              {/* Header Badges & Total Points Toolbar */}
+              <div className="space-y-3 pb-4 border-b border-slate-100">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2">
+                    <CefrBadge level={previewTask.cefrLevel} size="sm" />
+                    <span className="text-xs font-bold text-slate-800 px-2.5 py-1 rounded-lg bg-slate-100">
+                      {previewTask.type}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500">
+                      {previewTask.grammarTopic}
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-primary bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
+                    {previewTask.questions?.length || 0} Questions
                   </span>
                 </div>
-                <span className="text-xs font-bold text-primary bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
-                  {previewTask.questions?.length || 0} Questions
-                </span>
+
+                {/* Editable Total Points & Distribution Toolbar */}
+                <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-50/80 border border-slate-200/90">
+                  <div className="flex items-center space-x-2.5">
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Total Points:
+                    </span>
+                    <div className="flex items-center space-x-1">
+                      <input
+                        type="number"
+                        min="1"
+                        max="1000"
+                        aria-label="Preview Total Points"
+                        value={previewTask.totalPoints ?? totalPoints}
+                        onChange={(e) => handleUpdateTotalPoints(parseInt(e.target.value) || 100)}
+                        className="w-20 px-2.5 py-1 rounded-xl border border-indigo-300 bg-white text-xs font-black text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      />
+                      <span className="text-xs font-bold text-slate-500">pts</span>
+                    </div>
+                  </div>
+
+                  {/* Question Points Sum Indicator & Quick Balance Tools */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {(() => {
+                      const questionsSum = (previewTask.questions || []).reduce((acc, q) => acc + (q.points || 0), 0);
+                      const currentTotal = previewTask.totalPoints ?? totalPoints;
+                      const isMatching = questionsSum === currentTotal;
+                      return (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border flex items-center space-x-1.5 ${
+                              isMatching
+                                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                : 'bg-amber-50 text-amber-800 border-amber-200'
+                            }`}
+                            title={`Sum of question prices: ${questionsSum} pts. Total score: ${currentTotal} pts.`}
+                          >
+                            <span>Questions Sum:</span>
+                            <span className="font-mono">{questionsSum} / {currentTotal} pts</span>
+                            <span>{isMatching ? '✓' : '⚠️'}</span>
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={handleDistributePointsEvenly}
+                            className="px-2.5 py-1 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-700 transition shadow-xs"
+                            title="Distribute total points evenly across all questions"
+                          >
+                            Distribute Evenly
+                          </button>
+
+                          {!isMatching && (
+                            <button
+                              type="button"
+                              onClick={handleSyncTotalFromQuestions}
+                              className="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-xs font-bold text-primary transition"
+                              title="Set total points equal to question sum"
+                            >
+                              Sync Total ({questionsSum})
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
               </div>
 
               {/* Informational Hint */}
               <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100/80 text-xs text-indigo-900 leading-relaxed flex items-start space-x-2">
                 <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <p>
-                  <span className="font-bold">Interactive Editor:</span> You can edit instructions, question prompts, option choices, and switch correct answers before deploying.
+                  <span className="font-bold">Interactive Editor:</span> You can edit instructions, question prompts, option choices, question point prices, and switch correct answers before deploying.
                 </p>
               </div>
 
@@ -1045,7 +1229,7 @@ export const ConfigureTask: React.FC = () => {
                         key={q.id || `q-${qIdx}`}
                         className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3.5 transition hover:border-slate-300"
                       >
-                        {/* Question Card Header */}
+                        {/* Question Card Header with Question Points Price */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
                             <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs font-black flex items-center justify-center">
@@ -1056,14 +1240,35 @@ export const ConfigureTask: React.FC = () => {
                             </span>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteQuestion(qIdx)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                            title="Delete question"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center space-x-2">
+                            {/* Question Point Price Input */}
+                            <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-xs">
+                              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                Points:
+                              </span>
+                              <input
+                                type="number"
+                                min="1"
+                                max="500"
+                                aria-label={`Question ${qIdx + 1} Points`}
+                                value={q.points ?? 20}
+                                onChange={(e) =>
+                                  handleUpdateQuestionPoints(qIdx, parseInt(e.target.value) || 1)
+                                }
+                                className="w-14 px-1 py-0.5 rounded text-xs font-black text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary border-b border-indigo-200"
+                              />
+                              <span className="text-[11px] font-semibold text-slate-400">pts</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteQuestion(qIdx)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                              title="Delete question"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
 
                         {/* Question Text */}

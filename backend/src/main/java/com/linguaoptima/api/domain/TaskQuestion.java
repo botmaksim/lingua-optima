@@ -52,6 +52,11 @@ public class TaskQuestion {
     @Builder.Default
     private int difficulty = 2;
 
+    /** @brief Field representing points / score weight in TaskQuestion. */
+    @Column(nullable = false)
+    @Builder.Default
+    private int points = 10;
+
     /** @brief Field representing grammar rule in TaskQuestion. */
     @Column(name = "grammar_rule")
     private String grammarRule;

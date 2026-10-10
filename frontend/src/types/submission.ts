@@ -26,6 +26,8 @@ export interface SubmissionItem {
   explanation: string;
   /** @brief Tested grammar rule or linguistic syllabus topic. */
   grammarRule?: string;
+  /** @brief Point value / weight of this question item. */
+  points?: number;
   /** @brief Multiple-choice options or choices if applicable. */
   options?: string[];
 }
@@ -104,6 +106,8 @@ export interface SubmissionResult {
   grammarTopic?: string;
   /** @brief Target CEFR benchmark level. */
   cefrLevel?: string;
+  /** @brief Total points / max score for the assignment. */
+  totalPoints?: number;
   /** @brief Sentence-by-sentence or question-by-question evaluation items. */
   items?: SubmissionItem[];
   /** @brief Sentence-level grammatical and stylistic corrections. */

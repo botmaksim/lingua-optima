@@ -550,6 +550,7 @@ public class SubmissionService {
                 .isCorrect(isCorrect)
                 .explanation(explanation)
                 .grammarRule(rule)
+                .points(q.getPoints())
                 .options(options)
                 .build());
 

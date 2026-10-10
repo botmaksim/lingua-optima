@@ -64,6 +64,11 @@ public class Task {
     @Builder.Default
     private DifficultyLevel difficulty = DifficultyLevel.MEDIUM;
 
+    /** @brief Field representing total points / max score in Task. */
+    @Column(name = "total_points")
+    @Builder.Default
+    private Integer totalPoints = 100;
+
     /** @brief Field representing created by in Task. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_id")

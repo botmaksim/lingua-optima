@@ -759,7 +759,7 @@ export const SubmissionsReview: React.FC = () => {
                           {Math.round(effectiveScore)}
                         </div>
                         <span className="text-[10px] text-slate-400 font-bold uppercase">
-                          Score / 100
+                          Score / {sub.totalPoints ?? 100}
                         </span>
                       </div>
 
@@ -844,9 +844,16 @@ export const SubmissionsReview: React.FC = () => {
                                 }`}
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="font-mono font-bold text-slate-700 text-xs">
-                                    Question {item.questionNumber}
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-mono font-bold text-slate-700 text-xs">
+                                      Question {item.questionNumber}
+                                    </span>
+                                    {typeof item.points === 'number' && (
+                                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                        {item.points} pts
+                                      </span>
+                                    )}
+                                  </div>
 
                                   {item.isCorrect ? (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -1201,18 +1208,18 @@ export const SubmissionsReview: React.FC = () => {
                 {editingSub.grammarTopic || 'Grammar Practice'}
               </span>
               <span className="font-mono font-bold text-slate-500">
-                Original Score: <span className="text-primary font-black">{editingSub.score}%</span>
+                Original Score: <span className="text-primary font-black">{editingSub.score} / {editingSub.totalPoints ?? 100}</span>
               </span>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase mb-1.5 tracking-wider">
-                New Score (0 - 100)
+                New Score (0 - {editingSub.totalPoints ?? 100})
               </label>
               <input
                 type="number"
                 min="0"
-                max="100"
+                max={editingSub.totalPoints ?? 100}
                 value={newScore}
                 onChange={(e) => setNewScore(Number(e.target.value))}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200/90 bg-white text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"

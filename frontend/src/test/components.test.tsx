@@ -276,6 +276,30 @@ describe('ConfigureTask component', () => {
     // In-place edit question text
     fireEvent.change(questionInput, { target: { value: 'They _____ to Rome last week.' } });
     expect(screen.getByDisplayValue('They _____ to Rome last week.')).toBeInTheDocument();
+
+    // Verify Total Assignment Points and Question Points inputs
+    expect(screen.getByText('Total Assignment Points / Max Score')).toBeInTheDocument();
+    expect(screen.getByText(/Questions Sum:/i)).toBeInTheDocument();
+    expect(screen.getByText(/100 \/ 100 pts/i)).toBeInTheDocument();
+
+    // Edit question points to 50
+    const pointsInput = screen.getByRole('spinbutton', { name: 'Question 1 Points' });
+    fireEvent.change(pointsInput, { target: { value: '50' } });
+
+    // Verify Questions Sum indicates mismatch and Sync Total button appears
+    expect(screen.getByText(/50 \/ 100 pts/i)).toBeInTheDocument();
+    const syncTotalBtn = screen.getByRole('button', { name: /sync total \(50\)/i });
+    expect(syncTotalBtn).toBeInTheDocument();
+
+    // Click Sync Total to match total points with question points sum
+    fireEvent.click(syncTotalBtn);
+    expect(screen.getByText(/50 \/ 50 pts/i)).toBeInTheDocument();
+
+    // Test Distribute Evenly button
+    const distributeBtn = screen.getByRole('button', { name: /distribute evenly/i });
+    expect(distributeBtn).toBeInTheDocument();
+    fireEvent.click(distributeBtn);
+    expect(screen.getByText(/50 \/ 50 pts/i)).toBeInTheDocument();
   });
 });
 

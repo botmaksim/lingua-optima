@@ -36,6 +36,8 @@ export interface TaskQuestion {
   options: string[];
   /** @brief Property representing difficulty in TaskQuestion. */
   difficulty: number;
+  /** @brief Property representing points awarded in TaskQuestion. */
+  points?: number;
   /** @brief Property representing grammar rule in TaskQuestion. */
   grammarRule: string;
 }
@@ -56,6 +58,8 @@ export interface Task {
   domain: string;
   /** @brief Property representing difficulty in Task. */
   difficulty: DifficultyLevel;
+  /** @brief Property representing total points / max score in Task. */
+  totalPoints?: number;
   /** @brief Property representing content in Task. */
   content: string;
   /** @brief Property representing answer key in Task. */
@@ -102,6 +106,8 @@ export interface TaskParams {
   difficulty: DifficultyLevel;
   /** @brief Property representing number of questions in TaskParams. */
   numberOfQuestions?: number;
+  /** @brief Property representing total points / max score in TaskParams. */
+  totalPoints?: number;
   /** @brief Property representing preferred AI provider in TaskParams. */
   provider?: string;
   /** @brief Property representing preferred AI model identifier in TaskParams. */
@@ -188,6 +194,7 @@ export interface CustomQuestionRequest {
   correctAnswer: string;
   options?: string[];
   difficulty?: number;
+  points?: number;
   grammarRule?: string;
 }
 
@@ -200,6 +207,7 @@ export interface CreateCustomTaskRequest {
   domain?: string;
   taskType: TaskType;
   difficulty?: DifficultyLevel;
+  totalPoints?: number;
   content: string;
   questions: CustomQuestionRequest[];
   isTemplate?: boolean;

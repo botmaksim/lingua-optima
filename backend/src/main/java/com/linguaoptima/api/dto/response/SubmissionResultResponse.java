@@ -87,6 +87,9 @@ public class SubmissionResultResponse {
     /** @brief Target CEFR language proficiency benchmark level. */
     private String cefrLevel;
 
+    /** @brief Total points / maximum score of the assigned task. */
+    private Integer totalPoints;
+
     /** @brief Itemized question-by-question or sentence-by-sentence evaluation records. */
     @Builder.Default
     private List<SubmissionItemResponse> items = new ArrayList<>();
@@ -111,6 +114,7 @@ public class SubmissionResultResponse {
         String resolvedTaskContent = null;
         String resolvedGrammarTopic = null;
         String resolvedCefr = null;
+        Integer resolvedTotalPoints = null;
 
         if (submission.getAssignment() != null && submission.getAssignment().getTask() != null) {
             Task task = submission.getAssignment().getTask();
@@ -119,6 +123,7 @@ public class SubmissionResultResponse {
             resolvedTaskContent = task.getContent();
             resolvedGrammarTopic = task.getGrammarTopic();
             resolvedCefr = task.getCefrLevel() != null ? task.getCefrLevel().name() : null;
+            resolvedTotalPoints = task.getTotalPoints();
         }
 
         return SubmissionResultResponse.builder()
@@ -141,6 +146,7 @@ public class SubmissionResultResponse {
             .taskContent(resolvedTaskContent)
             .grammarTopic(resolvedGrammarTopic)
             .cefrLevel(resolvedCefr)
+            .totalPoints(resolvedTotalPoints)
             .items(new ArrayList<>())
             .corrections(new ArrayList<>())
             .build();

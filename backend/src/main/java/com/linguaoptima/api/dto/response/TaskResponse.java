@@ -40,8 +40,10 @@ public class TaskResponse {
     private String domain;
     /** @brief Field representing content in TaskResponse. */
     private String content;
-    /** @brief Field representing difficulty in TaskResponse. */
+    /** @brief Difficulty level of the task. */
     private DifficultyLevel difficulty;
+    /** @brief Total points / max score for the task. */
+    private Integer totalPoints;
     /** @brief Field representing is template in TaskResponse. */
     private boolean isTemplate;
     /** @brief Field representing created at in TaskResponse. */
@@ -86,6 +88,7 @@ public class TaskResponse {
             .domain(task.getDomain())
             .content(task.getContent())
             .difficulty(task.getDifficulty())
+            .totalPoints(task.getTotalPoints())
             .isTemplate(task.isTemplate())
             .createdAt(task.getCreatedAt())
             .questions(questionResponses)
