@@ -1,0 +1,24 @@
+[
+  {
+    "word": "unflinching",
+    "partOfSpeech": "adjective",
+    "definition": "Not showing fear or hesitation in the face of danger or difficulty.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "unflinching resolve",
+      "unflinching dedication"
+    ],
+    "exampleSentence": "Her unflinching resolve inspired the junior legal associates during trial."
+  },
+  {
+    "word": "inevitability",
+    "partOfSpeech": "noun",
+    "definition": "The quality of being certain to happen.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "grim inevitability",
+      "accept inevitability"
+    ],
+    "exampleSentence": "Economists spoke of the eventual currency devaluation with grim inevitability."
+  }
+]

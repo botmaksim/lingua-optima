@@ -1,0 +1,24 @@
+[
+  {
+    "word": "chiasmus",
+    "partOfSpeech": "noun",
+    "definition": "A rhetorical or literary figure in which words, grammatical constructions, or concepts are repeated in reverse order.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "rhetorical chiasmus",
+      "structural chiasmus"
+    ],
+    "exampleSentence": "The philosopher's prose frequently exploits chiasmus to reinforce symmetrical paradoxes."
+  },
+  {
+    "word": "agrarian",
+    "partOfSpeech": "adjective",
+    "definition": "Relating to cultivated land or the cultivation of land.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "agrarian economy",
+      "agrarian society"
+    ],
+    "exampleSentence": "The transition from an agrarian society to an industrial metropolis occurred in mere decades."
+  }
+]

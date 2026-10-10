@@ -47,21 +47,30 @@ class ExportControllerTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: export group report pdf and csv.
+     * @brief Verifies unit test scenario: export group report pdf and csv with and without date range filters.
      */
     @Test
     void testExportGroupReportPdfAndCsv() {
         UUID groupId = UUID.randomUUID();
-        when(exportService.generateGroupReport(groupId, "pdf", teacher)).thenReturn(new byte[]{1, 2, 3});
-        when(exportService.generateGroupReport(groupId, "csv", teacher)).thenReturn("a,b,c".getBytes());
+        when(exportService.generateGroupReport(groupId, "pdf", null, null, teacher)).thenReturn(new byte[]{1, 2, 3});
+        when(exportService.generateGroupReport(groupId, "csv", null, null, teacher)).thenReturn("a,b,c".getBytes());
 
-        ResponseEntity<byte[]> pdfRes = exportController.exportGroupReport(groupId, "pdf", teacher);
+        ResponseEntity<byte[]> pdfRes = exportController.exportGroupReport(groupId, "pdf", null, null, teacher);
         assertEquals(HttpStatus.OK, pdfRes.getStatusCode());
         assertNotNull(pdfRes.getBody());
 
-        ResponseEntity<byte[]> csvRes = exportController.exportGroupReport(groupId, "csv", teacher);
+        ResponseEntity<byte[]> csvRes = exportController.exportGroupReport(groupId, "csv", null, null, teacher);
         assertEquals(HttpStatus.OK, csvRes.getStatusCode());
         assertNotNull(csvRes.getBody());
+
+        // Verify with date range
+        java.time.LocalDateTime from = java.time.LocalDateTime.now().minusDays(7);
+        java.time.LocalDateTime to = java.time.LocalDateTime.now();
+        when(exportService.generateGroupReport(groupId, "pdf", from, to, teacher)).thenReturn(new byte[]{4, 5, 6});
+
+        ResponseEntity<byte[]> filteredRes = exportController.exportGroupReport(groupId, "pdf", from, to, teacher);
+        assertEquals(HttpStatus.OK, filteredRes.getStatusCode());
+        assertNotNull(filteredRes.getBody());
     }
 
     /**
@@ -81,7 +90,7 @@ class ExportControllerTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: get group report preview.
+     * @brief Verifies unit test scenario: get group report preview with and without date filter.
      */
     @Test
     void testGetGroupReportPreview() {
@@ -90,12 +99,14 @@ class ExportControllerTest {
             com.linguaoptima.api.dto.response.GroupReportResponse.builder()
                 .groupId(groupId)
                 .groupName("Test Group")
+                .periodLabel("All Time")
                 .build();
-        when(exportService.getGroupReportData(groupId, teacher)).thenReturn(preview);
+        when(exportService.getGroupReportData(groupId, null, null, teacher)).thenReturn(preview);
 
         ResponseEntity<com.linguaoptima.api.dto.response.GroupReportResponse> res =
-            exportController.getGroupReportPreview(groupId, teacher);
+            exportController.getGroupReportPreview(groupId, null, null, teacher);
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals("Test Group", res.getBody().getGroupName());
+        assertEquals("All Time", res.getBody().getPeriodLabel());
     }
 }

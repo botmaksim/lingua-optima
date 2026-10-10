@@ -38,4 +38,10 @@ export interface UsageCounter {
   dailyOcrLimit: number;
   /** @brief Property representing reset date in UsageCounter. */
   resetDate: string;
+  /** @brief Weekly token consumption. */
+  weekTokensUsed?: number;
+  /** @brief Weekly token limit. */
+  tokenLimit?: number;
+  /** @brief Remaining tokens for the week. */
+  tokensRemaining?: number;
 }

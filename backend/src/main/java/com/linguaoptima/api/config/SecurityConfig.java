@@ -55,7 +55,8 @@ public class SecurityConfig {
                     "/api/auth/google",
                     "/api/auth/refresh",
                     "/api/auth/forgot-password",
-                    "/actuator/**"
+                    "/actuator/**",
+                    "/error"
                 ).permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/tasks/{id}/assign").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/tasks/template").hasAnyRole("TEACHER", "ADMIN")

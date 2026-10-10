@@ -11,11 +11,18 @@ export const exportApi = {
    * @brief Downloads a class cohort report file blob in CSV or PDF format.
    * @param groupId Group identifier.
    * @param format Export format ('csv' | 'pdf').
+   * @param from Optional start date-time ISO string.
+   * @param to Optional end date-time ISO string.
    * @return Promise resolving to Blob containing binary report data.
    */
-  downloadGroupReport: async (groupId: string, format: 'csv' | 'pdf'): Promise<Blob> => {
+  downloadGroupReport: async (
+    groupId: string,
+    format: 'csv' | 'pdf',
+    from?: string,
+    to?: string
+  ): Promise<Blob> => {
     const res = await axiosInstance.get(`/export/group/${groupId}`, {
-      params: { format },
+      params: { format, from: from || undefined, to: to || undefined },
       responseType: 'blob',
     });
     return res.data;
@@ -38,10 +45,18 @@ export const exportApi = {
   /**
    * @brief Fetches structured cohort report preview data including student roster and homework breakdowns.
    * @param groupId Group identifier.
+   * @param from Optional start date-time ISO string.
+   * @param to Optional end date-time ISO string.
    * @return Promise resolving to GroupReportResponse.
    */
-  getGroupReportPreview: async (groupId: string): Promise<GroupReportResponse> => {
-    const res = await axiosInstance.get(`/export/group/${groupId}/preview`);
+  getGroupReportPreview: async (
+    groupId: string,
+    from?: string,
+    to?: string
+  ): Promise<GroupReportResponse> => {
+    const res = await axiosInstance.get(`/export/group/${groupId}/preview`, {
+      params: { from: from || undefined, to: to || undefined },
+    });
     return res.data;
   },
 };

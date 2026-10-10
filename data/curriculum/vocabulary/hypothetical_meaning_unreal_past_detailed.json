@@ -1,0 +1,24 @@
+[
+  {
+    "word": "provisional",
+    "partOfSpeech": "adjective",
+    "definition": "Arranged or existing for the present, possibly to be changed later.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "provisional agreement",
+      "provisional timetable"
+    ],
+    "exampleSentence": "The committee reached a provisional agreement subject to institutional review."
+  },
+  {
+    "word": "shortfall",
+    "partOfSpeech": "noun",
+    "definition": "A deficit of something required.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "budgetary shortfall",
+      "revenue shortfall"
+    ],
+    "exampleSentence": "Emergency state funding was secured to cover the infrastructural shortfall."
+  }
+]

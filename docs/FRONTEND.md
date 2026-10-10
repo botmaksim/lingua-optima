@@ -14,6 +14,8 @@ Comprehensive documentation for the frontend application of **Lingua Optima** �
 6. **Strictly Scoped `localStorage` Usage:** Used exclusively for essay drafts (auto-saved every 30 seconds), non-sensitive UI preferences, and storing the last selected CEFR level.
 7. **2-Step Email Registration:** When registering via email and password, the interface enforces a 2-step flow. First, user details are submitted to dispatch a 6-digit confirmation code via Gmail SMTP; second, the user enters the received code with a 60-second resend cooldown timer to complete account creation. Google OAuth2 registration provides seamless 1-click onboarding.
 8. **External Automated Translation Widget:** To avoid bloated or incomplete hardcoded translation dictionaries, a global `TranslatorDropdown` component in the Navbar enables on-page translation via official Google Translate and Yandex Translate widgets (with full language picker, RU/ES/DE/FR/ZH/AR/TR support, web proxy fallback links, and 1-click reversion back to original English).
+9. **Mobile-First Navigation & UX:** Features a persistent `MobileBottomNav` on mobile viewports (<768px) providing one-thumb access to core workspaces, optimized touch interaction (`touch-action: manipulation`), responsive card layouts for tables, and accessible touch target sizes.
+10. **Printable Academic Reports & Date-Range Filtering:** Educator reporting module (`ExportReports.tsx`) supports date-range presets (All Time, Last 7 Days, Last 30 Days, This Month, Custom Range) and clean paper/PDF print preview via dedicated `@media print` CSS styles.
 
 ## Complete File Structure
 
@@ -50,6 +52,7 @@ frontend/
 │   ├── components/
 │   │   ├── common/            — Shared UI components
 │   │   │   ├── Navbar.tsx     — Logo, streamlined primary navigation links + compact "More ▾" dropdown for secondary learning tools & educator actions, notifications bell + counter, avatar dropdown with 1-click instant Role Switcher (Student ⇄ Teacher), remaining daily evaluations badge, and global TranslatorDropdown
+│   │   │   ├── MobileBottomNav.tsx — Persistent bottom navigation bar on mobile viewports (<768px) with quick access to dashboard, tasks, progress, units, cohorts, and grading
 │   │   │   ├── TranslatorDropdown.tsx — Automated website translation menu integrating official Google Translate and Yandex Translate widgets with failover web proxies and English revert
 │   │   │   ├── Footer.tsx     — Navigation links to Privacy Policy (/privacy), Terms of Service (/terms), Help Center (/help), Presentation, and © Lingua Optima
 │   │   │   ├── TopicSelector.tsx — Reusable CEFR topic selector with domain categorization, curriculum catalog, and custom topic input

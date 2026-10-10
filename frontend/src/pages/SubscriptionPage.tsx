@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Check, Sparkles, Shield, Zap, Users, Camera, CheckCircle2, GraduationCap, Info } from 'lucide-react';
+import { Check, Sparkles, Shield, Zap, Users, Camera, CheckCircle2, GraduationCap, Info, Cpu } from 'lucide-react';
 import { subscriptionApi } from '../api/subscriptionApi';
 import { Subscription, SubscriptionTier, UsageCounter } from '../types/subscription';
 import { useNotificationStore } from '../store/notificationStore';
@@ -216,6 +216,38 @@ export const SubscriptionPage: React.FC = () => {
               </div>
               <p className="text-[11px] text-slate-500 leading-snug">
                 Generating CEFR-aligned exercises across all grammar topics & syllabus presets.
+              </p>
+            </div>
+
+            {/* Metric 2: Token Quota */}
+            <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/70 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <Cpu className="w-4 h-4 text-violet-600" />
+                  <span>Token Quota</span>
+                </div>
+                {isUnlimitedEvals ? (
+                  <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    Unlimited (∞)
+                  </span>
+                ) : (
+                  <span className="text-xs font-mono font-bold text-slate-900">
+                    {(usage.weekTokensUsed || 0).toLocaleString()} / {(usage.tokenLimit || 50000).toLocaleString()}
+                  </span>
+                )}
+              </div>
+              <div className="w-full bg-slate-200/70 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-violet-500 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: isUnlimitedEvals
+                      ? '100%'
+                      : `${Math.min(100, ((usage.weekTokensUsed || 0) / Math.max(1, usage.tokenLimit || 50000)) * 100)}%`,
+                  }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                Weekly tokens consumed across task generation, grammar diagnostics, and essay grading.
               </p>
             </div>
 

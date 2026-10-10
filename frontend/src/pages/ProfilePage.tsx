@@ -87,7 +87,8 @@ export const ProfilePage: React.FC = () => {
       setProfileMessage({ text: 'Full name successfully updated.', type: 'success' });
       setTimeout(() => setProfileMessage(null), 3000);
     } catch (err: any) {
-      setProfileMessage({ text: err.response?.data?.message || 'Failed to update name.', type: 'error' });
+      const errMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to update name.';
+      setProfileMessage({ text: errMsg, type: 'error' });
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -107,7 +108,8 @@ export const ProfilePage: React.FC = () => {
       setProfileMessage({ text: 'Leaderboard display nickname successfully updated.', type: 'success' });
       setTimeout(() => setProfileMessage(null), 3000);
     } catch (err: any) {
-      setProfileMessage({ text: err.response?.data?.message || 'Failed to update leaderboard nickname.', type: 'error' });
+      const errMsg = err.response?.data?.message || err.response?.data?.error || err.message || 'Failed to update leaderboard nickname.';
+      setProfileMessage({ text: errMsg, type: 'error' });
     } finally {
       setIsUpdatingProfile(false);
     }

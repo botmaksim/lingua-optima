@@ -4,6 +4,7 @@
  */
 package com.linguaoptima.api.service;
 
+import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.domain.Subscription;
 import com.linguaoptima.api.domain.UsageCounter;
 import com.linguaoptima.api.domain.User;
@@ -20,30 +21,22 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
 /**
- * @brief Quota tracking and enforcement service for free-tier users.
+ * @brief Quota tracking and enforcement service for free-tier and premium users.
  *
- * Enforces weekly caps (10 evaluations, 3 OCR uploads) on FREE tier accounts,
- * permitting unlimited evaluations and uploads for PREMIUM and EDUCATOR subscribers.
+ * Enforces weekly caps on tokens, evaluations, and OCR uploads based on configurable
+ * properties in PricingProperties, permitting scalable limits across FREE, PREMIUM, and EDUCATOR tiers.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UsageService {
 
-    /**
-     * @brief Weekly evaluation limit for FREE tier users.
-     */
-    public static final int FREE_EVAL_LIMIT = 10;
-
-    /**
-     * @brief Weekly OCR upload limit for FREE tier users.
-     */
-    public static final int FREE_OCR_LIMIT = 3;
-
     /** @brief Field representing usage counter repository in UsageService. */
     private final UsageCounterRepository usageCounterRepository;
     /** @brief Field representing subscription repository in UsageService. */
     private final SubscriptionRepository subscriptionRepository;
+    /** @brief Configurable pricing and quota rules externalized from code. */
+    private final PricingProperties pricingProperties;
 
     /**
      * @brief Retrieves existing usage counter or initializes a new one.
@@ -57,6 +50,7 @@ public class UsageService {
                 .user(user)
                 .weekEvaluations(0)
                 .weekOcrUploads(0)
+                .weekTokensUsed(0L)
                 .weekResetAt(LocalDateTime.now())
                 .build()));
     }
@@ -73,6 +67,38 @@ public class UsageService {
     }
 
     /**
+     * @brief Consumes a specified number of tokens, enforcing weekly token quota for the user tier.
+     * @param user Authenticated user initiating inference.
+     * @param tokens Number of tokens consumed.
+     * @throws QuotaExceededException if user's weekly token quota is breached.
+     */
+    @Transactional
+    public void consumeTokens(User user, long tokens) {
+        if (tokens <= 0) return;
+        SubscriptionTier tier = getUserTier(user);
+        PricingProperties.TierConfig config = pricingProperties.getTierConfig(tier);
+
+        UsageCounter counter = getOrCreateCounter(user);
+        if (tier == SubscriptionTier.FREE && (counter.getWeekTokensUsed() + tokens > config.getWeeklyTokenLimit())) {
+            throw new QuotaExceededException(
+                "Weekly AI token allowance of " + config.getWeeklyTokenLimit() + " tokens exceeded. Upgrade to continue."
+            );
+        }
+        counter.setWeekTokensUsed(counter.getWeekTokensUsed() + tokens);
+        usageCounterRepository.save(counter);
+    }
+
+    /**
+     * @brief Estimates token count from text using standard ~4 characters per token heuristic.
+     * @param text Input or output text.
+     * @return Estimated token count (minimum 1).
+     */
+    public static long estimateTokens(String text) {
+        if (text == null || text.isBlank()) return 0L;
+        return Math.max(1L, text.length() / 4L);
+    }
+
+    /**
      * @brief Increments evaluation counter for free-tier users, enforcing weekly cap.
      * @param user Authenticated user initiating evaluation.
      * @throws QuotaExceededException if free user has exhausted weekly evaluation limit.
@@ -80,12 +106,14 @@ public class UsageService {
     @Transactional
     public void incrementEvaluation(User user) {
         SubscriptionTier tier = getUserTier(user);
+        PricingProperties.TierConfig config = pricingProperties.getTierConfig(tier);
+
         if (tier != SubscriptionTier.FREE) {
             return;
         }
 
         UsageCounter counter = getOrCreateCounter(user);
-        if (counter.getWeekEvaluations() >= FREE_EVAL_LIMIT) {
+        if (counter.getWeekEvaluations() >= config.getWeeklyEvaluationLimit()) {
             throw new QuotaExceededException("Weekly evaluation limit reached. Please upgrade to continue.");
         }
         counter.setWeekEvaluations(counter.getWeekEvaluations() + 1);
@@ -100,12 +128,14 @@ public class UsageService {
     @Transactional
     public void incrementOcr(User user) {
         SubscriptionTier tier = getUserTier(user);
+        PricingProperties.TierConfig config = pricingProperties.getTierConfig(tier);
+
         if (tier != SubscriptionTier.FREE) {
             return;
         }
 
         UsageCounter counter = getOrCreateCounter(user);
-        if (counter.getWeekOcrUploads() >= FREE_OCR_LIMIT) {
+        if (counter.getWeekOcrUploads() >= config.getWeeklyOcrLimit()) {
             throw new QuotaExceededException("Weekly OCR upload limit reached. Please upgrade to continue.");
         }
         counter.setWeekOcrUploads(counter.getWeekOcrUploads() + 1);
@@ -120,30 +150,46 @@ public class UsageService {
     @Transactional(readOnly = true)
     public UsageResponse getUsage(User user) {
         SubscriptionTier tier = getUserTier(user);
+        PricingProperties.TierConfig config = pricingProperties.getTierConfig(tier);
+
         UsageCounter counter = usageCounterRepository.findByUserId(user.getId())
             .orElse(UsageCounter.builder()
                 .user(user)
                 .weekEvaluations(0)
                 .weekOcrUploads(0)
+                .weekTokensUsed(0L)
                 .weekResetAt(LocalDateTime.now())
                 .build());
 
+        int evalsUsed = counter.getWeekEvaluations();
+        int ocrUsed = counter.getWeekOcrUploads();
+        long tokensUsed = counter.getWeekTokensUsed();
+
         if (tier == SubscriptionTier.FREE) {
-            int evalsUsed = counter.getWeekEvaluations();
-            int ocrUsed = counter.getWeekOcrUploads();
+            int evalLimit = config.getWeeklyEvaluationLimit();
+            int ocrLimit = config.getWeeklyOcrLimit();
+            long tokenLimit = config.getWeeklyTokenLimit();
+
             return UsageResponse.builder()
                 .weekEvaluations(evalsUsed)
                 .weekOcrUploads(ocrUsed)
-                .evaluationLimit(FREE_EVAL_LIMIT)
-                .ocrLimit(FREE_OCR_LIMIT)
-                .evaluationsRemaining(Math.max(0, FREE_EVAL_LIMIT - evalsUsed))
-                .ocrRemaining(Math.max(0, FREE_OCR_LIMIT - ocrUsed))
+                .weekTokensUsed(tokensUsed)
+                .tokenLimit(tokenLimit)
+                .tokensRemaining(Math.max(0L, tokenLimit - tokensUsed))
+                .evaluationLimit(evalLimit)
+                .ocrLimit(ocrLimit)
+                .evaluationsRemaining(Math.max(0, evalLimit - evalsUsed))
+                .ocrRemaining(Math.max(0, ocrLimit - ocrUsed))
                 .weekResetAt(counter.getWeekResetAt())
                 .build();
         } else {
+            long tokenLimit = config.getWeeklyTokenLimit();
             return UsageResponse.builder()
-                .weekEvaluations(counter.getWeekEvaluations())
-                .weekOcrUploads(counter.getWeekOcrUploads())
+                .weekEvaluations(evalsUsed)
+                .weekOcrUploads(ocrUsed)
+                .weekTokensUsed(tokensUsed)
+                .tokenLimit(tokenLimit)
+                .tokensRemaining(Math.max(0L, tokenLimit - tokensUsed))
                 .evaluationLimit(null)
                 .ocrLimit(null)
                 .evaluationsRemaining(Integer.MAX_VALUE)
@@ -162,6 +208,7 @@ public class UsageService {
         usageCounterRepository.findAll().forEach(counter -> {
             counter.setWeekEvaluations(0);
             counter.setWeekOcrUploads(0);
+            counter.setWeekTokensUsed(0L);
             counter.setWeekResetAt(LocalDateTime.now());
             usageCounterRepository.save(counter);
         });

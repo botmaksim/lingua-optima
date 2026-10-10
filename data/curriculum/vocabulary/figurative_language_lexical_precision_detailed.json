@@ -1,0 +1,24 @@
+[
+  {
+    "word": "untenable",
+    "partOfSpeech": "adjective",
+    "definition": "Not able to be maintained or defended against attack or objection.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "untenable position",
+      "untenable thesis"
+    ],
+    "exampleSentence": "Following the emergence of counter-evidence, the hypothesis became untenable."
+  },
+  {
+    "word": "marshal",
+    "partOfSpeech": "verb",
+    "definition": "To arrange or assemble a group of people or concepts in order.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "marshal evidence",
+      "marshal arguments"
+    ],
+    "exampleSentence": "The defense attorney marshaled compelling forensic evidence to acquit the accused."
+  }
+]

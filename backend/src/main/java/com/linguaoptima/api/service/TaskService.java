@@ -82,6 +82,9 @@ public class TaskService {
         user.setPreferredModel(params.getModelName());
 
         String rawJson = aiBrokerService.generateTaskContent(prompt, user);
+        long estimatedTokens = UsageService.estimateTokens(prompt) + UsageService.estimateTokens(rawJson);
+        usageService.consumeTokens(user, estimatedTokens);
+
         Task task = parseAndBuildTask(rawJson, params, user, false);
         Task savedTask = taskRepository.save(task);
 

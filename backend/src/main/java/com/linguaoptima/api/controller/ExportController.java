@@ -7,12 +7,14 @@ package com.linguaoptima.api.controller;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.service.ExportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
@@ -33,6 +35,8 @@ public class ExportController {
      *
      * @param groupId Unique identifier of the group.
      * @param format Export document format, defaults to pdf.
+     * @param from Optional start date-time filter for submissions and assignments.
+     * @param to Optional end date-time filter for submissions and assignments.
      * @param teacher Authenticated teacher requesting the report.
      * @return Binary attachment containing PDF or CSV document bytes.
      */
@@ -40,9 +44,11 @@ public class ExportController {
     public ResponseEntity<byte[]> exportGroupReport(
         @PathVariable("id") UUID groupId,
         @RequestParam(defaultValue = "pdf") String format,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
         @AuthenticationPrincipal User teacher
     ) {
-        byte[] data = exportService.generateGroupReport(groupId, format, teacher);
+        byte[] data = exportService.generateGroupReport(groupId, format, from, to, teacher);
         String filename = "group-report-" + groupId + "." + format.toLowerCase();
         MediaType mediaType = "csv".equalsIgnoreCase(format) ?
             MediaType.parseMediaType("text/csv") : MediaType.APPLICATION_PDF;
@@ -82,14 +88,18 @@ public class ExportController {
      * @brief Retrieves detailed group performance report data for preview.
      *
      * @param groupId Unique identifier of the group.
+     * @param from Optional start date-time filter for submissions and assignments.
+     * @param to Optional end date-time filter for submissions and assignments.
      * @param teacher Authenticated teacher requesting the report preview.
      * @return HTTP 200 with GroupReportResponse.
      */
     @GetMapping({"/report/group/{id}/preview", "/group/{id}/preview"})
     public ResponseEntity<com.linguaoptima.api.dto.response.GroupReportResponse> getGroupReportPreview(
         @PathVariable("id") UUID groupId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
         @AuthenticationPrincipal User teacher
     ) {
-        return ResponseEntity.ok(exportService.getGroupReportData(groupId, teacher));
+        return ResponseEntity.ok(exportService.getGroupReportData(groupId, from, to, teacher));
     }
 }

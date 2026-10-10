@@ -41,6 +41,12 @@ public class GroupReportResponse {
     private int totalSubmissionsCount;
     /** @brief Group average percentage score across all completed submissions. */
     private Double groupAverageScore;
+    /** @brief Optional period filter lower boundary. */
+    private LocalDateTime fromDate;
+    /** @brief Optional period filter upper boundary. */
+    private LocalDateTime toDate;
+    /** @brief Human-readable period label (e.g. "Last 7 Days", "All Time"). */
+    private String periodLabel;
     /** @brief Summary list of enrolled students. */
     private List<StudentSummaryDto> studentSummaries;
     /** @brief Detailed breakdown for each homework assignment. */

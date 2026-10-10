@@ -87,6 +87,22 @@ app:
       base-url: ${KIMI_BASE_URL:https://api.moonshot.cn/v1}
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:*,https://*}
+  pricing:
+    free:
+      weekly-token-limit: ${PRICING_FREE_TOKEN_LIMIT:50000}
+      weekly-evaluation-limit: ${PRICING_FREE_EVAL_LIMIT:10}
+      weekly-ocr-limit: ${PRICING_FREE_OCR_LIMIT:3}
+      monthly-price-usd: 0.0
+    premium:
+      weekly-token-limit: ${PRICING_PREMIUM_TOKEN_LIMIT:1000000}
+      weekly-evaluation-limit: ${PRICING_PREMIUM_EVAL_LIMIT:500}
+      weekly-ocr-limit: ${PRICING_PREMIUM_OCR_LIMIT:100}
+      monthly-price-usd: ${PRICING_PREMIUM_PRICE_USD:9.99}
+    educator:
+      weekly-token-limit: ${PRICING_EDUCATOR_TOKEN_LIMIT:10000000}
+      weekly-evaluation-limit: ${PRICING_EDUCATOR_EVAL_LIMIT:10000}
+      weekly-ocr-limit: ${PRICING_EDUCATOR_OCR_LIMIT:2000}
+      monthly-price-usd: ${PRICING_EDUCATOR_PRICE_USD:49.99}
 
 management:
   endpoints:

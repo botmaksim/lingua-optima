@@ -1,0 +1,24 @@
+[
+  {
+    "word": "essential",
+    "partOfSpeech": "adjective",
+    "definition": "Extremely important and necessary for meaning.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "essential clause",
+      "essential component"
+    ],
+    "exampleSentence": "The defining relative clause supplies essential context to identify the subject."
+  },
+  {
+    "word": "restrictive",
+    "partOfSpeech": "adjective",
+    "definition": "Limiting the application of something to specified circumstances.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "restrictive modifier",
+      "restrictive relative"
+    ],
+    "exampleSentence": "Restrictive clauses narrow down the referent without parenthetical commas."
+  }
+]

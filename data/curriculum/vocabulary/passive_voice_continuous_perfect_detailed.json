@@ -1,0 +1,35 @@
+[
+  {
+    "word": "implement",
+    "partOfSpeech": "verb",
+    "definition": "To put a decision, plan, or agreement into effect.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "implement policy",
+      "successfully implement"
+    ],
+    "exampleSentence": "The new privacy guidelines have been implemented across the entire network."
+  },
+  {
+    "word": "interrogate",
+    "partOfSpeech": "verb",
+    "definition": "To ask questions of someone closely, aggressively, or formally.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "interrogate a witness",
+      "thoroughly interrogate"
+    ],
+    "exampleSentence": "The witness was being interrogated by senior detectives."
+  },
+  {
+    "word": "renovate",
+    "partOfSpeech": "verb",
+    "definition": "To restore something old to a good state of repair.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "renovate a building",
+      "extensively renovate"
+    ],
+    "exampleSentence": "The campus library is currently being renovated with modern workstations."
+  }
+]

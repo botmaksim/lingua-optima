@@ -71,7 +71,21 @@ public class ExportService {
      */
     @Transactional(readOnly = true)
     public byte[] generateGroupReport(UUID groupId, String format, User teacher) {
-        GroupReportResponse reportData = getGroupReportData(groupId, teacher);
+        return generateGroupReport(groupId, format, null, null, teacher);
+    }
+
+    /**
+     * @brief Generates an export report for a group filtered by a specific date period.
+     * @param groupId Unique identifier of the group.
+     * @param format Desired export format ("csv" or "pdf").
+     * @param from Lower timestamp bound for submissions and assignments.
+     * @param to Upper timestamp bound for submissions and assignments.
+     * @param teacher Educator requesting the report.
+     * @return Byte array containing raw report file bytes.
+     */
+    @Transactional(readOnly = true)
+    public byte[] generateGroupReport(UUID groupId, String format, LocalDateTime from, LocalDateTime to, User teacher) {
+        GroupReportResponse reportData = getGroupReportData(groupId, from, to, teacher);
 
         if ("csv".equalsIgnoreCase(format)) {
             return generateGroupCsv(reportData);
@@ -85,11 +99,22 @@ public class ExportService {
      * @param groupId Unique identifier of the group.
      * @param teacher Educator requesting the report data.
      * @return Populated GroupReportResponse DTO.
-     * @throws ResourceNotFoundException if group is not found.
-     * @throws ForbiddenException if user lacks permission.
      */
     @Transactional(readOnly = true)
     public GroupReportResponse getGroupReportData(UUID groupId, User teacher) {
+        return getGroupReportData(groupId, null, null, teacher);
+    }
+
+    /**
+     * @brief Builds structured report data for a group filtered by date period.
+     * @param groupId Unique identifier of the group.
+     * @param from Optional lower date bound.
+     * @param to Optional upper date bound.
+     * @param teacher Educator requesting the report.
+     * @return Populated GroupReportResponse DTO.
+     */
+    @Transactional(readOnly = true)
+    public GroupReportResponse getGroupReportData(UUID groupId, LocalDateTime from, LocalDateTime to, User teacher) {
         Group group = groupRepository.findById(groupId)
             .orElseThrow(() -> new ResourceNotFoundException("Group not found: " + groupId));
 
@@ -101,6 +126,20 @@ public class ExportService {
         List<UUID> studentIds = activeStudents.stream().map(gs -> gs.getStudent().getId()).toList();
 
         List<Submission> allGroupSubs = submissionRepository.findActiveGroupSubmissions(groupId);
+
+        // Filter submissions by date range if specified
+        if (from != null) {
+            final LocalDateTime f = from;
+            allGroupSubs = allGroupSubs.stream()
+                .filter(s -> s.getSubmittedAt() != null && !s.getSubmittedAt().isBefore(f))
+                .toList();
+        }
+        if (to != null) {
+            final LocalDateTime t = to;
+            allGroupSubs = allGroupSubs.stream()
+                .filter(s -> s.getSubmittedAt() != null && !s.getSubmittedAt().isAfter(t))
+                .toList();
+        }
 
         // Map student to assignments
         Map<UUID, List<TaskAssignment>> studentAssignmentsMap = new LinkedHashMap<>();
@@ -121,6 +160,19 @@ public class ExportService {
             allCohortAssignments = allCohortAssignments.stream()
                 .filter(a -> a.getAssignedBy() != null && group.getTeacher() != null && a.getAssignedBy().getId().equals(group.getTeacher().getId()))
                 .toList();
+
+            if (from != null) {
+                final LocalDateTime f = from;
+                allCohortAssignments = allCohortAssignments.stream()
+                    .filter(a -> a.getCreatedAt() != null && !a.getCreatedAt().isBefore(f))
+                    .toList();
+            }
+            if (to != null) {
+                final LocalDateTime t = to;
+                allCohortAssignments = allCohortAssignments.stream()
+                    .filter(a -> a.getCreatedAt() != null && !a.getCreatedAt().isAfter(t))
+                    .toList();
+            }
 
             for (TaskAssignment a : allCohortAssignments) {
                 studentAssignmentsMap.computeIfAbsent(a.getStudent().getId(), k -> new ArrayList<>()).add(a);
@@ -265,11 +317,24 @@ public class ExportService {
 
         Double groupAvg = allGroupSubs.isEmpty() ? 0.0 : allGroupSubs.stream().mapToDouble(Submission::getEffectiveScore).average().orElse(0.0);
 
+        String periodLabel = "All Time";
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        if (from != null && to != null) {
+            periodLabel = from.format(dtf) + " to " + to.format(dtf);
+        } else if (from != null) {
+            periodLabel = "Since " + from.format(dtf);
+        } else if (to != null) {
+            periodLabel = "Until " + to.format(dtf);
+        }
+
         return GroupReportResponse.builder()
             .groupId(group.getId())
             .groupName(group.getName())
             .teacherName(group.getTeacher() != null ? group.getTeacher().getFullName() : "N/A")
             .generatedAt(LocalDateTime.now())
+            .fromDate(from)
+            .toDate(to)
+            .periodLabel(periodLabel)
             .activeStudentCount(activeStudents.size())
             .assignedHomeworkCount(uniqueTasks.size())
             .totalSubmissionsCount(allGroupSubs.size())

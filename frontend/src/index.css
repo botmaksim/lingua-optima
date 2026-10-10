@@ -8,6 +8,11 @@
   --surface: #F8FAFC;
 }
 
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -15,6 +20,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #F8FAFC;
   color: #0F172A;
+  touch-action: manipulation;
 }
 
 code, pre {
@@ -40,25 +46,58 @@ code, pre {
   background: #94A3B8;
 }
 
-/* External Google and Yandex Translate overlay styling */
+/* =========================================================================
+   External Translation Widgets Styling (Google Translate & Yandex Translate)
+   Completely suppresses intrusive banner iframes, tooltips, and body shifts.
+   ========================================================================= */
+
+/* Hide Google Translate top banner in all legacy, modern, and obfuscated variants */
+.goog-te-banner-frame,
 .goog-te-banner-frame.skiptranslate,
-.goog-te-banner-frame {
+iframe.goog-te-banner-frame,
+iframe.skiptranslate,
+iframe[id*=":1.container"],
+iframe[id*=":2.container"],
+iframe[id*=":3.container"],
+iframe[class*="VIpgJd"],
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+.VIpgJd-ZVi9od-ORHb-Oxf5ab,
+.VIpgJd-ZVi9od-xl07Ob-Oxf5ab,
+.VIpgJd-ZVi9od-SmfZ-Oxf5ab,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover,
+.goog-te-balloon-frame {
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  max-height: 0 !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
 }
 
+/* Ensure html and body are NEVER shifted down by Google's injected 40px top offset */
+html,
 body {
   top: 0px !important;
+  position: static !important;
 }
 
-.goog-tooltip,
-#goog-gt-tt {
-  display: none !important;
-}
-
+/* Remove text highlights and dashed underlines added by translation engines */
 .goog-text-highlight {
   background-color: transparent !important;
   border: none !important;
   box-shadow: none !important;
+}
+
+/* Prevent Yandex Translate floating badge if rendered outside container */
+#yt-widget .yt-servicelink,
+.yt-servicelink {
+  display: none !important;
 }
 
 /* Branded customizable select fallback styling */
@@ -86,5 +125,60 @@ select option {
 select option:hover {
   background-color: #eef2ff;
   color: #4f46e5;
+}
+
+/* =========================================================================
+   Print Optimization & Academic Report Styles
+   ========================================================================= */
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+  }
+
+  /* Hide navigation, header, action buttons, controls, and translation widgets */
+  nav,
+  header,
+  aside,
+  footer,
+  .no-print,
+  button,
+  .goog-te-banner-frame,
+  #yt-widget {
+    display: none !important;
+  }
+
+  /* Printable report container */
+  .printable-report {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* Retain background colors & borders in print previews */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page break rules for clean tabular printing */
+  tr,
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+.print-only {
+  display: none;
 }
 

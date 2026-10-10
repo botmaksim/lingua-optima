@@ -1,0 +1,35 @@
+[
+  {
+    "word": "discontinued",
+    "partOfSpeech": "adjective",
+    "definition": "No longer produced, maintained, or continuing.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "discontinued habit",
+      "discontinued practice"
+    ],
+    "exampleSentence": "The company discontinued its paper filing system in favor of digital storage."
+  },
+  {
+    "word": "nostalgic",
+    "partOfSpeech": "adjective",
+    "definition": "Characterized by a sentimental yearning for the past.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "nostalgic recollection",
+      "feel nostalgic"
+    ],
+    "exampleSentence": "He had a nostalgic recollection of the summers he used to spend by the coast."
+  },
+  {
+    "word": "characteristic",
+    "partOfSpeech": "adjective",
+    "definition": "Typical of a particular person, place, or thing.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "characteristic gesture",
+      "characteristic habit"
+    ],
+    "exampleSentence": "It was characteristic of her to stay late and ensure all questions were answered."
+  }
+]

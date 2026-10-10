@@ -1,0 +1,35 @@
+[
+  {
+    "word": "obligation",
+    "partOfSpeech": "noun",
+    "definition": "A social, legal, or moral requirement.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "moral obligation",
+      "under an obligation"
+    ],
+    "exampleSentence": "Every researcher has an ethical obligation to verify empirical data."
+  },
+  {
+    "word": "advisable",
+    "partOfSpeech": "adjective",
+    "definition": "Sensible and prudent to do.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "highly advisable",
+      "deemed advisable"
+    ],
+    "exampleSentence": "It is highly advisable to review the rubric prior to drafting."
+  },
+  {
+    "word": "prohibit",
+    "partOfSpeech": "verb",
+    "definition": "To formally forbid something by law or authority.",
+    "cefrLevel": "B1",
+    "collocations": [
+      "strictly prohibit",
+      "prohibit entry"
+    ],
+    "exampleSentence": "Regulations strictly prohibit unvetted guests in the testing laboratory."
+  }
+]

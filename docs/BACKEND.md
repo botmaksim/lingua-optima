@@ -21,10 +21,11 @@ This is a comprehensive guide to the server-side (Backend) architecture of the L
 1. **NO global leaderboard.** Only an intra-group leaderboard within a specific teacher's student group is provided.
 2. **Soft delete from group.** When a student is removed from a group, the teacher can NO LONGER view their historical submissions (they are hidden from group queries). However, if the student is later re-added to the same group, their submission history is RESTORED and becomes visible again. Soft deletion is implemented via the `group_students` table columns `is_active` and `removed_at`.
 3. **Payment is a MOCK STUB.** All surrounding billing logic operates end-to-end (error handling infrastructure, subscription tiers, upgrades/downgrades), while the actual payment processor (`PaymentService` stub) always returns a successful status (`success`). This is designed for testing. Error codes (`PAYMENT_FAILED`, `CARD_DECLINED`, `INSUFFICIENT_FUNDS`, `EXPIRED_CARD`, `NETWORK_ERROR`, `PROVIDER_ERROR`) are fully supported by the exception and response pipeline, though the stub never returns them in normal execution.
-4. **Subscription tiers:**
-    - `FREE`: 10 evaluations/week, 3 OCR uploads/week, CEFR levels A1–B2.
-    - `PREMIUM`: unlimited evaluations and OCR uploads, all CEFR levels (A1–C2), priority queue.
-    - `EDUCATOR`: everything in Premium + student groups up to 200 members, task deployment, manual grade overrides, report exports, and API key access.
+4. **Subscription tiers & Token Quotas (`app.pricing`):**
+    - `FREE`: 50,000 AI tokens/week, 10 evaluations/week, 3 OCR uploads/week, CEFR levels A1–B2.
+    - `PREMIUM`: 1,000,000 AI tokens/week, unlimited evaluations and OCR uploads, all CEFR levels (A1–C2), priority queue.
+    - `EDUCATOR`: 10,000,000 AI tokens/week, unlimited evaluations/OCR, cohorts up to 200 members, task deployment, manual grade overrides, date-range academic report exports, and BYOK access.
+    - All pricing parameters, token caps, and quota limits are centralized in `PricingProperties.java` (`@ConfigurationProperties(prefix = "app.pricing")`) in `application.yml` without hardcoded constants.
 5. **Self-service tasks:** When a student independently generates a task for themselves, the system automatically creates a `TaskAssignment` entity with the `assigned_by` field pointing to the student themselves (self-assignment).
 6. **Session resume:** `GET /api/sessions/active` returns the user's current unfinished adaptive testing session (if one exists).
 7. **OCR error handling:** `OcrException` is translated into an HTTP 422 response with a clear, user-friendly diagnostic message.
@@ -50,6 +51,7 @@ backend/
 │   ├── config/
 │   │   ├── SecurityConfig.java        — Spring Security filter chain, CORS, CSRF disabled, JWT filter registration
 │   │   ├── JwtAuthenticationFilter.java — OncePerRequestFilter: extracts Bearer token, validates, sets SecurityContext
+│   │   ├── PricingProperties.java     — @ConfigurationProperties(prefix = "app.pricing") externalized tier caps and token quotas
 │   │   ├── RedisConfig.java           — RedisTemplate, connection factory, serializers
 │   │   ├── CorsConfig.java            — Allowed origins (localhost:5173 dev, production domain)
 │   │   ├── SchedulingConfig.java      — @EnableScheduling
@@ -67,7 +69,7 @@ backend/
 │   │   ├── SubscriptionController.java — GET /me; POST /upgrade, /downgrade; GET /usage
 │   │   ├── ApiKeyController.java      — GET /, POST /, DELETE /{id}
 │   │   ├── LeaderboardController.java — GET /group/{groupId} (group-only leaderboard, NO global)
-│   │   └── ExportController.java      — GET /report/group/{id}, /report/student/{id}
+│   │   └── ExportController.java      — GET /report/group/{id} (?format, ?from, ?to), /report/student/{id}, /report/group/{id}/preview (?from, ?to)
 │   │
 │   ├── dto/
 │   │   ├── request/

@@ -17,6 +17,8 @@ import {
   Sparkles,
   RefreshCw,
   Award,
+  Calendar,
+  Printer,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { exportApi } from '../../api/exportApi';
@@ -27,6 +29,8 @@ import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { useNotificationStore } from '../../store/notificationStore';
 
+type PeriodType = 'all' | '7d' | '30d' | 'month' | 'custom';
+
 /**
  * @brief Panel allowing educators to inspect and export cohort progress reports in PDF and CSV format.
  * @return JSX report export view.
@@ -36,6 +40,9 @@ export const ExportReports: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<string>('');
   const [format, setFormat] = useState<'csv' | 'pdf'>('pdf');
+  const [periodType, setPeriodType] = useState<PeriodType>('all');
+  const [customFrom, setCustomFrom] = useState<string>('');
+  const [customTo, setCustomTo] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -55,14 +62,46 @@ export const ExportReports: React.FC = () => {
       .catch((err) => console.error('Failed to load groups:', err));
   }, []);
 
-  const loadPreview = (groupId: string) => {
+  const computeRangeIso = (
+    type: PeriodType,
+    fromStr: string,
+    toStr: string
+  ): { fromIso?: string; toIso?: string } => {
+    if (type === '7d') {
+      return { fromIso: new Date(Date.now() - 7 * 86400000).toISOString() };
+    }
+    if (type === '30d') {
+      return { fromIso: new Date(Date.now() - 30 * 86400000).toISOString() };
+    }
+    if (type === 'month') {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      return { fromIso: startOfMonth.toISOString() };
+    }
+    if (type === 'custom') {
+      const fromIso = fromStr ? new Date(`${fromStr}T00:00:00`).toISOString() : undefined;
+      const toIso = toStr ? new Date(`${toStr}T23:59:59`).toISOString() : undefined;
+      return { fromIso, toIso };
+    }
+    return {};
+  };
+
+  const loadPreview = (
+    groupId: string,
+    pType: PeriodType = periodType,
+    cFrom: string = customFrom,
+    cTo: string = customTo
+  ) => {
     if (!groupId) {
       setPreviewData(null);
       return;
     }
     setIsLoadingPreview(true);
-    exportApi
-      .getGroupReportPreview(groupId)
+    const { fromIso, toIso } = computeRangeIso(pType, cFrom, cTo);
+    const promise = fromIso || toIso
+      ? exportApi.getGroupReportPreview(groupId, fromIso, toIso)
+      : exportApi.getGroupReportPreview(groupId);
+    promise
       .then((data) => setPreviewData(data))
       .catch((err) => {
         console.error('Failed to load report preview:', err);
@@ -73,9 +112,9 @@ export const ExportReports: React.FC = () => {
 
   useEffect(() => {
     if (selectedGroupId) {
-      loadPreview(selectedGroupId);
+      loadPreview(selectedGroupId, periodType, customFrom, customTo);
     }
-  }, [selectedGroupId]);
+  }, [selectedGroupId, periodType, customFrom, customTo]);
 
   /**
    * @brief Event handler downloading cohort report in selected format.
@@ -87,7 +126,10 @@ export const ExportReports: React.FC = () => {
     setErrorMessage(null);
 
     try {
-      const blob = await exportApi.downloadGroupReport(selectedGroupId, format);
+      const { fromIso, toIso } = computeRangeIso(periodType, customFrom, customTo);
+      const blob = fromIso || toIso
+        ? await exportApi.downloadGroupReport(selectedGroupId, format, fromIso, toIso)
+        : await exportApi.downloadGroupReport(selectedGroupId, format);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -119,7 +161,7 @@ export const ExportReports: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      <div>
+      <div className="no-print">
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Export Academic Reports</h1>
         <p className="text-sm text-slate-500 mt-1">
           Generate comprehensive diagnostic and grading reports for individual cohorts in PDF or CSV format.
@@ -127,7 +169,7 @@ export const ExportReports: React.FC = () => {
       </div>
 
       {/* Export Configuration Controls Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6 no-print export-controls-card">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
@@ -187,6 +229,59 @@ export const ExportReports: React.FC = () => {
           </div>
         </div>
 
+        {/* Timeframe / Period Filter */}
+        <div className="pt-4 border-t border-slate-100">
+          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-indigo-500" />
+            <span>Reporting Timeframe / Period</span>
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            {[
+              { id: 'all', label: 'All Time' },
+              { id: '7d', label: 'Last 7 Days' },
+              { id: '30d', label: 'Last 30 Days' },
+              { id: 'month', label: 'This Month' },
+              { id: 'custom', label: 'Custom Range' },
+            ].map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => setPeriodType(preset.id as PeriodType)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+                  periodType === preset.id
+                    ? 'bg-primary text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                }`}
+              >
+                <span>{preset.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {periodType === 'custom' && (
+            <div className="flex flex-wrap items-center gap-3 mt-3 p-3 bg-slate-50/80 rounded-2xl border border-slate-100 animate-in fade-in duration-150">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-medium text-slate-500">From:</span>
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs font-medium text-slate-500">To:</span>
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
         {downloadSuccess && (
           <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs flex items-center space-x-2 border border-emerald-200/80 animate-in fade-in duration-150">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -224,8 +319,8 @@ export const ExportReports: React.FC = () => {
       </div>
 
       {/* Cohort Performance Overview & Homework Breakdown Preview */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6 printable-report">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 no-print">
           <div>
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
@@ -239,7 +334,18 @@ export const ExportReports: React.FC = () => {
           <div className="flex items-center space-x-2">
             <button
               type="button"
-              onClick={() => loadPreview(selectedGroupId)}
+              onClick={() => window.print()}
+              disabled={isLoadingPreview || !previewData}
+              className="flex items-center space-x-1.5 py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-bold transition shadow-2xs disabled:opacity-50"
+              title="Print academic report"
+            >
+              <Printer className="w-4 h-4 text-slate-600" />
+              <span>Print Report</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => loadPreview(selectedGroupId, periodType, customFrom, customTo)}
               disabled={isLoadingPreview || !selectedGroupId}
               className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
               title="Refresh Preview"
@@ -255,6 +361,35 @@ export const ExportReports: React.FC = () => {
           </div>
         ) : previewData ? (
           <div className="space-y-6">
+            {/* Print Only Branded Header */}
+            <div className="print-only mb-6 pb-4 border-b border-slate-300">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h1 className="text-xl font-black text-slate-900 tracking-tight">
+                    Lingua Optima — Academic Performance Report
+                  </h1>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Cohort: <strong>{previewData.groupName}</strong> | Educator: <strong>{previewData.teacherName}</strong>
+                  </p>
+                </div>
+                <div className="text-right text-xs text-slate-600">
+                  <p>Period: <strong className="text-indigo-700">{previewData.periodLabel || 'All Time'}</strong></p>
+                  <p>Generated: {new Date(previewData.generatedAt).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Timeframe indicator badge in interactive preview */}
+            {previewData.periodLabel && (
+              <div className="flex items-center space-x-2 text-xs no-print">
+                <span className="text-slate-400 font-medium">Filtered Period:</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 border border-indigo-100 text-primary font-bold text-[11px]">
+                  <Calendar className="w-3 h-3 text-primary" />
+                  <span>{previewData.periodLabel}</span>
+                </span>
+              </div>
+            )}
+
             {/* Quick Metrics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-100 space-y-1">
@@ -299,7 +434,7 @@ export const ExportReports: React.FC = () => {
             </div>
 
             {/* Navigation Tabs */}
-            <div className="flex border-b border-slate-100 space-x-4">
+            <div className="flex border-b border-slate-100 space-x-4 no-print">
               <button
                 type="button"
                 onClick={() => setActiveTab('homeworks')}

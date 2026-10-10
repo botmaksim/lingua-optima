@@ -1,19 +1,24 @@
 /**
  * @file TranslatorDropdown.tsx
- * @brief Website translation dropdown integrating official Google Translate and Yandex Translate widgets.
+ * @brief Website translation dropdown integrating official Google Translate and Yandex Translate in-page widgets.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Globe,
   ChevronDown,
-  ExternalLink,
   RotateCcw,
   Check,
   Languages,
 } from 'lucide-react';
 
-const SUPPORTED_LANGUAGES = [
+interface LanguageOption {
+  code: string;
+  name: string;
+  flag: string;
+}
+
+const SUPPORTED_LANGUAGES: LanguageOption[] = [
   { code: 'ru', name: 'Russian (Русский)', flag: '🇷🇺' },
   { code: 'es', name: 'Spanish (Español)', flag: '🇪🇸' },
   { code: 'de', name: 'German (Deutsch)', flag: '🇩🇪' },
@@ -24,7 +29,7 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 /**
- * @brief Component providing Google Translate and Yandex Translate page translation controls.
+ * @brief Component providing Google Translate and Yandex Translate in-page translation controls.
  * @return React component element.
  */
 export const TranslatorDropdown: React.FC = () => {
@@ -47,6 +52,50 @@ export const TranslatorDropdown: React.FC = () => {
       setActiveEngine('yandex');
       setCurrentLang('ru');
     }
+  }, []);
+
+  /**
+   * @brief Watches for and neutralizes any intrusive banner iframes or top body shifts injected by translation widgets.
+   */
+  useEffect(() => {
+    const neutralizeTranslateOverlays = () => {
+      // Force body and html top to 0px and remove relative shift
+      if (document.body.style.top && document.body.style.top !== '0px') {
+        document.body.style.setProperty('top', '0px', 'important');
+      }
+      if (document.body.style.position === 'relative') {
+        document.body.style.removeProperty('position');
+      }
+      if (document.documentElement.style.top && document.documentElement.style.top !== '0px') {
+        document.documentElement.style.setProperty('top', '0px', 'important');
+      }
+
+      // Hide all Google Translate banner iframes, tooltips, and floating gadgets
+      const bannerFrames = document.querySelectorAll<HTMLElement>(
+        'iframe.skiptranslate, iframe.goog-te-banner-frame, iframe[id*=":1.container"], iframe[id*=":2.container"], iframe[id*=":3.container"], .VIpgJd-ZVi9od-aZ2wEe-wOHMyf, .VIpgJd-ZVi9od-ORHb-Oxf5ab, .VIpgJd-ZVi9od-xl07Ob-Oxf5ab, #goog-gt-tt, .goog-te-banner-frame'
+      );
+      bannerFrames.forEach((frame) => {
+        frame.style.setProperty('display', 'none', 'important');
+        frame.style.setProperty('height', '0px', 'important');
+        frame.style.setProperty('visibility', 'hidden', 'important');
+        frame.style.setProperty('opacity', '0', 'important');
+        frame.style.setProperty('pointer-events', 'none', 'important');
+      });
+    };
+
+    neutralizeTranslateOverlays();
+
+    const observer = new MutationObserver(() => {
+      neutralizeTranslateOverlays();
+    });
+
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['style', 'class'],
+      childList: true,
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   /**
@@ -73,19 +122,31 @@ export const TranslatorDropdown: React.FC = () => {
     document.cookie = `googtrans=/en/${lang}; path=/; domain=${host};`;
     if (host.includes('.')) {
       document.cookie = `googtrans=/en/${lang}; path=/; domain=.${host};`;
+      const domainParts = host.split('.');
+      if (domainParts.length >= 2) {
+        const rootDomain = '.' + domainParts.slice(-2).join('.');
+        document.cookie = `googtrans=/en/${lang}; path=/; domain=${rootDomain};`;
+      }
     }
   };
 
   /**
-   * @brief Clears Google Translate cookie.
+   * @brief Clears Google Translate cookie across all domain scopes.
    */
   const clearGoogleTranslateCookie = () => {
     const host = window.location.hostname;
-    document.cookie = 'googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${host};`;
+    const expireStr = '; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = 'googtrans=' + expireStr;
+    document.cookie = `googtrans=${expireStr} domain=${host};`;
     if (host.includes('.')) {
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${host};`;
+      document.cookie = `googtrans=${expireStr} domain=.${host};`;
+      const domainParts = host.split('.');
+      if (domainParts.length >= 2) {
+        const rootDomain = '.' + domainParts.slice(-2).join('.');
+        document.cookie = `googtrans=${expireStr} domain=${rootDomain};`;
+      }
     }
+    document.cookie = 'googtrans=/en/en; path=/;';
   };
 
   /**
@@ -93,22 +154,25 @@ export const TranslatorDropdown: React.FC = () => {
    * @param lang Target language code.
    */
   const handleTranslateGoogle = (lang = 'ru') => {
+    localStorage.removeItem('lingua_translate_engine');
+    if ((window as any).ya?.translate?.changeLang) {
+      (window as any).ya.translate.changeLang('en');
+    }
     setGoogleTranslateCookie(lang);
     localStorage.setItem('lingua_translate_engine', 'google');
     setActiveEngine('google');
     setCurrentLang(lang);
     setIsOpen(false);
 
-    // If script not yet injected
     if (!document.getElementById('google-translate-script')) {
-      window.googleTranslateElementInit = () => {
-        if (window.google?.translate?.TranslateElement) {
-          new window.google.translate.TranslateElement(
+      (window as any).googleTranslateElementInit = () => {
+        if ((window as any).google?.translate?.TranslateElement) {
+          new (window as any).google.translate.TranslateElement(
             {
               pageLanguage: 'en',
               includedLanguages: 'ru,es,de,fr,zh-CN,ar,tr,en',
               autoDisplay: false,
-              layout: window.google.translate.TranslateElement.InlineLayout?.SIMPLE,
+              layout: (window as any).google.translate.TranslateElement.InlineLayout?.SIMPLE,
             },
             'google_translate_element'
           );
@@ -120,15 +184,15 @@ export const TranslatorDropdown: React.FC = () => {
       script.async = true;
       document.body.appendChild(script);
     } else {
-      // Script already present; reload so Google Translate evaluates the new cookie cleanly
       window.location.reload();
     }
   };
 
   /**
-   * @brief Initializes and triggers Yandex Translate widget.
+   * @brief Initializes and triggers Yandex Translate in-page widget.
    */
   const handleTranslateYandex = () => {
+    clearGoogleTranslateCookie();
     localStorage.setItem('lingua_translate_engine', 'yandex');
     setActiveEngine('yandex');
     setCurrentLang('ru');
@@ -140,8 +204,8 @@ export const TranslatorDropdown: React.FC = () => {
       script.src = 'https://translate.yandex.net/website-widget/v1/widget.js?widgetId=ytWidget&pageLang=en&widgetTheme=light&autoMode=false';
       script.async = true;
       document.body.appendChild(script);
-    } else if (window.ya?.translate?.changeLang) {
-      window.ya.translate.changeLang('ru');
+    } else if ((window as any).ya?.translate?.changeLang) {
+      (window as any).ya.translate.changeLang('ru');
     } else {
       window.location.reload();
     }
@@ -156,23 +220,10 @@ export const TranslatorDropdown: React.FC = () => {
     setActiveEngine('none');
     setCurrentLang('en');
     setIsOpen(false);
+    if ((window as any).ya?.translate?.changeLang) {
+      (window as any).ya.translate.changeLang('en');
+    }
     window.location.reload();
-  };
-
-  /**
-   * @brief Opens Google Web Translate for current page in new tab.
-   */
-  const handleOpenGoogleWeb = () => {
-    const currentUrl = encodeURIComponent(window.location.href);
-    window.open(`https://translate.google.com/translate?sl=en&tl=ru&u=${currentUrl}`, '_blank');
-  };
-
-  /**
-   * @brief Opens Yandex Web Translate for current page in new tab.
-   */
-  const handleOpenYandexWeb = () => {
-    const currentUrl = encodeURIComponent(window.location.href);
-    window.open(`https://translate.yandex.com/translate?view=compact&url=${currentUrl}&lang=en-ru`, '_blank');
   };
 
   return (
@@ -187,13 +238,13 @@ export const TranslatorDropdown: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition shadow-sm ${
           activeEngine !== 'none'
-            ? 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100 ring-2 ring-amber-200'
+            ? 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:bg-emerald-100 ring-2 ring-emerald-200'
             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900'
         }`}
         title="Translate webpage with Google or Yandex"
         aria-label="Translate page"
       >
-        <Globe className={`w-3.5 h-3.5 ${activeEngine !== 'none' ? 'text-amber-600' : 'text-indigo-600'}`} />
+        <Globe className={`w-3.5 h-3.5 ${activeEngine !== 'none' ? 'text-emerald-600' : 'text-indigo-600'}`} />
         <span className="hidden sm:inline">
           {activeEngine === 'google'
             ? `Google: ${currentLang.toUpperCase()}`
@@ -225,7 +276,7 @@ export const TranslatorDropdown: React.FC = () => {
           </div>
 
           <p className="text-[11px] text-slate-500 leading-snug">
-            Translate the interface and exercises into Russian or other languages using official automated services:
+            Translate the entire application interface and exercises in-place using official automated widgets:
           </p>
 
           {/* Service 1: Google Translate */}
@@ -237,29 +288,25 @@ export const TranslatorDropdown: React.FC = () => {
                 </span>
                 <span className="text-xs font-bold text-slate-900">Google Translate</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">Global</span>
+              <span className="text-[10px] font-semibold text-slate-400">In-Page Widget</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5 pt-1">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={() => handleTranslateGoogle('ru')}
-                className="py-1.5 px-2 bg-white hover:bg-blue-50 text-slate-700 hover:text-blue-700 text-[11px] font-semibold rounded-lg border border-slate-200 hover:border-blue-200 transition text-left flex items-center justify-between"
+                className={`w-full py-1.5 px-3 text-[11px] font-semibold rounded-lg border transition text-left flex items-center justify-between ${
+                  activeEngine === 'google' && currentLang === 'ru'
+                    ? 'bg-blue-50 border-blue-300 text-blue-700 shadow-2xs font-bold'
+                    : 'bg-white hover:bg-blue-50/50 text-slate-700 border-slate-200'
+                }`}
               >
                 <span>🇷🇺 Russian (RU)</span>
-                {activeEngine === 'google' && currentLang === 'ru' && (
-                  <Check className="w-3 h-3 text-blue-600" />
+                {activeEngine === 'google' && currentLang === 'ru' ? (
+                  <Check className="w-3.5 h-3.5 text-blue-600" />
+                ) : (
+                  <span className="text-[10px] text-slate-400 font-normal">Translate</span>
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleOpenGoogleWeb}
-                className="py-1.5 px-2 bg-white hover:bg-slate-100 text-slate-600 text-[11px] font-semibold rounded-lg border border-slate-200 transition flex items-center justify-between"
-                title="Open via Google Web Translate proxy"
-              >
-                <span>Google Web</span>
-                <ExternalLink className="w-3 h-3 text-slate-400" />
               </button>
             </div>
 
@@ -307,29 +354,25 @@ export const TranslatorDropdown: React.FC = () => {
                 </span>
                 <span className="text-xs font-bold text-slate-900">Yandex Translate</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">RU / CIS</span>
+              <span className="text-[10px] font-semibold text-slate-400">RU / CIS In-Page</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5 pt-1">
+            <div className="pt-1">
               <button
                 type="button"
                 onClick={handleTranslateYandex}
-                className="py-1.5 px-2 bg-white hover:bg-red-50 text-slate-700 hover:text-red-700 text-[11px] font-semibold rounded-lg border border-slate-200 hover:border-red-200 transition text-left flex items-center justify-between"
+                className={`w-full py-1.5 px-3 text-[11px] font-semibold rounded-lg border transition text-left flex items-center justify-between ${
+                  activeEngine === 'yandex'
+                    ? 'bg-red-50 border-red-300 text-red-700 shadow-2xs font-bold'
+                    : 'bg-white hover:bg-red-50/50 text-slate-700 border-slate-200'
+                }`}
               >
                 <span>🇷🇺 Russian (RU)</span>
-                {activeEngine === 'yandex' && (
-                  <Check className="w-3 h-3 text-red-600" />
+                {activeEngine === 'yandex' ? (
+                  <Check className="w-3.5 h-3.5 text-red-600" />
+                ) : (
+                  <span className="text-[10px] text-slate-400 font-normal">Translate</span>
                 )}
-              </button>
-
-              <button
-                type="button"
-                onClick={handleOpenYandexWeb}
-                className="py-1.5 px-2 bg-white hover:bg-slate-100 text-slate-600 text-[11px] font-semibold rounded-lg border border-slate-200 transition flex items-center justify-between"
-                title="Open via Yandex Web Translate proxy"
-              >
-                <span>Yandex Web</span>
-                <ExternalLink className="w-3 h-3 text-slate-400" />
               </button>
             </div>
           </div>
@@ -339,9 +382,9 @@ export const TranslatorDropdown: React.FC = () => {
             <button
               type="button"
               onClick={handleRevertOriginal}
-              className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center justify-center space-x-1.5 border border-slate-200"
+              className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-slate-600" />
+              <RotateCcw className="w-3.5 h-3.5 text-slate-200" />
               <span>Show Original (English)</span>
             </button>
           )}

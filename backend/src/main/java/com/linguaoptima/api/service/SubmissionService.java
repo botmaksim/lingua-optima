@@ -136,6 +136,9 @@ public class SubmissionService {
             provider = "AI_GROQ";
         }
 
+        long estimatedTokens = UsageService.estimateTokens(request.getText()) + 600L;
+        usageService.consumeTokens(student, estimatedTokens);
+
         Double score = scoringService.extractScore(scoring);
         String feedback = String.valueOf(scoring.getOrDefault("feedback", "Submission evaluated successfully."));
 

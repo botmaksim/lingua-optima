@@ -239,3 +239,71 @@ export const useProviderModels = (provider: AIProviderType) => {
 
   return { models, isLiveSynced };
 };
+
+/**
+ * @brief Checks if an AI provider is supported out-of-the-box via platform free cloud keys.
+ * @param provider Target AI provider.
+ * @return True if platform default (GEMINI or GROQ), false if BYOK.
+ */
+export const isSystemFreeProvider = (provider: AIProviderType): boolean => {
+  return provider === 'GEMINI' || provider === 'GROQ';
+};
+
+/**
+ * @brief Builds organized option groups for CustomSelect distinguishing Free, Configured BYOK, and Unconfigured providers.
+ * @param configuredProviders Array of provider IDs for which the user has configured API keys.
+ * @return Array of SelectOptionGroup objects for CustomSelect.
+ */
+export const buildProviderOptionGroups = (configuredProviders: string[]) => {
+  const systemOptions: { value: string; label: string; badge: string }[] = [];
+  const byokConfiguredOptions: { value: string; label: string; badge: string }[] = [];
+  const byokRequiredOptions: { value: string; label: string; badge: string }[] = [];
+
+  for (const p of AI_PROVIDER_CATALOG) {
+    const isFree = isSystemFreeProvider(p.id);
+    const hasKey = configuredProviders.includes(p.id);
+
+    if (isFree) {
+      systemOptions.push({
+        value: p.id,
+        label: p.name,
+        badge: hasKey ? 'Custom Key' : 'Free Cloud',
+      });
+    } else if (hasKey) {
+      byokConfiguredOptions.push({
+        value: p.id,
+        label: p.name,
+        badge: 'Active Key',
+      });
+    } else {
+      byokRequiredOptions.push({
+        value: p.id,
+        label: p.name,
+        badge: 'Requires Key',
+      });
+    }
+  }
+
+  const groups = [
+    {
+      label: '⚡ Included Platform Models (Free Cloud)',
+      options: systemOptions,
+    },
+  ];
+
+  if (byokConfiguredOptions.length > 0) {
+    groups.push({
+      label: '🔑 Your Active BYOK Providers',
+      options: byokConfiguredOptions,
+    });
+  }
+
+  if (byokRequiredOptions.length > 0) {
+    groups.push({
+      label: '🔒 Bring Your Own Key (Setup in Profile)',
+      options: byokRequiredOptions,
+    });
+  }
+
+  return groups;
+};

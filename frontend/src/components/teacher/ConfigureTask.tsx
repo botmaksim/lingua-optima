@@ -3,7 +3,7 @@
  * @brief Educator task generation, parameter configuration, preview, custom curriculum context, and cohort deployment interface.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Send,
@@ -22,6 +22,7 @@ import {
   Plus,
   RefreshCw,
   Check,
+  Key,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
@@ -45,6 +46,8 @@ import {
   AIProviderType,
   getDefaultModelForProvider,
   useProviderModels,
+  buildProviderOptionGroups,
+  isSystemFreeProvider,
 } from '../../constants/aiModels';
 import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
 
@@ -128,6 +131,10 @@ export const ConfigureTask: React.FC = () => {
       })
       .catch(() => {});
   }, []);
+
+  const userConfiguredProviders = useMemo(() => savedKeys.map((k) => k.provider), [savedKeys]);
+  const providerGroups = useMemo(() => buildProviderOptionGroups(userConfiguredProviders), [userConfiguredProviders]);
+  const isSelectedProviderConfigured = isSystemFreeProvider(provider) || userConfiguredProviders.includes(provider);
 
   /**
    * @brief Event handler updating selected AI provider and its associated model.
@@ -613,10 +620,7 @@ export const ConfigureTask: React.FC = () => {
                   size="sm"
                   value={provider}
                   onChange={(val) => handleProviderChange(val as AIProviderType)}
-                  options={AI_PROVIDER_CATALOG.map((p) => ({
-                    value: p.id,
-                    label: p.name,
-                  }))}
+                  groups={providerGroups}
                   ariaLabel="AI Provider"
                 />
               </div>
@@ -643,6 +647,24 @@ export const ConfigureTask: React.FC = () => {
                 />
               </div>
             </div>
+
+            {!isSelectedProviderConfigured && (
+              <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-2">
+                <div className="flex items-center space-x-2">
+                  <Key className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span>
+                    <strong>{AI_PROVIDER_CATALOG.find((p) => p.id === provider)?.name}</strong> requires your own API key. You can add one in Profile &rarr; AI API Keys, or deploy using Gemini / Groq for free cloud generation.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="self-end sm:self-auto px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold whitespace-nowrap text-[11px] shadow-sm transition"
+                >
+                  Add Key
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Cohort Groups */}

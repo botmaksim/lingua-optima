@@ -1,0 +1,24 @@
+[
+  {
+    "word": "complementation",
+    "partOfSpeech": "noun",
+    "definition": "The syntactic relationship between a verb and the words that follow it to complete its meaning.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "verb complementation",
+      "syntactic complementation"
+    ],
+    "exampleSentence": "Mastering dual verb complementation prevents subtle semantic misunderstandings."
+  },
+  {
+    "word": "cease",
+    "partOfSpeech": "verb",
+    "definition": "To come or bring to an end; stop.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "cease operations",
+      "cease to exist"
+    ],
+    "exampleSentence": "The factory ceased operating following the environmental assessment."
+  }
+]

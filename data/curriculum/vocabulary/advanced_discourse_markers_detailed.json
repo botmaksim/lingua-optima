@@ -1,0 +1,24 @@
+[
+  {
+    "word": "notwithstanding",
+    "partOfSpeech": "preposition",
+    "definition": "In spite of; despite.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "notwithstanding the fact",
+      "notwithstanding delays"
+    ],
+    "exampleSentence": "Notwithstanding intense market volatility, the firm posted record quarterly dividends."
+  },
+  {
+    "word": "inasmuch",
+    "partOfSpeech": "conjunction",
+    "definition": "To the extent that; in so far as.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "inasmuch as",
+      "legitimate inasmuch as"
+    ],
+    "exampleSentence": "The evidence was admissible inasmuch as it corroborated the witness testimony."
+  }
+]

@@ -1,0 +1,24 @@
+[
+  {
+    "word": "precipitate",
+    "partOfSpeech": "verb",
+    "definition": "To cause an event or situation, typically one that is undesirable, to happen prematurely.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "precipitate a crisis",
+      "precipitate downfall"
+    ],
+    "exampleSentence": "The sudden insolvency of the regional bank precipitated a nationwide liquidity crisis."
+  },
+  {
+    "word": "autonomy",
+    "partOfSpeech": "noun",
+    "definition": "Freedom from external control or influence; independence.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "intellectual autonomy",
+      "financial autonomy"
+    ],
+    "exampleSentence": "Tenure exists precisely to safeguard academic and intellectual autonomy."
+  }
+]

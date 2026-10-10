@@ -1,0 +1,24 @@
+[
+  {
+    "word": "deduction",
+    "partOfSpeech": "noun",
+    "definition": "The inference of particular instances by reference to a general law or evidence.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "logical deduction",
+      "make a deduction"
+    ],
+    "exampleSentence": "Detectives made a logical deduction based on forensic footprints at the scene."
+  },
+  {
+    "word": "speculation",
+    "partOfSpeech": "noun",
+    "definition": "The forming of a theory or conjecture without firm evidence.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "fuel speculation",
+      "mere speculation"
+    ],
+    "exampleSentence": "Reports about the sudden merger remain mere speculation until officially confirmed."
+  }
+]

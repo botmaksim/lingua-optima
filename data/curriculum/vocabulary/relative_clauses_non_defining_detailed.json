@@ -1,0 +1,24 @@
+[
+  {
+    "word": "parenthetical",
+    "partOfSpeech": "adjective",
+    "definition": "Enclosed by punctuation as an explanatory comment or afterthought.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "parenthetical clause",
+      "parenthetical remark"
+    ],
+    "exampleSentence": "Non-defining relative clauses act as parenthetical observations set off by commas."
+  },
+  {
+    "word": "antecedent",
+    "partOfSpeech": "noun",
+    "definition": "A thing or event that existed before or logically precedes another; in grammar, the noun phrase referred to by a pronoun.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "grammatical antecedent",
+      "clear antecedent"
+    ],
+    "exampleSentence": "The pronoun must agree in gender and number with its grammatical antecedent."
+  }
+]

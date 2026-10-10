@@ -12,11 +12,13 @@ import com.linguaoptima.api.dto.response.UsageResponse;
 import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.repository.SubscriptionRepository;
 import com.linguaoptima.api.repository.UsageCounterRepository;
+import com.linguaoptima.api.config.PricingProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -43,6 +45,9 @@ class UsageServiceTest {
     /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
+    /** @brief Test fixture or mock dependency for pricing configuration properties. */
+    @Spy
+    private PricingProperties pricingProperties = new PricingProperties();
 
     /** @brief Test fixture or mock dependency for usage service. */
     @InjectMocks
@@ -59,7 +64,8 @@ class UsageServiceTest {
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();
-        counter = UsageCounter.builder().id(UUID.randomUUID()).user(user).weekEvaluations(0).weekOcrUploads(0).build();
+        counter = UsageCounter.builder().id(UUID.randomUUID()).user(user).weekEvaluations(0).weekOcrUploads(0).weekTokensUsed(0L).build();
+        org.springframework.test.util.ReflectionTestUtils.setField(usageService, "pricingProperties", pricingProperties);
     }
 
     /**

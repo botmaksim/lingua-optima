@@ -60,14 +60,22 @@ export const useUsage = () => {
   const isQuotaExceeded = usage
     ? isUnlimited
       ? false
-      : usage.dailyAiEvaluations >= usage.dailyEvaluationsLimit
+      : usage.dailyAiEvaluations >= usage.dailyEvaluationsLimit ||
+        (usage.tokensRemaining !== undefined && usage.tokensRemaining <= 0)
     : false;
+
+  const tokensUsed = usage?.weekTokensUsed || 0;
+  const tokenLimit = usage?.tokenLimit || 50000;
+  const tokensRemaining = usage?.tokensRemaining ?? Math.max(0, tokenLimit - tokensUsed);
 
   return {
     usage,
     isLoading,
     remainingEvaluations,
     remainingOcr,
+    tokensUsed,
+    tokenLimit,
+    tokensRemaining,
     isUnlimited,
     isUnlimitedOcr,
     isQuotaExceeded,

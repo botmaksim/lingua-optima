@@ -1,0 +1,24 @@
+[
+  {
+    "word": "epistemic",
+    "partOfSpeech": "adjective",
+    "definition": "Relating to knowledge or degree of epistemic certainty.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "epistemic qualification",
+      "epistemic stance"
+    ],
+    "exampleSentence": "The author deploys subtle epistemic qualifiers to avoid premature generalizations."
+  },
+  {
+    "word": "indignation",
+    "partOfSpeech": "noun",
+    "definition": "Anger or annoyance provoked by what is perceived as unfair treatment.",
+    "cefrLevel": "C2",
+    "collocations": [
+      "righteous indignation",
+      "voice indignation"
+    ],
+    "exampleSentence": "Her retort was laced with righteous indignation at the baseless accusations."
+  }
+]

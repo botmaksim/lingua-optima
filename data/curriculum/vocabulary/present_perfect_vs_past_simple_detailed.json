@@ -1,0 +1,57 @@
+[
+  {
+    "word": "framework",
+    "partOfSpeech": "noun",
+    "definition": "A basic structure underlying a system, concept, or text.",
+    "cefrLevel": "A2",
+    "collocations": [
+      "framework analysis",
+      "apply framework"
+    ],
+    "exampleSentence": "The student demonstrated advanced framework in their written submission."
+  },
+  {
+    "word": "systematic",
+    "partOfSpeech": "adjective",
+    "definition": "Done or acting according to a fixed plan or system.",
+    "cefrLevel": "A2",
+    "collocations": [
+      "systematic analysis",
+      "apply systematic"
+    ],
+    "exampleSentence": "The student demonstrated advanced systematic in their written submission."
+  },
+  {
+    "word": "syntactic",
+    "partOfSpeech": "adjective",
+    "definition": "Relating to the rules of language and sentence construction.",
+    "cefrLevel": "A2",
+    "collocations": [
+      "syntactic analysis",
+      "apply syntactic"
+    ],
+    "exampleSentence": "The student demonstrated advanced syntactic in their written submission."
+  },
+  {
+    "word": "proficiency",
+    "partOfSpeech": "noun",
+    "definition": "A high degree of competence or skill in a subject.",
+    "cefrLevel": "A2",
+    "collocations": [
+      "proficiency analysis",
+      "apply proficiency"
+    ],
+    "exampleSentence": "The student demonstrated advanced proficiency in their written submission."
+  },
+  {
+    "word": "contextual",
+    "partOfSpeech": "adjective",
+    "definition": "Depending on or relating to the circumstances forming the setting.",
+    "cefrLevel": "A2",
+    "collocations": [
+      "contextual analysis",
+      "apply contextual"
+    ],
+    "exampleSentence": "The student demonstrated advanced contextual in their written submission."
+  }
+]

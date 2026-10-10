@@ -1,0 +1,24 @@
+[
+  {
+    "word": "remorse",
+    "partOfSpeech": "noun",
+    "definition": "Deep regret or guilt for a wrong committed.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "feel remorse",
+      "express deep remorse"
+    ],
+    "exampleSentence": "He expressed deep remorse for not having completed his thesis on time."
+  },
+  {
+    "word": "dissatisfaction",
+    "partOfSpeech": "noun",
+    "definition": "Lack of satisfaction or happiness with circumstances.",
+    "cefrLevel": "B2",
+    "collocations": [
+      "voice dissatisfaction",
+      "growing dissatisfaction"
+    ],
+    "exampleSentence": "The employees voiced their dissatisfaction with the altered work hours."
+  }
+]

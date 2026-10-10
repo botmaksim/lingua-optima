@@ -27,6 +27,15 @@ public class UsageResponse {
     /** @brief Number of OCR image scans consumed during the current billing week. */
     private int weekOcrUploads;
 
+    /** @brief Accumulated tokens consumed during the current billing week. */
+    private long weekTokensUsed;
+
+    /** @brief Maximum tokens allowed per week (null if unlimited). */
+    private Long tokenLimit;
+
+    /** @brief Remaining tokens for the week (null if unlimited). */
+    private Long tokensRemaining;
+
     /** @brief Maximum AI evaluations allowed per week (null if unlimited). */
     private Integer evaluationLimit;
 

@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
+import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { UpgradeWall } from './components/common/UpgradeWall';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { ProtectedRoute } from './components/common/ProtectedRoute';
@@ -55,7 +56,7 @@ const AppContent: React.FC = () => {
 
       <UpgradeWall />
 
-      <main className="flex-1">
+      <main className="flex-1 pb-20 md:pb-0">
         <ErrorBoundary>
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -107,6 +108,7 @@ const AppContent: React.FC = () => {
       </main>
 
       <Footer />
+      <MobileBottomNav />
     </div>
   );
 };

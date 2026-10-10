@@ -65,6 +65,9 @@ export interface GroupReportResponse {
   assignedHomeworkCount: number;
   totalSubmissionsCount: number;
   groupAverageScore?: number;
+  fromDate?: string;
+  toDate?: string;
+  periodLabel?: string;
   studentSummaries: StudentSummaryReport[];
   homeworkReports: HomeworkReport[];
 }

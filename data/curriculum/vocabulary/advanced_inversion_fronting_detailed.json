@@ -1,0 +1,24 @@
+[
+  {
+    "word": "predication",
+    "partOfSpeech": "noun",
+    "definition": "The action of stating or asserting something about a subject.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "fronted predication",
+      "syntactic predication"
+    ],
+    "exampleSentence": "Fronted predication focuses the reader's attention on the descriptive outcome."
+  },
+  {
+    "word": "reverberate",
+    "partOfSpeech": "verb",
+    "definition": "To have continuing and serious effects.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "reverberate throughout",
+      "widely reverberate"
+    ],
+    "exampleSentence": "The financial crash reverberated throughout global markets for a generation."
+  }
+]

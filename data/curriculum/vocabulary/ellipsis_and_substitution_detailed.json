@@ -1,0 +1,24 @@
+[
+  {
+    "word": "redundancy",
+    "partOfSpeech": "noun",
+    "definition": "The state of being not or no longer needed or useful.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "avoid redundancy",
+      "stylistic redundancy"
+    ],
+    "exampleSentence": "Ellipsis eliminates stylistic redundancy to sustain energetic argumentative prose."
+  },
+  {
+    "word": "substitution",
+    "partOfSpeech": "noun",
+    "definition": "The replacement of a word or phrase with a filler token to avoid repetition.",
+    "cefrLevel": "C1",
+    "collocations": [
+      "cohesive substitution",
+      "lexical substitution"
+    ],
+    "exampleSentence": "Using 'do so' is a formal device for verbal substitution in academic writing."
+  }
+]
