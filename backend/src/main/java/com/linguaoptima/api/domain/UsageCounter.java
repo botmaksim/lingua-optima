@@ -43,7 +43,7 @@ public class UsageCounter {
     private int weekOcrUploads = 0;
 
     /** @brief Field representing accumulated token consumption during the current week. */
-    @Column(name = "week_tokens_used", nullable = false)
+    @Column(name = "week_tokens_used", nullable = false, columnDefinition = "BIGINT NOT NULL DEFAULT 0")
     @Builder.Default
     private long weekTokensUsed = 0L;
 

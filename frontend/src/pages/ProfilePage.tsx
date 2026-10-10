@@ -452,7 +452,7 @@ export const ProfilePage: React.FC = () => {
             {user.cefrLevel && <CefrBadge level={user.cefrLevel} size="md" />}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1">
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 pt-1">
             {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => {
               const isSelected = user.cefrLevel === level;
               const meta = CEFR_LEVEL_METADATA[level];
@@ -462,19 +462,14 @@ export const ProfilePage: React.FC = () => {
                   type="button"
                   onClick={() => handleSelectCefrLevel(level)}
                   disabled={isUpdatingProfile}
-                  className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between space-y-1.5 ${
+                  title={`${level} (${meta.title})`}
+                  className={`py-3 px-3 rounded-2xl border flex items-center justify-center transition ${
                     isSelected
-                      ? 'border-primary bg-indigo-50/60 ring-2 ring-primary/20 shadow-sm'
+                      ? 'border-primary bg-indigo-50/70 ring-2 ring-primary/20 shadow-sm'
                       : 'border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50/50'
                   } disabled:opacity-50`}
                 >
-                  <div className="flex items-center justify-between">
-                    <CefrBadge level={level} size="md" />
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                      {meta.title}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 line-clamp-2 mt-1">{meta.desc}</p>
+                  <CefrBadge level={level} size="md" />
                 </button>
               );
             })}
