@@ -18,6 +18,7 @@ import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
 import com.linguaoptima.api.dto.request.CustomQuestionRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
+import com.linguaoptima.api.dto.response.GenerationStatusResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -93,9 +94,10 @@ public class TaskService {
     @Transactional
     public TaskResponse generateTask(TaskParamsRequest params, User user, String deviceId) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
+        String leaseId = null;
         if (generationProtectionService != null && user != null) {
             generationProtectionService.verifyDevice(user.getId(), deviceId);
-            generationProtectionService.acquireGenerationLock(user.getId(), deviceId);
+            leaseId = generationProtectionService.acquireGenerationLock(user.getId(), deviceId);
         }
         try {
             usageService.incrementEvaluation(user);
@@ -128,7 +130,7 @@ public class TaskService {
             return TaskResponse.fromEntity(savedTask);
         } finally {
             if (generationProtectionService != null && user != null) {
-                generationProtectionService.releaseGenerationLock(user.getId());
+                generationProtectionService.releaseGenerationLock(user.getId(), leaseId);
             }
         }
     }
@@ -152,9 +154,10 @@ public class TaskService {
      */
     public TaskResponse previewTask(TaskParamsRequest params, User user, String deviceId) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
+        String leaseId = null;
         if (generationProtectionService != null && user != null) {
             generationProtectionService.verifyDevice(user.getId(), deviceId);
-            generationProtectionService.acquireGenerationLock(user.getId(), deviceId);
+            leaseId = generationProtectionService.acquireGenerationLock(user.getId(), deviceId);
         }
         try {
             String prompt = buildPromptFromParams(params);
@@ -167,7 +170,7 @@ public class TaskService {
             return TaskResponse.fromEntity(task);
         } finally {
             if (generationProtectionService != null && user != null) {
-                generationProtectionService.releaseGenerationLock(user.getId());
+                generationProtectionService.releaseGenerationLock(user.getId(), leaseId);
             }
         }
     }
@@ -687,5 +690,29 @@ public class TaskService {
         String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
             ? params.getGrammarTopic() : "English grammar";
         return "Complete the following exercises focusing on " + topic + ". Read each question carefully and select the best answer.";
+    }
+
+    /**
+     * @brief Transfers active generation lease control to caller's device.
+     * @param user Authenticated user.
+     * @param deviceId Target device ID.
+     */
+    public void takeoverGeneration(User user, String deviceId) {
+        if (generationProtectionService != null && user != null) {
+            generationProtectionService.takeoverGeneration(user.getId(), deviceId);
+        }
+    }
+
+    /**
+     * @brief Retrieves active generation status for caller's user and device.
+     * @param user Authenticated user.
+     * @param deviceId Caller device ID.
+     * @return GenerationStatusResponse containing lock status.
+     */
+    public GenerationStatusResponse getGenerationStatus(User user, String deviceId) {
+        if (generationProtectionService != null && user != null) {
+            return generationProtectionService.getStatus(user.getId(), deviceId);
+        }
+        return GenerationStatusResponse.builder().isGenerating(false).isCurrentDevice(true).build();
     }
 }

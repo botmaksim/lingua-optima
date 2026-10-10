@@ -51,6 +51,24 @@ export const taskApi = {
   },
 
   /**
+   * @brief Forcefully transfers AI generation control to the caller's device.
+   * @return Promise resolving to status message.
+   */
+  takeoverGeneration: async (): Promise<{ success: boolean; message: string }> => {
+    const res = await axiosInstance.post<{ success: boolean; message: string }>('/tasks/takeover');
+    return res.data;
+  },
+
+  /**
+   * @brief Inspects current AI generation lock status across user's devices.
+   * @return Promise resolving to lock status payload.
+   */
+  getGenerationStatus: async (): Promise<{ isGenerating: boolean; activeDeviceId?: string; isCurrentDevice: boolean }> => {
+    const res = await axiosInstance.get<{ isGenerating: boolean; activeDeviceId?: string; isCurrentDevice: boolean }>('/tasks/generation-status');
+    return res.data;
+  },
+
+  /**
    * @brief Assigns a task to student groups with optional due date and attempt limit.
    * @param taskId Unique identifier of the task.
    * @param groupIds Array of target group IDs.

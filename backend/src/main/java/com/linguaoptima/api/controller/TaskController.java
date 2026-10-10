@@ -8,6 +8,7 @@ import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
+import com.linguaoptima.api.dto.response.GenerationStatusResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
 import com.linguaoptima.api.service.TaskService;
@@ -18,6 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -148,5 +150,39 @@ public class TaskController {
     ) {
         taskService.assignTask(taskId, request, teacher);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * @brief Transfers active generation lease control to caller's device.
+     *
+     * @param deviceId Caller device identifier.
+     * @param user Authenticated user principal.
+     * @return HTTP 200 with success status payload.
+     */
+    @PostMapping("/takeover")
+    public ResponseEntity<Map<String, Object>> takeoverGeneration(
+        @RequestHeader(value = "X-Device-Id", required = false) String deviceId,
+        @AuthenticationPrincipal User user
+    ) {
+        taskService.takeoverGeneration(user, deviceId);
+        return ResponseEntity.ok(Map.of(
+            "success", true,
+            "message", "Generation control successfully transferred to this device."
+        ));
+    }
+
+    /**
+     * @brief Checks current AI task generation lock status for user and device.
+     *
+     * @param deviceId Caller device identifier.
+     * @param user Authenticated user principal.
+     * @return HTTP 200 with GenerationStatusResponse.
+     */
+    @GetMapping("/generation-status")
+    public ResponseEntity<GenerationStatusResponse> getGenerationStatus(
+        @RequestHeader(value = "X-Device-Id", required = false) String deviceId,
+        @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(taskService.getGenerationStatus(user, deviceId));
     }
 }

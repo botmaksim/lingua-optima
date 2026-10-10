@@ -1,11 +1,11 @@
 /**
  * @file GenerationProtectionServiceTest.java
- * @brief Unit tests for GenerationProtectionService covering single-device binding and concurrency locks.
+ * @brief Unit tests for GenerationProtectionService covering seamless multi-device handover and concurrency locks.
  */
 package com.linguaoptima.api.service;
 
-import com.linguaoptima.api.exception.ForbiddenException;
-import com.linguaoptima.api.exception.QuotaExceededException;
+import com.linguaoptima.api.dto.response.GenerationStatusResponse;
+import com.linguaoptima.api.exception.ConcurrentGenerationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -34,80 +34,89 @@ class GenerationProtectionServiceTest {
     }
 
     @Test
-    void testVerifyDevice_InitialBindingAndSubsequentSuccess() {
-        // First binding with custom device id
+    void testVerifyDevice_IdleDevicesRecordPresenceWithoutThrowing() {
+        // Laptop records presence
         assertDoesNotThrow(() -> service.verifyDevice(userId, "dev-laptop"));
 
-        // Same device continues to succeed
-        assertDoesNotThrow(() -> service.verifyDevice(userId, "dev-laptop"));
-    }
+        // Different device (phone) can also record presence without 403 Forbidden
+        assertDoesNotThrow(() -> service.verifyDevice(userId, "dev-phone"));
 
-    @Test
-    void testVerifyDevice_DefaultDeviceWhenBlank() {
+        // Default device when null/blank
         assertDoesNotThrow(() -> service.verifyDevice(userId, null));
         assertDoesNotThrow(() -> service.verifyDevice(userId, "   "));
-        assertDoesNotThrow(() -> service.verifyDevice(userId, "default_device"));
-    }
-
-    @Test
-    void testVerifyDevice_MismatchThrowsForbiddenException() {
-        service.verifyDevice(userId, "primary-laptop");
-
-        ForbiddenException ex = assertThrows(ForbiddenException.class, () ->
-            service.verifyDevice(userId, "secondary-phone")
-        );
-        assertTrue(ex.getMessage().contains("AI generation is locked to your active device"));
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    void testVerifyDevice_SessionExpirationAllowsNewDevice() {
-        service.verifyDevice(userId, "primary-laptop");
-
-        // Manually age the binding past DEVICE_SESSION_TTL (12 hours)
-        Map<UUID, GenerationProtectionService.DeviceBinding> bindings =
-            (Map<UUID, GenerationProtectionService.DeviceBinding>) ReflectionTestUtils.getField(service, "deviceBindings");
-        assertNotNull(bindings);
-        GenerationProtectionService.DeviceBinding current = bindings.get(userId);
-        assertNotNull(current);
-
-        // Verify record methods
-        assertEquals("primary-laptop", current.deviceId());
-        assertNotNull(current.boundAt());
-        assertNotNull(current.lastSeenAt());
-
-        Instant twelveHoursAgo = Instant.now().minusSeconds(13 * 3600);
-        bindings.put(userId, new GenerationProtectionService.DeviceBinding("primary-laptop", twelveHoursAgo, twelveHoursAgo));
-
-        // Now binding from secondary device should succeed as old session expired
-        assertDoesNotThrow(() -> service.verifyDevice(userId, "secondary-phone"));
     }
 
     @Test
     void testAcquireGenerationLock_NullUserIdDoesNothing() {
-        assertDoesNotThrow(() -> service.acquireGenerationLock(null, "dev-1"));
+        assertNull(service.acquireGenerationLock(null, "dev-1"));
         assertDoesNotThrow(() -> service.releaseGenerationLock(null));
+        assertDoesNotThrow(() -> service.releaseGenerationLock(null, "lease-1"));
     }
 
     @Test
-    void testAcquireGenerationLock_SequentialSuccessAfterRelease() {
-        service.acquireGenerationLock(userId, "dev-1");
+    void testAcquireGenerationLock_SequentialAcrossDifferentDevicesWhenIdleSucceeds() {
+        // 1. Laptop acquires lock and completes
+        String lease1 = service.acquireGenerationLock(userId, "dev-laptop");
+        assertNotNull(lease1);
+        service.releaseGenerationLock(userId, lease1);
 
-        // Releasing frees the lease
-        service.releaseGenerationLock(userId);
-
-        // Immediate acquisition succeeds
-        assertDoesNotThrow(() -> service.acquireGenerationLock(userId, "dev-1"));
+        // 2. Phone immediately acquires lock smoothly without ban
+        String lease2 = service.acquireGenerationLock(userId, "dev-phone");
+        assertNotNull(lease2);
+        assertNotEquals(lease1, lease2);
+        service.releaseGenerationLock(userId, lease2);
     }
 
     @Test
-    void testAcquireGenerationLock_ConcurrentThrowsQuotaExceededException() {
-        service.acquireGenerationLock(userId, "dev-1");
+    void testAcquireGenerationLock_ConcurrentSameDeviceThrowsException() {
+        String lease = service.acquireGenerationLock(userId, "dev-1");
+        assertNotNull(lease);
 
-        QuotaExceededException ex = assertThrows(QuotaExceededException.class, () ->
+        ConcurrentGenerationException ex = assertThrows(ConcurrentGenerationException.class, () ->
             service.acquireGenerationLock(userId, "dev-1")
         );
-        assertTrue(ex.getMessage().contains("Another AI task generation is currently in progress"));
+        assertTrue(ex.getMessage().contains("already in progress on this device"));
+        assertEquals("dev-1", ex.getActiveDeviceId());
+    }
+
+    @Test
+    void testAcquireGenerationLock_ConcurrentDifferentDeviceThrowsException() {
+        String lease = service.acquireGenerationLock(userId, "dev-laptop");
+        assertNotNull(lease);
+
+        ConcurrentGenerationException ex = assertThrows(ConcurrentGenerationException.class, () ->
+            service.acquireGenerationLock(userId, "dev-phone")
+        );
+        assertTrue(ex.getMessage().contains("in progress on another device"));
+        assertEquals("dev-laptop", ex.getActiveDeviceId());
+        assertTrue(ex.isCanTakeover());
+    }
+
+    @Test
+    void testTakeoverGeneration_TransfersLockAndAllowsImmediateAcquisition() {
+        // Laptop starts generation
+        String laptopLease = service.acquireGenerationLock(userId, "dev-laptop");
+        assertNotNull(laptopLease);
+
+        // Phone requests takeover
+        service.takeoverGeneration(userId, "dev-phone");
+
+        // Phone can now acquire lock immediately
+        String phoneLease = service.acquireGenerationLock(userId, "dev-phone");
+        assertNotNull(phoneLease);
+
+        // Laptop trying to release its old superseded lease does not disrupt phone's lease
+        service.releaseGenerationLock(userId, laptopLease);
+
+        GenerationStatusResponse status = service.getStatus(userId, "dev-phone");
+        assertTrue(status.isGenerating());
+        assertTrue(status.isCurrentDevice());
+        assertEquals("dev-phone", status.getActiveDeviceId());
+
+        // Phone cleanly releases its own lease
+        service.releaseGenerationLock(userId, phoneLease);
+        GenerationStatusResponse finalStatus = service.getStatus(userId, "dev-phone");
+        assertFalse(finalStatus.isGenerating());
     }
 
     @Test
@@ -121,28 +130,45 @@ class GenerationProtectionServiceTest {
         GenerationProtectionService.ActiveGeneration current = active.get(userId);
         assertNotNull(current);
 
-        // Verify record methods
         assertEquals(userId, current.userId());
         assertEquals("dev-1", current.deviceId());
+        assertNotNull(current.leaseId());
         assertNotNull(current.acquiredAt());
 
-        // Age beyond LEASE_TIMEOUT (90 seconds)
+        // Age beyond LEASE_TIMEOUT (60 seconds)
         Instant twoMinutesAgo = Instant.now().minusSeconds(100);
-        active.put(userId, new GenerationProtectionService.ActiveGeneration(userId, "dev-1", twoMinutesAgo));
+        active.put(userId, new GenerationProtectionService.ActiveGeneration(userId, "dev-1", "old-lease", twoMinutesAgo));
 
         // Acquisition now succeeds as old lease expired
         assertDoesNotThrow(() -> service.acquireGenerationLock(userId, "dev-1"));
     }
 
     @Test
+    void testGetStatus_IdleAndActiveState() {
+        GenerationStatusResponse idle = service.getStatus(userId, "dev-phone");
+        assertFalse(idle.isGenerating());
+        assertNull(idle.getActiveDeviceId());
+        assertFalse(idle.isCurrentDevice());
+
+        service.acquireGenerationLock(userId, "dev-phone");
+        GenerationStatusResponse activeCurrent = service.getStatus(userId, "dev-phone");
+        assertTrue(activeCurrent.isGenerating());
+        assertEquals("dev-phone", activeCurrent.getActiveDeviceId());
+        assertTrue(activeCurrent.isCurrentDevice());
+
+        GenerationStatusResponse activeOther = service.getStatus(userId, "dev-laptop");
+        assertTrue(activeOther.isGenerating());
+        assertEquals("dev-phone", activeOther.getActiveDeviceId());
+        assertFalse(activeOther.isCurrentDevice());
+    }
+
+    @Test
     void testClear() {
         service.verifyDevice(userId, "dev-1");
         service.acquireGenerationLock(userId, "dev-1");
-
         service.clear();
 
-        // After clearing, user can bind another device and acquire lock
-        assertDoesNotThrow(() -> service.verifyDevice(userId, "dev-2"));
-        assertDoesNotThrow(() -> service.acquireGenerationLock(userId, "dev-2"));
+        GenerationStatusResponse status = service.getStatus(userId, "dev-1");
+        assertFalse(status.isGenerating());
     }
 }

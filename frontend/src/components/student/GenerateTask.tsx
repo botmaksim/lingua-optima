@@ -21,6 +21,8 @@ import {
   CheckCircle2,
   FileCheck,
   Leaf,
+  ArrowRightLeft,
+  Smartphone,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useUsage } from '../../hooks/useUsage';
@@ -90,6 +92,8 @@ export const GenerateTask: React.FC = () => {
   const [isUploadingVocab, setIsUploadingVocab] = useState<boolean>(false);
   const [isLoadingRef, setIsLoadingRef] = useState<boolean>(false);
   const [refNotice, setRefNotice] = useState<string | null>(null);
+  const [concurrentConflict, setConcurrentConflict] = useState<boolean>(false);
+  const [isTakingOver, setIsTakingOver] = useState<boolean>(false);
 
   const ruleFileInputRef = useRef<HTMLInputElement>(null);
   const vocabFileInputRef = useRef<HTMLInputElement>(null);
@@ -225,8 +229,7 @@ export const GenerateTask: React.FC = () => {
   /**
    * @brief Event handler executing task generation.
    */
-  const handleGenerate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeGenerateTask = async () => {
     if (isQuotaExceeded) {
       openUpgradeWall('You have used all your free AI evaluations for today.');
       return;
@@ -259,13 +262,33 @@ export const GenerateTask: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Failed to generate task:', err);
-      if (err.response?.status === 402 || err.response?.status === 429) {
+      if (err.response?.status === 409 || err.response?.data?.errorCode === 'CONCURRENT_GENERATION') {
+        setConcurrentConflict(true);
+      } else if (err.response?.status === 402 || err.response?.status === 429) {
         openUpgradeWall(err.response?.data?.message);
       } else {
         setError(err.response?.data?.message || 'Failed to generate task. Please try again.');
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await executeGenerateTask();
+  };
+
+  const handleTakeoverAndGenerate = async () => {
+    setIsTakingOver(true);
+    try {
+      await taskApi.takeoverGeneration();
+      setConcurrentConflict(false);
+      await executeGenerateTask();
+    } catch (e: any) {
+      setError(e.response?.data?.message || 'Failed to transfer generation control.');
+    } finally {
+      setIsTakingOver(false);
     }
   };
 
@@ -812,6 +835,44 @@ export const GenerateTask: React.FC = () => {
           </button>
         </div>
       </form>
+
+      {/* Concurrent Generation Transfer Modal */}
+      {concurrentConflict && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-amber-200/80 max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
+              <Smartphone className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="text-base font-bold text-slate-900">
+                Генерация на другом устройстве
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                На другом вашем устройстве сейчас выполняется генерация задания. 
+                Вы можете перенести управление на это устройство и сразу продолжить.
+              </p>
+            </div>
+            <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={handleTakeoverAndGenerate}
+                disabled={isTakingOver}
+                className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              >
+                <ArrowRightLeft className="w-4 h-4" />
+                <span>{isTakingOver ? 'Перенос...' : 'Переключить на это устройство'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setConcurrentConflict(false)}
+                className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -60,6 +60,23 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * @brief Translates ConcurrentGenerationException into HTTP 409 Conflict response with takeover prompt.
+     * @param ex Caught ConcurrentGenerationException.
+     * @return ErrorResponse ResponseEntity.
+     */
+    @ExceptionHandler(ConcurrentGenerationException.class)
+    public ResponseEntity<ErrorResponse> handleConcurrentGeneration(ConcurrentGenerationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+            ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage() != null ? ex.getMessage() : "AI task generation is currently running on another device.")
+                .errorCode("CONCURRENT_GENERATION")
+                .timestamp(LocalDateTime.now())
+                .build()
+        );
+    }
+
+    /**
      * @brief Translates AIServiceException into HTTP 503 Service Unavailable response.
      * @param ex Caught AIServiceException.
      * @return ErrorResponse ResponseEntity.

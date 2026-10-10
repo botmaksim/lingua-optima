@@ -23,6 +23,8 @@ import {
   RefreshCw,
   Check,
   Key,
+  ArrowRightLeft,
+  Smartphone,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
@@ -108,6 +110,9 @@ export const ConfigureTask: React.FC = () => {
   const [previewTask, setPreviewTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [concurrentConflict, setConcurrentConflict] = useState<boolean>(false);
+  const [isTakingOver, setIsTakingOver] = useState<boolean>(false);
+  const [pendingAction, setPendingAction] = useState<'preview' | 'template' | 'deploy' | null>(null);
 
   // Saved curriculum sets from library
   const [savedRules, setSavedRules] = useState<CustomCurriculumEntry[]>([]);
@@ -354,7 +359,12 @@ export const ConfigureTask: React.FC = () => {
         questions: enrichedQuestions,
       });
     } catch (err: any) {
-      setStatusMessage(err.response?.data?.message || 'Failed to preview task.');
+      if (err.response?.status === 409 || err.response?.data?.errorCode === 'CONCURRENT_GENERATION') {
+        setPendingAction('preview');
+        setConcurrentConflict(true);
+      } else {
+        setStatusMessage(err.response?.data?.message || 'Failed to preview task.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -567,13 +577,18 @@ export const ConfigureTask: React.FC = () => {
       });
       setStatusMessage('Template saved to your curriculum catalog!');
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || 'Failed to save template.';
-      addToast({
-        type: 'error',
-        title: 'Save Template Failed',
-        message: errMsg,
-      });
-      setStatusMessage(errMsg);
+      if (err.response?.status === 409 || err.response?.data?.errorCode === 'CONCURRENT_GENERATION') {
+        setPendingAction('template');
+        setConcurrentConflict(true);
+      } else {
+        const errMsg = err.response?.data?.message || 'Failed to save template.';
+        addToast({
+          type: 'error',
+          title: 'Save Template Failed',
+          message: errMsg,
+        });
+        setStatusMessage(errMsg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -633,15 +648,51 @@ export const ConfigureTask: React.FC = () => {
       setStatusMessage('Assignment deployed successfully to selected cohort groups!');
       setTimeout(() => navigate('/teacher/dashboard'), 1500);
     } catch (err: any) {
-      const errMsg = err.response?.data?.message || 'Failed to deploy assignment.';
-      addToast({
-        type: 'error',
-        title: 'Deployment Failed',
-        message: errMsg,
-      });
-      setStatusMessage(errMsg);
+      if (err.response?.status === 409 || err.response?.data?.errorCode === 'CONCURRENT_GENERATION') {
+        setPendingAction('deploy');
+        setConcurrentConflict(true);
+      } else {
+        const errMsg = err.response?.data?.message || 'Failed to deploy assignment.';
+        addToast({
+          type: 'error',
+          title: 'Deployment Failed',
+          message: errMsg,
+        });
+        setStatusMessage(errMsg);
+      }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  /**
+   * @brief Forcefully transfers AI generation control to current device and retries pending action.
+   */
+  const handleTakeoverAndProceed = async () => {
+    setIsTakingOver(true);
+    try {
+      await taskApi.takeoverGeneration();
+      setConcurrentConflict(false);
+      addToast({
+        type: 'success',
+        title: 'Управление перенесено',
+        message: 'Сессия генерации успешно перенесена на это устройство.',
+      });
+      if (pendingAction === 'preview') {
+        handlePreview();
+      } else if (pendingAction === 'deploy') {
+        handleDeploy();
+      } else if (pendingAction === 'template') {
+        handleSaveTemplate();
+      }
+    } catch (e: any) {
+      addToast({
+        type: 'error',
+        title: 'Ошибка переноса',
+        message: e.response?.data?.message || 'Не удалось перенести управление генерацией.',
+      });
+    } finally {
+      setIsTakingOver(false);
     }
   };
 
@@ -1577,6 +1628,44 @@ export const ConfigureTask: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Concurrent Generation Transfer Modal */}
+      {concurrentConflict && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl shadow-2xl border border-amber-200/80 max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
+              <Smartphone className="w-6 h-6" />
+            </div>
+            <div className="text-center space-y-1.5">
+              <h3 className="text-base font-bold text-slate-900">
+                Генерация на другом устройстве
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                На другом вашем устройстве прямо сейчас выполняется генерация задания. 
+                Вы можете перенести управление генерацией на это устройство и сразу продолжить.
+              </p>
+            </div>
+            <div className="pt-2 flex flex-col sm:flex-row gap-2">
+              <button
+                type="button"
+                onClick={handleTakeoverAndProceed}
+                disabled={isTakingOver}
+                className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
+              >
+                <ArrowRightLeft className="w-4 h-4" />
+                <span>{isTakingOver ? 'Перенос...' : 'Переключить на это устройство'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setConcurrentConflict(false)}
+                className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
