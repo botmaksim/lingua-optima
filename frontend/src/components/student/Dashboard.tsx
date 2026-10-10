@@ -5,14 +5,32 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Flame, Sparkles, Camera, ArrowRight, AlertCircle, CheckCircle, Clock, Zap, FileText, BookOpen, BarChart3 } from 'lucide-react';
+import {
+  Flame,
+  Sparkles,
+  Camera,
+  ArrowRight,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Zap,
+  FileText,
+  BookOpen,
+  BarChart3,
+  Users,
+  Check,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { taskApi } from '../../api/taskApi';
 import { progressApi } from '../../api/progressApi';
 import { submissionApi } from '../../api/submissionApi';
+import { groupApi } from '../../api/groupApi';
 import { Task } from '../../types/task';
 import { ProgressRecord } from '../../types/progress';
 import { SubmissionResult } from '../../types/submission';
+import { GroupInvitation } from '../../types/group';
+import { useNotificationStore } from '../../store/notificationStore';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { LevelUpModal } from './LevelUpModal';
@@ -25,23 +43,28 @@ import { formatDate } from '../../utils/formatDate';
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { addToast, fetchNotifications } = useNotificationStore();
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [gaps, setGaps] = useState<ProgressRecord[]>([]);
   const [recentSubmissions, setRecentSubmissions] = useState<SubmissionResult[]>([]);
+  const [pendingInvitations, setPendingInvitations] = useState<GroupInvitation[]>([]);
+  const [actionGroupId, setActionGroupId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
-        const [taskList, gapList, subList] = await Promise.all([
+        const [taskList, gapList, subList, invites] = await Promise.all([
           taskApi.getTasks(),
           progressApi.getGaps(),
           submissionApi.getMySubmissions(),
+          groupApi.getPendingInvitations().catch(() => [] as GroupInvitation[]),
         ]);
         setTasks(taskList);
         setGaps(gapList);
         setRecentSubmissions(subList);
+        setPendingInvitations(invites);
       } catch (err) {
         console.error('Error loading dashboard:', err);
       } finally {
@@ -50,6 +73,50 @@ export const Dashboard: React.FC = () => {
     };
     loadDashboardData();
   }, []);
+
+  /**
+   * @brief Accepts a pending group invitation.
+   */
+  const handleAcceptInvite = async (groupId: string) => {
+    if (actionGroupId) return;
+    setActionGroupId(groupId);
+    try {
+      await groupApi.acceptInvitation(groupId);
+      setPendingInvitations((prev) => prev.filter((i) => i.groupId !== groupId));
+      addToast({ type: 'success', message: 'Group invitation accepted! Welcome to the group.' });
+      fetchNotifications();
+      const updatedTasks = await taskApi.getTasks().catch(() => tasks);
+      setTasks(updatedTasks);
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        message: err.response?.data?.message || 'Failed to accept invitation',
+      });
+    } finally {
+      setActionGroupId(null);
+    }
+  };
+
+  /**
+   * @brief Declines a pending group invitation.
+   */
+  const handleDeclineInvite = async (groupId: string) => {
+    if (actionGroupId) return;
+    setActionGroupId(groupId);
+    try {
+      await groupApi.declineInvitation(groupId);
+      setPendingInvitations((prev) => prev.filter((i) => i.groupId !== groupId));
+      addToast({ type: 'info', message: 'Group invitation declined.' });
+      fetchNotifications();
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        message: err.response?.data?.message || 'Failed to decline invitation',
+      });
+    } finally {
+      setActionGroupId(null);
+    }
+  };
 
   if (isLoading) {
     return <LoadingSpinner size="lg" message="Loading your personalized dashboard..." />;
@@ -115,6 +182,49 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
       {user?.levelUpSuggestedAt && <LevelUpModal />}
+
+      {pendingInvitations.length > 0 && (
+        <div className="space-y-3">
+          {pendingInvitations.map((inv) => (
+            <div
+              key={inv.groupId}
+              className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm"
+            >
+              <div className="flex items-start sm:items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Group Invitation: <span className="text-primary font-black">{inv.groupName}</span>
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Teacher <strong className="text-slate-800">{inv.teacherName}</strong> invited you to join this study group.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 self-end sm:self-center">
+                <button
+                  onClick={() => handleAcceptInvite(inv.groupId)}
+                  disabled={actionGroupId === inv.groupId}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-sm transition disabled:opacity-50"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  Accept
+                </button>
+                <button
+                  onClick={() => handleDeclineInvite(inv.groupId)}
+                  disabled={actionGroupId === inv.groupId}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs shadow-sm transition disabled:opacity-50"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  Decline
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="bg-gradient-to-r from-indigo-600 to-sky-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>

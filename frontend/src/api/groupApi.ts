@@ -64,4 +64,31 @@ export const groupApi = {
   deleteGroup: async (groupId: string): Promise<void> => {
     await axiosInstance.delete(`/groups/${groupId}`);
   },
+
+  /**
+   * @brief Retrieves all pending group invitations for the authenticated student.
+   * @return Promise resolving to array of GroupInvitation objects.
+   */
+  getPendingInvitations: async (): Promise<import('../types/group').GroupInvitation[]> => {
+    const res = await axiosInstance.get<import('../types/group').GroupInvitation[]>('/groups/invitations/pending');
+    return res.data;
+  },
+
+  /**
+   * @brief Accepts a pending group invitation.
+   * @param groupId Unique identifier of the group.
+   * @return Promise resolving to joined Group object.
+   */
+  acceptInvitation: async (groupId: string): Promise<Group> => {
+    const res = await axiosInstance.post<Group>(`/groups/${groupId}/invitation/accept`);
+    return res.data;
+  },
+
+  /**
+   * @brief Declines a pending group invitation.
+   * @param groupId Unique identifier of the group.
+   */
+  declineInvitation: async (groupId: string): Promise<void> => {
+    await axiosInstance.post(`/groups/${groupId}/invitation/decline`);
+  },
 };

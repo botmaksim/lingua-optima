@@ -22,11 +22,13 @@ import {
   GraduationCap,
   Menu,
   X,
+  Check,
   ChevronDown,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../api/authApi';
+import { groupApi } from '../../api/groupApi';
 import { useUsage } from '../../hooks/useUsage';
 import { useNotificationStore } from '../../store/notificationStore';
 import { useUIStore } from '../../store/uiStore';
@@ -43,7 +45,7 @@ export const Navbar: React.FC = () => {
   const { user, isStudent, isTeacher, logout } = useAuth();
   const { setUser } = useAuthStore();
   const { remainingEvaluations, isQuotaExceeded, isUnlimited } = useUsage();
-  const { notifications, unreadCount, fetchNotifications, markAsRead } = useNotificationStore();
+  const { notifications, unreadCount, fetchNotifications, markAsRead, addToast } = useNotificationStore();
   const { openUpgradeWall } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -53,10 +55,55 @@ export const Navbar: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [processingInviteId, setProcessingInviteId] = useState<string | null>(null);
 
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const notifMenuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * @brief Accepts a pending group invitation.
+   */
+  const handleAcceptInvite = async (e: React.MouseEvent, notificationId: string, groupId: string) => {
+    e.stopPropagation();
+    if (processingInviteId) return;
+    setProcessingInviteId(notificationId);
+    try {
+      await groupApi.acceptInvitation(groupId);
+      await markAsRead(notificationId);
+      addToast({ type: 'success', message: 'Group invitation accepted! Welcome to the group.' });
+      fetchNotifications();
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        message: err.response?.data?.message || 'Failed to accept invitation',
+      });
+    } finally {
+      setProcessingInviteId(null);
+    }
+  };
+
+  /**
+   * @brief Declines a pending group invitation.
+   */
+  const handleDeclineInvite = async (e: React.MouseEvent, notificationId: string, groupId: string) => {
+    e.stopPropagation();
+    if (processingInviteId) return;
+    setProcessingInviteId(notificationId);
+    try {
+      await groupApi.declineInvitation(groupId);
+      await markAsRead(notificationId);
+      addToast({ type: 'info', message: 'Group invitation declined.' });
+      fetchNotifications();
+    } catch (err: any) {
+      addToast({
+        type: 'error',
+        message: err.response?.data?.message || 'Failed to decline invitation',
+      });
+    } finally {
+      setProcessingInviteId(null);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -312,10 +359,10 @@ export const Navbar: React.FC = () => {
                           <div
                             key={n.id}
                             onClick={() => !n.isRead && markAsRead(n.id)}
-                            className={`p-2.5 rounded-xl text-xs cursor-pointer transition flex items-start gap-2.5 ${
+                            className={`p-2.5 rounded-xl text-xs transition flex items-start gap-2.5 ${
                               n.isRead
-                                ? 'text-slate-500 hover:bg-slate-50'
-                                : 'bg-indigo-50/70 text-slate-800 font-medium border border-indigo-100/80'
+                                ? 'text-slate-500 hover:bg-slate-50 cursor-pointer'
+                                : 'bg-indigo-50/70 text-slate-800 font-medium border border-indigo-100/80 cursor-pointer'
                             }`}
                           >
                             {!n.isRead && (
@@ -324,6 +371,26 @@ export const Navbar: React.FC = () => {
                             <div className="flex-1 min-w-0">
                               <p className="leading-snug">{n.message}</p>
                               <span className="text-[10px] text-slate-400 mt-1 block">{formatDate(n.createdAt)}</span>
+                              {n.type === 'GROUP_INVITATION' && n.referenceId && !n.isRead && (
+                                <div className="mt-2 flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                  <button
+                                    onClick={(e) => handleAcceptInvite(e, n.id, n.referenceId!)}
+                                    disabled={processingInviteId === n.id}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] shadow-sm transition disabled:opacity-50"
+                                  >
+                                    <Check className="w-3 h-3" />
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={(e) => handleDeclineInvite(e, n.id, n.referenceId!)}
+                                    disabled={processingInviteId === n.id}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-[11px] transition disabled:opacity-50"
+                                  >
+                                    <X className="w-3 h-3" />
+                                    Decline
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))

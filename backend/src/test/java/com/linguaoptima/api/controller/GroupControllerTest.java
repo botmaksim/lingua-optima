@@ -21,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -94,5 +94,52 @@ class GroupControllerTest {
 
         assertEquals(HttpStatus.NO_CONTENT, groupController.deleteGroup(groupId, teacher).getStatusCode());
         verify(groupService).deleteGroup(groupId, teacher);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: get pending invitations.
+     */
+    @Test
+    void testGetPendingInvitations() {
+        com.linguaoptima.api.dto.response.GroupInvitationResponse invite =
+            com.linguaoptima.api.dto.response.GroupInvitationResponse.builder()
+                .id(UUID.randomUUID())
+                .groupId(groupId)
+                .groupName("Group 1")
+                .teacherName("Teacher Alice")
+                .teacherEmail("alice@lingua.com")
+                .build();
+
+        when(groupService.getPendingInvitations(teacher)).thenReturn(List.of(invite));
+
+        ResponseEntity<List<com.linguaoptima.api.dto.response.GroupInvitationResponse>> res =
+            groupController.getPendingInvitations(teacher);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertNotNull(res.getBody());
+        assertEquals(1, res.getBody().size());
+        assertEquals("Group 1", res.getBody().get(0).getGroupName());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: accept invitation.
+     */
+    @Test
+    void testAcceptInvitation() {
+        when(groupService.acceptInvitation(groupId, teacher)).thenReturn(groupResponse);
+
+        ResponseEntity<GroupResponse> res = groupController.acceptInvitation(groupId, teacher);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(groupId, res.getBody().getId());
+        verify(groupService).acceptInvitation(groupId, teacher);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: decline invitation.
+     */
+    @Test
+    void testDeclineInvitation() {
+        ResponseEntity<Void> res = groupController.declineInvitation(groupId, teacher);
+        assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
+        verify(groupService).declineInvitation(groupId, teacher);
     }
 }

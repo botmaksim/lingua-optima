@@ -138,6 +138,29 @@ class NotificationServiceTest {
 
 
     /**
+     * @brief Verifies unit test scenario: send notification with reference ID.
+     */
+    @Test
+    void testSendNotificationWithReferenceId() {
+        UUID refId = UUID.randomUUID();
+        Notification n = Notification.builder()
+            .id(UUID.randomUUID())
+            .user(user)
+            .message("Invite note")
+            .type(NotificationType.GROUP_INVITATION)
+            .referenceId(refId)
+            .isRead(false)
+            .build();
+
+        when(notificationRepository.save(any(Notification.class))).thenReturn(n);
+
+        Notification result = notificationService.send(user, "Invite note", NotificationType.GROUP_INVITATION, refId);
+        assertNotNull(result);
+        assertEquals(refId, result.getReferenceId());
+        assertEquals(NotificationType.GROUP_INVITATION, result.getType());
+    }
+
+    /**
      * @brief Verifies unit test scenario: send notification.
      */
     @Test

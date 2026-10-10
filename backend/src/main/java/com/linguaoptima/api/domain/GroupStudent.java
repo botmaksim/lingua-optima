@@ -44,6 +44,12 @@ public class GroupStudent {
     @Builder.Default
     private boolean isActive = true;
 
+    /** @brief Field representing enrollment status in GroupStudent. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    @Builder.Default
+    private com.linguaoptima.api.domain.enums.EnrollmentStatus status = com.linguaoptima.api.domain.enums.EnrollmentStatus.ACCEPTED;
+
     /** @brief Field representing removed at in GroupStudent. */
     @Column(name = "removed_at")
     private LocalDateTime removedAt;

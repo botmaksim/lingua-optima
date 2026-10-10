@@ -41,4 +41,13 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
      * @return Query result (List&lt;Notification&gt;).
      */
     List<Notification> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    /**
+     * @brief Queries notifications by user ID, notification type, and reference entity ID.
+     * @param userId Recipient user identifier.
+     * @param type Notification category.
+     * @param referenceId Referenced entity identifier.
+     * @return Matching notification list.
+     */
+    List<Notification> findByUserIdAndTypeAndReferenceId(UUID userId, com.linguaoptima.api.domain.enums.NotificationType type, UUID referenceId);
 }

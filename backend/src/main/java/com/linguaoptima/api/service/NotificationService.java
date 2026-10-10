@@ -93,15 +93,29 @@ public class NotificationService {
      * @brief Persists a notification to the database and broadcasts it immediately to active SSE connections.
      * @param user Recipient user entity.
      * @param message Text payload of the notification.
-     * @param type Notification category type (SYSTEM, TASK, GRADE, CONTEXTUAL).
+     * @param type Notification category type (SYSTEM, TASK, GRADE, CONTEXTUAL, GROUP_INVITATION).
      * @return Saved Notification entity.
      */
     @Transactional
     public Notification send(User user, String message, NotificationType type) {
+        return send(user, message, type, null);
+    }
+
+    /**
+     * @brief Persists a notification referencing an entity ID and broadcasts it via SSE.
+     * @param user Recipient user entity.
+     * @param message Text payload of the notification.
+     * @param type Notification category type.
+     * @param referenceId Referenced entity identifier (e.g. group or task UUID).
+     * @return Saved Notification entity.
+     */
+    @Transactional
+    public Notification send(User user, String message, NotificationType type, UUID referenceId) {
         Notification notification = notificationRepository.save(Notification.builder()
             .user(user)
             .message(message)
             .type(type)
+            .referenceId(referenceId)
             .isRead(false)
             .createdAt(LocalDateTime.now())
             .build());

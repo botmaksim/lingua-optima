@@ -8,15 +8,19 @@ import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.User;
+import com.linguaoptima.api.domain.Notification;
+import com.linguaoptima.api.domain.enums.EnrollmentStatus;
 import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.dto.request.CreateGroupRequest;
+import com.linguaoptima.api.dto.response.GroupInvitationResponse;
 import com.linguaoptima.api.dto.response.GroupResponse;
 import com.linguaoptima.api.dto.response.UserResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
+import com.linguaoptima.api.repository.NotificationRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +55,8 @@ public class GroupService {
     private final SubmissionRepository submissionRepository;
     /** @brief Field representing notification service in GroupService. */
     private final NotificationService notificationService;
+    /** @brief Field representing notification repository in GroupService. */
+    private final NotificationRepository notificationRepository;
 
     /**
      * @brief Creates a new student group owned by the requesting educator.
@@ -102,12 +108,14 @@ public class GroupService {
     }
 
     /**
-     * @brief Enrolls a student into a group by email, restoring historical membership if previously removed.
+     * @brief Dispatches a group membership invitation to a student by email.
+     * The student is placed in PENDING status until they accept or decline the invitation.
      * @param groupId Unique identifier of the group.
-     * @param studentEmail Email address of the student to enroll.
-     * @param teacher Educator performing enrollment.
+     * @param studentEmail Email address of the student to invite.
+     * @param teacher Educator dispatching the invitation.
      * @throws ResourceNotFoundException if student email does not exist in the system.
      * @throws ForbiddenException if educator does not own group or group capacity (200) is exceeded.
+     * @throws IllegalStateException if student is already an active member of this group.
      */
     @Transactional
     public void addStudent(UUID groupId, String studentEmail, User teacher) {
@@ -118,12 +126,15 @@ public class GroupService {
         Optional<GroupStudent> existing = groupStudentRepository.findByGroupIdAndStudentId(groupId, student.getId());
         if (existing.isPresent()) {
             GroupStudent gs = existing.get();
-            if (!gs.isActive()) {
-                gs.setActive(true);
-                gs.setRemovedAt(null);
-                groupStudentRepository.save(gs);
-                log.info("Student {} reactivated in group {}", studentEmail, group.getName());
+            if (gs.getStatus() == EnrollmentStatus.ACCEPTED && gs.isActive()) {
+                throw new IllegalStateException("Student is already an active member of this group.");
             }
+            gs.setStatus(EnrollmentStatus.PENDING);
+            gs.setActive(false);
+            gs.setJoinedAt(LocalDateTime.now());
+            gs.setRemovedAt(null);
+            groupStudentRepository.save(gs);
+            log.info("Student {} invited (pending acceptance) to group {}", studentEmail, group.getName());
         } else {
             int count = groupStudentRepository.countByGroupIdAndIsActiveTrue(groupId);
             if (count >= 200) {
@@ -133,20 +144,104 @@ public class GroupService {
             GroupStudent gs = GroupStudent.builder()
                 .group(group)
                 .student(student)
-                .isActive(true)
+                .status(EnrollmentStatus.PENDING)
+                .isActive(false)
                 .joinedAt(LocalDateTime.now())
                 .build();
             groupStudentRepository.save(gs);
-            log.info("Student {} added to group {}", studentEmail, group.getName());
+            log.info("Created pending invitation for student {} in group {}", studentEmail, group.getName());
         }
 
         notificationService.send(student,
-            "📚 You were added to group '" + group.getName() + "' by teacher " + teacher.getFullName(),
-            NotificationType.SYSTEM);
+            "Group invitation: " + teacher.getFullName() + " invited you to join cohort '" + group.getName() + "'.",
+            NotificationType.GROUP_INVITATION,
+            group.getId());
     }
 
     /**
-     * @brief Soft-deletes a student membership from a group while preserving their submission history.
+     * @brief Retrieves all pending group invitations for the specified student.
+     * @param student Authenticated student.
+     * @return List of GroupInvitationResponse DTOs.
+     */
+    @Transactional(readOnly = true)
+    public List<GroupInvitationResponse> getPendingInvitations(User student) {
+        return groupStudentRepository.findByStudentIdAndStatus(student.getId(), EnrollmentStatus.PENDING).stream()
+            .map(gs -> GroupInvitationResponse.builder()
+                .id(gs.getId())
+                .groupId(gs.getGroup().getId())
+                .groupName(gs.getGroup().getName())
+                .teacherName(gs.getGroup().getTeacher().getFullName())
+                .teacherEmail(gs.getGroup().getTeacher().getEmail())
+                .createdAt(gs.getJoinedAt())
+                .build())
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * @brief Accepts a pending group membership invitation, transitioning membership to active.
+     * @param groupId Unique identifier of the group cohort.
+     * @param student Authenticated student accepting the invitation.
+     * @return GroupResponse of the joined cohort.
+     * @throws ResourceNotFoundException if no pending invitation exists for this group and student.
+     */
+    @Transactional
+    public GroupResponse acceptInvitation(UUID groupId, User student) {
+        GroupStudent gs = groupStudentRepository.findByGroupIdAndStudentIdAndStatus(groupId, student.getId(), EnrollmentStatus.PENDING)
+            .orElseThrow(() -> new ResourceNotFoundException("Pending invitation not found for group: " + groupId));
+
+        gs.setStatus(EnrollmentStatus.ACCEPTED);
+        gs.setActive(true);
+        gs.setJoinedAt(LocalDateTime.now());
+        gs.setRemovedAt(null);
+        groupStudentRepository.save(gs);
+
+        List<Notification> notifs = notificationRepository.findByUserIdAndTypeAndReferenceId(
+            student.getId(), NotificationType.GROUP_INVITATION, groupId);
+        for (Notification n : notifs) {
+            n.setRead(true);
+            notificationRepository.save(n);
+        }
+
+        notificationService.send(gs.getGroup().getTeacher(),
+            "🎓 Student " + student.getFullName() + " accepted your invitation to join '" + gs.getGroup().getName() + "'.",
+            NotificationType.SYSTEM);
+
+        log.info("Student {} accepted invitation to group {}", student.getEmail(), gs.getGroup().getName());
+        return mapToGroupResponse(gs.getGroup());
+    }
+
+    /**
+     * @brief Declines a pending group membership invitation.
+     * @param groupId Unique identifier of the group cohort.
+     * @param student Authenticated student declining the invitation.
+     * @throws ResourceNotFoundException if no pending invitation exists for this group and student.
+     */
+    @Transactional
+    public void declineInvitation(UUID groupId, User student) {
+        GroupStudent gs = groupStudentRepository.findByGroupIdAndStudentIdAndStatus(groupId, student.getId(), EnrollmentStatus.PENDING)
+            .orElseThrow(() -> new ResourceNotFoundException("Pending invitation not found for group: " + groupId));
+
+        gs.setStatus(EnrollmentStatus.DECLINED);
+        gs.setActive(false);
+        gs.setRemovedAt(LocalDateTime.now());
+        groupStudentRepository.save(gs);
+
+        List<Notification> notifs = notificationRepository.findByUserIdAndTypeAndReferenceId(
+            student.getId(), NotificationType.GROUP_INVITATION, groupId);
+        for (Notification n : notifs) {
+            n.setRead(true);
+            notificationRepository.save(n);
+        }
+
+        notificationService.send(gs.getGroup().getTeacher(),
+            "ℹ️ Student " + student.getFullName() + " declined your invitation to join '" + gs.getGroup().getName() + "'.",
+            NotificationType.SYSTEM);
+
+        log.info("Student {} declined invitation to group {}", student.getEmail(), gs.getGroup().getName());
+    }
+
+    /**
+     * @brief Soft-deletes a student membership or revokes an invitation from a group while preserving history.
      * @param groupId Unique identifier of the group.
      * @param studentId Unique identifier of the student.
      * @param teacher Educator executing student removal.
@@ -159,6 +254,7 @@ public class GroupService {
             .orElseThrow(() -> new ResourceNotFoundException("Student is not a member of this group."));
 
         gs.setActive(false);
+        gs.setStatus(EnrollmentStatus.DECLINED);
         gs.setRemovedAt(LocalDateTime.now());
         groupStudentRepository.save(gs);
         log.info("Student {} soft-deleted from group {}", studentId, group.getName());
@@ -194,13 +290,18 @@ public class GroupService {
     }
 
     /**
-     * @brief Transforms a Group entity into a GroupResponse DTO with active roster and average score.
+     * @brief Transforms a Group entity into a GroupResponse DTO with active roster, pending invitees, and average score.
      * @param group Group entity to transform.
      * @return Formatted GroupResponse DTO.
      */
     private GroupResponse mapToGroupResponse(Group group) {
         List<GroupStudent> activeMembers = groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId());
         List<UserResponse> studentResponses = activeMembers.stream()
+            .map(gs -> UserResponse.fromEntity(gs.getStudent()))
+            .collect(Collectors.toList());
+
+        List<GroupStudent> pendingMembers = groupStudentRepository.findByGroupIdAndStatus(group.getId(), EnrollmentStatus.PENDING);
+        List<UserResponse> pendingResponses = pendingMembers.stream()
             .map(gs -> UserResponse.fromEntity(gs.getStudent()))
             .collect(Collectors.toList());
 
@@ -215,6 +316,7 @@ public class GroupService {
             .avgScore(avgScore != null ? Math.round(avgScore * 10.0) / 10.0 : null)
             .createdAt(group.getCreatedAt())
             .students(studentResponses)
+            .pendingStudents(pendingResponses)
             .build();
     }
 }

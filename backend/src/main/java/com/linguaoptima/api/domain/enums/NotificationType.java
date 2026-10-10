@@ -19,5 +19,7 @@ public enum NotificationType {
     /** @brief Daily practice streak milestone or freeze alert. */
     STREAK,
     /** @brief CEFR proficiency level promotion alert. */
-    LEVEL_UP
+    LEVEL_UP,
+    /** @brief Student cohort group invitation requiring user acceptance or decline. */
+    GROUP_INVITATION
 }

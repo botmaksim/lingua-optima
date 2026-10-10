@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, UserPlus, Mail } from 'lucide-react';
+import { Plus, Trash2, UserPlus, Mail, Clock } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { Group } from '../../types/group';
 import { CefrBadge } from '../common/CefrBadge';
@@ -118,12 +118,12 @@ export const StudentGroups: React.FC = () => {
       await groupApi.addStudent(selectedGroup.id, studentEmail.trim());
       addToast({
         type: 'success',
-        title: 'Student Enrolled',
-        message: `${studentEmail.trim()} is now enrolled in "${selectedGroup.name}".`,
+        title: 'Invitation Sent',
+        message: `Invitation sent to ${studentEmail.trim()} for group "${selectedGroup.name}". Waiting for student to accept.`,
       });
       setStudentEmail('');
-      setActionMessage('Student enrolled (or restored from archive) successfully!');
-      setTimeout(() => setActionMessage(null), 3000);
+      setActionMessage('Invitation dispatched! Student must accept to become an active cohort member.');
+      setTimeout(() => setActionMessage(null), 4000);
       await loadGroupDetails(selectedGroup.id);
       await loadGroups();
     } catch (err: any) {
@@ -331,9 +331,48 @@ export const StudentGroups: React.FC = () => {
                 )}
               </div>
 
+              {/* Pending Invitations Section */}
+              {selectedGroup.pendingStudents && selectedGroup.pendingStudents.length > 0 && (
+                <div className="space-y-3 p-4 rounded-2xl bg-amber-50/60 border border-amber-200/70">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Pending Invitations ({selectedGroup.pendingStudents.length})</span>
+                    </h3>
+                  </div>
+
+                  <div className="divide-y divide-amber-100">
+                    {selectedGroup.pendingStudents.map((student) => (
+                      <div
+                        key={student.id}
+                        className="py-2.5 flex items-center justify-between px-1"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-bold text-slate-800">{student.fullName}</span>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300/60">
+                              Invitation Pending
+                            </span>
+                          </div>
+                          <span className="text-xs text-slate-500">{student.email}</span>
+                        </div>
+
+                        <button
+                          onClick={() => handleRemoveStudent(student.id)}
+                          className="text-xs text-rose-600 hover:text-rose-700 font-semibold transition px-2.5 py-1 rounded-lg hover:bg-rose-50"
+                          title="Revoke invitation"
+                        >
+                          Revoke
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-3">
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Enrolled Students
+                  Enrolled Students ({selectedGroup.students?.length || 0})
                 </h3>
 
                 {(!selectedGroup.students || selectedGroup.students.length === 0) ? (

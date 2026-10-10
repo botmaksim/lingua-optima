@@ -42,6 +42,10 @@ public class Notification {
     @Column(nullable = false)
     private NotificationType type;
 
+    /** @brief Optional entity identifier referenced by this notification (e.g. group or task UUID). */
+    @Column(name = "reference_id")
+    private UUID referenceId;
+
     /** @brief Field representing is read in Notification. */
     @Column(name = "is_read", nullable = false)
     @Builder.Default

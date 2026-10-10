@@ -33,7 +33,21 @@ export interface Group {
   avgScore?: number;
   /** @brief Property representing students in Group. */
   students?: User[];
+  /** @brief Property representing students with pending invitations in Group. */
+  pendingStudents?: User[];
   /** @brief Property representing created at in Group. */
+  createdAt: string;
+}
+
+/**
+ * @brief Pending group invitation for a student.
+ */
+export interface GroupInvitation {
+  id: string;
+  groupId: string;
+  groupName: string;
+  teacherName: string;
+  teacherEmail: string;
   createdAt: string;
 }
 

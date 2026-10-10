@@ -60,6 +60,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/tasks/{id}/assign").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/tasks/template").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/groups").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/groups/invitations/**").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/groups/*/invitation/**").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
                 .requestMatchers("/api/groups/**").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/submissions/{id}/override").hasAnyRole("TEACHER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/submissions/{id}/override").hasAnyRole("TEACHER", "ADMIN")

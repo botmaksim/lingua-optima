@@ -8,13 +8,18 @@ import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.User;
+import com.linguaoptima.api.domain.Notification;
+import com.linguaoptima.api.domain.enums.EnrollmentStatus;
+import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.dto.request.CreateGroupRequest;
+import com.linguaoptima.api.dto.response.GroupInvitationResponse;
 import com.linguaoptima.api.dto.response.GroupResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
+import com.linguaoptima.api.repository.NotificationRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,6 +59,9 @@ class GroupServiceTest {
     /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
+    /** @brief Test fixture or mock dependency for notification repository. */
+    @Mock
+    private NotificationRepository notificationRepository;
 
     /** @brief Test fixture or mock dependency for group service. */
     @InjectMocks
@@ -131,7 +139,7 @@ class GroupServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: add new student.
+     * @brief Verifies unit test scenario: add new student sends invitation.
      */
     @Test
     void testAddNewStudent() {
@@ -142,12 +150,12 @@ class GroupServiceTest {
 
         groupService.addStudent(group.getId(), "student@lingua.com", teacher);
 
-        verify(groupStudentRepository).save(argThat(gs -> gs.isActive() && gs.getStudent().equals(student)));
-        verify(notificationService).send(eq(student), anyString(), any());
+        verify(groupStudentRepository).save(argThat(gs -> !gs.isActive() && gs.getStatus() == EnrollmentStatus.PENDING && gs.getStudent().equals(student)));
+        verify(notificationService).send(eq(student), anyString(), eq(NotificationType.GROUP_INVITATION), eq(group.getId()));
     }
 
     /**
-     * @brief Verifies unit test scenario: add student reactivates soft deleted.
+     * @brief Verifies unit test scenario: add student re-invites previously declined or removed student.
      */
     @Test
     void testAddStudentReactivatesSoftDeleted() {
@@ -155,6 +163,7 @@ class GroupServiceTest {
             .group(group)
             .student(student)
             .isActive(false)
+            .status(EnrollmentStatus.DECLINED)
             .removedAt(LocalDateTime.now().minusDays(3))
             .build();
 
@@ -164,14 +173,146 @@ class GroupServiceTest {
 
         groupService.addStudent(group.getId(), "student@lingua.com", teacher);
 
-        assertTrue(softDeleted.isActive());
+        assertFalse(softDeleted.isActive());
+        assertEquals(EnrollmentStatus.PENDING, softDeleted.getStatus());
         assertNull(softDeleted.getRemovedAt());
         verify(groupStudentRepository).save(softDeleted);
+    }
 
-        reset(groupStudentRepository);
-        when(groupStudentRepository.findByGroupIdAndStudentId(group.getId(), student.getId())).thenReturn(Optional.of(softDeleted));
-        groupService.addStudent(group.getId(), "student@lingua.com", teacher);
-        verify(groupStudentRepository, never()).save(any());
+    /**
+     * @brief Verifies unit test scenario: add student already active throws.
+     */
+    @Test
+    void testAddStudentAlreadyActiveThrows() {
+        GroupStudent activeMember = GroupStudent.builder()
+            .group(group)
+            .student(student)
+            .isActive(true)
+            .status(EnrollmentStatus.ACCEPTED)
+            .build();
+
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(student));
+        when(groupStudentRepository.findByGroupIdAndStudentId(group.getId(), student.getId())).thenReturn(Optional.of(activeMember));
+
+        assertThrows(IllegalStateException.class, () -> groupService.addStudent(group.getId(), "student@lingua.com", teacher));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: get pending invitations.
+     */
+    @Test
+    void testGetPendingInvitations() {
+        GroupStudent gs = GroupStudent.builder()
+            .id(UUID.randomUUID())
+            .group(group)
+            .student(student)
+            .status(EnrollmentStatus.PENDING)
+            .isActive(false)
+            .joinedAt(LocalDateTime.now())
+            .build();
+
+        when(groupStudentRepository.findByStudentIdAndStatus(student.getId(), EnrollmentStatus.PENDING))
+            .thenReturn(List.of(gs));
+
+        List<GroupInvitationResponse> invites = groupService.getPendingInvitations(student);
+        assertEquals(1, invites.size());
+        assertEquals(group.getName(), invites.get(0).getGroupName());
+        assertEquals("Teacher Alice", invites.get(0).getTeacherName());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: accept invitation.
+     */
+    @Test
+    void testAcceptInvitation() {
+        GroupStudent gs = GroupStudent.builder()
+            .id(UUID.randomUUID())
+            .group(group)
+            .student(student)
+            .status(EnrollmentStatus.PENDING)
+            .isActive(false)
+            .build();
+
+        Notification notif = Notification.builder()
+            .id(UUID.randomUUID())
+            .user(student)
+            .type(NotificationType.GROUP_INVITATION)
+            .referenceId(group.getId())
+            .isRead(false)
+            .build();
+
+        when(groupStudentRepository.findByGroupIdAndStudentIdAndStatus(group.getId(), student.getId(), EnrollmentStatus.PENDING))
+            .thenReturn(Optional.of(gs));
+        when(notificationRepository.findByUserIdAndTypeAndReferenceId(student.getId(), NotificationType.GROUP_INVITATION, group.getId()))
+            .thenReturn(List.of(notif));
+
+        GroupResponse res = groupService.acceptInvitation(group.getId(), student);
+        assertNotNull(res);
+        assertTrue(gs.isActive());
+        assertEquals(EnrollmentStatus.ACCEPTED, gs.getStatus());
+        assertTrue(notif.isRead());
+        verify(groupStudentRepository).save(gs);
+        verify(notificationRepository).save(notif);
+        verify(notificationService).send(eq(teacher), anyString(), eq(NotificationType.SYSTEM));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: accept invitation not found throws.
+     */
+    @Test
+    void testAcceptInvitationNotFoundThrows() {
+        when(groupStudentRepository.findByGroupIdAndStudentIdAndStatus(group.getId(), student.getId(), EnrollmentStatus.PENDING))
+            .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> groupService.acceptInvitation(group.getId(), student));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: decline invitation.
+     */
+    @Test
+    void testDeclineInvitation() {
+        GroupStudent gs = GroupStudent.builder()
+            .id(UUID.randomUUID())
+            .group(group)
+            .student(student)
+            .status(EnrollmentStatus.PENDING)
+            .isActive(false)
+            .build();
+
+        Notification notif = Notification.builder()
+            .id(UUID.randomUUID())
+            .user(student)
+            .type(NotificationType.GROUP_INVITATION)
+            .referenceId(group.getId())
+            .isRead(false)
+            .build();
+
+        when(groupStudentRepository.findByGroupIdAndStudentIdAndStatus(group.getId(), student.getId(), EnrollmentStatus.PENDING))
+            .thenReturn(Optional.of(gs));
+        when(notificationRepository.findByUserIdAndTypeAndReferenceId(student.getId(), NotificationType.GROUP_INVITATION, group.getId()))
+            .thenReturn(List.of(notif));
+
+        groupService.declineInvitation(group.getId(), student);
+        assertFalse(gs.isActive());
+        assertEquals(EnrollmentStatus.DECLINED, gs.getStatus());
+        assertNotNull(gs.getRemovedAt());
+        assertTrue(notif.isRead());
+        verify(groupStudentRepository).save(gs);
+        verify(notificationRepository).save(notif);
+        verify(notificationService).send(eq(teacher), anyString(), eq(NotificationType.SYSTEM));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: decline invitation not found throws.
+     */
+    @Test
+    void testDeclineInvitationNotFoundThrows() {
+        when(groupStudentRepository.findByGroupIdAndStudentIdAndStatus(group.getId(), student.getId(), EnrollmentStatus.PENDING))
+            .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> groupService.declineInvitation(group.getId(), student));
     }
 
     /**
@@ -225,6 +366,27 @@ class GroupServiceTest {
         assertEquals(1, res.getStudentCount());
         assertEquals(88.0, res.getAvgScore());
         assertEquals(1, res.getStudents().size());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: get group details with pending students.
+     */
+    @Test
+    void testGetGroupDetailsWithPendingStudents() {
+        GroupStudent activeGs = GroupStudent.builder().group(group).student(student).isActive(true).build();
+        User pendingStudent = User.builder().id(UUID.randomUUID()).email("pending@lingua.com").fullName("Pending Student").build();
+        GroupStudent pendingGs = GroupStudent.builder().group(group).student(pendingStudent).status(EnrollmentStatus.PENDING).isActive(false).build();
+
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(activeGs));
+        when(groupStudentRepository.findByGroupIdAndStatus(group.getId(), EnrollmentStatus.PENDING)).thenReturn(List.of(pendingGs));
+        when(submissionRepository.findActiveGroupSubmissions(group.getId())).thenReturn(List.of());
+
+        GroupResponse res = groupService.getGroupDetails(group.getId(), teacher);
+        assertNotNull(res);
+        assertEquals(1, res.getStudentCount());
+        assertEquals(1, res.getPendingStudents().size());
+        assertEquals("Pending Student", res.getPendingStudents().get(0).getFullName());
     }
 
     /**

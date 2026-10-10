@@ -33,7 +33,11 @@ public class GroupResponse {
     private Double avgScore;
     /** @brief Field representing created at in GroupResponse. */
     private LocalDateTime createdAt;
-    /** @brief Field representing students in GroupResponse. */
+    /** @brief Field representing active enrolled students in GroupResponse. */
     @Builder.Default
     private List<UserResponse> students = new ArrayList<>();
+
+    /** @brief Field representing students with pending group invitations in GroupResponse. */
+    @Builder.Default
+    private List<UserResponse> pendingStudents = new ArrayList<>();
 }

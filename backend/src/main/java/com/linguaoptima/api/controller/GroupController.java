@@ -7,6 +7,7 @@ package com.linguaoptima.api.controller;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.AddStudentRequest;
 import com.linguaoptima.api.dto.request.CreateGroupRequest;
+import com.linguaoptima.api.dto.response.GroupInvitationResponse;
 import com.linguaoptima.api.dto.response.GroupResponse;
 import com.linguaoptima.api.service.GroupService;
 import jakarta.validation.Valid;
@@ -121,6 +122,50 @@ public class GroupController {
         @AuthenticationPrincipal User teacher
     ) {
         groupService.deleteGroup(groupId, teacher);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * @brief Retrieves all pending group invitations for the authenticated student.
+     *
+     * @param student Authenticated student principal.
+     * @return HTTP 200 with list of pending group invitations.
+     */
+    @GetMapping("/invitations/pending")
+    public ResponseEntity<List<GroupInvitationResponse>> getPendingInvitations(
+        @AuthenticationPrincipal User student
+    ) {
+        return ResponseEntity.ok(groupService.getPendingInvitations(student));
+    }
+
+    /**
+     * @brief Accepts a pending group cohort invitation.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param student Authenticated student principal.
+     * @return HTTP 200 with joined GroupResponse.
+     */
+    @PostMapping("/{id}/invitation/accept")
+    public ResponseEntity<GroupResponse> acceptInvitation(
+        @PathVariable("id") UUID groupId,
+        @AuthenticationPrincipal User student
+    ) {
+        return ResponseEntity.ok(groupService.acceptInvitation(groupId, student));
+    }
+
+    /**
+     * @brief Declines a pending group cohort invitation.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param student Authenticated student principal.
+     * @return HTTP 204 No Content.
+     */
+    @PostMapping("/{id}/invitation/decline")
+    public ResponseEntity<Void> declineInvitation(
+        @PathVariable("id") UUID groupId,
+        @AuthenticationPrincipal User student
+    ) {
+        groupService.declineInvitation(groupId, student);
         return ResponseEntity.noContent().build();
     }
 }

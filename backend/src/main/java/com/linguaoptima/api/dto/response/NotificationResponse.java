@@ -30,8 +30,11 @@ public class NotificationResponse {
     /** @brief Human-readable notification message text. */
     private String message;
 
-    /** @brief Notification category (TASK, GRADE, SYSTEM, CONTEXTUAL, STREAK, LEVEL_UP). */
+    /** @brief Notification category (TASK, GRADE, SYSTEM, CONTEXTUAL, STREAK, LEVEL_UP, GROUP_INVITATION). */
     private NotificationType type;
+
+    /** @brief Optional entity identifier referenced by this notification (e.g. group or task UUID). */
+    private UUID referenceId;
 
     /** @brief Flag indicating whether the notification has been read by the user. */
     @JsonProperty("isRead")
@@ -51,6 +54,7 @@ public class NotificationResponse {
             .id(notification.getId())
             .message(notification.getMessage())
             .type(notification.getType())
+            .referenceId(notification.getReferenceId())
             .isRead(notification.isRead())
             .createdAt(notification.getCreatedAt())
             .build();

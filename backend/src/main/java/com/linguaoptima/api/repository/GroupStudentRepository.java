@@ -65,4 +65,29 @@ public interface GroupStudentRepository extends JpaRepository<GroupStudent, UUID
      * @return Query result (List&lt;GroupStudent&gt;).
      */
     List<GroupStudent> findAllByStudentId(UUID studentId);
+
+    /**
+     * @brief Queries group students by group ID and enrollment status.
+     * @param groupId Filter parameter groupId.
+     * @param status Enrollment status filter.
+     * @return Query result (List&lt;GroupStudent&gt;).
+     */
+    List<GroupStudent> findByGroupIdAndStatus(UUID groupId, com.linguaoptima.api.domain.enums.EnrollmentStatus status);
+
+    /**
+     * @brief Queries group students by student ID and enrollment status.
+     * @param studentId Filter parameter studentId.
+     * @param status Enrollment status filter.
+     * @return Query result (List&lt;GroupStudent&gt;).
+     */
+    List<GroupStudent> findByStudentIdAndStatus(UUID studentId, com.linguaoptima.api.domain.enums.EnrollmentStatus status);
+
+    /**
+     * @brief Queries group student by group ID, student ID, and enrollment status.
+     * @param groupId Filter parameter groupId.
+     * @param studentId Filter parameter studentId.
+     * @param status Enrollment status filter.
+     * @return Query result (Optional&lt;GroupStudent&gt;).
+     */
+    Optional<GroupStudent> findByGroupIdAndStudentIdAndStatus(UUID groupId, UUID studentId, com.linguaoptima.api.domain.enums.EnrollmentStatus status);
 }
