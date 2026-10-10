@@ -12,6 +12,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.opencsv.CSVWriter;
 import com.linguaoptima.api.domain.*;
+import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
@@ -19,6 +20,7 @@ import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.ProgressRecordRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
+import com.linguaoptima.api.repository.TaskAssignmentRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,8 @@ public class ExportService {
     private final GroupStudentRepository groupStudentRepository;
     /** @brief Field representing submission repository in ExportService. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field representing task assignment repository in ExportService. */
+    private final TaskAssignmentRepository taskAssignmentRepository;
     /** @brief Field representing progress record repository in ExportService. */
     private final ProgressRecordRepository progressRecordRepository;
     /** @brief Field representing user repository in ExportService. */
@@ -111,7 +115,7 @@ public class ExportService {
     }
 
     /**
-     * @brief Generates CSV bytes for a group roster.
+     * @brief Generates CSV bytes for a group roster and performance table.
      * @param group Target Group entity.
      * @param students List of enrolled GroupStudent entities.
      * @return UTF-8 byte array of the CSV document.
@@ -119,15 +123,37 @@ public class ExportService {
     private byte[] generateGroupCsv(Group group, List<GroupStudent> students) {
         StringWriter sw = new StringWriter();
         try (CSVWriter writer = new CSVWriter(sw)) {
-            writer.writeNext(new String[]{"Group Report", group.getName(), "Generated: " + LocalDateTime.now()});
-            writer.writeNext(new String[]{"Student Name", "Email", "CEFR Level", "Joined Date"});
+            writer.writeNext(new String[]{"Lingua Optima - Group Performance Report", group.getName()});
+            writer.writeNext(new String[]{"Teacher", group.getTeacher() != null ? group.getTeacher().getFullName() : "N/A"});
+            writer.writeNext(new String[]{"Generated", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))});
+            writer.writeNext(new String[]{"Active Students", String.valueOf(students.size())});
+            writer.writeNext(new String[]{""});
+            writer.writeNext(new String[]{"Student Name", "Email", "CEFR Level", "Tasks Completed", "Average Score", "Submissions", "Joined Date"});
+
+            List<Submission> allGroupSubs = submissionRepository.findActiveGroupSubmissions(group.getId());
 
             for (GroupStudent gs : students) {
                 User s = gs.getStudent();
+                List<TaskAssignment> studentAssignments = taskAssignmentRepository.findByStudentIdOrderByCreatedAtDesc(s.getId()).stream()
+                    .filter(a -> a.getAssignedBy() != null && group.getTeacher() != null && a.getAssignedBy().getId().equals(group.getTeacher().getId()))
+                    .toList();
+                int totalTasks = studentAssignments.size();
+                int completedTasks = (int) studentAssignments.stream()
+                    .filter(a -> a.getStatus() == AssignmentStatus.SUBMITTED || a.getStatus() == AssignmentStatus.GRADED)
+                    .count();
+
+                List<Submission> sSubs = allGroupSubs.stream()
+                    .filter(sub -> sub.getStudent().getId().equals(s.getId()))
+                    .toList();
+                String avgScoreStr = sSubs.isEmpty() ? "N/A" : String.format("%.1f%%", sSubs.stream().mapToDouble(Submission::getEffectiveScore).average().orElse(0.0));
+
                 writer.writeNext(new String[]{
                     s.getFullName(),
                     s.getEmail(),
                     s.getCefrLevel().name(),
+                    totalTasks > 0 ? (completedTasks + "/" + totalTasks) : "0/0",
+                    avgScoreStr,
+                    String.valueOf(sSubs.size()),
                     gs.getJoinedAt().format(DateTimeFormatter.ISO_LOCAL_DATE)
                 });
             }
@@ -153,20 +179,46 @@ public class ExportService {
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18);
             document.add(new Paragraph("Lingua Optima - Group Performance Report", titleFont));
             document.add(new Paragraph("Group: " + group.getName()));
+            if (group.getTeacher() != null) {
+                document.add(new Paragraph("Educator: " + group.getTeacher().getFullName()));
+            }
             document.add(new Paragraph("Generated: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
+
+            List<Submission> allGroupSubs = submissionRepository.findActiveGroupSubmissions(group.getId());
+            double groupAvg = allGroupSubs.isEmpty() ? 0.0 : allGroupSubs.stream().mapToDouble(Submission::getEffectiveScore).average().orElse(0.0);
+            document.add(new Paragraph(String.format("Active Students: %d | Group Avg Score: %.1f%%", students.size(), groupAvg)));
             document.add(new Paragraph(" "));
 
-            PdfPTable table = new PdfPTable(4);
+            PdfPTable table = new PdfPTable(6);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{2.5f, 3.5f, 1.2f, 1.8f, 1.8f, 1.8f});
             table.addCell("Student Name");
             table.addCell("Email");
-            table.addCell("CEFR Level");
+            table.addCell("CEFR");
+            table.addCell("Tasks Done");
+            table.addCell("Avg Score");
             table.addCell("Joined Date");
 
             for (GroupStudent gs : students) {
                 User s = gs.getStudent();
+                List<TaskAssignment> studentAssignments = taskAssignmentRepository.findByStudentIdOrderByCreatedAtDesc(s.getId()).stream()
+                    .filter(a -> a.getAssignedBy() != null && group.getTeacher() != null && a.getAssignedBy().getId().equals(group.getTeacher().getId()))
+                    .toList();
+                int totalTasks = studentAssignments.size();
+                int completedTasks = (int) studentAssignments.stream()
+                    .filter(a -> a.getStatus() == AssignmentStatus.SUBMITTED || a.getStatus() == AssignmentStatus.GRADED)
+                    .count();
+
+                List<Submission> sSubs = allGroupSubs.stream()
+                    .filter(sub -> sub.getStudent().getId().equals(s.getId()))
+                    .toList();
+                String avgScoreStr = sSubs.isEmpty() ? "N/A" : String.format("%.1f%%", sSubs.stream().mapToDouble(Submission::getEffectiveScore).average().orElse(0.0));
+
                 table.addCell(s.getFullName());
                 table.addCell(s.getEmail());
                 table.addCell(s.getCefrLevel().name());
+                table.addCell(totalTasks > 0 ? (completedTasks + "/" + totalTasks) : "0/0");
+                table.addCell(avgScoreStr);
                 table.addCell(gs.getJoinedAt().format(DateTimeFormatter.ISO_LOCAL_DATE));
             }
 

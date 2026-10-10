@@ -7,6 +7,7 @@ package com.linguaoptima.api.service;
 import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.ProgressRecord;
+import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
@@ -51,6 +52,9 @@ class ExportServiceTest {
     /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
+    /** @brief Test fixture or mock dependency for task assignment repository. */
+    @Mock
+    private com.linguaoptima.api.repository.TaskAssignmentRepository taskAssignmentRepository;
 
     /** @brief Test fixture or mock dependency for export service. */
     @InjectMocks
@@ -70,7 +74,7 @@ class ExportServiceTest {
      */
     @BeforeEach
     void setUp() {
-        teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        teacher = User.builder().id(UUID.randomUUID()).fullName("Professor Smith").role(Role.TEACHER).build();
         otherTeacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
         student = User.builder().id(UUID.randomUUID()).fullName("Student Sam").email("sam@lingua.com").cefrLevel(CefrLevel.B1).build();
         group = Group.builder().id(UUID.randomUUID()).name("Group 1").teacher(teacher).build();
@@ -84,6 +88,15 @@ class ExportServiceTest {
         GroupStudent gs = GroupStudent.builder().group(group).student(student).isActive(true).build();
         when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
         when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(gs));
+
+        Submission sub = Submission.builder().student(student).aiScore(85.0).build();
+        when(submissionRepository.findActiveGroupSubmissions(group.getId())).thenReturn(List.of(sub));
+
+        com.linguaoptima.api.domain.TaskAssignment a1 = com.linguaoptima.api.domain.TaskAssignment.builder()
+            .assignedBy(teacher)
+            .status(com.linguaoptima.api.domain.enums.AssignmentStatus.SUBMITTED)
+            .build();
+        when(taskAssignmentRepository.findByStudentIdOrderByCreatedAtDesc(student.getId())).thenReturn(List.of(a1));
 
         byte[] csv = exportService.generateGroupReport(group.getId(), "csv", teacher);
         assertNotNull(csv);
