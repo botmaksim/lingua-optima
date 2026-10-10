@@ -105,6 +105,20 @@ export const authApi = {
   },
 
   /**
+   * @brief Completes password reset using 6-digit email confirmation code and new password.
+   * @param data Object containing email, 6-digit code, and new password.
+   * @return Promise resolving to status payload.
+   */
+  resetPassword: async (data: {
+    email: string;
+    code: string;
+    newPassword: string;
+  }): Promise<{ message: string; email: string }> => {
+    const res = await axiosInstance.post<{ message: string; email: string }>('/auth/reset-password', data);
+    return res.data;
+  },
+
+  /**
    * @brief Retrieves latest user profile details.
    * @return Promise resolving to user profile object.
    */

@@ -10,6 +10,7 @@ import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
 import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
+import com.linguaoptima.api.dto.request.ResetPasswordRequest;
 import com.linguaoptima.api.dto.request.SendVerificationCodeRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.dto.response.UserResponse;
@@ -191,6 +192,25 @@ class AuthControllerTest {
         ResponseEntity<Void> entity = authController.forgotPassword(req);
         assertEquals(HttpStatus.OK, entity.getStatusCode());
         verify(authService).forgotPassword(req);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: reset password.
+     */
+    @Test
+    void testResetPassword() {
+        ResetPasswordRequest req = ResetPasswordRequest.builder()
+            .email("auth@lingua.com")
+            .code("123456")
+            .newPassword("newPassword123")
+            .build();
+        doNothing().when(authService).resetPassword(req);
+
+        ResponseEntity<Map<String, String>> entity = authController.resetPassword(req);
+        assertEquals(HttpStatus.OK, entity.getStatusCode());
+        assertNotNull(entity.getBody());
+        assertEquals("auth@lingua.com", entity.getBody().get("email"));
+        verify(authService).resetPassword(req);
     }
 
     /**

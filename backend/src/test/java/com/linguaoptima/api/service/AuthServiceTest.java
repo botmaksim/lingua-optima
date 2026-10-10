@@ -13,6 +13,7 @@ import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
 import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
+import com.linguaoptima.api.dto.request.ResetPasswordRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
@@ -32,6 +33,8 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.client.RestClient;
+
+import java.time.Duration;
 
 import java.util.Map;
 import java.util.Optional;
@@ -89,6 +92,7 @@ class AuthServiceTest {
     @BeforeEach
     void setUp() {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.setIfAbsent(anyString(), anyString(), any(Duration.class))).thenReturn(true);
         authService = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, stringRedisTemplate, emailService);
 
         sampleUser = User.builder()
@@ -620,6 +624,65 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail("none@lingua.com")).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> authService.forgotPassword(ForgotPasswordRequest.builder().email("none@lingua.com").build()));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: reset password success and validation branches.
+     */
+    @Test
+    void testResetPasswordSuccess() {
+        when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(sampleUser));
+        when(valueOperations.get("password_reset_code:student@lingua.com")).thenReturn("123456");
+        when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedNewSecret");
+
+        ResetPasswordRequest request = ResetPasswordRequest.builder()
+            .email("student@lingua.com")
+            .code("123456")
+            .newPassword("newSecretPass")
+            .build();
+
+        assertDoesNotThrow(() -> authService.resetPassword(request));
+        assertEquals("encodedNewSecret", sampleUser.getPasswordHash());
+        verify(userRepository).save(sampleUser);
+        verify(stringRedisTemplate).delete("password_reset_code:student@lingua.com");
+    }
+
+    @Test
+    void testResetPasswordInvalidCode() {
+        when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(sampleUser));
+        when(valueOperations.get("password_reset_code:student@lingua.com")).thenReturn("654321");
+
+        ResetPasswordRequest request = ResetPasswordRequest.builder()
+            .email("student@lingua.com")
+            .code("000000")
+            .newPassword("newSecretPass")
+            .build();
+
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(request));
+    }
+
+    @Test
+    void testResetPasswordShortPassword() {
+        ResetPasswordRequest request = ResetPasswordRequest.builder()
+            .email("student@lingua.com")
+            .code("123456")
+            .newPassword("123")
+            .build();
+
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(request));
+    }
+
+    @Test
+    void testResetPasswordUserNotFound() {
+        when(userRepository.findByEmail("missing@lingua.com")).thenReturn(Optional.empty());
+
+        ResetPasswordRequest request = ResetPasswordRequest.builder()
+            .email("missing@lingua.com")
+            .code("123456")
+            .newPassword("newSecretPass")
+            .build();
+
+        assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(request));
     }
 
     /**

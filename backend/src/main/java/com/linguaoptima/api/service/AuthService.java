@@ -13,6 +13,7 @@ import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
 import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
+import com.linguaoptima.api.dto.request.ResetPasswordRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.dto.response.UserResponse;
 import com.linguaoptima.api.exception.QuotaExceededException;
@@ -66,6 +67,8 @@ public class AuthService {
     private final SecureRandom secureRandom = new SecureRandom();
     /** @brief In-memory fallback storage for email verification codes when Redis is unavailable. */
     private final Map<String, VerificationEntry> fallbackVerificationCodes = new ConcurrentHashMap<>();
+    /** @brief In-memory fallback storage for password reset codes when Redis is unavailable. */
+    private final Map<String, VerificationEntry> fallbackResetCodes = new ConcurrentHashMap<>();
 
     /**
      * @brief Internal record storing verification code and expiration timestamp.
@@ -459,14 +462,126 @@ public class AuthService {
     }
 
     /**
-     * @brief Initiates a password reset flow for the provided email address.
+     * @brief Initiates a password reset flow for the provided email address by generating and emailing a 6-digit code.
      * @param request Password reset payload containing user email.
-     * @throws ResourceNotFoundException if no user is registered with the provided email.
      */
     public void forgotPassword(ForgotPasswordRequest request) {
-        User user = userRepository.findByEmail(request.getEmail().toLowerCase().trim())
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Valid email address is required");
+        }
+        String normalizedEmail = request.getEmail().toLowerCase().trim();
+        User user = userRepository.findByEmail(normalizedEmail)
             .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + request.getEmail()));
-        log.info("Password reset request processed for email: {}", user.getEmail());
+
+        checkResetCodeRateLimit(normalizedEmail);
+
+        int randomPin = secureRandom.nextInt(900_000) + 100_000;
+        String code = String.valueOf(randomPin);
+
+        saveResetCode(normalizedEmail, code);
+        emailService.sendPasswordResetCode(normalizedEmail, code);
+        log.info("Password reset code dispatched to {}", normalizedEmail);
+    }
+
+    /**
+     * @brief Completes password reset flow by verifying confirmation code and updating password hash.
+     * @param request Password reset payload containing email, code, and new password.
+     */
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Email is required");
+        }
+        if (request.getCode() == null || request.getCode().isBlank()) {
+            throw new IllegalArgumentException("Verification code is required");
+        }
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 6) {
+            throw new IllegalArgumentException("New password must be at least 6 characters");
+        }
+
+        String normalizedEmail = request.getEmail().toLowerCase().trim();
+        User user = userRepository.findByEmail(normalizedEmail)
+            .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + normalizedEmail));
+
+        boolean valid = verifyAndConsumeResetCode(normalizedEmail, request.getCode());
+        if (!valid) {
+            throw new IllegalArgumentException("Invalid or expired password reset code");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Invalidate all active sessions for security
+        logoutAll(user);
+        log.info("Password reset successfully for user {}", normalizedEmail);
+    }
+
+    /**
+     * @brief Enforces a 60-second cooldown per email for password reset requests.
+     * @param email Target email address.
+     */
+    private void checkResetCodeRateLimit(String email) {
+        if (stringRedisTemplate != null) {
+            try {
+                String key = "rate_limit:" + email + ":password_reset_send";
+                Boolean wasSet = stringRedisTemplate.opsForValue().setIfAbsent(key, "1", Duration.ofSeconds(60));
+                if (Boolean.FALSE.equals(wasSet)) {
+                    throw new QuotaExceededException("A reset code was recently sent. Please wait 60 seconds before requesting a new code.");
+                }
+            } catch (QuotaExceededException q) {
+                throw q;
+            } catch (Exception e) {
+                log.warn("Redis reset code rate limit check skipped: {}", e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * @brief Persists an active password reset code in Redis with a 10-minute TTL and in-memory fallback.
+     * @param email Recipient email.
+     * @param code 6-digit confirmation code.
+     */
+    private void saveResetCode(String email, String code) {
+        if (stringRedisTemplate != null) {
+            try {
+                stringRedisTemplate.opsForValue().set("password_reset_code:" + email, code, Duration.ofMinutes(10));
+            } catch (Exception e) {
+                log.warn("Failed to persist password reset code in Redis: {}", e.getMessage());
+            }
+        }
+        fallbackResetCodes.put(email, new VerificationEntry(code, LocalDateTime.now().plusMinutes(10)));
+    }
+
+    /**
+     * @brief Verifies and consumes a 6-digit password reset code.
+     * @param email Recipient email.
+     * @param code 6-digit code presented by user.
+     * @return true if valid and consumed, false otherwise.
+     */
+    private boolean verifyAndConsumeResetCode(String email, String code) {
+        String cleanCode = code.trim();
+
+        if (stringRedisTemplate != null) {
+            try {
+                String key = "password_reset_code:" + email;
+                String stored = stringRedisTemplate.opsForValue().get(key);
+                if (cleanCode.equals(stored)) {
+                    stringRedisTemplate.delete(key);
+                    fallbackResetCodes.remove(email);
+                    return true;
+                }
+            } catch (Exception e) {
+                log.warn("Failed to read password reset code from Redis: {}", e.getMessage());
+            }
+        }
+
+        VerificationEntry entry = fallbackResetCodes.get(email);
+        if (entry != null && LocalDateTime.now().isBefore(entry.expiresAt()) && cleanCode.equals(entry.code())) {
+            fallbackResetCodes.remove(email);
+            return true;
+        }
+
+        return false;
     }
 
     /**

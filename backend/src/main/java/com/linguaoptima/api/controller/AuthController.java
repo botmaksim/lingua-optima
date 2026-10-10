@@ -9,6 +9,7 @@ import com.linguaoptima.api.dto.request.ForgotPasswordRequest;
 import com.linguaoptima.api.dto.request.GoogleAuthRequest;
 import com.linguaoptima.api.dto.request.LoginRequest;
 import com.linguaoptima.api.dto.request.RegisterRequest;
+import com.linguaoptima.api.dto.request.ResetPasswordRequest;
 import com.linguaoptima.api.dto.request.SendVerificationCodeRequest;
 import com.linguaoptima.api.dto.response.TokenResponse;
 import com.linguaoptima.api.service.AuthService;
@@ -174,6 +175,21 @@ public class AuthController {
     public ResponseEntity<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * @brief Completes password reset flow using 6-digit verification code and new password.
+     *
+     * @param request Payload containing email, verification code, and new password.
+     * @return HTTP 200 with success confirmation.
+     */
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(Map.of(
+            "message", "Password has been successfully reset. You can now sign in with your new password.",
+            "email", request.getEmail().toLowerCase().trim()
+        ));
     }
 
     /**

@@ -10,6 +10,8 @@ import { CefrBadge } from '../components/common/CefrBadge';
 import { Toast } from '../components/common/Toast';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { LoginPage } from '../components/auth/LoginPage';
+import { ForgotPassword } from '../components/auth/ForgotPassword';
+import { authApi } from '../api/authApi';
 import { TranslatorDropdown } from '../components/common/TranslatorDropdown';
 import { AIReview } from '../components/student/AIReview';
 import { submissionApi } from '../api/submissionApi';
@@ -812,6 +814,86 @@ describe('HelpCenter page', () => {
     expect(screen.queryByText(/From the Teacher Dashboard, open "Student Cohorts"/i)).not.toBeInTheDocument();
   });
 });
+
+describe('ForgotPassword component', () => {
+  it('requests recovery code and advances to verification step', async () => {
+    const forgotSpy = vi.spyOn(authApi, 'forgotPassword').mockResolvedValue(undefined);
+
+    render(
+      <MemoryRouter>
+        <ForgotPassword />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole('heading', { level: 2, name: /forgot password\?/i })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('name@example.com')).toBeInTheDocument();
+
+    const emailInput = screen.getByPlaceholderText('name@example.com');
+    fireEvent.change(emailInput, { target: { value: 'user@lingua.com' } });
+
+    const submitBtn = screen.getByRole('button', { name: /send recovery code/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(forgotSpy).toHaveBeenCalledWith('user@lingua.com');
+      expect(screen.getByRole('heading', { level: 2, name: /set new password/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByPlaceholderText('123456')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('At least 6 characters')).toBeInTheDocument();
+  });
+
+  it('validates password mismatch and successfully completes reset', async () => {
+    vi.spyOn(authApi, 'forgotPassword').mockResolvedValue(undefined);
+    const resetSpy = vi.spyOn(authApi, 'resetPassword').mockResolvedValue({
+      message: 'Password reset successfully',
+      email: 'user@lingua.com',
+    });
+
+    render(
+      <MemoryRouter>
+        <ForgotPassword />
+      </MemoryRouter>
+    );
+
+    // Step 1: submit email
+    fireEvent.change(screen.getByPlaceholderText('name@example.com'), { target: { value: 'user@lingua.com' } });
+    fireEvent.click(screen.getByRole('button', { name: /send recovery code/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 2, name: /set new password/i })).toBeInTheDocument();
+    });
+
+    const codeInput = screen.getByPlaceholderText('123456');
+    const newPassInput = screen.getByPlaceholderText('At least 6 characters');
+    const confirmPassInput = screen.getByPlaceholderText('Repeat new password');
+    const resetBtn = screen.getByRole('button', { name: /reset password & continue/i });
+
+    // Enter code and mismatched password
+    fireEvent.change(codeInput, { target: { value: '123456' } });
+    fireEvent.change(newPassInput, { target: { value: 'secretPass1' } });
+    fireEvent.change(confirmPassInput, { target: { value: 'differentPass' } });
+    fireEvent.click(resetBtn);
+
+    expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument();
+    expect(resetSpy).not.toHaveBeenCalled();
+
+    // Fix password match and submit
+    fireEvent.change(confirmPassInput, { target: { value: 'secretPass1' } });
+    fireEvent.click(resetBtn);
+
+    await waitFor(() => {
+      expect(resetSpy).toHaveBeenCalledWith({
+        email: 'user@lingua.com',
+        code: '123456',
+        newPassword: 'secretPass1',
+      });
+      expect(screen.getByText(/password reset successful!/i)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /proceed to sign in/i })).toBeInTheDocument();
+    });
+  });
+});
+
 
 
 
