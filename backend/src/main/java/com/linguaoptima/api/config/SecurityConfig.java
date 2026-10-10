@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 /**
@@ -77,7 +78,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/submissions/my", "/api/submissions/me").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(actionAuditFilter, JwtAuthenticationFilter.class)
+            .addFilterBefore(actionAuditFilter, SecurityContextHolderFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
