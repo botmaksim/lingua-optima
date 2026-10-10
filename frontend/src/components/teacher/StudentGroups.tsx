@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Plus,
   Trash2,
@@ -20,6 +21,7 @@ import {
   ChevronRight,
   Filter,
   RotateCcw,
+  FileText,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { userApi } from '../../api/userApi';
@@ -531,14 +533,23 @@ export const StudentGroups: React.FC = () => {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleDeleteGroup}
-                  className="flex items-center space-x-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 p-2 rounded-xl hover:bg-rose-50 transition"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  <span>Delete Group</span>
-                </button>
+                <div className="flex items-center space-x-2">
+                  <Link
+                    to="/teacher/export"
+                    className="flex items-center space-x-1.5 text-xs font-semibold text-primary hover:text-primary-hover p-2 rounded-xl hover:bg-indigo-50 transition"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Export Report</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleDeleteGroup}
+                    className="flex items-center space-x-1.5 text-xs font-semibold text-rose-600 hover:text-rose-700 p-2 rounded-xl hover:bg-rose-50 transition"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    <span>Delete Group</span>
+                  </button>
+                </div>
               </div>
 
               {/* Add Student by Email */}

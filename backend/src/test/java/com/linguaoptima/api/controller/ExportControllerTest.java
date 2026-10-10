@@ -79,4 +79,23 @@ class ExportControllerTest {
         ResponseEntity<byte[]> csvRes = exportController.exportStudentReport(studentId, "csv", teacher);
         assertEquals(HttpStatus.OK, csvRes.getStatusCode());
     }
+
+    /**
+     * @brief Verifies unit test scenario: get group report preview.
+     */
+    @Test
+    void testGetGroupReportPreview() {
+        UUID groupId = UUID.randomUUID();
+        com.linguaoptima.api.dto.response.GroupReportResponse preview =
+            com.linguaoptima.api.dto.response.GroupReportResponse.builder()
+                .groupId(groupId)
+                .groupName("Test Group")
+                .build();
+        when(exportService.getGroupReportData(groupId, teacher)).thenReturn(preview);
+
+        ResponseEntity<com.linguaoptima.api.dto.response.GroupReportResponse> res =
+            exportController.getGroupReportPreview(groupId, teacher);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals("Test Group", res.getBody().getGroupName());
+    }
 }

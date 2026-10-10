@@ -77,4 +77,19 @@ public class ExportController {
             .contentType(mediaType)
             .body(data);
     }
+
+    /**
+     * @brief Retrieves detailed group performance report data for preview.
+     *
+     * @param groupId Unique identifier of the group.
+     * @param teacher Authenticated teacher requesting the report preview.
+     * @return HTTP 200 with GroupReportResponse.
+     */
+    @GetMapping({"/report/group/{id}/preview", "/group/{id}/preview"})
+    public ResponseEntity<com.linguaoptima.api.dto.response.GroupReportResponse> getGroupReportPreview(
+        @PathVariable("id") UUID groupId,
+        @AuthenticationPrincipal User teacher
+    ) {
+        return ResponseEntity.ok(exportService.getGroupReportData(groupId, teacher));
+    }
 }

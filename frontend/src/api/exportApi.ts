@@ -1,4 +1,5 @@
 import { axiosInstance } from './axiosInstance';
+import { GroupReportResponse } from '../types/export';
 
 /**
  * @file exportApi.ts
@@ -31,6 +32,16 @@ export const exportApi = {
       params: { format },
       responseType: 'blob',
     });
+    return res.data;
+  },
+
+  /**
+   * @brief Fetches structured cohort report preview data including student roster and homework breakdowns.
+   * @param groupId Group identifier.
+   * @return Promise resolving to GroupReportResponse.
+   */
+  getGroupReportPreview: async (groupId: string): Promise<GroupReportResponse> => {
+    const res = await axiosInstance.get(`/export/group/${groupId}/preview`);
     return res.data;
   },
 };

@@ -578,6 +578,142 @@ describe('StudentGroups component', () => {
   });
 });
 
+describe('ExportReports component', () => {
+  it('renders cohort homework breakdown and roster, and triggers report download', async () => {
+    const { groupApi } = await import('../api/groupApi');
+    const { exportApi } = await import('../api/exportApi');
+    const { ExportReports } = await import('../components/teacher/ExportReports');
+
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([
+      {
+        id: 'grp-test-1',
+        name: 'Advanced Grammar B2',
+        studentCount: 2,
+        createdAt: '2026-10-01T00:00:00Z',
+      },
+    ] as any);
+
+    const mockReportData = {
+      groupId: 'grp-test-1',
+      groupName: 'Advanced Grammar B2',
+      generatedAt: '2026-10-10T12:00:00Z',
+      activeStudentCount: 2,
+      assignedHomeworkCount: 1,
+      totalSubmissionsCount: 1,
+      groupAverageScore: 85.0,
+      studentSummaries: [
+        {
+          studentId: 's-1',
+          studentName: 'Alice Student',
+          email: 'alice@example.com',
+          cefrLevel: 'B2',
+          totalTasks: 1,
+          completedTasks: 1,
+          averageScore: 85.0,
+          submissionCount: 1,
+          joinedDate: '2026-10-01',
+        },
+        {
+          studentId: 's-2',
+          studentName: 'Bob Student',
+          email: 'bob@example.com',
+          cefrLevel: 'B1',
+          totalTasks: 1,
+          completedTasks: 0,
+          averageScore: null,
+          submissionCount: 0,
+          joinedDate: '2026-10-02',
+        },
+      ],
+      homeworkReports: [
+        {
+          taskId: 'task-1',
+          grammarTopic: 'Past Perfect vs Simple Past',
+          taskType: 'MCQ',
+          cefrLevel: 'B2',
+          totalPoints: 100,
+          dueDate: '2026-10-15T18:00:00Z',
+          assignedStudentCount: 2,
+          submittedCount: 1,
+          studentResults: [
+            {
+              studentId: 's-1',
+              studentName: 'Alice Student',
+              email: 'alice@example.com',
+              status: 'GRADED',
+              score: 85.0,
+              percentage: 85.0,
+              totalPoints: 100,
+              attemptsUsed: 1,
+              maxAttempts: 1,
+              submittedAt: '2026-10-08T10:00:00Z',
+              teacherComment: 'Good command of tenses',
+              aiFeedback: 'Accurate auxiliary verb usage',
+            },
+            {
+              studentId: 's-2',
+              studentName: 'Bob Student',
+              email: 'bob@example.com',
+              status: 'PENDING',
+              score: null,
+              percentage: null,
+              totalPoints: 100,
+              attemptsUsed: 0,
+              maxAttempts: 1,
+              submittedAt: null,
+              teacherComment: '—',
+              aiFeedback: '—',
+            },
+          ],
+        },
+      ],
+    };
+
+    vi.spyOn(exportApi, 'getGroupReportPreview').mockResolvedValue(mockReportData as any);
+    const downloadSpy = vi.spyOn(exportApi, 'downloadGroupReport').mockResolvedValue(new Blob(['pdf content']));
+
+    // Mock URL.createObjectURL, URL.revokeObjectURL, and HTMLAnchorElement.prototype.click
+    const originalCreateObjectURL = window.URL.createObjectURL;
+    const originalRevokeObjectURL = window.URL.revokeObjectURL;
+    window.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+    window.URL.revokeObjectURL = vi.fn();
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    render(
+      <MemoryRouter>
+        <ExportReports />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Export Academic Reports')).toBeInTheDocument();
+
+    // Verify preview content rendered
+    expect(await screen.findByText('Past Perfect vs Simple Past')).toBeInTheDocument();
+    expect(screen.getByText('Alice Student')).toBeInTheDocument();
+    expect(screen.getByText('Good command of tenses')).toBeInTheDocument();
+    expect(screen.getByText('Pending')).toBeInTheDocument();
+
+    // Switch to Student Roster tab
+    const rosterTabBtn = screen.getByRole('button', { name: /student roster overview/i });
+    fireEvent.click(rosterTabBtn);
+    expect(await screen.findByText('alice@example.com')).toBeInTheDocument();
+    expect(screen.getByText('bob@example.com')).toBeInTheDocument();
+
+    // Trigger download
+    const downloadBtn = screen.getByRole('button', { name: /download report \(pdf\)/i });
+    fireEvent.click(downloadBtn);
+
+    await waitFor(() => {
+      expect(downloadSpy).toHaveBeenCalledWith('grp-test-1', 'pdf');
+    });
+
+    clickSpy.mockRestore();
+    window.URL.createObjectURL = originalCreateObjectURL;
+    window.URL.revokeObjectURL = originalRevokeObjectURL;
+  });
+});
+
+
 
 
 
