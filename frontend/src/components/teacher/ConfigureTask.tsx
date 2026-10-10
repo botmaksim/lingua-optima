@@ -22,6 +22,7 @@ import {
   Plus,
   RefreshCw,
   Check,
+  AlertTriangle,
   Key,
   ArrowRightLeft,
   Smartphone,
@@ -675,8 +676,8 @@ export const ConfigureTask: React.FC = () => {
       setConcurrentConflict(false);
       addToast({
         type: 'success',
-        title: 'Управление перенесено',
-        message: 'Сессия генерации успешно перенесена на это устройство.',
+        title: 'Session Switched',
+        message: 'Generation control was successfully transferred to this device.',
       });
       if (pendingAction === 'preview') {
         handlePreview();
@@ -688,8 +689,8 @@ export const ConfigureTask: React.FC = () => {
     } catch (e: any) {
       addToast({
         type: 'error',
-        title: 'Ошибка переноса',
-        message: e.response?.data?.message || 'Не удалось перенести управление генерацией.',
+        title: 'Transfer Failed',
+        message: e.response?.data?.message || 'Could not transfer generation control.',
       });
     } finally {
       setIsTakingOver(false);
@@ -922,11 +923,19 @@ export const ConfigureTask: React.FC = () => {
                     Curriculum Rules & Vocabulary Context (Optional)
                   </h3>
                   <p className="text-[11px] text-slate-500">
-                    {ecoMode
-                      ? '🌱 Eco Mode is active: curriculum context will be skipped during generation'
-                      : uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary
-                      ? '✓ Custom rules or vocabulary active'
-                      : 'Attach lesson rules, target vocabulary, or upload reference files (.txt, .md, .json)'}
+                    {ecoMode ? (
+                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                        <Leaf className="w-3.5 h-3.5" />
+                        <span>Eco Mode is active: curriculum context will be skipped during generation</span>
+                      </span>
+                    ) : uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary ? (
+                      <span className="flex items-center gap-1 text-indigo-600 font-semibold">
+                        <Check className="w-3.5 h-3.5" />
+                        <span>Custom rules or vocabulary active</span>
+                      </span>
+                    ) : (
+                      <span>Attach lesson rules, target vocabulary, or upload reference files (.txt, .md, .json)</span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -948,7 +957,7 @@ export const ConfigureTask: React.FC = () => {
                     className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-50"
                   >
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>{isLoadingRef ? 'Loading...' : '💡 Auto-Fill Canonical Reference'}</span>
+                    <span>{isLoadingRef ? 'Loading...' : 'Auto-Fill Canonical Reference'}</span>
                   </button>
                 </div>
 
@@ -1356,7 +1365,11 @@ export const ConfigureTask: React.FC = () => {
                           >
                             <span>Questions Sum:</span>
                             <span className="font-mono">{questionsSum} / {currentTotal} pts</span>
-                            <span>{isMatching ? '✓' : '⚠️'}</span>
+                            {isMatching ? (
+                              <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            ) : (
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                            )}
                           </span>
 
                           <button
@@ -1638,11 +1651,11 @@ export const ConfigureTask: React.FC = () => {
             </div>
             <div className="text-center space-y-1.5">
               <h3 className="text-base font-bold text-slate-900">
-                Генерация на другом устройстве
+                Active Generation on Another Device
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                На другом вашем устройстве прямо сейчас выполняется генерация задания. 
-                Вы можете перенести управление генерацией на это устройство и сразу продолжить.
+                An AI generation session is currently active on another device associated with your account.
+                You can transfer control to this device to proceed immediately.
               </p>
             </div>
             <div className="pt-2 flex flex-col sm:flex-row gap-2">
@@ -1653,14 +1666,14 @@ export const ConfigureTask: React.FC = () => {
                 className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50"
               >
                 <ArrowRightLeft className="w-4 h-4" />
-                <span>{isTakingOver ? 'Перенос...' : 'Переключить на это устройство'}</span>
+                <span>{isTakingOver ? 'Switching...' : 'Switch to This Device'}</span>
               </button>
               <button
                 type="button"
                 onClick={() => setConcurrentConflict(false)}
                 className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
               >
-                Отмена
+                Cancel
               </button>
             </div>
           </div>

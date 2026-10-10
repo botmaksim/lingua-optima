@@ -73,6 +73,11 @@ axiosInstance.interceptors.request.use(
         config.headers.Authorization = `Bearer ${inMemoryAccessToken}`;
       }
       config.headers['X-Device-Id'] = getDeviceId();
+      if (!config.headers['X-Request-Id']) {
+        config.headers['X-Request-Id'] = typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : 'req-' + Math.random().toString(36).substring(2, 12);
+      }
     }
     return config;
   },

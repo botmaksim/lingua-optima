@@ -284,21 +284,21 @@ export const buildProviderOptionGroups = (configuredProviders: string[]) => {
 
   const groups = [
     {
-      label: '⚡ Included Platform Models (Free Cloud)',
+      label: 'Included Platform Models (Free Cloud)',
       options: systemOptions,
     },
   ];
 
   if (byokConfiguredOptions.length > 0) {
     groups.push({
-      label: '🔑 Your Active BYOK Providers',
+      label: 'Your Active BYOK Providers',
       options: byokConfiguredOptions,
     });
   }
 
   if (byokRequiredOptions.length > 0) {
     groups.push({
-      label: '🔒 Bring Your Own Key (Setup in Profile)',
+      label: 'Bring Your Own Key (Setup in Profile)',
       options: byokRequiredOptions,
     });
   }

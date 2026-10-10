@@ -30,6 +30,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    /** @brief Field representing action audit filter in SecurityConfig. */
+    private final ActionAuditFilter actionAuditFilter;
     /** @brief Field representing jwt authentication filter in SecurityConfig. */
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     /** @brief Field representing cors configuration source in SecurityConfig. */
@@ -75,6 +77,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/submissions/my", "/api/submissions/me").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
                 .anyRequest().authenticated()
             )
+            .addFilterBefore(actionAuditFilter, JwtAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

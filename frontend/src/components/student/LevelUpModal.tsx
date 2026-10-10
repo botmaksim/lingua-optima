@@ -92,8 +92,9 @@ export const LevelUpModal: React.FC = () => {
           Milestone Unlocked
         </span>
 
-        <h3 id="levelup-modal-title" className="text-2xl font-black text-slate-900 tracking-tight mb-2">
-          Congratulations! 🎉
+        <h3 id="levelup-modal-title" className="text-2xl font-black text-slate-900 tracking-tight mb-2 flex items-center justify-center gap-2">
+          <span>Congratulations!</span>
+          <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
         </h3>
         <p className="text-sm text-slate-600 mb-6 leading-relaxed">
           You have achieved an average mastery above 85% across all topics in level{' '}

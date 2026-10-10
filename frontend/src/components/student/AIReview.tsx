@@ -430,8 +430,9 @@ export const AIReview: React.FC = () => {
                 </div>
 
                 {corr.explanation && (
-                  <p className="text-xs text-slate-600 italic px-1">
-                    💡 {corr.explanation}
+                  <p className="text-xs text-slate-600 italic px-1 flex items-start gap-1.5">
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <span>{corr.explanation}</span>
                   </p>
                 )}
               </div>

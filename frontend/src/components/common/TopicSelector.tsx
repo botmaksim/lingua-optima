@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Edit3, List, BookOpen } from 'lucide-react';
+import { Edit3, List, BookOpen, Lightbulb } from 'lucide-react';
 import { CustomSelect, SelectOptionGroup } from './CustomSelect';
 import { CefrLevel } from '../../types/user';
 import { TopicsCatalogResponse } from '../../types/task';
@@ -225,7 +225,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
     ...(currentLevelMixedTopics.length > 0
       ? [
           {
-            label: `🔀 Mixed Challenges (CEFR ${cefrLevel})`,
+            label: `Mixed Challenges (CEFR ${cefrLevel})`,
             options: currentLevelMixedTopics.map((t) => ({
               value: t,
               label: t,
@@ -237,7 +237,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
     ...(crossLevelTopics.length > 0
       ? [
           {
-            label: '🌐 Cross-Level & Thematic Challenges',
+            label: 'Cross-Level & Thematic Challenges',
             options: crossLevelTopics.map((t) => ({
               value: t,
               label: t,
@@ -251,7 +251,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
       options: [
         {
           value: CUSTOM_TOPIC_TOKEN,
-          label: '✏️ Enter Custom Topic / Rule...',
+          label: 'Enter Custom Topic / Rule...',
           badge: 'Custom',
         },
       ],
@@ -271,7 +271,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
       options: [
         {
           value: CUSTOM_DOMAIN_TOKEN,
-          label: '✏️ Custom Vocabulary Domain...',
+          label: 'Custom Vocabulary Domain...',
           badge: 'Custom',
         },
       ],
@@ -301,7 +301,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
               ) : (
                 <>
                   <Edit3 className="w-3.5 h-3.5" />
-                  <span>✏️ Enter Custom Topic</span>
+                  <span>Enter Custom Topic</span>
                 </>
               )}
             </button>
@@ -312,7 +312,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
               size={size}
               value={allKnownPresets.includes(topic) ? topic : currentLevelTopics[0] || ''}
               onChange={handleSelectTopic}
-              placeholder="💡 Pick from Syllabus Presets & Mixed Challenges..."
+              placeholder="Pick from Syllabus Presets & Mixed Challenges..."
               ariaLabel={topicLabel}
               groups={topicGroups}
             />
@@ -326,8 +326,9 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
                 className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-medium"
                 autoFocus
               />
-              <p className="text-[11px] text-slate-500">
-                💡 Tip: Enter any custom topic, specialized grammar structure, or thematic scenario.
+              <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                <Lightbulb className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                <span>Tip: Enter any custom topic, specialized grammar structure, or thematic scenario.</span>
               </p>
             </div>
           )}
@@ -356,7 +357,14 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
               }}
               className="text-xs font-semibold text-primary hover:text-primary-hover transition flex items-center space-x-1"
             >
-              <span>{isCustomDomain ? '← Standard Domains' : '✏️ Custom Domain'}</span>
+              {isCustomDomain ? (
+                <span>← Standard Domains</span>
+              ) : (
+                <>
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Custom Domain</span>
+                </>
+              )}
             </button>
           </div>
 
