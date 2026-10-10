@@ -61,7 +61,7 @@ public class QuestionResponse {
             }
         }
         return QuestionResponse.builder()
-            .id(question.getId())
+            .id(question.getId() != null ? question.getId() : UUID.randomUUID())
             .questionOrder(question.getQuestionOrder())
             .questionText(question.getQuestionText())
             .correctAnswer(question.getCorrectAnswer())
@@ -87,7 +87,7 @@ public class QuestionResponse {
             }
         }
         return QuestionResponse.builder()
-            .id(question.getId())
+            .id(question.getId() != null ? question.getId() : UUID.randomUUID())
             .questionOrder(question.getQuestionOrder())
             .questionText(question.getQuestionText())
             .correctAnswer(null)

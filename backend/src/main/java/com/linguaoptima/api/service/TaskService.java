@@ -566,7 +566,6 @@ public class TaskService {
                     int qPoints = basePoints + (currentOrder == 1 ? remainder : 0);
 
                     TaskQuestion tq = TaskQuestion.builder()
-                        .id(UUID.randomUUID())
                         .task(task)
                         .questionOrder(currentOrder)
                         .questionText(qNode.path("text").asText("Question text"))

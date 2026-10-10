@@ -778,7 +778,7 @@ export const ConfigureTask: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <Key className="w-4 h-4 text-amber-600 flex-shrink-0" />
                   <span>
-                    <strong>{AI_PROVIDER_CATALOG.find((p) => p.id === provider)?.name}</strong> requires your own API key. You can add one in Profile &rarr; AI API Keys, or deploy using Gemini / Groq for free cloud generation.
+                    <strong>{AI_PROVIDER_CATALOG.find((p) => p.id === provider)?.name}</strong> requires your own API key. You can add one in Profile &rarr; AI API Keys, or deploy using Gemini for free cloud generation.
                   </span>
                 </div>
                 <button

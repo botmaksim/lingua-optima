@@ -6,7 +6,7 @@
 /**
  * @brief Versioned cache storage key for static shell assets.
  */
-const CACHE_NAME = 'lingua-optima-v1';
+const CACHE_NAME = 'lingua-optima-v2';
 
 /**
  * @brief Core application shell assets pre-cached during Service Worker installation.
@@ -48,6 +48,14 @@ self.addEventListener('activate', (event) => {
  */
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Never intercept SSE streaming connections
+  if (
+    url.pathname.includes('/notifications/subscribe') ||
+    url.pathname.includes('/notifications/stream')
+  ) {
+    return;
+  }
 
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(

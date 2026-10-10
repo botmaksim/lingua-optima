@@ -244,7 +244,7 @@ export const useProviderModels = (provider: AIProviderType) => {
  * @return True if platform default (GEMINI or GROQ), false if BYOK.
  */
 export const isSystemFreeProvider = (provider: AIProviderType): boolean => {
-  return provider === 'GEMINI' || provider === 'GROQ';
+  return provider === 'GEMINI';
 };
 
 /**
