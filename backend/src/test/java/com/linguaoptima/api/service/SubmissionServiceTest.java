@@ -852,13 +852,25 @@ class SubmissionServiceTest {
      */
     @Test
     void testExtractRubricItemsAndNullScoreFallback() {
-        Map<String, Object> rubricWithItems = Map.of(
-            "score", 70.0,
-            "items", List.of(
-                Map.of("questionNumber", 1, "sentence", "Sentence 1", "studentAnswer", "a", "correctAnswer", "a", "isCorrect", true, "grammarRule", "Rule 1"),
-                Map.of("questionNumber", 2, "sentence", "Sentence 2", "studentAnswer", "b", "correctAnswer", "c", "isCorrect", false, "grammarRule", "Rule 2")
-            )
-        );
+        java.util.Map<String, Object> item3 = new java.util.HashMap<>();
+        item3.put("sentence", "Sentence 3");
+        item3.put("explanation", "Good explanation");
+
+        java.util.Map<String, Object> corr = new java.util.HashMap<>();
+        corr.put("original", "bad original");
+        corr.put("corrected", "good correction");
+        corr.put("explanation", "explanation text");
+        corr.put("grammarRule", "rule text");
+
+        java.util.Map<String, Object> rubricWithItems = new java.util.HashMap<>();
+        rubricWithItems.put("score", 70.0);
+        rubricWithItems.put("weaknesses", java.util.Arrays.asList("weak1", "", null));
+        rubricWithItems.put("strengths", java.util.Arrays.asList("strong1", " ", null));
+        rubricWithItems.put("corrections", List.of(corr));
+        rubricWithItems.put("items", List.of(
+            Map.of("questionNumber", 1, "sentence", "Sentence 1", "studentAnswer", "a", "correctAnswer", "a", "isCorrect", true, "grammarRule", "Rule 1"),
+            item3
+        ));
 
         SubmissionResultResponse res = SubmissionResultResponse.builder().build();
         Submission sub = Submission.builder().id(UUID.randomUUID()).build();

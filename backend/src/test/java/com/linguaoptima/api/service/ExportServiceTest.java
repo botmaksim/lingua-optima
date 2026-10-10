@@ -108,6 +108,27 @@ class ExportServiceTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: generate group report with null teacher and empty assignments.
+     */
+    @Test
+    void testGenerateGroupReportWithNullTeacherAndEmptyAssignments() {
+        Group nullTeacherGroup = Group.builder().id(UUID.randomUUID()).name("No Teacher Group").teacher(null).build();
+        User student2 = User.builder().id(UUID.randomUUID()).fullName("Student Bob").email("bob@lingua.com").cefrLevel(CefrLevel.A2).build();
+        GroupStudent gs = GroupStudent.builder().group(nullTeacherGroup).student(student2).isActive(true).build();
+
+        when(groupRepository.findById(nullTeacherGroup.getId())).thenReturn(Optional.of(nullTeacherGroup));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(nullTeacherGroup.getId())).thenReturn(List.of(gs));
+        when(submissionRepository.findActiveGroupSubmissions(nullTeacherGroup.getId())).thenReturn(List.of());
+        when(taskAssignmentRepository.findByStudentIdOrderByCreatedAtDesc(student2.getId())).thenReturn(List.of());
+
+        User admin = User.builder().id(UUID.randomUUID()).role(Role.ADMIN).build();
+        byte[] csv = exportService.generateGroupReport(nullTeacherGroup.getId(), "csv", admin);
+        assertNotNull(csv);
+        byte[] pdf = exportService.generateGroupReport(nullTeacherGroup.getId(), "pdf", admin);
+        assertNotNull(pdf);
+    }
+
+    /**
      * @brief Verifies unit test scenario: generate group report forbidden.
      */
     @Test

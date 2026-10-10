@@ -19,18 +19,27 @@ import {
   Trash2,
   Sparkles,
   Leaf,
+  Plus,
+  RefreshCw,
+  Check,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
 import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
 import { Group } from '../../types/group';
-import { Task, TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
+import {
+  Task,
+  TaskType,
+  DifficultyLevel,
+  TopicsCatalogResponse,
+  TaskQuestion,
+  CreateCustomTaskRequest,
+} from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 import { CustomSelect } from '../common/CustomSelect';
 import { TopicSelector } from '../common/TopicSelector';
 import { useNotificationStore } from '../../store/notificationStore';
-import { sanitizeTaskContent } from '../../utils/textSanitizer';
 import {
   AI_PROVIDER_CATALOG,
   AIProviderType,
@@ -256,16 +265,157 @@ export const ConfigureTask: React.FC = () => {
   };
 
   /**
+   * @brief Updates the instruction text of the previewed task.
+   */
+  const handleUpdateInstruction = (content: string) => {
+    if (!previewTask) return;
+    setPreviewTask({ ...previewTask, content });
+  };
+
+  /**
+   * @brief Updates fields of a specific question in the previewed task.
+   */
+  const handleUpdateQuestion = (index: number, updatedFields: Partial<TaskQuestion>) => {
+    if (!previewTask || !previewTask.questions) return;
+    const updated = [...previewTask.questions];
+    updated[index] = { ...updated[index], ...updatedFields };
+    setPreviewTask({ ...previewTask, questions: updated });
+  };
+
+  /**
+   * @brief Updates option choice text at a given index and keeps correct answer synchronized.
+   */
+  const handleOptionChange = (qIndex: number, optIndex: number, newOptionText: string) => {
+    if (!previewTask || !previewTask.questions) return;
+    const q = previewTask.questions[qIndex];
+    const prevOptions = q.options || [];
+    const oldOptionText = prevOptions[optIndex];
+    const updatedOptions = [...prevOptions];
+    updatedOptions[optIndex] = newOptionText;
+
+    const updatedCorrectAnswer = q.correctAnswer === oldOptionText ? newOptionText : q.correctAnswer;
+    handleUpdateQuestion(qIndex, {
+      options: updatedOptions,
+      correctAnswer: updatedCorrectAnswer,
+    });
+  };
+
+  /**
+   * @brief Designates which option or string is the correct answer for a question.
+   */
+  const handleSetCorrectAnswer = (qIndex: number, answerText: string) => {
+    handleUpdateQuestion(qIndex, { correctAnswer: answerText });
+  };
+
+  /**
+   * @brief Adds a new choice option to an MCQ question.
+   */
+  const handleAddOption = (qIndex: number) => {
+    if (!previewTask || !previewTask.questions) return;
+    const q = previewTask.questions[qIndex];
+    const currentOptions = q.options || [];
+    const newOpt = `Option ${String.fromCharCode(65 + currentOptions.length)}`;
+    handleUpdateQuestion(qIndex, {
+      options: [...currentOptions, newOpt],
+    });
+  };
+
+  /**
+   * @brief Removes an option from an MCQ question.
+   */
+  const handleRemoveOption = (qIndex: number, optIndex: number) => {
+    if (!previewTask || !previewTask.questions) return;
+    const q = previewTask.questions[qIndex];
+    const currentOptions = q.options || [];
+    if (currentOptions.length <= 2) return;
+    const removedText = currentOptions[optIndex];
+    const updatedOptions = currentOptions.filter((_, idx) => idx !== optIndex);
+    const updatedCorrectAnswer =
+      q.correctAnswer === removedText ? updatedOptions[0] || '' : q.correctAnswer;
+    handleUpdateQuestion(qIndex, {
+      options: updatedOptions,
+      correctAnswer: updatedCorrectAnswer,
+    });
+  };
+
+  /**
+   * @brief Adds a new blank question to the task preview.
+   */
+  const handleAddQuestion = () => {
+    if (!previewTask) return;
+    const currentQuestions = previewTask.questions || [];
+    const newQ: TaskQuestion = {
+      id: `custom-${Date.now()}`,
+      questionOrder: currentQuestions.length + 1,
+      questionText: '',
+      correctAnswer: previewTask.type === 'MCQ' ? 'Option A' : '',
+      options: previewTask.type === 'MCQ' ? ['Option A', 'Option B', 'Option C', 'Option D'] : [],
+      difficulty: 0.5,
+      grammarRule: previewTask.grammarTopic || '',
+    };
+    setPreviewTask({
+      ...previewTask,
+      questions: [...currentQuestions, newQ],
+    });
+  };
+
+  /**
+   * @brief Deletes a question from the preview and re-indexes remaining questions.
+   */
+  const handleDeleteQuestion = (qIndex: number) => {
+    if (!previewTask || !previewTask.questions) return;
+    const updatedQuestions = previewTask.questions
+      .filter((_, idx) => idx !== qIndex)
+      .map((q, idx) => ({ ...q, questionOrder: idx + 1 }));
+    setPreviewTask({
+      ...previewTask,
+      questions: updatedQuestions,
+    });
+  };
+
+  /**
    * @brief Event handler executing save template.
    */
   const handleSaveTemplate = async () => {
     setIsLoading(true);
     setStatusMessage(null);
     try {
-      await taskApi.saveTemplate(buildTaskParams());
+      if (previewTask && previewTask.questions && previewTask.questions.length > 0) {
+        const customReq: CreateCustomTaskRequest = {
+          cefrLevel: previewTask.cefrLevel,
+          grammarTopic: previewTask.grammarTopic,
+          domain: previewTask.domain,
+          taskType: previewTask.type,
+          difficulty: previewTask.difficulty,
+          content: previewTask.content,
+          questions: previewTask.questions.map((q, idx) => ({
+            questionOrder: idx + 1,
+            questionText: q.questionText,
+            correctAnswer: q.correctAnswer,
+            options: q.options || [],
+            difficulty: q.difficulty,
+            grammarRule: q.grammarRule,
+          })),
+          isTemplate: true,
+        };
+        await taskApi.createCustomTask(customReq);
+      } else {
+        await taskApi.saveTemplate(buildTaskParams());
+      }
+      addToast({
+        type: 'success',
+        title: 'Template Saved',
+        message: 'Exercise saved as a reusable curriculum template!',
+      });
       setStatusMessage('Template saved to your curriculum catalog!');
     } catch (err: any) {
-      setStatusMessage(err.response?.data?.message || 'Failed to save template.');
+      const errMsg = err.response?.data?.message || 'Failed to save template.';
+      addToast({
+        type: 'error',
+        title: 'Save Template Failed',
+        message: errMsg,
+      });
+      setStatusMessage(errMsg);
     } finally {
       setIsLoading(false);
     }
@@ -289,8 +439,31 @@ export const ConfigureTask: React.FC = () => {
     setStatusMessage(null);
 
     try {
-      const task = await taskApi.generateTask(buildTaskParams());
-      await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined, maxAttempts);
+      if (previewTask && previewTask.questions && previewTask.questions.length > 0) {
+        const customReq: CreateCustomTaskRequest = {
+          cefrLevel: previewTask.cefrLevel,
+          grammarTopic: previewTask.grammarTopic,
+          domain: previewTask.domain,
+          taskType: previewTask.type,
+          difficulty: previewTask.difficulty,
+          content: previewTask.content,
+          questions: previewTask.questions.map((q, idx) => ({
+            questionOrder: idx + 1,
+            questionText: q.questionText,
+            correctAnswer: q.correctAnswer,
+            options: q.options || [],
+            difficulty: q.difficulty,
+            grammarRule: q.grammarRule,
+          })),
+          groupIds: selectedGroupIds,
+          dueDate: dueDate || undefined,
+          maxAttempts,
+        };
+        await taskApi.createCustomTask(customReq);
+      } else {
+        const task = await taskApi.generateTask(buildTaskParams());
+        await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined, maxAttempts);
+      }
 
       addToast({
         type: 'success',
@@ -788,24 +961,259 @@ export const ConfigureTask: React.FC = () => {
 
         {/* Live Preview Column */}
         <div className="space-y-4">
-          <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
-            Live Preview
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+              Live Preview & Customizer
+            </h2>
+            {previewTask && (
+              <button
+                type="button"
+                onClick={handlePreview}
+                disabled={isLoading}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                <span>Regenerate</span>
+              </button>
+            )}
+          </div>
 
           {previewTask ? (
-            <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
-              <div className="flex items-center space-x-2">
-                <CefrBadge level={previewTask.cefrLevel} size="sm" />
-                <span className="text-xs font-bold text-slate-700">{previewTask.type}</span>
+            <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-6">
+              {/* Header Badges */}
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
+                <div className="flex items-center space-x-2">
+                  <CefrBadge level={previewTask.cefrLevel} size="sm" />
+                  <span className="text-xs font-bold text-slate-800 px-2.5 py-1 rounded-lg bg-slate-100">
+                    {previewTask.type}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {previewTask.grammarTopic}
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-primary bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
+                  {previewTask.questions?.length || 0} Questions
+                </span>
               </div>
-              <h3 className="text-sm font-bold text-slate-900">{previewTask.grammarTopic}</h3>
-              <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl leading-relaxed whitespace-pre-wrap">
-                {sanitizeTaskContent(previewTask.content, 'AI-generated task assignment instructions.')}
-              </p>
+
+              {/* Informational Hint */}
+              <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100/80 text-xs text-indigo-900 leading-relaxed flex items-start space-x-2">
+                <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <p>
+                  <span className="font-bold">Interactive Editor:</span> You can edit instructions, question prompts, option choices, and switch correct answers before deploying.
+                </p>
+              </div>
+
+              {/* Editable Instructions */}
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                  Exercise Instructions / Reading Passage
+                </label>
+                <textarea
+                  rows={3}
+                  value={previewTask.content}
+                  onChange={(e) => handleUpdateInstruction(e.target.value)}
+                  placeholder="Enter exercise instructions or reading context here..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition leading-relaxed"
+                />
+              </div>
+
+              {/* Questions Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Questions ({previewTask.questions?.length || 0})
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={handleAddQuestion}
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Question</span>
+                  </button>
+                </div>
+
+                {(!previewTask.questions || previewTask.questions.length === 0) ? (
+                  <div className="p-6 text-center rounded-2xl border border-dashed border-slate-200 text-xs text-slate-400">
+                    No questions in this task. Click "+ Add Question" to create questions manually.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {previewTask.questions.map((q, qIdx) => (
+                      <div
+                        key={q.id || `q-${qIdx}`}
+                        className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3.5 transition hover:border-slate-300"
+                      >
+                        {/* Question Card Header */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs font-black flex items-center justify-center">
+                              {qIdx + 1}
+                            </span>
+                            <span className="text-xs font-bold text-slate-700">
+                              Question {qIdx + 1}
+                            </span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteQuestion(qIdx)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                            title="Delete question"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Question Text */}
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                            Prompt / Sentence
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={q.questionText}
+                            onChange={(e) =>
+                              handleUpdateQuestion(qIdx, { questionText: e.target.value })
+                            }
+                            placeholder="Enter the question sentence or prompt..."
+                            className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                          />
+                        </div>
+
+                        {/* MCQ Options vs Open Answers */}
+                        {previewTask.type === 'MCQ' ? (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                Answer Choices (Select the correct option)
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => handleAddOption(qIdx)}
+                                className="text-[11px] font-bold text-primary hover:underline inline-flex items-center space-x-1"
+                              >
+                                <Plus className="w-3 h-3" />
+                                <span>Add Choice</span>
+                              </button>
+                            </div>
+
+                            <div className="space-y-2">
+                              {(q.options || []).map((opt, optIdx) => {
+                                const isCorrect = q.correctAnswer === opt;
+                                return (
+                                  <div key={optIdx} className="flex items-center space-x-2">
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSetCorrectAnswer(qIdx, opt)}
+                                      className={`px-2.5 py-1.5 rounded-xl border text-[11px] font-bold shrink-0 flex items-center space-x-1.5 transition ${
+                                        isCorrect
+                                          ? 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm'
+                                          : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300'
+                                      }`}
+                                      title={isCorrect ? 'Correct answer' : 'Click to mark as correct'}
+                                    >
+                                      {isCorrect ? (
+                                        <>
+                                          <Check className="w-3 h-3 text-emerald-600 stroke-[3]" />
+                                          <span>Correct</span>
+                                        </>
+                                      ) : (
+                                        <span className="text-slate-400">Mark Correct</span>
+                                      )}
+                                    </button>
+
+                                    <input
+                                      type="text"
+                                      value={opt}
+                                      onChange={(e) =>
+                                        handleOptionChange(qIdx, optIdx, e.target.value)
+                                      }
+                                      className={`flex-1 px-3 py-1.5 rounded-xl border text-xs font-medium focus:outline-none transition ${
+                                        isCorrect
+                                          ? 'border-emerald-400 bg-emerald-50/20 text-emerald-900 font-semibold'
+                                          : 'border-slate-200 bg-white text-slate-800'
+                                      }`}
+                                    />
+
+                                    {(q.options || []).length > 2 && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveOption(qIdx, optIdx)}
+                                        className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg transition"
+                                        title="Remove choice"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                              Target Correct Answer Key
+                            </label>
+                            <input
+                              type="text"
+                              value={q.correctAnswer}
+                              onChange={(e) => handleSetCorrectAnswer(qIdx, e.target.value)}
+                              placeholder="e.g. have visited / had gone"
+                              className="w-full px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50/20 text-emerald-950 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
+                            />
+                          </div>
+                        )}
+
+                        {/* Grammar Rule / Hint */}
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                            Grammar Rule / Explanatory Hint
+                          </label>
+                          <input
+                            type="text"
+                            value={q.grammarRule || ''}
+                            onChange={(e) =>
+                              handleUpdateQuestion(qIdx, { grammarRule: e.target.value })
+                            }
+                            placeholder="e.g. Present Perfect: subject + have/has + V3"
+                            className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Quick Action Buttons in Preview Column */}
+              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={handleSaveTemplate}
+                  disabled={isLoading}
+                  className="flex items-center space-x-1.5 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
+                >
+                  <Bookmark className="w-4 h-4" />
+                  <span>Save Edited Template</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDeploy}
+                  disabled={isLoading}
+                  className="flex-1 flex items-center justify-center space-x-2 py-2.5 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Deploy Edited Task</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-8 text-center text-slate-400 border border-dashed border-slate-200 text-xs">
-              Click "Preview" to inspect the AI-generated questions before assigning to your students.
+              Click "Preview" to inspect and customize the AI-generated questions before assigning to your students.
             </div>
           )}
         </div>

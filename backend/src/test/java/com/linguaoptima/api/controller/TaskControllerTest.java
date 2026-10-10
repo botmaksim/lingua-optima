@@ -106,4 +106,18 @@ class TaskControllerTest {
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(catalog, res.getBody());
     }
+
+    /**
+     * @brief Verifies unit test scenario: create custom task.
+     */
+    @Test
+    void testCreateCustomTask() {
+        com.linguaoptima.api.dto.request.CreateCustomTaskRequest req =
+            com.linguaoptima.api.dto.request.CreateCustomTaskRequest.builder().build();
+        when(taskService.createCustomTask(req, user)).thenReturn(taskResponse);
+
+        ResponseEntity<com.linguaoptima.api.dto.response.TaskResponse> res = taskController.createCustomTask(req, user);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(taskResponse, res.getBody());
+    }
 }

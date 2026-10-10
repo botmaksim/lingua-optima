@@ -145,7 +145,7 @@ public class SessionService {
             .findFirst()
             .orElse(matchingQuestions.get(0));
 
-        return QuestionResponse.fromEntity(nextQ);
+        return QuestionResponse.fromEntityWithoutAnswer(nextQ);
     }
 
     /**

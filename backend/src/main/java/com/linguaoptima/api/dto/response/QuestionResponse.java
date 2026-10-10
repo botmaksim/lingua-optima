@@ -34,6 +34,8 @@ public class QuestionResponse {
     /** @brief Field representing options in QuestionResponse. */
     @Builder.Default
     private List<String> options = new ArrayList<>();
+    /** @brief Field representing correct answer in QuestionResponse. */
+    private String correctAnswer;
     /** @brief Field representing difficulty in QuestionResponse. */
     private int difficulty;
     /** @brief Field representing grammar rule in QuestionResponse. */
@@ -43,7 +45,7 @@ public class QuestionResponse {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**
-     * @brief Maps a domain TaskQuestion entity to a QuestionResponse DTO.
+     * @brief Maps a domain TaskQuestion entity to a QuestionResponse DTO including correct answer.
      * @param question Domain entity instance.
      * @return Mapped QuestionResponse DTO or null if input is null.
      */
@@ -60,6 +62,32 @@ public class QuestionResponse {
             .id(question.getId())
             .questionOrder(question.getQuestionOrder())
             .questionText(question.getQuestionText())
+            .correctAnswer(question.getCorrectAnswer())
+            .options(parsedOptions)
+            .difficulty(question.getDifficulty())
+            .grammarRule(question.getGrammarRule())
+            .build();
+    }
+
+    /**
+     * @brief Maps a domain TaskQuestion entity to a QuestionResponse DTO omitting correct answer for tests.
+     * @param question Domain entity instance.
+     * @return Mapped QuestionResponse DTO without correct answer or null if input is null.
+     */
+    public static QuestionResponse fromEntityWithoutAnswer(TaskQuestion question) {
+        if (question == null) return null;
+        List<String> parsedOptions = new ArrayList<>();
+        if (question.getOptionsJson() != null && !question.getOptionsJson().isBlank()) {
+            try {
+                parsedOptions = MAPPER.readValue(question.getOptionsJson(), new TypeReference<List<String>>() {});
+            } catch (Exception ignored) {
+            }
+        }
+        return QuestionResponse.builder()
+            .id(question.getId())
+            .questionOrder(question.getQuestionOrder())
+            .questionText(question.getQuestionText())
+            .correctAnswer(null)
             .options(parsedOptions)
             .difficulty(question.getDifficulty())
             .grammarRule(question.getGrammarRule())

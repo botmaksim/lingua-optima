@@ -4,12 +4,22 @@
  */
 
 import { axiosInstance } from './axiosInstance';
-import { Task, TaskParams } from '../types/task';
+import { Task, TaskParams, CreateCustomTaskRequest } from '../types/task';
 
 /**
  * @brief Exported const for task api.
  */
 export const taskApi = {
+  /**
+   * @brief Creates and saves or deploys a customized task with explicit questions and answer keys.
+   * @param request Custom task definition payload.
+   * @return Promise resolving to created Task object.
+   */
+  createCustomTask: async (request: CreateCustomTaskRequest): Promise<Task> => {
+    const res = await axiosInstance.post<Task>('/tasks/custom', request);
+    return res.data;
+  },
+
   /**
    * @brief Dispatches request to generate an AI exercise and saves it.
    * @param params Task generation parameters.

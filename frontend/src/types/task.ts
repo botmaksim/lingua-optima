@@ -178,3 +178,32 @@ export interface TaskAssignment {
   /** @brief Property representing created at in TaskAssignment. */
   createdAt: string;
 }
+
+/**
+ * @brief Question payload for custom task creation or preview deployment.
+ */
+export interface CustomQuestionRequest {
+  questionOrder?: number;
+  questionText: string;
+  correctAnswer: string;
+  options?: string[];
+  difficulty?: number;
+  grammarRule?: string;
+}
+
+/**
+ * @brief Request payload to persist a customized or reviewed task.
+ */
+export interface CreateCustomTaskRequest {
+  cefrLevel: CefrLevel;
+  grammarTopic: string;
+  domain?: string;
+  taskType: TaskType;
+  difficulty?: DifficultyLevel;
+  content: string;
+  questions: CustomQuestionRequest[];
+  isTemplate?: boolean;
+  groupIds?: string[];
+  dueDate?: string;
+  maxAttempts?: number;
+}

@@ -6,6 +6,7 @@ package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
+import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
@@ -111,6 +112,21 @@ public class TaskController {
         @AuthenticationPrincipal User teacher
     ) {
         return ResponseEntity.ok(taskService.saveAsTemplate(request, teacher));
+    }
+
+    /**
+     * @brief Creates a customized task with explicit questions and optionally assigns it to student cohorts.
+     *
+     * @param request Custom task payload with questions and optional assignment targets.
+     * @param teacher Authenticated educator principal.
+     * @return HTTP 200 with persisted TaskResponse.
+     */
+    @PostMapping("/custom")
+    public ResponseEntity<TaskResponse> createCustomTask(
+        @Valid @RequestBody CreateCustomTaskRequest request,
+        @AuthenticationPrincipal User teacher
+    ) {
+        return ResponseEntity.ok(taskService.createCustomTask(request, teacher));
     }
 
     /**

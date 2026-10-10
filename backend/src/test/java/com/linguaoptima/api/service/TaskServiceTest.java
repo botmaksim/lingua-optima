@@ -12,7 +12,10 @@ import com.linguaoptima.api.domain.TaskAssignment;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.*;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
+import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
+import com.linguaoptima.api.dto.request.CustomQuestionRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
+import com.linguaoptima.api.dto.response.QuestionResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
@@ -192,6 +195,167 @@ class TaskServiceTest {
     void testSaveAsTemplateNonTeacherThrows() {
         TaskParamsRequest req = TaskParamsRequest.builder().cefrLevel(CefrLevel.B1).taskType(TaskType.MCQ).build();
         assertThrows(ForbiddenException.class, () -> taskService.saveAsTemplate(req, studentUser));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: create custom task success.
+     */
+    @Test
+    void testCreateCustomTaskSuccess() {
+        CustomQuestionRequest q1 = CustomQuestionRequest.builder()
+            .questionOrder(1)
+            .questionText("Choose the correct passive form.")
+            .correctAnswer("is spoken")
+            .options(List.of("is spoken", "speaks", "was spoken"))
+            .difficulty(2)
+            .grammarRule("Passive Voice")
+            .build();
+
+        CustomQuestionRequest q2 = CustomQuestionRequest.builder()
+            .questionOrder(2)
+            .questionText("Rewrite: They built the bridge.")
+            .correctAnswer("The bridge was built.")
+            .difficulty(3)
+            .build();
+
+        CreateCustomTaskRequest req = CreateCustomTaskRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Passive Voice")
+            .domain("Academic")
+            .taskType(TaskType.MCQ)
+            .difficulty(DifficultyLevel.MEDIUM)
+            .content("Complete the sentences.")
+            .questions(List.of(q1, q2))
+            .isTemplate(false)
+            .build();
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        TaskResponse res = taskService.createCustomTask(req, teacherUser);
+        assertNotNull(res);
+        assertEquals(2, res.getQuestions().size());
+        assertEquals("is spoken", res.getQuestions().get(0).getCorrectAnswer());
+        assertEquals("The bridge was built.", res.getQuestions().get(1).getCorrectAnswer());
+        verify(taskRepository).save(any(Task.class));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: create custom task with default fallbacks.
+     */
+    @Test
+    void testCreateCustomTaskDefaults() {
+        CustomQuestionRequest q = CustomQuestionRequest.builder()
+            .questionOrder(0)
+            .questionText("Question with defaults")
+            .correctAnswer("Answer")
+            .difficulty(0)
+            .grammarRule("")
+            .build();
+
+        CreateCustomTaskRequest req = CreateCustomTaskRequest.builder()
+            .cefrLevel(CefrLevel.A1)
+            .grammarTopic("")
+            .domain("")
+            .taskType(TaskType.REWRITE)
+            .difficulty(null)
+            .content(null)
+            .questions(List.of(q))
+            .build();
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        TaskResponse res = taskService.createCustomTask(req, teacherUser);
+        assertNotNull(res);
+        assertEquals("Custom Topic", res.getGrammarTopic());
+        assertEquals("General", res.getDomain());
+        assertEquals(DifficultyLevel.MEDIUM, res.getDifficulty());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: create custom task with group assignment.
+     */
+    @Test
+    void testCreateCustomTaskWithGroupAssignment() {
+        UUID groupId = UUID.randomUUID();
+        Group group = Group.builder().id(groupId).name("Cohort 1").teacher(teacherUser).build();
+        GroupStudent gs = GroupStudent.builder().group(group).student(studentUser).isActive(true).build();
+
+        CustomQuestionRequest q = CustomQuestionRequest.builder()
+            .questionOrder(1)
+            .questionText("Fill in the blank.")
+            .correctAnswer("had gone")
+            .build();
+
+        CreateCustomTaskRequest req = CreateCustomTaskRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .taskType(TaskType.GAP_FILL)
+            .questions(List.of(q))
+            .groupIds(List.of(groupId))
+            .dueDate(LocalDateTime.now().plusDays(3))
+            .maxAttempts(2)
+            .build();
+
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+        when(taskRepository.findById(any(UUID.class))).thenAnswer(inv -> {
+            return Optional.of(Task.builder().id(inv.getArgument(0)).type(TaskType.GAP_FILL).cefrLevel(CefrLevel.B2).build());
+        });
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of(gs));
+
+        TaskResponse res = taskService.createCustomTask(req, teacherUser);
+        assertNotNull(res);
+        verify(taskAssignmentRepository).save(any(TaskAssignment.class));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: create custom task non teacher throws.
+     */
+    @Test
+    void testCreateCustomTaskNonTeacherThrows() {
+        CreateCustomTaskRequest req = CreateCustomTaskRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .taskType(TaskType.MCQ)
+            .questions(List.of(CustomQuestionRequest.builder().questionText("Q").correctAnswer("A").build()))
+            .build();
+
+        assertThrows(ForbiddenException.class, () -> taskService.createCustomTask(req, studentUser));
+    }
+
+    /**
+     * @brief Verifies QuestionResponse fromEntityWithoutAnswer.
+     */
+    @Test
+    void testQuestionResponseFromEntityWithoutAnswer() {
+        com.linguaoptima.api.domain.TaskQuestion tq = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .id(UUID.randomUUID())
+            .questionOrder(1)
+            .questionText("Test text")
+            .correctAnswer("Secret Answer")
+            .optionsJson("[\"A\", \"B\"]")
+            .difficulty(2)
+            .grammarRule("Test Rule")
+            .build();
+
+        QuestionResponse qr = QuestionResponse.fromEntityWithoutAnswer(tq);
+        assertNotNull(qr);
+        assertNull(qr.getCorrectAnswer());
+        assertEquals("Test text", qr.getQuestionText());
+        assertEquals(2, qr.getOptions().size());
+
+        assertNull(QuestionResponse.fromEntityWithoutAnswer(null));
+        assertNull(QuestionResponse.fromEntity(null));
     }
 
     /**

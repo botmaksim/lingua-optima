@@ -217,4 +217,66 @@ describe('CustomSelect component', () => {
   });
 });
 
+describe('ConfigureTask component', () => {
+  it('renders configuration form and handles interactive preview customizer', async () => {
+    const { groupApi } = await import('../api/groupApi');
+    const { taskApi } = await import('../api/taskApi');
+    const { apiKeyApi } = await import('../api/apiKeyApi');
+    const { ConfigureTask } = await import('../components/teacher/ConfigureTask');
+
+    vi.spyOn(apiKeyApi, 'getKeys').mockResolvedValue([]);
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([{ id: 'g1', name: 'Group 1', studentCount: 5 }] as any);
+    vi.spyOn(taskApi, 'getTopicsCatalog').mockResolvedValue({
+      topicsByLevel: { B1: ['Past Simple'] },
+      mixedTopicsByLevel: {},
+      crossLevelTopics: [],
+      domains: ['Everyday Life'],
+    } as any);
+    vi.spyOn(taskApi, 'previewTask').mockResolvedValue({
+      id: 'task-preview-1',
+      type: 'MCQ',
+      cefrLevel: 'B1',
+      grammarTopic: 'Past Simple',
+      domain: 'Everyday Life',
+      difficulty: 'MEDIUM',
+      content: 'Choose the correct past verb form.',
+      answerKey: '{"1":"went"}',
+      createdAt: '2026-10-10T00:00:00Z',
+      questions: [
+        {
+          id: 'q1',
+          questionOrder: 1,
+          questionText: 'She _____ to London yesterday.',
+          correctAnswer: 'went',
+          options: ['go', 'went', 'gone', 'going'],
+          difficulty: 0.5,
+          grammarRule: 'Irregular past: go -> went',
+        },
+      ],
+    } as any);
+
+    render(
+      <MemoryRouter>
+        <ConfigureTask />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Configure & Deploy Task')).toBeInTheDocument();
+    expect(screen.getByText('Live Preview & Customizer')).toBeInTheDocument();
+    expect(screen.getByText(/Click "Preview" to inspect and customize/i)).toBeInTheDocument();
+
+    const previewBtn = screen.getByRole('button', { name: /^preview$/i });
+    fireEvent.click(previewBtn);
+
+    const questionInput = await screen.findByDisplayValue('She _____ to London yesterday.');
+    expect(questionInput).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Choose the correct past verb form.')).toBeInTheDocument();
+    expect(screen.getByText('Correct')).toBeInTheDocument();
+
+    // In-place edit question text
+    fireEvent.change(questionInput, { target: { value: 'They _____ to Rome last week.' } });
+    expect(screen.getByDisplayValue('They _____ to Rome last week.')).toBeInTheDocument();
+  });
+});
+
 

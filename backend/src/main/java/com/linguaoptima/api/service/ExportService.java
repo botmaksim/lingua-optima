@@ -70,7 +70,7 @@ public class ExportService {
         Group group = groupRepository.findById(groupId)
             .orElseThrow(() -> new ResourceNotFoundException("Group not found: " + groupId));
 
-        if (!group.getTeacher().getId().equals(teacher.getId())) {
+        if (teacher.getRole() != Role.ADMIN && (group.getTeacher() == null || !group.getTeacher().getId().equals(teacher.getId()))) {
             throw new ForbiddenException("Access denied: You are not the teacher of this group.");
         }
 

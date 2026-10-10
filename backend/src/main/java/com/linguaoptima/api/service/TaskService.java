@@ -13,6 +13,8 @@ import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
+import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
+import com.linguaoptima.api.dto.request.CustomQuestionRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
@@ -139,6 +141,95 @@ public class TaskService {
         String rawJson = aiBrokerService.generateTaskContent(prompt, teacher);
         Task task = parseAndBuildTask(rawJson, params, teacher, true);
         Task saved = taskRepository.save(task);
+        return TaskResponse.fromEntity(saved);
+    }
+
+    /**
+     * @brief Creates and persists a custom educator-configured task with explicit questions and optional cohort assignment.
+     * @param request Custom task specification payload.
+     * @param teacher Authenticated educator principal.
+     * @return TaskResponse DTO of the persisted task.
+     * @throws ForbiddenException if user is not an educator or administrator.
+     */
+    @Transactional
+    @lombok.SneakyThrows
+    public TaskResponse createCustomTask(CreateCustomTaskRequest request, User teacher) {
+        if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only educators can create custom tasks.");
+        }
+
+        subscriptionService.validateCefrLevelAccess(teacher, request.getCefrLevel());
+
+        String topic = (request.getGrammarTopic() != null && !request.getGrammarTopic().isBlank())
+            ? request.getGrammarTopic().trim()
+            : "Custom Topic";
+        String domain = (request.getDomain() != null && !request.getDomain().isBlank())
+            ? request.getDomain().trim()
+            : "General";
+        DifficultyLevel diff = request.getDifficulty() != null
+            ? request.getDifficulty()
+            : DifficultyLevel.MEDIUM;
+
+        Task task = Task.builder()
+            .type(request.getTaskType())
+            .cefrLevel(request.getCefrLevel())
+            .grammarTopic(topic)
+            .domain(domain)
+            .difficulty(diff)
+            .content(request.getContent() != null ? request.getContent().trim() : "")
+            .createdBy(teacher)
+            .isTemplate(request.isTemplate())
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        List<Map<String, Object>> answerKeyList = new ArrayList<>();
+        List<TaskQuestion> questions = new ArrayList<>();
+        int order = 1;
+
+        for (CustomQuestionRequest qReq : request.getQuestions()) {
+            int currentOrder = qReq.getQuestionOrder() > 0 ? qReq.getQuestionOrder() : order++;
+            String optionsJson = "[]";
+            if (qReq.getOptions() != null && !qReq.getOptions().isEmpty() &&
+                request.getTaskType() != TaskType.REWRITE && request.getTaskType() != TaskType.OPEN_BRACKETS) {
+                optionsJson = objectMapper.writeValueAsString(qReq.getOptions());
+            }
+
+            int diffVal = qReq.getDifficulty() > 0 ? qReq.getDifficulty() : 2;
+            String ruleVal = (qReq.getGrammarRule() != null && !qReq.getGrammarRule().isBlank())
+                ? qReq.getGrammarRule().trim()
+                : task.getGrammarTopic();
+
+            TaskQuestion tq = TaskQuestion.builder()
+                .task(task)
+                .questionOrder(currentOrder)
+                .questionText(qReq.getQuestionText().trim())
+                .correctAnswer(qReq.getCorrectAnswer().trim())
+                .optionsJson(optionsJson)
+                .difficulty(diffVal)
+                .grammarRule(ruleVal)
+                .build();
+            questions.add(tq);
+
+            Map<String, Object> akItem = new HashMap<>();
+            akItem.put("questionOrder", currentOrder);
+            akItem.put("correctOption", qReq.getCorrectAnswer().trim());
+            akItem.put("correctAnswer", qReq.getCorrectAnswer().trim());
+            answerKeyList.add(akItem);
+        }
+
+        task.setAnswerKey(objectMapper.writeValueAsString(answerKeyList));
+        task.setQuestions(questions);
+        Task saved = taskRepository.save(task);
+
+        if (request.getGroupIds() != null && !request.getGroupIds().isEmpty()) {
+            AssignTaskRequest assignReq = AssignTaskRequest.builder()
+                .groupIds(request.getGroupIds())
+                .dueDate(request.getDueDate())
+                .maxAttempts(request.getMaxAttempts())
+                .build();
+            assignTask(saved.getId(), assignReq, teacher);
+        }
+
         return TaskResponse.fromEntity(saved);
     }
 
@@ -383,6 +474,7 @@ public class TaskService {
                     );
 
                     TaskQuestion tq = TaskQuestion.builder()
+                        .id(UUID.randomUUID())
                         .task(task)
                         .questionOrder(currentOrder)
                         .questionText(qNode.path("text").asText("Question text"))
