@@ -3,5 +3,10 @@
   "corner",
   "calendar",
   "station",
-  "weekend"
+  "weekend",
+  "morning",
+  "evening",
+  "kitchen",
+  "shelf",
+  "afternoon"
 ]

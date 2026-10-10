@@ -53,5 +53,60 @@
       "holiday resort"
     ],
     "exampleSentence": "The resort that we visited last summer offered wonderful hiking trails."
+  },
+  {
+    "word": "whose",
+    "partOfSpeech": "pronoun",
+    "cefrLevel": "B1",
+    "definition": "Belonging to or associated with which person.",
+    "collocations": [
+      "whose car",
+      "whose work"
+    ],
+    "exampleSentence": "The student whose essay won the prize gave an interview."
+  },
+  {
+    "word": "whom",
+    "partOfSpeech": "pronoun",
+    "cefrLevel": "B1",
+    "definition": "Used instead of 'who' as the object of a verb or preposition.",
+    "collocations": [
+      "to whom",
+      "with whom"
+    ],
+    "exampleSentence": "The senior professor to whom I submitted the draft was impressed."
+  },
+  {
+    "word": "identifying",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B1",
+    "definition": "Serving to identify or pinpoint uniquely.",
+    "collocations": [
+      "identifying clause",
+      "identifying mark"
+    ],
+    "exampleSentence": "Defining relative clauses provide identifying information about nouns."
+  },
+  {
+    "word": "distinguish",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Recognize or treat someone or something as different.",
+    "collocations": [
+      "distinguish between",
+      "clearly distinguish"
+    ],
+    "exampleSentence": "The clause helps readers distinguish the target suspect from others."
+  },
+  {
+    "word": "refer",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Mention or allude to; apply to.",
+    "collocations": [
+      "refer to",
+      "specifically refer"
+    ],
+    "exampleSentence": "The relative pronoun 'which' refers to non-human antecedents."
   }
 ]

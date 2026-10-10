@@ -53,5 +53,60 @@
       "whereas in contrast"
     ],
     "exampleSentence": "Urban populations grew by ten percent, whereas rural numbers remained static."
+  },
+  {
+    "word": "heretofore",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "Before now.",
+    "collocations": [
+      "heretofore unknown",
+      "heretofore neglected"
+    ],
+    "exampleSentence": "The expedition uncovered a trove of manuscripts heretofore unrecorded in European archives."
+  },
+  {
+    "word": "proportional_to",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Corresponding in size or degree to something else.",
+    "collocations": [
+      "proportional to the",
+      "directly proportional"
+    ],
+    "exampleSentence": "The ecological damage inflicted was directly proportional to the magnitude of the spillage."
+  },
+  {
+    "word": "by_virtue_of",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "C1",
+    "definition": "Because or as a result of.",
+    "collocations": [
+      "by virtue of its",
+      "by virtue of experience"
+    ],
+    "exampleSentence": "By virtue of its strategic deepwater port, the island became a thriving commercial hub."
+  },
+  {
+    "word": "vis_a_vis",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "C1",
+    "definition": "In relation to; with regard to.",
+    "collocations": [
+      "vis-a-vis competitors",
+      "position vis-a-vis"
+    ],
+    "exampleSentence": "The central bank assessed the domestic currency's posture vis-a-vis the Swiss franc."
+  },
+  {
+    "word": "as_opposed_to",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "In contrast to; rather than.",
+    "collocations": [
+      "as opposed to the",
+      "voluntary as opposed to"
+    ],
+    "exampleSentence": "We advocate restorative justice models as opposed to purely punitive custodial sentencing."
   }
 ]

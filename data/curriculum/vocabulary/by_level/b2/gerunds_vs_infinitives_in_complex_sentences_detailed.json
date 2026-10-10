@@ -53,5 +53,60 @@
       "greatly appreciate"
     ],
     "exampleSentence": "I truly appreciate your offering to help with our presentation."
+  },
+  {
+    "word": "advocate_implementing",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Publicly recommend putting a system into effect.",
+    "collocations": [
+      "advocate implementing",
+      "advocated adopting"
+    ],
+    "exampleSentence": "Economic advisors advocate implementing tiered tax incentives for renewable ventures."
+  },
+  {
+    "word": "aspire_to_lead",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Direct one's hopes or ambitions towards leading.",
+    "collocations": [
+      "aspire to lead",
+      "aspire to become"
+    ],
+    "exampleSentence": "Ambitious postgraduate scholars often aspire to lead multinational research consortia."
+  },
+  {
+    "word": "dread_facing",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Anticipate with great apprehension having to confront something.",
+    "collocations": [
+      "dread facing",
+      "dreading meeting"
+    ],
+    "exampleSentence": "The audit committee dread facing hostile shareholder inquiries regarding dividends."
+  },
+  {
+    "word": "endeavor_to_resolve",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Try hard to solve a dilemma or conflict.",
+    "collocations": [
+      "endeavor to resolve",
+      "earnestly endeavor"
+    ],
+    "exampleSentence": "Diplomats endeavor to resolve border discrepancies through multilateral dialogue."
+  },
+  {
+    "word": "tolerate_enduring",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Allow the existence or continuation of hardship without resistance.",
+    "collocations": [
+      "tolerate enduring",
+      "cannot tolerate"
+    ],
+    "exampleSentence": "No ethical hospital administration will tolerate enduring substandard hygiene."
   }
 ]

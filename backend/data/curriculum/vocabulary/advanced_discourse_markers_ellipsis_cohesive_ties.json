@@ -1,16 +1,12 @@
-{
-  "topic": "Advanced Discourse Markers, Ellipsis & Cohesive Ties",
-  "cefrLevel": "C1",
-  "words": [
-    "coherence",
-    "chaining",
-    "anaphoric",
-    "cataphoric",
-    "implicit",
-    "progression",
-    "exposition",
-    "academic",
-    "syntactic",
-    "nuance"
-  ]
-}
+[
+  "furthermore",
+  "nonetheless",
+  "subsequently",
+  "thereby",
+  "whereas",
+  "heretofore",
+  "proportional_to",
+  "by_virtue_of",
+  "vis_a_vis",
+  "as_opposed_to"
+]

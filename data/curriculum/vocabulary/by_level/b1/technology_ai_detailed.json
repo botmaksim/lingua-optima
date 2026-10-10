@@ -53,5 +53,60 @@
       "process automation"
     ],
     "exampleSentence": "Robotic automation has substantially accelerated warehouse order fulfillment."
+  },
+  {
+    "word": "software",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The programs and other operating information used by a computer.",
+    "collocations": [
+      "software update",
+      "install software"
+    ],
+    "exampleSentence": "Engineers deployed the latest software patch across cloud clusters."
+  },
+  {
+    "word": "sensor",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A device that detects or measures a physical property.",
+    "collocations": [
+      "infrared sensor",
+      "motion sensor"
+    ],
+    "exampleSentence": "Motion sensors automatically switch off classroom lights after dusk."
+  },
+  {
+    "word": "hardware",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The machines, wiring, and other physical components of a computer.",
+    "collocations": [
+      "computer hardware",
+      "hardware upgrade"
+    ],
+    "exampleSentence": "Running large language models locally demands robust hardware."
+  },
+  {
+    "word": "device",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A thing made or adapted for a particular purpose, especially a mechanical part.",
+    "collocations": [
+      "smart device",
+      "electronic device"
+    ],
+    "exampleSentence": "Students can synchronize learning flashcards across all personal devices."
+  },
+  {
+    "word": "cloud",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A network of remote servers hosted on the Internet to store data.",
+    "collocations": [
+      "cloud computing",
+      "in the cloud"
+    ],
+    "exampleSentence": "All project documents are securely backed up in the cloud."
   }
 ]

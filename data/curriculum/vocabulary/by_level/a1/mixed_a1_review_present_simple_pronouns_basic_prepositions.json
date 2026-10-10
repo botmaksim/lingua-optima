@@ -3,5 +3,10 @@
   "busy",
   "early",
   "late",
-  "ready"
+  "ready",
+  "quiet",
+  "hungry",
+  "happy",
+  "tired",
+  "cold"
 ]

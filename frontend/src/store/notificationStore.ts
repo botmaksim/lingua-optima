@@ -31,6 +31,7 @@ interface NotificationState {
   fetchNotifications: () => Promise<void>;
   addNotification: (notification: Notification) => void;
   markAsRead: (id: string) => Promise<void>;
+  markAllAsRead: () => Promise<void>;
   addToast: (toast: Omit<ToastItem, 'id'>) => void;
   removeToast: (id: string) => void;
 }
@@ -75,6 +76,18 @@ export const useNotificationStore = create<NotificationState>((set) => ({
       }));
     } catch (err) {
       console.error('Failed to mark notification as read:', err);
+    }
+  },
+
+  markAllAsRead: async () => {
+    try {
+      await notificationApi.markAllAsRead();
+      set((state) => ({
+        notifications: state.notifications.map((n) => ({ ...n, isRead: true })),
+        unreadCount: 0,
+      }));
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
     }
   },
 

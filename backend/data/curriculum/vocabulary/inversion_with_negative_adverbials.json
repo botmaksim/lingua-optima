@@ -1,18 +1,12 @@
-{
-  "topic": "Inversion with Negative Adverbials",
-  "cefrLevel": "B2",
-  "words": [
-    "seldom",
-    "scarcely",
-    "rarely",
-    "unprecedented",
-    "circumstances",
-    "strictly",
-    "confidential",
-    "resilience",
-    "consequence",
-    "astonishing",
-    "prohibited",
-    "vital"
-  ]
-}
+[
+  "scarcely",
+  "seldom",
+  "rarely",
+  "hardly",
+  "little",
+  "barely",
+  "never_before",
+  "only_then",
+  "under_no_circumstances",
+  "no_sooner"
+]

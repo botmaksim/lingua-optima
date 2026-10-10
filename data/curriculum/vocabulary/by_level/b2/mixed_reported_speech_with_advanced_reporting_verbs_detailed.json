@@ -53,5 +53,60 @@
       "reassure public"
     ],
     "exampleSentence": "The airline captain reassured passengers that the turbulence was entirely standard."
+  },
+  {
+    "word": "counsel",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Give advice to someone on social or personal problems.",
+    "collocations": [
+      "counsel against",
+      "counseled caution"
+    ],
+    "exampleSentence": "The legal advisor counseled against accepting an out-of-court settlement."
+  },
+  {
+    "word": "dissuade",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Persuade someone not to take a particular course of action.",
+    "collocations": [
+      "dissuade from",
+      "successfully dissuade"
+    ],
+    "exampleSentence": "Friends attempted to dissuade him from investing all savings into cryptocurrency."
+  },
+  {
+    "word": "exhort",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Strongly encourage or urge someone to do something.",
+    "collocations": [
+      "exhort citizens",
+      "exhorted troops"
+    ],
+    "exampleSentence": "The prime minister exhorted citizens to conserve electrical energy during peak hours."
+  },
+  {
+    "word": "petition",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Make a formal request to an authority with respect to a cause.",
+    "collocations": [
+      "petition council",
+      "petition court"
+    ],
+    "exampleSentence": "Neighborhood associations petitioned the borough council to establish a conservation zone."
+  },
+  {
+    "word": "reproach",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Express someone's disapproval of or disappointment in their actions.",
+    "collocations": [
+      "reproached for",
+      "gently reproach"
+    ],
+    "exampleSentence": "The dean reproached the department for failing to submit ethical clearance reports."
   }
 ]

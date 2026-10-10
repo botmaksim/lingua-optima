@@ -53,5 +53,60 @@
       "convincing argument"
     ],
     "exampleSentence": "Her alibi could not have been more convincing to the investigating panel."
+  },
+  {
+    "word": "infer",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Deduce or conclude information from evidence and reasoning.",
+    "collocations": [
+      "infer from",
+      "readily infer"
+    ],
+    "exampleSentence": "From the altered accounting entries, investigators could readily infer fraudulent intent."
+  },
+  {
+    "word": "surmise",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Suppose that something is true without confirmation.",
+    "collocations": [
+      "surmise from",
+      "analysts surmise"
+    ],
+    "exampleSentence": "Wall Street analysts surmise the quarterly dip stems from maritime trade bottlenecks."
+  },
+  {
+    "word": "conjectural",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Based on or involving conjecture; speculative.",
+    "collocations": [
+      "purely conjectural",
+      "conjectural evidence"
+    ],
+    "exampleSentence": "Attributing the ruined mosaic to Greek artisans remains purely conjectural."
+  },
+  {
+    "word": "deducible",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Able to be arrived at by reasoning from premises.",
+    "collocations": [
+      "clearly deducible",
+      "logically deducible"
+    ],
+    "exampleSentence": "The motive behind the sudden boardroom reshuffle is logically deducible."
+  },
+  {
+    "word": "likelihood",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The probability of a specified occurrence.",
+    "collocations": [
+      "strong likelihood",
+      "in all likelihood"
+    ],
+    "exampleSentence": "There is a strong likelihood that the central bank will lower interest rates next quarter."
   }
 ]

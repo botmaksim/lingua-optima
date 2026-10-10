@@ -68,7 +68,7 @@ public class SubscriptionService {
             .expiresAt(subscription.getExpiresAt())
             .evaluationsRemaining(usage.getEvaluationsRemaining())
             .ocrRemaining(usage.getOcrRemaining())
-            .unlimited(subscription.getTier() != SubscriptionTier.FREE)
+            .unlimited(false)
             .build();
     }
 

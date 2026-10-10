@@ -78,4 +78,16 @@ public class NotificationController {
         notificationService.markAsRead(notificationId, user);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * @brief Marks all notifications as read for authenticated user.
+     *
+     * @param user Authenticated user principal.
+     * @return HTTP 200 OK.
+     */
+    @PatchMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal User user) {
+        notificationService.markAllAsRead(user);
+        return ResponseEntity.ok().build();
+    }
 }

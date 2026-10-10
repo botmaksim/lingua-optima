@@ -3,5 +3,10 @@
   "experiment",
   "variable",
   "evidence",
-  "conclusion"
+  "conclusion",
+  "laboratory",
+  "method",
+  "data",
+  "theory",
+  "findings"
 ]

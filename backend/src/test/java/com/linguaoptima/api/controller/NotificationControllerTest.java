@@ -83,4 +83,14 @@ class NotificationControllerTest {
         assertEquals(HttpStatus.OK, res.getStatusCode());
         verify(notificationService).markAsRead(id, user);
     }
+
+    /**
+     * @brief Verifies unit test scenario: mark all as read.
+     */
+    @Test
+    void testMarkAllAsRead() {
+        ResponseEntity<Void> res = notificationController.markAllAsRead(user);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        verify(notificationService).markAllAsRead(user);
+    }
 }

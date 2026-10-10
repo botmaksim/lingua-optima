@@ -23,18 +23,19 @@ import org.springframework.stereotype.Component;
 public class PricingProperties {
 
     /** @brief Configuration settings for FREE tier accounts. */
-    private TierConfig free = new TierConfig(50_000L, 10, 3, 0.0);
+    private TierConfig free = new TierConfig(50_000L, 10, 3, 0.0, 1, 1, 1);
 
     /** @brief Configuration settings for PREMIUM tier accounts. */
-    private TierConfig premium = new TierConfig(1_000_000L, 500, 100, 9.99);
+    private TierConfig premium = new TierConfig(1_000_000L, 500, 100, 9.99, 3, 5, 5);
 
     /** @brief Configuration settings for EDUCATOR tier accounts. */
-    private TierConfig educator = new TierConfig(10_000_000L, 10_000, 2_000, 49.99);
+    private TierConfig educator = new TierConfig(10_000_000L, 10_000, 2_000, 49.99, 50, 50, 50);
 
     /**
      * @brief Detailed quota and pricing limits per subscription tier.
      */
     @Data
+    @lombok.Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TierConfig {
@@ -46,6 +47,16 @@ public class PricingProperties {
         private int weeklyOcrLimit = 3;
         /** @brief Monthly subscription cost in USD. */
         private double monthlyPriceUsd = 0.0;
+        /** @brief Maximum active student groups/cohorts allowed. */
+        private int maxGroups = 1;
+        /** @brief Maximum saved custom grammar rules. */
+        private int maxCustomRules = 1;
+        /** @brief Maximum saved custom vocabulary dictionaries. */
+        private int maxCustomVocabularySets = 1;
+
+        public TierConfig(long weeklyTokenLimit, int weeklyEvaluationLimit, int weeklyOcrLimit, double monthlyPriceUsd) {
+            this(weeklyTokenLimit, weeklyEvaluationLimit, weeklyOcrLimit, monthlyPriceUsd, 1, 1, 1);
+        }
     }
 
     /**

@@ -53,5 +53,60 @@
       "medical intervention"
     ],
     "exampleSentence": "Without diplomatic intervention, a major trade war would have erupted."
+  },
+  {
+    "word": "retrospect",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A review of a past course of events or period of time.",
+    "collocations": [
+      "in retrospect",
+      "with hindsight"
+    ],
+    "exampleSentence": "In retrospect, we would have purchased flight tickets much earlier."
+  },
+  {
+    "word": "alternate",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Occurring in turn repeatedly; available as another possibility.",
+    "collocations": [
+      "alternate route",
+      "alternate plan"
+    ],
+    "exampleSentence": "Had we considered alternate routes, we would not have been stranded."
+  },
+  {
+    "word": "reproach",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The expression of disapproval or disappointment.",
+    "collocations": [
+      "above reproach",
+      "word of reproach"
+    ],
+    "exampleSentence": "She uttered no reproach, though his reckless decisions cost dearly."
+  },
+  {
+    "word": "speculation",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The forming of a theory or conjecture without firm evidence.",
+    "collocations": [
+      "matter of speculation",
+      "idle speculation"
+    ],
+    "exampleSentence": "Whether they would have triumphed without funding remains pure speculation."
+  },
+  {
+    "word": "unfulfilled",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Not carried out or brought to completion.",
+    "collocations": [
+      "unfulfilled ambition",
+      "unfulfilled promise"
+    ],
+    "exampleSentence": "He spoke wistfully about unfulfilled dreams of theatrical fame."
   }
 ]

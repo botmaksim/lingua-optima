@@ -3,5 +3,10 @@
   "dentist",
   "flight",
   "concert",
-  "departure"
+  "departure",
+  "hosting",
+  "visiting",
+  "travelling",
+  "attending",
+  "organizing"
 ]

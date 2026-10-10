@@ -3,5 +3,10 @@
   "postpone",
   "venture",
   "resent",
-  "strive"
+  "strive",
+  "admit_doing",
+  "tend_to_do",
+  "avoid_doing",
+  "hesitate_to_do",
+  "manage_to_do"
 ]

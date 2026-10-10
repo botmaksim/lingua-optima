@@ -37,6 +37,8 @@ export interface Group {
   pendingStudents?: User[];
   /** @brief Property representing created at in Group. */
   createdAt: string;
+  /** @brief Indicates if cohort is locked into read-only mode due to tier limits. */
+  isLocked?: boolean;
 }
 
 /**

@@ -53,5 +53,60 @@
       "scarcely ever"
     ],
     "exampleSentence": "Scarcely had the legislation passed when civil organizations filed constitutional challenges."
+  },
+  {
+    "word": "scarcely_had",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Hardly had an event occurred when another followed.",
+    "collocations": [
+      "scarcely had we",
+      "scarcely had the"
+    ],
+    "exampleSentence": "Scarcely had the verdict been announced when demonstrations erupted outside the courthouse."
+  },
+  {
+    "word": "at_no_point",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Never at any time during an occurrence.",
+    "collocations": [
+      "at no point did",
+      "at no point was"
+    ],
+    "exampleSentence": "At no point did the defendant indicate remorse for violating the corporate code."
+  },
+  {
+    "word": "nowhere_else",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "In no other place.",
+    "collocations": [
+      "nowhere else can",
+      "nowhere else is"
+    ],
+    "exampleSentence": "Nowhere else in the hemisphere can one witness such extraordinary biodiversity."
+  },
+  {
+    "word": "such_was",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Of so great a degree was something.",
+    "collocations": [
+      "such was the",
+      "such was his"
+    ],
+    "exampleSentence": "Such was the fury of the cyclone that concrete piers were wrenched from bedrock."
+  },
+  {
+    "word": "only_later",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Not until a subsequent period in time.",
+    "collocations": [
+      "only later did",
+      "only later was"
+    ],
+    "exampleSentence": "Only later did archeologists comprehend the religious magnitude of the monolith."
   }
 ]

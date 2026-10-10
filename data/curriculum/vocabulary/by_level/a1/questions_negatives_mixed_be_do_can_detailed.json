@@ -53,5 +53,60 @@
       "repeat please"
     ],
     "exampleSentence": "Can you repeat that sentence, please?"
+  },
+  {
+    "word": "forget",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To fail to remember.",
+    "collocations": [
+      "don't forget",
+      "forget names"
+    ],
+    "exampleSentence": "Do not forget your homework tomorrow."
+  },
+  {
+    "word": "remember",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To bring to one's mind an awareness of something.",
+    "collocations": [
+      "remember to",
+      "remember well"
+    ],
+    "exampleSentence": "Can you remember the teacher's instructions?"
+  },
+  {
+    "word": "know",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To be aware of through observation or study.",
+    "collocations": [
+      "don't know",
+      "know the answer"
+    ],
+    "exampleSentence": "I do not know the answer to this question."
+  },
+  {
+    "word": "speak",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To say words in order to express thoughts.",
+    "collocations": [
+      "speak clearly",
+      "do you speak"
+    ],
+    "exampleSentence": "Do you speak French or Spanish?"
+  },
+  {
+    "word": "call",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To contact someone by phone or shout.",
+    "collocations": [
+      "call me",
+      "call doctor"
+    ],
+    "exampleSentence": "Why didn't you call me yesterday?"
   }
 ]

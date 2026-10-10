@@ -53,5 +53,60 @@
       "reach conclusion"
     ],
     "exampleSentence": "We reached a definitive conclusion after analyzing the test data."
+  },
+  {
+    "word": "laboratory",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A room or building equipped for scientific experiments.",
+    "collocations": [
+      "research laboratory",
+      "in the laboratory"
+    ],
+    "exampleSentence": "Students conduct biochemical assays in the university laboratory."
+  },
+  {
+    "word": "method",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A particular procedure for accomplishing or approaching something.",
+    "collocations": [
+      "scientific method",
+      "research method"
+    ],
+    "exampleSentence": "The team adhered rigorously to the empirical scientific method."
+  },
+  {
+    "word": "data",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "Facts and statistics collected together for reference or analysis.",
+    "collocations": [
+      "empirical data",
+      "data analysis"
+    ],
+    "exampleSentence": "The research team gathered empirical data over two semesters."
+  },
+  {
+    "word": "theory",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A supposition or system of ideas intended to explain something.",
+    "collocations": [
+      "scientific theory",
+      "in theory"
+    ],
+    "exampleSentence": "Einstein formulated a revolutionary theory of general relativity."
+  },
+  {
+    "word": "findings",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "Information discovered as the result of an inquiry or investigation.",
+    "collocations": [
+      "research findings",
+      "key findings"
+    ],
+    "exampleSentence": "Their published findings challenged conventional assumptions about marine ecosystems."
   }
 ]

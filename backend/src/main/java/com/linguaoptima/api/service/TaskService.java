@@ -6,11 +6,13 @@ package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.domain.*;
 import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.DifficultyLevel;
 import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
+import com.linguaoptima.api.domain.enums.SubscriptionTier;
 import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
@@ -63,6 +65,10 @@ public class TaskService {
     private final CurriculumStorageService curriculumStorageService;
     /** @brief Field representing submission repository for tracking student attempts. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field enforcing single device and concurrency protection during generation. */
+    private final GenerationProtectionService generationProtectionService;
+    /** @brief Pricing properties for tiered quota validation. */
+    private final PricingProperties pricingProperties;
 
     /**
      * @brief Generates an educational task with AI, persists it, and creates an automatic assignment for students.
@@ -74,35 +80,57 @@ public class TaskService {
      */
     @Transactional
     public TaskResponse generateTask(TaskParamsRequest params, User user) {
+        return generateTask(params, user, null);
+    }
+
+    /**
+     * @brief Generates an educational task with AI with explicit client device tracking.
+     * @param params Generation parameters.
+     * @param user User initiating the generation request.
+     * @param deviceId Client device identifier.
+     * @return TaskResponse DTO.
+     */
+    @Transactional
+    public TaskResponse generateTask(TaskParamsRequest params, User user, String deviceId) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
-        usageService.incrementEvaluation(user);
-
-        String prompt = buildPromptFromParams(params);
-        user.setPreferredProvider(params.getProvider());
-        user.setPreferredModel(params.getModelName());
-
-        String rawJson = aiBrokerService.generateTaskContent(prompt, user);
-        long estimatedTokens = UsageService.estimateTokens(prompt) + UsageService.estimateTokens(rawJson);
-        usageService.consumeTokens(user, estimatedTokens);
-
-        Task task = parseAndBuildTask(rawJson, params, user, false);
-        Task savedTask = taskRepository.save(task);
-
-        if (user.getRole() == Role.STUDENT) {
-            TaskAssignment selfAssignment = TaskAssignment.builder()
-                .task(savedTask)
-                .student(user)
-                .assignedBy(user)
-                .status(AssignmentStatus.IN_PROGRESS)
-                .maxAttempts(0)
-                .attemptsUsed(0)
-                .createdAt(LocalDateTime.now())
-                .build();
-            taskAssignmentRepository.save(selfAssignment);
-            log.info("Created self-service assignment for student {}", user.getEmail());
+        if (generationProtectionService != null && user != null) {
+            generationProtectionService.verifyDevice(user.getId(), deviceId);
+            generationProtectionService.acquireGenerationLock(user.getId(), deviceId);
         }
+        try {
+            usageService.incrementEvaluation(user);
 
-        return TaskResponse.fromEntity(savedTask);
+            String prompt = buildPromptFromParams(params);
+            user.setPreferredProvider(params.getProvider());
+            user.setPreferredModel(params.getModelName());
+
+            String rawJson = aiBrokerService.generateTaskContent(prompt, user);
+            long estimatedTokens = UsageService.estimateTokens(prompt) + UsageService.estimateTokens(rawJson);
+            usageService.consumeTokens(user, estimatedTokens);
+
+            Task task = parseAndBuildTask(rawJson, params, user, false);
+            Task savedTask = taskRepository.save(task);
+
+            if (user.getRole() == Role.STUDENT) {
+                TaskAssignment selfAssignment = TaskAssignment.builder()
+                    .task(savedTask)
+                    .student(user)
+                    .assignedBy(user)
+                    .status(AssignmentStatus.IN_PROGRESS)
+                    .maxAttempts(0)
+                    .attemptsUsed(0)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+                taskAssignmentRepository.save(selfAssignment);
+                log.info("Created self-service assignment for student {}", user.getEmail());
+            }
+
+            return TaskResponse.fromEntity(savedTask);
+        } finally {
+            if (generationProtectionService != null && user != null) {
+                generationProtectionService.releaseGenerationLock(user.getId());
+            }
+        }
     }
 
     /**
@@ -112,16 +140,36 @@ public class TaskService {
      * @return TaskResponse DTO containing preview questions.
      */
     public TaskResponse previewTask(TaskParamsRequest params, User user) {
+        return previewTask(params, user, null);
+    }
+
+    /**
+     * @brief Generates a transient task preview with explicit client device tracking.
+     * @param params Generation parameters.
+     * @param user User requesting the preview.
+     * @param deviceId Client device identifier.
+     * @return TaskResponse DTO containing preview questions.
+     */
+    public TaskResponse previewTask(TaskParamsRequest params, User user, String deviceId) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
+        if (generationProtectionService != null && user != null) {
+            generationProtectionService.verifyDevice(user.getId(), deviceId);
+            generationProtectionService.acquireGenerationLock(user.getId(), deviceId);
+        }
+        try {
+            String prompt = buildPromptFromParams(params);
+            user.setPreferredProvider(params.getProvider());
+            user.setPreferredModel(params.getModelName());
 
-        String prompt = buildPromptFromParams(params);
-        user.setPreferredProvider(params.getProvider());
-        user.setPreferredModel(params.getModelName());
-
-        String rawJson = aiBrokerService.generateTaskContent(prompt, user);
-        Task task = parseAndBuildTask(rawJson, params, user, false);
-        task.setId(UUID.randomUUID());
-        return TaskResponse.fromEntity(task);
+            String rawJson = aiBrokerService.generateTaskContent(prompt, user);
+            Task task = parseAndBuildTask(rawJson, params, user, false);
+            task.setId(UUID.randomUUID());
+            return TaskResponse.fromEntity(task);
+        } finally {
+            if (generationProtectionService != null && user != null) {
+                generationProtectionService.releaseGenerationLock(user.getId());
+            }
+        }
     }
 
     /**
@@ -306,12 +354,29 @@ public class TaskService {
             ? 1
             : request.getMaxAttempts();
 
+        SubscriptionTier teacherTier = usageService != null ? usageService.getUserTier(teacher) : SubscriptionTier.FREE;
+        int maxAllowedGroups = pricingProperties != null ? pricingProperties.getTierConfig(teacherTier).getMaxGroups() : 1;
+        List<Group> teacherGroups = groupRepository.findByTeacher(teacher);
+
         for (UUID groupId : request.getGroupIds()) {
             Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group not found: " + groupId));
 
             if (!group.getTeacher().getId().equals(teacher.getId())) {
                 throw new ForbiddenException("You are not the owner of group: " + group.getName());
+            }
+
+            int groupIdx = -1;
+            for (int i = 0; i < teacherGroups.size(); i++) {
+                if (teacherGroups.get(i).getId().equals(groupId)) {
+                    groupIdx = i;
+                    break;
+                }
+            }
+            if (groupIdx >= maxAllowedGroups) {
+                throw new com.linguaoptima.api.exception.QuotaExceededException("Group '" + group.getName() + "' is in read-only mode because your " +
+                    (teacherTier != null ? teacherTier.name() : "FREE") +
+                    " plan allows up to " + maxAllowedGroups + " active group(s). Upgrade to Educator Pro to assign tasks to this cohort.");
             }
 
             List<GroupStudent> students = groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId);

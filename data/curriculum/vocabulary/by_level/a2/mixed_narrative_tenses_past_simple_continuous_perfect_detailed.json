@@ -53,5 +53,60 @@
       "realized that"
     ],
     "exampleSentence": "He realized that he had forgotten the house keys."
+  },
+  {
+    "word": "suddenly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Quickly and unexpectedly.",
+    "collocations": [
+      "happened suddenly",
+      "suddenly appeared"
+    ],
+    "exampleSentence": "The power suddenly cut out while we were studying."
+  },
+  {
+    "word": "already",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Before a specified time.",
+    "collocations": [
+      "had already left",
+      "already prepared"
+    ],
+    "exampleSentence": "When we arrived at the platform, the express had already departed."
+  },
+  {
+    "word": "while",
+    "partOfSpeech": "conjunction",
+    "cefrLevel": "A2",
+    "definition": "During the time that.",
+    "collocations": [
+      "while walking",
+      "while studying"
+    ],
+    "exampleSentence": "She phoned me while I was driving along the highway."
+  },
+  {
+    "word": "finally",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "After a long delay or series of problems.",
+    "collocations": [
+      "finally arrived",
+      "finally agreed"
+    ],
+    "exampleSentence": "After hours of searching, we finally found the quiet cabin."
+  },
+  {
+    "word": "heard",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Perceived with the ear the sound made by someone or something.",
+    "collocations": [
+      "heard noise",
+      "heard shouting"
+    ],
+    "exampleSentence": "We heard a loud crash while the guests were dining."
   }
 ]

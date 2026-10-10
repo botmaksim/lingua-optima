@@ -53,5 +53,60 @@
       "urgent message"
     ],
     "exampleSentence": "I must make an urgent phone call before boarding."
+  },
+  {
+    "word": "obey",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To comply with commands or laws.",
+    "collocations": [
+      "obey rules",
+      "obey law"
+    ],
+    "exampleSentence": "All motorists must obey the road speed limits."
+  },
+  {
+    "word": "prohibit",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To formally forbid something by authority.",
+    "collocations": [
+      "strictly prohibited",
+      "prohibit smoking"
+    ],
+    "exampleSentence": "Smoking is prohibited inside the library building."
+  },
+  {
+    "word": "permit",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To give authorization or consent to someone.",
+    "collocations": [
+      "parking permit",
+      "permit entry"
+    ],
+    "exampleSentence": "Visitors must obtain a permit before entering."
+  },
+  {
+    "word": "wear",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To have on one's body as clothing.",
+    "collocations": [
+      "wear uniform",
+      "wear seatbelt"
+    ],
+    "exampleSentence": "Students have to wear school uniforms every day."
+  },
+  {
+    "word": "sign",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To write one's name on a formal document.",
+    "collocations": [
+      "sign here",
+      "sign document"
+    ],
+    "exampleSentence": "You have to sign your name at the bottom of the form."
   }
 ]

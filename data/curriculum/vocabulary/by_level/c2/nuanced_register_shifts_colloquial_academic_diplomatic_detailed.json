@@ -53,5 +53,60 @@
       "remain discreet"
     ],
     "exampleSentence": "The financial advisor conducted discreet inquiries before making an official offer."
+  },
+  {
+    "word": "equivocal",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Open to more than one interpretation; ambiguous.",
+    "collocations": [
+      "equivocal answer",
+      "remain equivocal"
+    ],
+    "exampleSentence": "The diplomat's equivocal pronouncements allowed both factions to claim substantial territorial concessions."
+  },
+  {
+    "word": "colloquially",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C2",
+    "definition": "In the language of ordinary or familiar conversation.",
+    "collocations": [
+      "known colloquially as",
+      "referred to colloquially"
+    ],
+    "exampleSentence": "The complex socio-legal legislation is referred to colloquially by parliamentary reporters as the Sunshine Bill."
+  },
+  {
+    "word": "platitude",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A remark or statement, especially one with a moral content, that is trite.",
+    "collocations": [
+      "empty platitude",
+      "mouth platitudes"
+    ],
+    "exampleSentence": "The beleaguered premier retreated to empty platitudes when questioned regarding mounting unemployment figures."
+  },
+  {
+    "word": "palaver",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "Prolonged and tedious fuss or discussion.",
+    "collocations": [
+      "needless palaver",
+      "bureaucratic palaver"
+    ],
+    "exampleSentence": "Disillusioned delegates resented the protracted diplomatic palaver that yielded merely non-binding declarations."
+  },
+  {
+    "word": "demur",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "Raise doubts or objections, or show reluctance.",
+    "collocations": [
+      "demur at the",
+      "politeness prevented her from demurring"
+    ],
+    "exampleSentence": "Several constitutional scholars demurred at the sweeping executive powers asserted in the emergency decree."
   }
 ]

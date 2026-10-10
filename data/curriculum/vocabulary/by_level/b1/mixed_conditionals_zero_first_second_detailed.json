@@ -53,5 +53,60 @@
       "positive result"
     ],
     "exampleSentence": "If you practice consistently, a positive result is guaranteed."
+  },
+  {
+    "word": "assumption",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A thing that is accepted as true without proof.",
+    "collocations": [
+      "under the assumption",
+      "false assumption"
+    ],
+    "exampleSentence": "The second conditional is constructed upon a hypothetical assumption."
+  },
+  {
+    "word": "feasibility",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The state of being easily or conveniently done.",
+    "collocations": [
+      "economic feasibility",
+      "assess feasibility"
+    ],
+    "exampleSentence": "Before approving the project, engineers must assess its feasibility."
+  },
+  {
+    "word": "contingent",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B1",
+    "definition": "Subject to chance or dependent on circumstances.",
+    "collocations": [
+      "contingent upon",
+      "contingent outcome"
+    ],
+    "exampleSentence": "Our travel plans remain contingent upon the flight schedule remaining stable."
+  },
+  {
+    "word": "implication",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The conclusion that can be drawn from something.",
+    "collocations": [
+      "practical implication",
+      "serious implication"
+    ],
+    "exampleSentence": "Consider the long-term implication if inflation rates climb further."
+  },
+  {
+    "word": "scenario",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A postulated sequence or development of events.",
+    "collocations": [
+      "worst-case scenario",
+      "hypothetical scenario"
+    ],
+    "exampleSentence": "The risk analyst evaluated every probable scenario before advising clients."
   }
 ]

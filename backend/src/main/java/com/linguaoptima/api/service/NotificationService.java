@@ -189,4 +189,19 @@ public class NotificationService {
         notification.setRead(true);
         notificationRepository.save(notification);
     }
+
+    /**
+     * @brief Marks all unread notifications for a user as read in bulk.
+     * @param user Authenticated user marking all notifications as read.
+     */
+    @Transactional
+    public void markAllAsRead(User user) {
+        List<Notification> unread = notificationRepository.findByUserIdAndIsReadFalse(user.getId());
+        if (!unread.isEmpty()) {
+            for (Notification n : unread) {
+                n.setRead(true);
+            }
+            notificationRepository.saveAll(unread);
+        }
+    }
 }

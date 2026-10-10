@@ -182,19 +182,87 @@ public class SubmissionService {
      * @throws ResourceNotFoundException if assignment is not found.
      * @throws ForbiddenException if assignment does not belong to the student.
      */
-    @Transactional
-    public SubmissionResultResponse submitImage(MultipartFile file, UUID assignmentId, User student) {
-        usageService.incrementOcr(student);
-        usageService.incrementEvaluation(student);
+    /** @brief Maximum allowed photo attachments per single homework submission. */
+    public static final int MAX_HOMEWORK_PHOTOS = 5;
 
-        byte[] imageBytes;
-        try {
-            imageBytes = file.getBytes();
-        } catch (IOException e) {
-            throw new OcrException("Failed to read image file.", e);
+    /** @brief Maximum allowed aggregate byte size for multi-photo homework submissions (25 MB). */
+    public static final long MAX_AGGREGATE_PHOTO_BYTES = 25 * 1024 * 1024L;
+
+    /** @brief Maximum allowed single photo byte size (10 MB). */
+    public static final long MAX_SINGLE_PHOTO_BYTES = 10 * 1024 * 1024L;
+
+    /**
+     * @brief Processes single or multiple uploaded homework photos via in-memory OCR and scores the extracted text.
+     *
+     * In accordance with Zero-Retention OCR design, the uploaded image bytes are passed
+     * directly to OCR and immediately garbage collected; only the recognized text is stored.
+     *
+     * @param files List of multipart image files containing handwritten or printed text.
+     * @param assignmentId Optional task assignment identifier.
+     * @param student The student submitting the photo.
+     * @return SubmissionResultResponse DTO containing extracted text and grading results.
+     * @throws OcrException if images exceed limit, are invalid, or recognition fails.
+     * @throws ResourceNotFoundException if assignment is not found.
+     * @throws ForbiddenException if assignment does not belong to the student.
+     */
+    @Transactional
+    public SubmissionResultResponse submitImages(List<MultipartFile> files, UUID assignmentId, User student) {
+        List<MultipartFile> validFiles = (files != null)
+            ? files.stream().filter(f -> f != null && !f.isEmpty()).toList()
+            : List.of();
+
+        if (validFiles.isEmpty()) {
+            throw new OcrException("No image provided. Please select a valid photo.");
         }
 
-        String extractedText = ocrService.extractText(imageBytes);
+        if (validFiles.size() > MAX_HOMEWORK_PHOTOS) {
+            throw new OcrException("Maximum " + MAX_HOMEWORK_PHOTOS + " photos allowed per submission.");
+        }
+
+        long totalBytes = validFiles.stream().mapToLong(MultipartFile::getSize).sum();
+        if (totalBytes > MAX_AGGREGATE_PHOTO_BYTES) {
+            throw new OcrException("Total images size exceeds 25MB limit.");
+        }
+
+        for (MultipartFile f : validFiles) {
+            if (f.getSize() > MAX_SINGLE_PHOTO_BYTES) {
+                String name = f.getOriginalFilename() != null ? f.getOriginalFilename() : "Uploaded photo";
+                throw new OcrException("Image '" + name + "' exceeds 10MB limit.");
+            }
+        }
+
+        usageService.incrementOcr(student, validFiles.size());
+        usageService.incrementEvaluation(student);
+
+        List<String> pageTexts = new ArrayList<>();
+        for (MultipartFile file : validFiles) {
+            byte[] imageBytes;
+            try {
+                imageBytes = file.getBytes();
+            } catch (IOException e) {
+                throw new OcrException("Failed to read image file.", e);
+            }
+            String extracted = ocrService.extractText(imageBytes);
+            if (extracted != null && !extracted.isBlank()) {
+                pageTexts.add(extracted.trim());
+            }
+        }
+
+        if (pageTexts.isEmpty()) {
+            throw new OcrException("Image is unclear, please try again.");
+        }
+
+        String extractedText;
+        if (pageTexts.size() == 1) {
+            extractedText = pageTexts.get(0);
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < pageTexts.size(); i++) {
+                sb.append("--- Page ").append(i + 1).append(" ---\n")
+                  .append(pageTexts.get(i)).append("\n\n");
+            }
+            extractedText = sb.toString().trim();
+        }
 
         TaskAssignment assignment = null;
         String answerKey = "";
@@ -238,7 +306,20 @@ public class SubmissionService {
         Task currentTask = (assignment != null) ? assignment.getTask() : null;
         recordSubmissionProgress(student, grammarTopic, score, response, currentTask);
         gamificationService.onSubmissionCompleted(student);
+
         return response;
+    }
+
+    /**
+     * @brief Processes a single uploaded homework photo via in-memory OCR.
+     * @param file The multipart image file containing handwritten or printed text.
+     * @param assignmentId Optional task assignment identifier.
+     * @param student The student submitting the photo.
+     * @return SubmissionResultResponse DTO containing extracted text and grading results.
+     */
+    @Transactional
+    public SubmissionResultResponse submitImage(MultipartFile file, UUID assignmentId, User student) {
+        return submitImages(file != null ? List.of(file) : List.of(), assignmentId, student);
     }
 
     /**
@@ -592,7 +673,7 @@ public class SubmissionService {
     }
 
     /**
-     * @brief Checks if a student's answer matches the target answer key, accounting for case, punctuation, and variants.
+     * @brief Checks if a student's answer matches the target answer key, accounting for case, punctuation, homoglyphs, and variants.
      * @param studentAns The student's submitted response.
      * @param correctAns The expected reference answer.
      * @return True if the response is considered a valid match.
@@ -601,7 +682,6 @@ public class SubmissionService {
         if (studentAns == null || correctAns == null) return false;
         String s = normalizeText(studentAns);
         String c = normalizeText(correctAns);
-        if (s.isEmpty() && c.isEmpty()) return true;
         if (s.isEmpty() || c.isEmpty()) return false;
         if (s.equals(c)) return true;
 
@@ -615,19 +695,46 @@ public class SubmissionService {
                 if (s.equals(normalizeText(part))) return true;
             }
         }
+        if (correctAns.contains(" or ")) {
+            for (String part : correctAns.split(" or ")) {
+                if (s.equals(normalizeText(part))) return true;
+            }
+        }
         return false;
     }
 
     /**
-     * @brief Normalizes raw response strings by stripping punctuation, extra whitespace, and ordinal indicators.
+     * @brief Normalizes raw response strings by stripping punctuation, extra whitespace, Cyrillic lookalikes, and ordinal indicators.
      * @param text Raw response string.
      * @return Lowercase normalized token string.
      */
     private String normalizeText(String text) {
         if (text == null) return "";
-        return text.trim().toLowerCase()
-            .replaceAll("^(?:q\\d+[:.)\\-\\s]+|\\d+[:.)\\-\\s]+)", "")
-            .replaceAll("[.,!?;:'\"()]", "")
+        // 1. Replace non-breaking spaces and unicode spaces with ASCII space
+        String cleaned = text.replace('\u00A0', ' ')
+            .replace('\u202F', ' ')
+            .replace('\u200B', ' ')
+            .toLowerCase()
+            .trim();
+
+        // 2. Transliterate common Cyrillic confusable homoglyphs to Latin equivalents
+        cleaned = cleaned.replace('а', 'a')
+            .replace('с', 'c')
+            .replace('е', 'e')
+            .replace('о', 'o')
+            .replace('р', 'p')
+            .replace('х', 'x')
+            .replace('у', 'y')
+            .replace('і', 'i')
+            .replace('ј', 'j')
+            .replace('ѕ', 's');
+
+        // 3. Strip question numbers like Q1: or 1. or Option letters A) or B.
+        cleaned = cleaned.replaceAll("^(?:q\\d+[:.)\\-\\s]+|\\d+[:.)\\-\\s]+|[a-da-d][:.)\\-\\s]+)", "");
+
+        // 4. Strip punctuation and collapse whitespace
+        return cleaned.replaceAll("[.,!?;:'\"`“”‘’()]", "")
+            .replaceAll("\\s+", " ")
             .trim();
     }
 
@@ -721,8 +828,11 @@ public class SubmissionService {
                     int qNum = idx++;
                     String qText = node.path("questionText").asText("Diagnostic adaptive question " + qNum);
                     String ans = node.path("answer").asText("");
+                    if (ans.isBlank()) {
+                        ans = node.path("givenAnswer").asText("");
+                    }
                     String corr = node.path("correctAnswer").asText("");
-                    boolean isCorr = node.path("isCorrect").asBoolean(false);
+                    boolean isCorr = node.path("isCorrect").asBoolean(false) || isAnswerMatching(ans, corr);
                     String rule = node.path("grammarRule").asText("Adaptive grammar assessment");
                     int diff = node.path("difficulty").asInt(2);
 
@@ -797,12 +907,17 @@ public class SubmissionService {
         if (itemsObj instanceof List<?> list && items.isEmpty()) {
             for (Object item : list) {
                 if (item instanceof Map<?, ?> m) {
+                    String studentAns = m.get("studentAnswer") != null ? String.valueOf(m.get("studentAnswer")) : "";
+                    String correctAns = m.get("correctAnswer") != null ? String.valueOf(m.get("correctAnswer")) : "";
+                    boolean aiIsCorrect = Boolean.TRUE.equals(m.get("isCorrect"));
+                    boolean isCorrect = aiIsCorrect || isAnswerMatching(studentAns, correctAns);
+
                     items.add(SubmissionItemResponse.builder()
                         .questionNumber(m.get("questionNumber") instanceof Number n ? n.intValue() : items.size() + 1)
                         .sentence(m.get("sentence") != null ? String.valueOf(m.get("sentence")) : "")
-                        .studentAnswer(m.get("studentAnswer") != null ? String.valueOf(m.get("studentAnswer")) : "")
-                        .correctAnswer(m.get("correctAnswer") != null ? String.valueOf(m.get("correctAnswer")) : "")
-                        .isCorrect(Boolean.TRUE.equals(m.get("isCorrect")))
+                        .studentAnswer(studentAns)
+                        .correctAnswer(correctAns)
+                        .isCorrect(isCorrect)
                         .explanation(m.get("explanation") != null ? String.valueOf(m.get("explanation")) : "")
                         .grammarRule(m.get("grammarRule") != null ? String.valueOf(m.get("grammarRule")) : "")
                         .build());

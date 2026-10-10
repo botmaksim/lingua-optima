@@ -53,5 +53,60 @@
       "has just"
     ],
     "exampleSentence": "We have just finished our lunch at the bistro."
+  },
+  {
+    "word": "yet",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Up to the present time.",
+    "collocations": [
+      "not yet",
+      "have you yet"
+    ],
+    "exampleSentence": "Has the courier arrived with the packages yet?"
+  },
+  {
+    "word": "since",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "A2",
+    "definition": "In the period between then and now.",
+    "collocations": [
+      "since morning",
+      "since 2020"
+    ],
+    "exampleSentence": "We have resided in this coastal cottage since 2018."
+  },
+  {
+    "word": "before",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "At an earlier time.",
+    "collocations": [
+      "seen before",
+      "met before"
+    ],
+    "exampleSentence": "I have never seen such a magnificent sunrise before."
+  },
+  {
+    "word": "times",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Instances or occasions.",
+    "collocations": [
+      "three times",
+      "many times"
+    ],
+    "exampleSentence": "She has visited the national gallery three times this year."
+  },
+  {
+    "word": "so_far",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "A2",
+    "definition": "Up to the present moment.",
+    "collocations": [
+      "good so far",
+      "completed so far"
+    ],
+    "exampleSentence": "We have completed four units of the syllabus so far."
   }
 ]

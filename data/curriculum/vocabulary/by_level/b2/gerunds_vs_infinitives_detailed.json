@@ -53,5 +53,60 @@
       "strive for"
     ],
     "exampleSentence": "Educational institutions strive to cultivate independent critical thinkers."
+  },
+  {
+    "word": "admit_doing",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Confess to having done something.",
+    "collocations": [
+      "admitted taking",
+      "admit making"
+    ],
+    "exampleSentence": "The minister admitted making errors in the initial budget projections."
+  },
+  {
+    "word": "tend_to_do",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Regularly or frequently behave in a particular way.",
+    "collocations": [
+      "tend to overlook",
+      "tend to agree"
+    ],
+    "exampleSentence": "Junior researchers tend to overlook minor calibration inconsistencies in instruments."
+  },
+  {
+    "word": "avoid_doing",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Keep away from doing something.",
+    "collocations": [
+      "avoid making",
+      "avoid taking"
+    ],
+    "exampleSentence": "Careful drivers avoid using smartphones while navigating congested roundabouts."
+  },
+  {
+    "word": "hesitate_to_do",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Pause in indecision before saying or doing something.",
+    "collocations": [
+      "hesitate to criticize",
+      "hesitate to act"
+    ],
+    "exampleSentence": "Do not hesitate to reach out if you encounter procedural discrepancies."
+  },
+  {
+    "word": "manage_to_do",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Succeed in surviving or in attaining one's aim.",
+    "collocations": [
+      "manage to find",
+      "manage to finish"
+    ],
+    "exampleSentence": "Despite fierce competition, the startup managed to secure venture financing."
   }
 ]

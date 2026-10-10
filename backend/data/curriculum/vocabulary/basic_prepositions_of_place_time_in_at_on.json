@@ -1,18 +1,12 @@
-{
-  "topic": "Basic Prepositions of Place & Time (in, at, on)",
-  "cefrLevel": "A1",
-  "words": [
-    "morning",
-    "afternoon",
-    "evening",
-    "night",
-    "weekend",
-    "clock",
-    "kitchen",
-    "station",
-    "corner",
-    "street",
-    "calendar",
-    "schedule"
-  ]
-}
+[
+  "clock",
+  "corner",
+  "calendar",
+  "station",
+  "weekend",
+  "morning",
+  "evening",
+  "kitchen",
+  "shelf",
+  "afternoon"
+]

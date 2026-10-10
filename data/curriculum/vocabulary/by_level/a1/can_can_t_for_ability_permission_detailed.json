@@ -53,5 +53,60 @@
       "play football"
     ],
     "exampleSentence": "They can play chess very well."
+  },
+  {
+    "word": "sing",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To make musical sounds with the voice.",
+    "collocations": [
+      "sing songs",
+      "sing well"
+    ],
+    "exampleSentence": "She can sing English songs very beautifully."
+  },
+  {
+    "word": "dance",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To move rhythmically to music.",
+    "collocations": [
+      "dance well",
+      "can dance"
+    ],
+    "exampleSentence": "They can dance traditional dances together."
+  },
+  {
+    "word": "run",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To move rapidly on foot.",
+    "collocations": [
+      "run fast",
+      "can run"
+    ],
+    "exampleSentence": "He can run five kilometers without stopping."
+  },
+  {
+    "word": "paint",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To apply paint to a surface or produce a picture.",
+    "collocations": [
+      "paint pictures",
+      "paint walls"
+    ],
+    "exampleSentence": "Can you paint a picture of our house?"
+  },
+  {
+    "word": "jump",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To push oneself off a surface into the air.",
+    "collocations": [
+      "jump high",
+      "can jump"
+    ],
+    "exampleSentence": "The dog can jump over the low garden fence."
   }
 ]

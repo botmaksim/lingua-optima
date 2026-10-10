@@ -53,5 +53,60 @@
       "carefully scrutinized"
     ],
     "exampleSentence": "The candidate's credentials are being scrutinized by the admissions board."
+  },
+  {
+    "word": "implemented",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Put a decision, plan, or agreement into effect.",
+    "collocations": [
+      "implemented successfully",
+      "widely implemented"
+    ],
+    "exampleSentence": "New digital security measures are currently being implemented across all branches."
+  },
+  {
+    "word": "maintained",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Caused or enabled a condition or state of affairs to continue.",
+    "collocations": [
+      "carefully maintained",
+      "regularly maintained"
+    ],
+    "exampleSentence": "The historical bridges are being maintained by heritage specialists."
+  },
+  {
+    "word": "monitored",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Observed and checked the progress or quality of something over time.",
+    "collocations": [
+      "closely monitored",
+      "being monitored"
+    ],
+    "exampleSentence": "Water quality levels in the reservoir have been monitored continuously."
+  },
+  {
+    "word": "upgraded",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Raised something to a higher standard, especially by installing newer parts.",
+    "collocations": [
+      "recently upgraded",
+      "being upgraded"
+    ],
+    "exampleSentence": "The airport passenger terminal is being upgraded to handle wide-body jets."
+  },
+  {
+    "word": "evaluated",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Formed an idea of the amount, number, or value of.",
+    "collocations": [
+      "critically evaluated",
+      "carefully evaluated"
+    ],
+    "exampleSentence": "The curriculum reforms have been evaluated by an independent accreditation board."
   }
 ]

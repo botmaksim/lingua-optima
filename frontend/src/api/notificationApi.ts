@@ -38,6 +38,13 @@ export const notificationApi = {
   },
 
   /**
+   * @brief Marks all notifications as read for authenticated user.
+   */
+  markAllAsRead: async (): Promise<void> => {
+    await axiosInstance.patch('/notifications/read-all');
+  },
+
+  /**
    * @brief Establishes an EventSource Server-Sent Events stream for real-time notification push delivery.
    * @param onMessage Callback invoked with newly pushed notification.
    * @param onError Optional callback invoked upon connection failure or timeout.

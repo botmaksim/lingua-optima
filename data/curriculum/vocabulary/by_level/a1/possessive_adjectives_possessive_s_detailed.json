@@ -53,5 +53,60 @@
       "show passport"
     ],
     "exampleSentence": "Our teacher's passport is on the desk."
+  },
+  {
+    "word": "mother",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A female parent.",
+    "collocations": [
+      "my mother",
+      "mother's car"
+    ],
+    "exampleSentence": "My mother's garden is full of lovely flowers."
+  },
+  {
+    "word": "father",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A male parent.",
+    "collocations": [
+      "his father",
+      "father's coat"
+    ],
+    "exampleSentence": "His father's briefcase is on the sofa."
+  },
+  {
+    "word": "cousin",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A child of one's uncle or aunt.",
+    "collocations": [
+      "her cousin",
+      "cousin's family"
+    ],
+    "exampleSentence": "Her cousin's apartment is near the university."
+  },
+  {
+    "word": "daughter",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A person's female child.",
+    "collocations": [
+      "their daughter",
+      "daughter's school"
+    ],
+    "exampleSentence": "Their daughter's teacher is very friendly."
+  },
+  {
+    "word": "son",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A person's male child.",
+    "collocations": [
+      "our son",
+      "son's bicycle"
+    ],
+    "exampleSentence": "Our son's new bicycle is bright blue."
   }
 ]

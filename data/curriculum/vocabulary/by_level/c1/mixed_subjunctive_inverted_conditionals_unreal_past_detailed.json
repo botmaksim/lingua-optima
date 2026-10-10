@@ -53,5 +53,60 @@
       "were it not for"
     ],
     "exampleSentence": "Were the board to approve the merger, international operations would expand substantially."
+  },
+  {
+    "word": "had_they_known",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Inverted third conditional protasis.",
+    "collocations": [
+      "had they known the",
+      "had they known earlier"
+    ],
+    "exampleSentence": "Had they known the volatility of the derivative markets, they would have hedged their portfolio."
+  },
+  {
+    "word": "were_it_not_for",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Inverted second conditional denoting indispensable cause.",
+    "collocations": [
+      "were it not for his",
+      "were it not for the"
+    ],
+    "exampleSentence": "Were it not for philanthropic endowments, the classical music conservatoire would face liquidation."
+  },
+  {
+    "word": "should_there_be",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Inverted first conditional denoting remote possibility.",
+    "collocations": [
+      "should there be any",
+      "should there be discrepancies"
+    ],
+    "exampleSentence": "Should there be any variance in ledger accounts, the internal auditor must be alerted immediately."
+  },
+  {
+    "word": "suffice_it_to_say",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Subjunctive idiom denoting that a brief statement covers all.",
+    "collocations": [
+      "suffice it to say that",
+      "suffice it to say"
+    ],
+    "exampleSentence": "Suffice it to say that diplomacy triumphed over belligerence during the midnight crisis negotiations."
+  },
+  {
+    "word": "lest_we_forget",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Archaic subjunctive formula denoting solemn remembrance.",
+    "collocations": [
+      "lest we forget the",
+      "lest we forget"
+    ],
+    "exampleSentence": "Memorial plaques were mounted across the cathedral facade, lest we forget their supreme sacrifice."
   }
 ]

@@ -53,5 +53,60 @@
       "profound insight"
     ],
     "exampleSentence": "The discovery of quantum entanglement exerted a profound impact on twentieth-century physics."
+  },
+  {
+    "word": "only_when_confronted_with",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Conditioned temporal inversion emphasizing awakening.",
+    "collocations": [
+      "only when confronted with",
+      "only when confronted by"
+    ],
+    "exampleSentence": "Only when confronted with undeniable evidence of atmospheric degradation did the petrostate concede the need for transition."
+  },
+  {
+    "word": "what_lies_at_the_core_is",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Philosophical wh-cleft exposing the foundational reality.",
+    "collocations": [
+      "what lies at the core is",
+      "what lies at the heart"
+    ],
+    "exampleSentence": "What lies at the core of the democratic dilemma is not voter apathy, but systemic disenfranchisement."
+  },
+  {
+    "word": "it_was_in_sheer_defiance",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Emphatic prepositional it-cleft underscoring brave rebellion.",
+    "collocations": [
+      "it was in sheer defiance of",
+      "it was in defiance"
+    ],
+    "exampleSentence": "It was in sheer defiance of authoritarian censorship that underground printers published the banned samizdat anthology."
+  },
+  {
+    "word": "barely_had_the_dust_settled",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "High-register negative narrative inversion depicting rapid change.",
+    "collocations": [
+      "barely had the dust settled",
+      "barely had the echoes"
+    ],
+    "exampleSentence": "Barely had the dust settled over the fallen capital when rival partisan factions engaged in armed territorial skirmishes."
+  },
+  {
+    "word": "such_was_the_eloquence",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Rhetorical inversion magnifying irresistible persuasion.",
+    "collocations": [
+      "such was the eloquence",
+      "such was the power"
+    ],
+    "exampleSentence": "Such was the eloquence of the defense counsel's summation that seasoned magistrates were moved to tears."
   }
 ]

@@ -53,5 +53,60 @@
       "royal decree"
     ],
     "exampleSentence": "The high court decreed that the public records be made accessible immediately."
+  },
+  {
+    "word": "stipulate_that",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Demand or specify a requirement as part of a bargain.",
+    "collocations": [
+      "stipulate that he",
+      "stipulates that all"
+    ],
+    "exampleSentence": "The armistice accords stipulate that all sovereign borders remain demilitarized."
+  },
+  {
+    "word": "mandate_that",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Give someone an official order or commission.",
+    "collocations": [
+      "mandate that each",
+      "mandate that schools"
+    ],
+    "exampleSentence": "Statutory bylaws mandate that each hospital trustee disclose potential conflicts."
+  },
+  {
+    "word": "decree_that",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Order something by formal and authoritative command.",
+    "collocations": [
+      "decree that the",
+      "decreed that all"
+    ],
+    "exampleSentence": "The monarch decreed that political dissidents be granted unconditional amnesty."
+  },
+  {
+    "word": "propose_that",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Put forward an idea or plan for consideration.",
+    "collocations": [
+      "propose that we",
+      "proposed that she"
+    ],
+    "exampleSentence": "Committee members proposed that the treasurer step down during the fiscal probe."
+  },
+  {
+    "word": "vital_that",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Of critical necessity that something occur.",
+    "collocations": [
+      "vital that they",
+      "vital that peace"
+    ],
+    "exampleSentence": "It is vital that peace negotiators preserve confidentiality throughout bilateral summits."
   }
 ]

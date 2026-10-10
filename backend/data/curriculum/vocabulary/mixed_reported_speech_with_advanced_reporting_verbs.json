@@ -1,16 +1,12 @@
-{
-  "topic": "Mixed Reported Speech with Advanced Reporting Verbs",
-  "cefrLevel": "B2",
-  "words": [
-    "declaration",
-    "allegation",
-    "contention",
-    "concession",
-    "ultimatum",
-    "reiteration",
-    "clarification",
-    "testimony",
-    "discourse",
-    "statement"
-  ]
-}
+[
+  "insist",
+  "persuade",
+  "admit",
+  "deny",
+  "reassure",
+  "counsel",
+  "dissuade",
+  "exhort",
+  "petition",
+  "reproach"
+]

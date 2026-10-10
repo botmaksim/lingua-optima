@@ -174,7 +174,7 @@ class SubscriptionServiceTest {
         when(usageService.getUsage(user)).thenReturn(UsageResponse.builder().evaluationsRemaining(999).ocrRemaining(999).build());
 
         SubscriptionResponse subRes = subscriptionService.getSubscription(user);
-        assertTrue(subRes.isUnlimited());
+        assertFalse(subRes.isUnlimited());
 
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(subscription));
         when(paymentService.processPayment(eq(29.99), eq("tok-edu"))).thenReturn(

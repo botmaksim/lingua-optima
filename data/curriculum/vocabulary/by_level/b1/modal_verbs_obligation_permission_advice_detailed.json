@@ -53,5 +53,60 @@
       "fail to comply"
     ],
     "exampleSentence": "All candidates must comply with examination hall rules."
+  },
+  {
+    "word": "compulsory",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B1",
+    "definition": "Required by law or a rule; obligatory.",
+    "collocations": [
+      "compulsory education",
+      "compulsory module"
+    ],
+    "exampleSentence": "Attendance at the laboratory safety workshop is strictly compulsory."
+  },
+  {
+    "word": "optional",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B1",
+    "definition": "Available to be chosen but not obligatory.",
+    "collocations": [
+      "optional module",
+      "remains optional"
+    ],
+    "exampleSentence": "Attending the evening discussion group remains entirely optional."
+  },
+  {
+    "word": "guideline",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A general rule, principle, or piece of advice.",
+    "collocations": [
+      "follow guidelines",
+      "strict guidelines"
+    ],
+    "exampleSentence": "Review the formatting guidelines before submitting your final essay."
+  },
+  {
+    "word": "duty",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A moral or legal obligation; a responsibility.",
+    "collocations": [
+      "civic duty",
+      "sense of duty"
+    ],
+    "exampleSentence": "It is the citizen's duty to respect public property."
+  },
+  {
+    "word": "rule",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "One of a set of explicit regulations or principles governing conduct.",
+    "collocations": [
+      "school rule",
+      "follow the rules"
+    ],
+    "exampleSentence": "All competitors must abide by the international governing rules."
   }
 ]

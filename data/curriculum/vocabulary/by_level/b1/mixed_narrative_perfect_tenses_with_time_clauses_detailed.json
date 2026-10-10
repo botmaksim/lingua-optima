@@ -53,5 +53,60 @@
       "not until dawn"
     ],
     "exampleSentence": "The expedition waited patiently until the storm had completely subsided."
+  },
+  {
+    "word": "prior_to",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "B1",
+    "definition": "Before a particular time or event.",
+    "collocations": [
+      "prior to departure",
+      "prior to arrival"
+    ],
+    "exampleSentence": "Please complete the health questionnaire prior to your clinic visit."
+  },
+  {
+    "word": "subsequently",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B1",
+    "definition": "After a particular thing has happened; afterwards.",
+    "collocations": [
+      "subsequently discovered",
+      "subsequently reported"
+    ],
+    "exampleSentence": "The defect was detected and subsequently remedied by senior technicians."
+  },
+  {
+    "word": "preceded",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Came before something in time, order, or position.",
+    "collocations": [
+      "preceded by",
+      "immediately preceded"
+    ],
+    "exampleSentence": "A severe thunderstorm preceded the sudden drop in temperature."
+  },
+  {
+    "word": "followed",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Came after something in time or sequence.",
+    "collocations": [
+      "followed by",
+      "closely followed"
+    ],
+    "exampleSentence": "A lively public debate followed the premiere of the historical play."
+  },
+  {
+    "word": "by_the_time",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "B1",
+    "definition": "At or before the moment when something occurs.",
+    "collocations": [
+      "by the time we arrived",
+      "by the time it ended"
+    ],
+    "exampleSentence": "By the time firefighters reached the warehouse, the fire had subsided."
   }
 ]

@@ -53,5 +53,60 @@
       "on the weekend"
     ],
     "exampleSentence": "I like relaxing at home on the weekend."
+  },
+  {
+    "word": "morning",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "The period of time between sunrise and noon.",
+    "collocations": [
+      "in the morning",
+      "early morning"
+    ],
+    "exampleSentence": "I study English lessons in the morning."
+  },
+  {
+    "word": "evening",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "The period of time at the end of the day.",
+    "collocations": [
+      "in the evening",
+      "every evening"
+    ],
+    "exampleSentence": "We watch movies together in the evening."
+  },
+  {
+    "word": "kitchen",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A room where food is prepared and cooked.",
+    "collocations": [
+      "in the kitchen",
+      "modern kitchen"
+    ],
+    "exampleSentence": "My father is cooking dinner in the kitchen."
+  },
+  {
+    "word": "shelf",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A flat horizontal board used to store items.",
+    "collocations": [
+      "on the shelf",
+      "book shelf"
+    ],
+    "exampleSentence": "The dictionary is placed on the top shelf."
+  },
+  {
+    "word": "afternoon",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "The time from noon until evening.",
+    "collocations": [
+      "in the afternoon",
+      "this afternoon"
+    ],
+    "exampleSentence": "We usually drink tea in the afternoon."
   }
 ]

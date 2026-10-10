@@ -53,5 +53,60 @@
       "healthy habit"
     ],
     "exampleSentence": "Reading before bed is a beneficial habit."
+  },
+  {
+    "word": "currently",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "At the present time.",
+    "collocations": [
+      "currently working",
+      "currently living"
+    ],
+    "exampleSentence": "She is currently preparing for her university exams."
+  },
+  {
+    "word": "yesterday",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "On the day before today.",
+    "collocations": [
+      "happened yesterday",
+      "arrived yesterday"
+    ],
+    "exampleSentence": "Our parcel arrived yesterday afternoon."
+  },
+  {
+    "word": "always",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "At all times; on all occasions.",
+    "collocations": [
+      "always arrives",
+      "always helpful"
+    ],
+    "exampleSentence": "He always arrives at the office fifteen minutes early."
+  },
+  {
+    "word": "rarely",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Not often; seldom.",
+    "collocations": [
+      "rarely travels",
+      "rarely seen"
+    ],
+    "exampleSentence": "We rarely eat out at restaurants during the week."
+  },
+  {
+    "word": "happened",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Took place; occurred.",
+    "collocations": [
+      "what happened",
+      "happened quickly"
+    ],
+    "exampleSentence": "The accident happened quickly while the road was wet."
   }
 ]

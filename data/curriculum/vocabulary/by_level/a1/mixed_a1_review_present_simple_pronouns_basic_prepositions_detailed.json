@@ -53,5 +53,60 @@
       "get ready"
     ],
     "exampleSentence": "Are you ready to start the lesson?"
+  },
+  {
+    "word": "quiet",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Making little or no noise.",
+    "collocations": [
+      "quiet room",
+      "be quiet"
+    ],
+    "exampleSentence": "The library is a very quiet place to read."
+  },
+  {
+    "word": "hungry",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Feeling the need for food.",
+    "collocations": [
+      "feel hungry",
+      "get hungry"
+    ],
+    "exampleSentence": "Are you hungry after our morning walk?"
+  },
+  {
+    "word": "happy",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Feeling or showing pleasure.",
+    "collocations": [
+      "feel happy",
+      "happy family"
+    ],
+    "exampleSentence": "She feels happy when speaking English."
+  },
+  {
+    "word": "tired",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "In need of sleep or rest.",
+    "collocations": [
+      "feel tired",
+      "very tired"
+    ],
+    "exampleSentence": "I am tired because I woke up at five."
+  },
+  {
+    "word": "cold",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Of or at a low temperature.",
+    "collocations": [
+      "cold water",
+      "cold day"
+    ],
+    "exampleSentence": "The weather is very cold this winter morning."
   }
 ]

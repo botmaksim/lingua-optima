@@ -7,21 +7,26 @@ package com.linguaoptima.api.service;
 import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.Submission;
+import com.linguaoptima.api.domain.Subscription;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.Notification;
 import com.linguaoptima.api.domain.enums.EnrollmentStatus;
 import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
+import com.linguaoptima.api.domain.enums.SubscriptionTier;
 import com.linguaoptima.api.dto.request.CreateGroupRequest;
 import com.linguaoptima.api.dto.response.GroupInvitationResponse;
 import com.linguaoptima.api.dto.response.GroupResponse;
 import com.linguaoptima.api.dto.response.UserResponse;
+import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.exception.ForbiddenException;
+import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.NotificationRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
+import com.linguaoptima.api.repository.SubscriptionRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,15 +63,40 @@ public class GroupService {
     private final NotificationService notificationService;
     /** @brief Field representing notification repository in GroupService. */
     private final NotificationRepository notificationRepository;
+    /** @brief Pricing properties configuring tiered cohort quotas. */
+    private final PricingProperties pricingProperties;
+    /** @brief Subscription repository to resolve educator tier. */
+    private final SubscriptionRepository subscriptionRepository;
+
+    /**
+     * @brief Resolves subscription tier for an educator.
+     */
+    private SubscriptionTier getTeacherTier(User teacher) {
+        if (subscriptionRepository == null || teacher == null) return SubscriptionTier.FREE;
+        return subscriptionRepository.findByUser(teacher)
+            .map(Subscription::getTier)
+            .orElse(SubscriptionTier.FREE);
+    }
 
     /**
      * @brief Creates a new student group owned by the requesting educator.
      * @param request Group creation payload containing the class name.
      * @param teacher The educator creating the group.
      * @return GroupResponse DTO representing the newly created group.
+     * @throws QuotaExceededException if current group count reaches subscription tier limit.
      */
     @Transactional
     public GroupResponse createGroup(CreateGroupRequest request, User teacher) {
+        SubscriptionTier tier = getTeacherTier(teacher);
+        PricingProperties.TierConfig tierConfig = pricingProperties.getTierConfig(tier);
+        List<Group> existing = groupRepository.findByTeacher(teacher);
+        if (existing.size() >= tierConfig.getMaxGroups()) {
+            throw new QuotaExceededException(
+                "Your subscription tier (" + (tier != null ? tier.name() : "FREE") +
+                ") allows a maximum of " + tierConfig.getMaxGroups() + " student group(s). Please upgrade to Educator Pro to create more cohorts."
+            );
+        }
+
         Group group = Group.builder()
             .name(request.getName())
             .teacher(teacher)
@@ -88,9 +119,42 @@ public class GroupService {
                 .map(this::mapToGroupResponse)
                 .collect(Collectors.toList());
         }
-        return groupRepository.findByTeacher(teacher).stream()
-            .map(this::mapToGroupResponse)
-            .collect(Collectors.toList());
+        List<Group> groups = groupRepository.findByTeacher(teacher);
+        SubscriptionTier tier = getTeacherTier(teacher);
+        int maxAllowed = pricingProperties.getTierConfig(tier).getMaxGroups();
+        List<GroupResponse> responses = new ArrayList<>();
+        for (int i = 0; i < groups.size(); i++) {
+            GroupResponse res = mapToGroupResponse(groups.get(i));
+            if (i >= maxAllowed) {
+                res.setLocked(true);
+            }
+            responses.add(res);
+        }
+        return responses;
+    }
+
+    /**
+     * @brief Validates that the targeted cohort is active and within the educator's tier quota.
+     * @param groupId Unique identifier of the group.
+     * @param teacher Educator attempting to manage or assign tasks to the group.
+     * @throws QuotaExceededException if the cohort is locked due to plan downgrades or limits.
+     */
+    public void validateGroupIsActive(UUID groupId, User teacher) {
+        List<Group> groups = groupRepository.findByTeacher(teacher);
+        SubscriptionTier tier = getTeacherTier(teacher);
+        int maxAllowed = pricingProperties.getTierConfig(tier).getMaxGroups();
+        int index = -1;
+        for (int i = 0; i < groups.size(); i++) {
+            if (groups.get(i).getId().equals(groupId)) {
+                index = i;
+                break;
+            }
+        }
+        if (index >= maxAllowed) {
+            throw new QuotaExceededException("This group is in read-only mode because your " +
+                (tier != null ? tier.name() : "FREE") +
+                " plan allows up to " + maxAllowed + " active group(s). Upgrade to Educator Pro to reactivate this cohort.");
+        }
     }
 
     /**

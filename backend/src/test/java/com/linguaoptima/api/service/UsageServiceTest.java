@@ -97,10 +97,12 @@ class UsageServiceTest {
      * @brief Verifies unit test scenario: increment evaluation premium unlimited.
      */
     @Test
-    void testIncrementEvaluationPremiumUnlimited() {
+    void testIncrementEvaluationPremiumWithLimits() {
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.PREMIUM).build()));
+        when(usageCounterRepository.findByUserId(user.getId())).thenReturn(Optional.of(counter));
         assertDoesNotThrow(() -> usageService.incrementEvaluation(user));
-        verify(usageCounterRepository, never()).save(any());
+        assertEquals(1, counter.getWeekEvaluations());
+        verify(usageCounterRepository).save(counter);
     }
 
     /**
@@ -144,8 +146,8 @@ class UsageServiceTest {
 
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.PREMIUM).build()));
         UsageResponse premUsage = usageService.getUsage(user);
-        assertNull(premUsage.getEvaluationLimit());
-        assertEquals(Integer.MAX_VALUE, premUsage.getEvaluationsRemaining());
+        assertEquals(500, premUsage.getEvaluationLimit());
+        assertEquals(496, premUsage.getEvaluationsRemaining());
     }
 
     /**
@@ -160,6 +162,7 @@ class UsageServiceTest {
         verify(usageCounterRepository).save(counter);
 
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.PREMIUM).build()));
+        when(usageCounterRepository.findByUserId(user.getId())).thenReturn(Optional.of(counter));
         assertDoesNotThrow(() -> usageService.incrementOcr(user));
 
         when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.FREE).build()));
@@ -167,6 +170,50 @@ class UsageServiceTest {
         when(usageCounterRepository.save(any(UsageCounter.class))).thenReturn(counter);
         assertNotNull(usageService.getUsage(user));
         assertNotNull(usageService.getOrCreateCounter(user));
+    }
+
+    @Test
+    void testConsumeTokens_SuccessAndQuotaExceeded() {
+        when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.FREE).build()));
+        when(usageCounterRepository.findByUserId(user.getId())).thenReturn(Optional.of(counter));
+
+        // Negative or zero tokens do nothing
+        assertDoesNotThrow(() -> usageService.consumeTokens(user, 0L));
+        assertDoesNotThrow(() -> usageService.consumeTokens(user, -5L));
+
+        // Normal consumption
+        usageService.consumeTokens(user, 500L);
+        assertEquals(500L, counter.getWeekTokensUsed());
+        verify(usageCounterRepository).save(counter);
+
+        // Exceeding Free token limit (50,000)
+        assertThrows(QuotaExceededException.class, () -> usageService.consumeTokens(user, 60_000L));
+    }
+
+    @Test
+    void testEstimateTokens() {
+        assertEquals(0L, UsageService.estimateTokens(null));
+        assertEquals(0L, UsageService.estimateTokens(""));
+        assertEquals(0L, UsageService.estimateTokens("   "));
+        assertEquals(1L, UsageService.estimateTokens("hi"));
+        assertEquals(5L, UsageService.estimateTokens("12345678901234567890"));
+    }
+
+    @Test
+    void testIncrementOcr_WithCount() {
+        when(subscriptionRepository.findByUserId(user.getId())).thenReturn(Optional.of(Subscription.builder().tier(SubscriptionTier.FREE).build()));
+        when(usageCounterRepository.findByUserId(user.getId())).thenReturn(Optional.of(counter));
+
+        // Zero or negative count does nothing
+        assertDoesNotThrow(() -> usageService.incrementOcr(user, 0));
+        assertDoesNotThrow(() -> usageService.incrementOcr(user, -1));
+
+        // Increment 2 pages
+        usageService.incrementOcr(user, 2);
+        assertEquals(2, counter.getWeekOcrUploads());
+
+        // Increment beyond Free weekly OCR limit (3)
+        assertThrows(QuotaExceededException.class, () -> usageService.incrementOcr(user, 2));
     }
 }
 

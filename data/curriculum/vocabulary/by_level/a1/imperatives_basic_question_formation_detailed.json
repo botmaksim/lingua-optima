@@ -53,5 +53,60 @@
       "need help"
     ],
     "exampleSentence": "Help me carry these heavy bags, please."
+  },
+  {
+    "word": "close",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To move a barrier so that an opening is covered.",
+    "collocations": [
+      "close the window",
+      "close book"
+    ],
+    "exampleSentence": "Close your books and look at the board."
+  },
+  {
+    "word": "stand",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To maintain an upright position on one's feet.",
+    "collocations": [
+      "stand up",
+      "stand here"
+    ],
+    "exampleSentence": "Please stand up when the teacher enters."
+  },
+  {
+    "word": "sit",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To rest the body on a chair or the floor.",
+    "collocations": [
+      "sit down",
+      "sit here"
+    ],
+    "exampleSentence": "Sit down quietly and begin your test."
+  },
+  {
+    "word": "what",
+    "partOfSpeech": "pronoun",
+    "cefrLevel": "A1",
+    "definition": "Asking for information specifying something.",
+    "collocations": [
+      "what is",
+      "what time"
+    ],
+    "exampleSentence": "What is your telephone number?"
+  },
+  {
+    "word": "who",
+    "partOfSpeech": "pronoun",
+    "cefrLevel": "A1",
+    "definition": "Asking what or which person.",
+    "collocations": [
+      "who is",
+      "who speaks"
+    ],
+    "exampleSentence": "Who is the student sitting next to you?"
   }
 ]

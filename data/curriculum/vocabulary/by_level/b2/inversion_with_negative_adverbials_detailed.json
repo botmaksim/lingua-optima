@@ -53,5 +53,60 @@
       "little suspected"
     ],
     "exampleSentence": "Little did the explorers suspect what monumental discoveries awaited them."
+  },
+  {
+    "word": "barely",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Only just; almost not.",
+    "collocations": [
+      "barely had we",
+      "barely audible"
+    ],
+    "exampleSentence": "Barely had the applause subsided when the conductor raised his baton again."
+  },
+  {
+    "word": "never_before",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Not at any time previously.",
+    "collocations": [
+      "never before had",
+      "never before seen"
+    ],
+    "exampleSentence": "Never before had the symphony orchestra delivered so mesmerizing a performance."
+  },
+  {
+    "word": "only_then",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "At that moment and not before.",
+    "collocations": [
+      "only then did",
+      "only then realized"
+    ],
+    "exampleSentence": "Only then did the expedition realize they had crossed into unmapped territory."
+  },
+  {
+    "word": "under_no_circumstances",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Never; under no conditions whatsoever.",
+    "collocations": [
+      "under no circumstances should",
+      "under no circumstances must"
+    ],
+    "exampleSentence": "Under no circumstances should flammable solvents be kept adjacent to open kilns."
+  },
+  {
+    "word": "no_sooner",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Immediately after; as soon as.",
+    "collocations": [
+      "no sooner had",
+      "no sooner arrived"
+    ],
+    "exampleSentence": "No sooner had the ambassador departed than protests ignited outside the consulate."
   }
 ]

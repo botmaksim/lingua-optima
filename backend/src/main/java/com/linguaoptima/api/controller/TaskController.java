@@ -79,24 +79,27 @@ public class TaskController {
     @PostMapping("/generate")
     public ResponseEntity<TaskResponse> generateTask(
         @Valid @RequestBody TaskParamsRequest request,
+        @RequestHeader(value = "X-Device-Id", required = false) String deviceId,
         @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(taskService.generateTask(request, user));
+        return ResponseEntity.ok(taskService.generateTask(request, user, deviceId));
     }
 
     /**
      * @brief Generates an ephemeral preview of a task without persisting to database.
      *
      * @param request Generation parameters.
+     * @param deviceId Client device identifier header.
      * @param user Authenticated user principal.
      * @return HTTP 200 with preview TaskResponse.
      */
     @PostMapping("/preview")
     public ResponseEntity<TaskResponse> previewTask(
         @Valid @RequestBody TaskParamsRequest request,
+        @RequestHeader(value = "X-Device-Id", required = false) String deviceId,
         @AuthenticationPrincipal User user
     ) {
-        return ResponseEntity.ok(taskService.previewTask(request, user));
+        return ResponseEntity.ok(taskService.previewTask(request, user, deviceId));
     }
 
     /**

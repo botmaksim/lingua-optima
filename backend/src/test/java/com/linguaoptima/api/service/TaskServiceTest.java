@@ -5,6 +5,7 @@
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.Task;
@@ -74,6 +75,12 @@ class TaskServiceTest {
     /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
+    /** @brief Mock for single device and concurrency generation protection. */
+    @Mock
+    private GenerationProtectionService generationProtectionService;
+    /** @brief Mock for tiered pricing properties. */
+    @Mock
+    private PricingProperties pricingProperties;
 
     /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
@@ -107,6 +114,10 @@ class TaskServiceTest {
             .role(Role.TEACHER)
             .cefrLevel(CefrLevel.C1)
             .build();
+
+        lenient().when(pricingProperties.getTierConfig(any())).thenReturn(
+            PricingProperties.TierConfig.builder().maxGroups(50).build()
+        );
     }
 
     /**

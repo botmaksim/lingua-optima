@@ -53,5 +53,60 @@
       "famous landmark"
     ],
     "exampleSentence": "The bell tower is the most recognizable architectural landmark in the capital."
+  },
+  {
+    "word": "departure",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The action of leaving, especially on a journey.",
+    "collocations": [
+      "departure time",
+      "flight departure"
+    ],
+    "exampleSentence": "Passengers gathered near gate seven awaiting flight departure."
+  },
+  {
+    "word": "reservation",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "An arrangement by which accommodations are secured in advance.",
+    "collocations": [
+      "make a reservation",
+      "confirm reservation"
+    ],
+    "exampleSentence": "We phoned the boutique hotel to confirm our room reservation."
+  },
+  {
+    "word": "passenger",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A traveler on a public or private conveyance.",
+    "collocations": [
+      "transit passenger",
+      "rail passenger"
+    ],
+    "exampleSentence": "Each rail passenger is entitled to two medium-sized suitcases."
+  },
+  {
+    "word": "souvenir",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A thing that is kept as a reminder of a person, place, or event.",
+    "collocations": [
+      "buy souvenirs",
+      "ceramic souvenir"
+    ],
+    "exampleSentence": "She bought hand-painted ceramic tiles as souvenirs from Lisbon."
+  },
+  {
+    "word": "sightseeing",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The activity of visiting places of interest in a location by tourists.",
+    "collocations": [
+      "go sightseeing",
+      "sightseeing tour"
+    ],
+    "exampleSentence": "We dedicated the first two days of our city trip to sightseeing."
   }
 ]

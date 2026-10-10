@@ -53,5 +53,60 @@
       "improve accuracy"
     ],
     "exampleSentence": "Consistent daily practice will dramatically improve your English fluency."
+  },
+  {
+    "word": "conjunction",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A word used to connect clauses or sentences.",
+    "collocations": [
+      "coordinating conjunction",
+      "subordinating conjunction"
+    ],
+    "exampleSentence": "The conjunction 'although' introduces a contrasting subordinate clause."
+  },
+  {
+    "word": "modifier",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A word, especially an adjective or noun, that restricts another.",
+    "collocations": [
+      "adverbial modifier",
+      "dangling modifier"
+    ],
+    "exampleSentence": "Careful placement of the modifier ensures absolute syntactic clarity."
+  },
+  {
+    "word": "agreement",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "Grammatical harmony between person, number, gender, or case.",
+    "collocations": [
+      "subject-verb agreement",
+      "grammatical agreement"
+    ],
+    "exampleSentence": "Check your text for subject-verb agreement in complex sentences."
+  },
+  {
+    "word": "predicate",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The part of a sentence or clause containing a verb.",
+    "collocations": [
+      "sentence predicate",
+      "compound predicate"
+    ],
+    "exampleSentence": "The predicate conveys the central action performed by the agent."
+  },
+  {
+    "word": "subject",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A noun or pronoun that performs the action of the verb.",
+    "collocations": [
+      "grammatical subject",
+      "compound subject"
+    ],
+    "exampleSentence": "Identify the grammatical subject before choosing the singular verb."
   }
 ]

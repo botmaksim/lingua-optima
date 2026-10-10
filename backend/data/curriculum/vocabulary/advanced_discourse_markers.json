@@ -1,18 +1,12 @@
-{
-  "topic": "Advanced Discourse Markers",
-  "cefrLevel": "C1",
-  "words": [
-    "notwithstanding",
-    "albeit",
-    "conversely",
-    "inasmuch as",
-    "headwinds",
-    "consequently",
-    "overruns",
-    "apropos",
-    "furthermore",
-    "nonetheless",
-    "indubitably",
-    "discernible"
-  ]
-}
+[
+  "albeit",
+  "conversely",
+  "nonetheless",
+  "to that end",
+  "in essence",
+  "inasmuch_as",
+  "thereby",
+  "insofar_as",
+  "notwithstanding",
+  "furthermore"
+]

@@ -53,5 +53,60 @@
       "conclusive proof"
     ],
     "exampleSentence": "The forensic team must have found conclusive evidence at the scene."
+  },
+  {
+    "word": "conjecture",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "An opinion or conclusion formed on the basis of incomplete information.",
+    "collocations": [
+      "pure conjecture",
+      "matter of conjecture"
+    ],
+    "exampleSentence": "Why the archive vanished remains a matter of conjecture among historians."
+  },
+  {
+    "word": "plausibility",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The quality of seeming reasonable or probable.",
+    "collocations": [
+      "lend plausibility",
+      "question plausibility"
+    ],
+    "exampleSentence": "The forensic evidence lent plausibility to the defense witness's testimony."
+  },
+  {
+    "word": "presumption",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "An idea that is taken to be true on the basis of probability.",
+    "collocations": [
+      "legal presumption",
+      "reasonable presumption"
+    ],
+    "exampleSentence": "The detective operated on the presumption that the culprit held keys."
+  },
+  {
+    "word": "likelihood",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The state or fact of something being likely; probability.",
+    "collocations": [
+      "in all likelihood",
+      "strong likelihood"
+    ],
+    "exampleSentence": "In all likelihood, the delayed flight must have encountered head winds."
+  },
+  {
+    "word": "surmise",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Suppose that something is true without having evidence to confirm it.",
+    "collocations": [
+      "surmise that",
+      "safely surmise"
+    ],
+    "exampleSentence": "One can surmise that the ancient settlers must have abandoned the fortress in haste."
   }
 ]

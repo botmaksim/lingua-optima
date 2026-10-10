@@ -53,5 +53,60 @@
       "unassailable position"
     ],
     "exampleSentence": "The mathematician constructed an unassailable formal proof of the centuries-old conjecture."
+  },
+  {
+    "word": "putative",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Generally considered or reputed to be.",
+    "collocations": [
+      "putative father",
+      "putative author"
+    ],
+    "exampleSentence": "The putative author of the Renaissance treatise remains shrouded in unresolved historical dispute."
+  },
+  {
+    "word": "apocryphal",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Of doubtful authenticity, although widely circulated as true.",
+    "collocations": [
+      "apocryphal tale",
+      "largely apocryphal"
+    ],
+    "exampleSentence": "The anecdote concerning Newton and the falling apple is deemed apocryphal by modern historians."
+  },
+  {
+    "word": "dubitable",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Open to question; questionable or doubtful.",
+    "collocations": [
+      "dubitable premise",
+      "highly dubitable"
+    ],
+    "exampleSentence": "His sweeping assertions concerning macroeconomic stability rest on highly dubitable mathematical models."
+  },
+  {
+    "word": "axiomatic",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Self-evident or unquestionable.",
+    "collocations": [
+      "axiomatic truth",
+      "deemed axiomatic"
+    ],
+    "exampleSentence": "In classical Euclidean geometry, parallel lines never converging is regarded as an axiomatic truth."
+  },
+  {
+    "word": "indubitable",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Impossible to doubt; unquestionable.",
+    "collocations": [
+      "indubitable proof",
+      "indubitable fact"
+    ],
+    "exampleSentence": "The archival discovery provided indubitable proof that the prime minister had colluded with foreign syndicates."
   }
 ]

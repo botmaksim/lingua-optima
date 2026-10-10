@@ -53,5 +53,60 @@
       "much quieter"
     ],
     "exampleSentence": "The suburbs are much quieter than the downtown area."
+  },
+  {
+    "word": "larger",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Of greater size, extent, or capacity.",
+    "collocations": [
+      "much larger",
+      "larger than"
+    ],
+    "exampleSentence": "Their new flat is significantly larger than their old studio."
+  },
+  {
+    "word": "brighter",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Giving out or reflecting more light.",
+    "collocations": [
+      "brighter future",
+      "brighter light"
+    ],
+    "exampleSentence": "The morning sky looks much brighter today."
+  },
+  {
+    "word": "heavier",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Of greater weight; difficult to lift.",
+    "collocations": [
+      "heavier than",
+      "much heavier"
+    ],
+    "exampleSentence": "This brown suitcase is much heavier than the black bag."
+  },
+  {
+    "word": "narrower",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Of small width in comparison to length.",
+    "collocations": [
+      "narrower street",
+      "narrower passage"
+    ],
+    "exampleSentence": "The medieval cobblestone streets are narrower than modern lanes."
+  },
+  {
+    "word": "stronger",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Having greater physical power or resilience.",
+    "collocations": [
+      "much stronger",
+      "grow stronger"
+    ],
+    "exampleSentence": "Regular exercise will make your muscles stronger."
   }
 ]

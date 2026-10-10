@@ -264,6 +264,7 @@ export const ExportReports: React.FC = () => {
                 <span className="text-xs font-medium text-slate-500">From:</span>
                 <input
                   type="date"
+                  lang="en-US"
                   value={customFrom}
                   onChange={(e) => setCustomFrom(e.target.value)}
                   className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -273,6 +274,7 @@ export const ExportReports: React.FC = () => {
                 <span className="text-xs font-medium text-slate-500">To:</span>
                 <input
                   type="date"
+                  lang="en-US"
                   value={customTo}
                   onChange={(e) => setCustomTo(e.target.value)}
                   className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"

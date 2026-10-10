@@ -839,11 +839,16 @@ export const SubmissionsReview: React.FC = () => {
                           </h4>
 
                           <div className="grid grid-cols-1 gap-2.5">
-                            {sub.items.map((item) => (
+                            {sub.items.map((item) => {
+                              const cleanStudent = (item.studentAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+                              const cleanCorrect = (item.correctAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+                              const isEffectivelyCorrect = item.isCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect);
+
+                              return (
                               <div
                                 key={item.questionNumber}
                                 className={`p-4 rounded-2xl border transition space-y-2.5 ${
-                                  item.isCorrect
+                                  isEffectivelyCorrect
                                     ? 'bg-emerald-50/30 border-emerald-100/80'
                                     : 'bg-rose-50/30 border-rose-100/80'
                                 }`}
@@ -860,7 +865,7 @@ export const SubmissionsReview: React.FC = () => {
                                     )}
                                   </div>
 
-                                  {item.isCorrect ? (
+                                  {isEffectivelyCorrect ? (
                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
                                       <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                                       <span>Correct</span>
@@ -885,14 +890,14 @@ export const SubmissionsReview: React.FC = () => {
                                     </span>
                                     <div className="flex flex-wrap gap-1.5">
                                       {item.options.map((opt, optIdx) => {
-                                        const optTrim = opt.trim().toLowerCase();
-                                        const isStudentChoice = optTrim === (item.studentAnswer || '').trim().toLowerCase();
-                                        const isCorrectChoice = optTrim === (item.correctAnswer || '').trim().toLowerCase();
+                                        const optTrim = opt.replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+                                        const isStudentChoice = optTrim === cleanStudent;
+                                        const isCorrectChoice = optTrim === cleanCorrect;
 
                                         let badgeStyle = 'bg-white text-slate-600 border-slate-200';
-                                        if (isStudentChoice && item.isCorrect) {
+                                        if (isStudentChoice && isEffectivelyCorrect) {
                                           badgeStyle = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
-                                        } else if (isStudentChoice && !item.isCorrect) {
+                                        } else if (isStudentChoice && !isEffectivelyCorrect) {
                                           badgeStyle = 'bg-rose-100 text-rose-900 border-rose-300 font-bold';
                                         } else if (isCorrectChoice) {
                                           badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold';
@@ -906,7 +911,7 @@ export const SubmissionsReview: React.FC = () => {
                                             <span>{opt}</span>
                                             {isStudentChoice && (
                                               <span className="text-[9px] px-1 py-0.2 rounded bg-black/10 font-bold">
-                                                {item.isCorrect ? 'Student Pick (✓)' : 'Student Pick (✗)'}
+                                                {isEffectivelyCorrect ? 'Student Pick (✓)' : 'Student Pick (✗)'}
                                               </span>
                                             )}
                                             {!isStudentChoice && isCorrectChoice && (
@@ -925,7 +930,7 @@ export const SubmissionsReview: React.FC = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 bg-white/80 rounded-xl border border-slate-100 text-xs">
                                   <div>
                                     <span className="text-[10px] font-bold text-slate-400 uppercase">Student Answer:</span>
-                                    <p className={`font-mono font-bold mt-0.5 ${item.isCorrect ? 'text-emerald-700' : 'text-rose-600'}`}>
+                                    <p className={`font-mono font-bold mt-0.5 ${isEffectivelyCorrect ? 'text-emerald-700' : 'text-rose-600'}`}>
                                       {item.studentAnswer || 'No answer'}
                                     </p>
                                   </div>
@@ -952,8 +957,9 @@ export const SubmissionsReview: React.FC = () => {
                                   </div>
                                 )}
                               </div>
-                            ))}
-                          </div>
+                            );
+                          })}
+                        </div>
                         </div>
                       ) : (
                         <div>

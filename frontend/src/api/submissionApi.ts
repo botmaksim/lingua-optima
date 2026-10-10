@@ -21,14 +21,20 @@ export const submissionApi = {
   },
 
   /**
-   * @brief Uploads homework photo for zero-retention OCR processing and grading.
-   * @param file Image file to process.
+   * @brief Uploads one or multiple homework photos for zero-retention OCR processing and grading.
+   * @param files Image file or array of image files to process.
    * @param assignmentId Optional assignment identifier.
    * @return Promise resolving to SubmissionResult.
    */
-  submitImage: async (file: File, assignmentId?: string): Promise<SubmissionResult> => {
+  submitImage: async (files: File | File[], assignmentId?: string): Promise<SubmissionResult> => {
     const formData = new FormData();
-    formData.append('file', file);
+    const fileList = Array.isArray(files) ? files : [files];
+    fileList.forEach((file) => {
+      formData.append('files', file);
+    });
+    if (fileList.length > 0) {
+      formData.append('file', fileList[0]);
+    }
     if (assignmentId) {
       formData.append('assignmentId', assignmentId);
     }

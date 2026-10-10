@@ -3,5 +3,10 @@
   "itinerary",
   "accommodation",
   "excursion",
-  "landmark"
+  "landmark",
+  "departure",
+  "reservation",
+  "passenger",
+  "souvenir",
+  "sightseeing"
 ]

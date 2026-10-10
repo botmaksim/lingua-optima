@@ -53,5 +53,60 @@
       "gifted composer"
     ],
     "exampleSentence": "The symphony was written by an eighteenth-century classical composer."
+  },
+  {
+    "word": "gallery",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A room or building for the display or sale of works of art.",
+    "collocations": [
+      "art gallery",
+      "visit a gallery"
+    ],
+    "exampleSentence": "We visited several contemporary art galleries in Soho."
+  },
+  {
+    "word": "festival",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A day or period of celebration, typically religious or cultural.",
+    "collocations": [
+      "film festival",
+      "music festival"
+    ],
+    "exampleSentence": "Edinburgh hosts an internationally renowned annual arts festival."
+  },
+  {
+    "word": "critic",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A person who expresses reasoned opinions on artistic work.",
+    "collocations": [
+      "art critic",
+      "literary critic"
+    ],
+    "exampleSentence": "The theater critic praised the cast's emotive performances."
+  },
+  {
+    "word": "tradition",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The transmission of customs or beliefs from generation to generation.",
+    "collocations": [
+      "cultural tradition",
+      "ancient tradition"
+    ],
+    "exampleSentence": "Folk dancing remains a cherished cultural tradition in the valley."
+  },
+  {
+    "word": "audience",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The assembled spectators or listeners at a public event.",
+    "collocations": [
+      "enthusiastic audience",
+      "live audience"
+    ],
+    "exampleSentence": "The chamber orchestra received a standing ovation from the audience."
   }
 ]

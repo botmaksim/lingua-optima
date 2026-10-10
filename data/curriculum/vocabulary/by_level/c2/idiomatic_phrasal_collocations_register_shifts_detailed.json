@@ -53,5 +53,60 @@
       "position vis-a-vis"
     ],
     "exampleSentence": "The ministry sought to clarify its statutory obligations vis-a-vis multilateral trade agreements."
+  },
+  {
+    "word": "carry_the_can",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "To take the blame for something, especially when others are involved.",
+    "collocations": [
+      "carry the can for",
+      "forced to carry"
+    ],
+    "exampleSentence": "Junior civil servants were unfairly forced to carry the can for ministerial miscalculations."
+  },
+  {
+    "word": "shift_the_goalposts",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Change the rules or expectations in the middle of an enterprise.",
+    "collocations": [
+      "shift the goalposts",
+      "shifting the goalposts"
+    ],
+    "exampleSentence": "Contractors complained that the client council continued shifting the goalposts regarding acoustic standards."
+  },
+  {
+    "word": "bite_the_bullet",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Decide to do something difficult or unpleasant after hesitating.",
+    "collocations": [
+      "bite the bullet and",
+      "forced to bite"
+    ],
+    "exampleSentence": "Facing insolvency, the university senate decided to bite the bullet and merge the humanities faculty."
+  },
+  {
+    "word": "clutch_at_straws",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "To be in such a desperate situation as to try any idea or method.",
+    "collocations": [
+      "clutch at straws",
+      "clutching at straws"
+    ],
+    "exampleSentence": "The defense attorney was clutching at straws when invoking an obscure nineteenth-century maritime loophole."
+  },
+  {
+    "word": "clear_the_air",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Defuse tense relationships by discussing grievances openly.",
+    "collocations": [
+      "clear the air between",
+      "sought to clear"
+    ],
+    "exampleSentence": "The diplomatic summit provided a timely forum to clear the air following retaliatory tariff levies."
   }
 ]

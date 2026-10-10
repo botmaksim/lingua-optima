@@ -53,5 +53,60 @@
       "arrived at airport"
     ],
     "exampleSentence": "The plane arrived twenty minutes ahead of schedule."
+  },
+  {
+    "word": "played",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Engaged in an activity for enjoyment.",
+    "collocations": [
+      "played football",
+      "played music"
+    ],
+    "exampleSentence": "We played football after school yesterday."
+  },
+  {
+    "word": "watched",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Looked at attentively over a period of time.",
+    "collocations": [
+      "watched movie",
+      "watched television"
+    ],
+    "exampleSentence": "They watched an exciting documentary last night."
+  },
+  {
+    "word": "wrote",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Marked letters or characters on a surface.",
+    "collocations": [
+      "wrote letters",
+      "wrote essays"
+    ],
+    "exampleSentence": "She wrote an email to her manager."
+  },
+  {
+    "word": "went",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Moved from one place to another.",
+    "collocations": [
+      "went home",
+      "went abroad"
+    ],
+    "exampleSentence": "He went to Paris by train last weekend."
+  },
+  {
+    "word": "saw",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Perceived with the eyes.",
+    "collocations": [
+      "saw friends",
+      "saw movie"
+    ],
+    "exampleSentence": "We saw our old school friends at the cafe."
   }
 ]

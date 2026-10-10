@@ -53,5 +53,60 @@
       "flight departure"
     ],
     "exampleSentence": "Our tour group is departing at dawn tomorrow."
+  },
+  {
+    "word": "hosting",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Acting as host at an event or party.",
+    "collocations": [
+      "hosting dinner",
+      "hosting event"
+    ],
+    "exampleSentence": "Sarah is hosting a birthday dinner this Friday evening."
+  },
+  {
+    "word": "visiting",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Going to see someone or a place.",
+    "collocations": [
+      "visiting family",
+      "visiting clinic"
+    ],
+    "exampleSentence": "We are visiting our grandparents next Saturday."
+  },
+  {
+    "word": "travelling",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Going from one place to another.",
+    "collocations": [
+      "travelling abroad",
+      "travelling next week"
+    ],
+    "exampleSentence": "The team is travelling to Manchester on Tuesday."
+  },
+  {
+    "word": "attending",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Being present at an event or meeting.",
+    "collocations": [
+      "attending seminar",
+      "attending wedding"
+    ],
+    "exampleSentence": "They are attending their cousin's wedding this weekend."
+  },
+  {
+    "word": "organizing",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Arranging systematically; planning an activity.",
+    "collocations": [
+      "organizing party",
+      "organizing workshop"
+    ],
+    "exampleSentence": "The student council is organizing a charity concert next month."
   }
 ]

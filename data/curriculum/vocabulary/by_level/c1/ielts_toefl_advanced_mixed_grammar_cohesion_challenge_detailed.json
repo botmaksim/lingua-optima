@@ -53,5 +53,60 @@
       "rigorous standard"
     ],
     "exampleSentence": "Applicants must undergo a rigorous academic evaluation before admission."
+  },
+  {
+    "word": "salient",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Most noticeable or important.",
+    "collocations": [
+      "salient feature",
+      "salient point"
+    ],
+    "exampleSentence": "The essay addresses the salient socio-economic factors underlying urban gentrification."
+  },
+  {
+    "word": "cogent",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Clear, logical, and convincing.",
+    "collocations": [
+      "cogent argument",
+      "cogent analysis"
+    ],
+    "exampleSentence": "The candidate formulated a cogent argument supporting universal basic healthcare provision."
+  },
+  {
+    "word": "discursive",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Digressing from subject to subject; relating to discourse.",
+    "collocations": [
+      "discursive essay",
+      "discursive style"
+    ],
+    "exampleSentence": "Academic band nine demands coherent discursive prose supported by topical collocations."
+  },
+  {
+    "word": "exemplify",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Be a typical example of.",
+    "collocations": [
+      "exemplify trends",
+      "exemplifies excellence"
+    ],
+    "exampleSentence": "These case histories exemplify how participatory governance fosters civic responsibility."
+  },
+  {
+    "word": "paradigm",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "A typical example or pattern of something; a model.",
+    "collocations": [
+      "paradigm shift",
+      "dominant paradigm"
+    ],
+    "exampleSentence": "The introduction of quantum cryptography represents a profound paradigm shift in computing."
   }
 ]

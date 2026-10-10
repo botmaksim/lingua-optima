@@ -3,5 +3,10 @@
   "database",
   "network",
   "interface",
-  "automation"
+  "automation",
+  "software",
+  "sensor",
+  "hardware",
+  "device",
+  "cloud"
 ]

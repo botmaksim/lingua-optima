@@ -53,5 +53,60 @@
       "predominantly rural"
     ],
     "exampleSentence": "The cohort was predominantly composed of postgraduate researchers."
+  },
+  {
+    "word": "corroborate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Confirm or give support to a statement or theory.",
+    "collocations": [
+      "corroborate findings",
+      "corroborate hypothesis"
+    ],
+    "exampleSentence": "Independent field trials failed to corroborate the efficacy of the proposed pesticide."
+  },
+  {
+    "word": "purport",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Claim to be or do something, especially falsely.",
+    "collocations": [
+      "purport to show",
+      "purport to demonstrate"
+    ],
+    "exampleSentence": "Documents that purport to prove ancestral land claims require rigorous paleographic scrutiny."
+  },
+  {
+    "word": "substantiate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Provide evidence to support or prove the truth of.",
+    "collocations": [
+      "substantiate claims",
+      "substantiate allegations"
+    ],
+    "exampleSentence": "The prosecution must substantiate allegations of insider trading with documented wire transfers."
+  },
+  {
+    "word": "delineate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Describe or portray something precisely.",
+    "collocations": [
+      "delineate boundaries",
+      "clearly delineate"
+    ],
+    "exampleSentence": "Chapter four serves to delineate the conceptual demarcation between dialect and language."
+  },
+  {
+    "word": "concomitant",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Naturally accompanying or associated.",
+    "collocations": [
+      "concomitant rise",
+      "concomitant reduction"
+    ],
+    "exampleSentence": "Rapid urbanization sparked a concomitant expansion in domestic municipal energy consumption."
   }
 ]

@@ -53,5 +53,60 @@
       "swept across"
     ],
     "exampleSentence": "Down swept the alpine blizzard upon the unprepared caravan, rendering navigation impossible."
+  },
+  {
+    "word": "out_poured_the_crowd",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Stylistic inversion denoting sudden collective emergence.",
+    "collocations": [
+      "out poured the",
+      "out poured thousands"
+    ],
+    "exampleSentence": "No sooner did the theatre doors open than out poured the enthusiastic audience into the plaza."
+  },
+  {
+    "word": "little_did_we_envisage",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Rhetorical inversion denoting profound unforeseen developments.",
+    "collocations": [
+      "little did we envisage",
+      "little did they envisage"
+    ],
+    "exampleSentence": "Little did we envisage that an obscure student demonstration would trigger a continental revolution."
+  },
+  {
+    "word": "standing_before_us_was",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Locative locational inversion spotlighting a personage.",
+    "collocations": [
+      "standing before us was",
+      "standing proudly before"
+    ],
+    "exampleSentence": "Standing before us was the octogenarian maestro whose compositions had defined twentieth-century avant-garde."
+  },
+  {
+    "word": "such_is_the_magnitude",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Emphatic inversion magnifying sheer scale or gravity.",
+    "collocations": [
+      "such is the magnitude",
+      "such was the magnitude"
+    ],
+    "exampleSentence": "Such is the magnitude of the humanitarian catastrophe that non-governmental resources are overwhelmed."
+  },
+  {
+    "word": "into_the_valley_rode",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Classic narrative inversion creating dramatic momentum.",
+    "collocations": [
+      "into the valley rode",
+      "into the arena stepped"
+    ],
+    "exampleSentence": "Into the gorge rode the mounted scouts, their silhouettes sharp against the gathering mountain dusk."
   }
 ]

@@ -53,5 +53,60 @@
       "particularly noteworthy"
     ],
     "exampleSentence": "The conference center, which was built last year, features noteworthy acoustic design."
+  },
+  {
+    "word": "supplementary",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Completing or enhancing something.",
+    "collocations": [
+      "supplementary details",
+      "supplementary clause"
+    ],
+    "exampleSentence": "Non-defining clauses supply supplementary biographical details regarding the author."
+  },
+  {
+    "word": "elaborative",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Tending to elaborate or add decorative detail.",
+    "collocations": [
+      "elaborative comment",
+      "elaborative description"
+    ],
+    "exampleSentence": "The editor excised elaborative parenthetical clauses to sharpen the expository prose."
+  },
+  {
+    "word": "circumstantial",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Pointing indirectly toward someone's guilt; incidental.",
+    "collocations": [
+      "circumstantial detail",
+      "circumstantial evidence"
+    ],
+    "exampleSentence": "Such circumstantial descriptors, set off by commas, provide vivid narrative texture."
+  },
+  {
+    "word": "aside",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A remark that is not directly related to the main topic of discussion.",
+    "collocations": [
+      "parenthetical aside",
+      "stage aside"
+    ],
+    "exampleSentence": "The author inserted an ironic parenthetical aside, which delighted astute readers."
+  },
+  {
+    "word": "digression",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A temporary departure from the main subject in speech or writing.",
+    "collocations": [
+      "entertaining digression",
+      "lengthy digression"
+    ],
+    "exampleSentence": "His essay contains an entertaining digression, which explores Renaissance alchemy."
   }
 ]

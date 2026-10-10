@@ -53,5 +53,60 @@
       "few friends"
     ],
     "exampleSentence": "We will leave in a few minutes."
+  },
+  {
+    "word": "lot",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A large number or amount.",
+    "collocations": [
+      "a lot of",
+      "quite a lot"
+    ],
+    "exampleSentence": "There are a lot of students in our classroom."
+  },
+  {
+    "word": "little",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "A small amount of an uncountable noun.",
+    "collocations": [
+      "a little milk",
+      "little time"
+    ],
+    "exampleSentence": "Please put a little sugar in my cup."
+  },
+  {
+    "word": "several",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "More than two but not many.",
+    "collocations": [
+      "several people",
+      "several books"
+    ],
+    "exampleSentence": "I bought several English grammar books today."
+  },
+  {
+    "word": "all",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "The whole quantity or extent of.",
+    "collocations": [
+      "all students",
+      "all day"
+    ],
+    "exampleSentence": "All students must complete their homework."
+  },
+  {
+    "word": "each",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "Every one of two or more considered individually.",
+    "collocations": [
+      "each day",
+      "each student"
+    ],
+    "exampleSentence": "Each student has a dictionary on their desk."
   }
 ]

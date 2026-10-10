@@ -53,5 +53,60 @@
       "issues stemming"
     ],
     "exampleSentence": "Stemming from unresolved geopolitical disputes, cross-border trade slowed considerably."
+  },
+  {
+    "word": "knowing_the_consequences",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Being fully aware of eventual repercussions.",
+    "collocations": [
+      "knowing the consequences",
+      "knowing the risks"
+    ],
+    "exampleSentence": "Knowing the diplomatic consequences, the ambassador hesitated before transmitting the ultimatum."
+  },
+  {
+    "word": "deprived_of_resources",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Having had essential assets removed or denied.",
+    "collocations": [
+      "deprived of resources",
+      "deprived of liberty"
+    ],
+    "exampleSentence": "Deprived of budgetary resources, the civic hospital struggled to maintain intensive care wards."
+  },
+  {
+    "word": "having_witnessed",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Having personally seen a momentous event.",
+    "collocations": [
+      "having witnessed the",
+      "having witnessed devastation"
+    ],
+    "exampleSentence": "Having witnessed the catastrophic aftermath of the quake, volunteers mobilized immediately."
+  },
+  {
+    "word": "overwhelmed_by_evidence",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Surpassed or defeated by the volume of facts.",
+    "collocations": [
+      "overwhelmed by evidence",
+      "overwhelmed by proof"
+    ],
+    "exampleSentence": "Overwhelmed by documentary evidence, the corporate embezzler tendered a full confession."
+  },
+  {
+    "word": "fearing_repercussions",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Afraid of eventual punitive retaliations.",
+    "collocations": [
+      "fearing repercussions",
+      "fearing retaliation"
+    ],
+    "exampleSentence": "Fearing political repercussions, backbench lawmakers refrained from challenging the treaty."
   }
 ]

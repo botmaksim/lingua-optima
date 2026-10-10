@@ -70,11 +70,11 @@ class TaskControllerTest {
     @Test
     void testGenerateAndPreviewTask() {
         TaskParamsRequest req = TaskParamsRequest.builder().build();
-        when(taskService.generateTask(req, user)).thenReturn(taskResponse);
-        when(taskService.previewTask(req, user)).thenReturn(taskResponse);
+        when(taskService.generateTask(req, user, "test-device")).thenReturn(taskResponse);
+        when(taskService.previewTask(req, user, "test-device")).thenReturn(taskResponse);
 
-        assertEquals(HttpStatus.OK, taskController.generateTask(req, user).getStatusCode());
-        assertEquals(HttpStatus.OK, taskController.previewTask(req, user).getStatusCode());
+        assertEquals(HttpStatus.OK, taskController.generateTask(req, "test-device", user).getStatusCode());
+        assertEquals(HttpStatus.OK, taskController.previewTask(req, "test-device", user).getStatusCode());
     }
 
     /**

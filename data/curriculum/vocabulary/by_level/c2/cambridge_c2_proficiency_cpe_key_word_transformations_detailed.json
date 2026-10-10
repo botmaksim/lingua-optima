@@ -53,5 +53,60 @@
       "hardly infallible"
     ],
     "exampleSentence": "No predictive algorithm is entirely infallible under turbulent market conditions."
+  },
+  {
+    "word": "fall_short_of",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Fail to meet an expected standard or expectation.",
+    "collocations": [
+      "fall short of expectations",
+      "fall short of requirements"
+    ],
+    "exampleSentence": "The company's quarterly dividends fell far short of investors' bullish expectations."
+  },
+  {
+    "word": "shed_light_on",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Clarify or provide helpful explanations for a mystery.",
+    "collocations": [
+      "shed light on the",
+      "shed fresh light on"
+    ],
+    "exampleSentence": "Carbon dating of the skull shed fresh light on hominid migratory patterns across the Eurasian steppe."
+  },
+  {
+    "word": "give_rise_to",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Cause or induce something to happen.",
+    "collocations": [
+      "give rise to speculation",
+      "give rise to concerns"
+    ],
+    "exampleSentence": "The minister's abrupt absence gave rise to intense speculation regarding an impending cabinet resignation."
+  },
+  {
+    "word": "keep_at_bay",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Prevent someone or something from approaching or having an effect.",
+    "collocations": [
+      "keep critics at bay",
+      "keep infection at bay"
+    ],
+    "exampleSentence": "Heavy maritime coastal patrols managed to keep smuggling rings at bay throughout the embargo period."
+  },
+  {
+    "word": "make_headway",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Make progress, especially when circumstances are difficult.",
+    "collocations": [
+      "make little headway",
+      "make significant headway"
+    ],
+    "exampleSentence": "Despite grueling round-the-clock talks, international negotiators made little headway on demilitarization."
   }
 ]

@@ -16,11 +16,14 @@ import com.linguaoptima.api.dto.request.CreateGroupRequest;
 import com.linguaoptima.api.dto.response.GroupInvitationResponse;
 import com.linguaoptima.api.dto.response.GroupResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
+import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
+import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.NotificationRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
+import com.linguaoptima.api.repository.SubscriptionRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,6 +65,12 @@ class GroupServiceTest {
     /** @brief Test fixture or mock dependency for notification repository. */
     @Mock
     private NotificationRepository notificationRepository;
+    /** @brief Pricing properties mock for tiered quota testing. */
+    @Mock
+    private PricingProperties pricingProperties;
+    /** @brief Subscription repository mock for educator tier testing. */
+    @Mock
+    private SubscriptionRepository subscriptionRepository;
 
     /** @brief Test fixture or mock dependency for group service. */
     @InjectMocks
@@ -106,6 +115,10 @@ class GroupServiceTest {
             .name("Advanced B2")
             .teacher(teacher)
             .build();
+
+        lenient().when(pricingProperties.getTierConfig(any())).thenReturn(
+            PricingProperties.TierConfig.builder().maxGroups(50).build()
+        );
     }
 
     /**
@@ -431,5 +444,47 @@ class GroupServiceTest {
 
         groupService.deleteGroup(group.getId(), teacher);
         verify(groupRepository).delete(group);
+    }
+
+    @Test
+    void testCreateGroup_QuotaExceeded() {
+        when(pricingProperties.getTierConfig(any())).thenReturn(
+            PricingProperties.TierConfig.builder().maxGroups(1).build()
+        );
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+
+        CreateGroupRequest req = CreateGroupRequest.builder().name("Second Cohort").build();
+        assertThrows(QuotaExceededException.class, () -> groupService.createGroup(req, teacher));
+    }
+
+    @Test
+    void testGetGroupsForTeacher_MarksLockedWhenOverQuota() {
+        Group group2 = Group.builder().id(UUID.randomUUID()).name("Locked Group").teacher(teacher).build();
+        when(pricingProperties.getTierConfig(any())).thenReturn(
+            PricingProperties.TierConfig.builder().maxGroups(1).build()
+        );
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group, group2));
+
+        List<GroupResponse> responses = groupService.getGroupsForTeacher(teacher);
+        assertEquals(2, responses.size());
+        assertFalse(responses.get(0).isLocked());
+        assertTrue(responses.get(1).isLocked());
+    }
+
+    @Test
+    void testValidateGroupIsActive() {
+        Group group2 = Group.builder().id(UUID.randomUUID()).name("Locked Group").teacher(teacher).build();
+        when(pricingProperties.getTierConfig(any())).thenReturn(
+            PricingProperties.TierConfig.builder().maxGroups(1).build()
+        );
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group, group2));
+
+        // Group 1 (index 0) is within quota limit 1
+        assertDoesNotThrow(() -> groupService.validateGroupIsActive(group.getId(), teacher));
+
+        // Group 2 (index 1) exceeds quota limit 1 -> locked
+        assertThrows(QuotaExceededException.class, () ->
+            groupService.validateGroupIsActive(group2.getId(), teacher)
+        );
     }
 }

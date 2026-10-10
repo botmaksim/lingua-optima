@@ -53,5 +53,60 @@
       "acted simultaneously"
     ],
     "exampleSentence": "The bells were ringing while crowds were gathering outside."
+  },
+  {
+    "word": "during",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "B1",
+    "definition": "Throughout the course or duration of.",
+    "collocations": [
+      "during the lecture",
+      "during summer"
+    ],
+    "exampleSentence": "I took concise notes during the guest speaker's presentation."
+  },
+  {
+    "word": "progressing",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Developing or moving forward in space or time.",
+    "collocations": [
+      "steadily progressing",
+      "progressing smoothly"
+    ],
+    "exampleSentence": "The construction work was progressing smoothly until the gale hit."
+  },
+  {
+    "word": "coincide",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Occur at or during the same time.",
+    "collocations": [
+      "coincided with",
+      "roughly coincide"
+    ],
+    "exampleSentence": "Her visit was coinciding with the city's annual film gala."
+  },
+  {
+    "word": "duration",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The time during which something continues.",
+    "collocations": [
+      "entire duration",
+      "short duration"
+    ],
+    "exampleSentence": "The team remained on standby for the entire duration of the outage."
+  },
+  {
+    "word": "ongoing",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B1",
+    "definition": "Still in progress; continuing.",
+    "collocations": [
+      "ongoing investigation",
+      "ongoing project"
+    ],
+    "exampleSentence": "Police officers conducted an ongoing inquiry while crowds gathered outside."
   }
 ]

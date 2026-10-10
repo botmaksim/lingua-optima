@@ -40,4 +40,8 @@ public class GroupResponse {
     /** @brief Field representing students with pending group invitations in GroupResponse. */
     @Builder.Default
     private List<UserResponse> pendingStudents = new ArrayList<>();
+
+    /** @brief Indicates if cohort is locked into read-only mode due to subscription tier limits. */
+    @Builder.Default
+    private boolean isLocked = false;
 }

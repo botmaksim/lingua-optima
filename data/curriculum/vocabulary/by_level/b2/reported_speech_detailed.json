@@ -53,5 +53,60 @@
       "contract stipulated"
     ],
     "exampleSentence": "The contract stipulated that delivery had to take place before December."
+  },
+  {
+    "word": "conceded",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Admitted that something is true or valid after first denying it.",
+    "collocations": [
+      "conceded that",
+      "readily conceded"
+    ],
+    "exampleSentence": "The spokesperson conceded that delivery schedules had slipped unacceptably."
+  },
+  {
+    "word": "emphasized",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Gave special importance or prominence to something in speaking.",
+    "collocations": [
+      "emphasized that",
+      "repeatedly emphasized"
+    ],
+    "exampleSentence": "The chairperson emphasized that worker safety remained an overriding priority."
+  },
+  {
+    "word": "refuted",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Proved a statement or theory to be wrong or false.",
+    "collocations": [
+      "refuted allegations",
+      "vigorously refuted"
+    ],
+    "exampleSentence": "The finance ministry refuted claims of an impending austerity package."
+  },
+  {
+    "word": "reiterated",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Said something again or a number of times, typically for emphasis.",
+    "collocations": [
+      "reiterated stance",
+      "reiterated commitment"
+    ],
+    "exampleSentence": "The foreign secretary reiterated the government's unwavering commitment to the treaty."
+  },
+  {
+    "word": "urged",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Encouraged someone strongly to do something.",
+    "collocations": [
+      "urged citizens",
+      "urged caution"
+    ],
+    "exampleSentence": "Health officials urged the public to stay indoors during the blizzard."
   }
 ]

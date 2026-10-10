@@ -3,5 +3,10 @@
   "patient",
   "healthy",
   "medicine",
-  "suggest"
+  "suggest",
+  "require",
+  "allow",
+  "obligation",
+  "forbidden",
+  "advice"
 ]

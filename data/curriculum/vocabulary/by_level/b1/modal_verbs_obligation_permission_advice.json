@@ -3,5 +3,10 @@
   "prohibited",
   "advisable",
   "permitted",
-  "comply"
+  "comply",
+  "compulsory",
+  "optional",
+  "guideline",
+  "duty",
+  "rule"
 ]

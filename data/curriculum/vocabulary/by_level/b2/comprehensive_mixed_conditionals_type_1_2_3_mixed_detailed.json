@@ -53,5 +53,60 @@
       "eventual outcome"
     ],
     "exampleSentence": "If she had trained diligently last month, the race outcome would be different."
+  },
+  {
+    "word": "contingency",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A future event or circumstance which is possible but cannot be predicted with certainty.",
+    "collocations": [
+      "contingency plan",
+      "emergency contingency"
+    ],
+    "exampleSentence": "Sound risk management dictates formulating a robust contingency plan for outages."
+  },
+  {
+    "word": "fallout",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The adverse results of a situation or action.",
+    "collocations": [
+      "political fallout",
+      "economic fallout"
+    ],
+    "exampleSentence": "The diplomatic fallout would be immense if negotiations collapsed overnight."
+  },
+  {
+    "word": "ramification",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A complex or unwelcome consequence of an action or event.",
+    "collocations": [
+      "legal ramifications",
+      "far-reaching ramifications"
+    ],
+    "exampleSentence": "The supreme court's landmark verdict carries far-reaching ramifications for commerce."
+  },
+  {
+    "word": "proviso",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A condition or qualification attached to an agreement.",
+    "collocations": [
+      "with the proviso",
+      "strict proviso"
+    ],
+    "exampleSentence": "The merger was sanctioned with the strict proviso that no factories close."
+  },
+  {
+    "word": "stipulation",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A condition or requirement that is specified or demanded as part of an agreement.",
+    "collocations": [
+      "contractual stipulation",
+      "clear stipulation"
+    ],
+    "exampleSentence": "The lease contains a clear stipulation barring subletting to commercial tenants."
   }
 ]

@@ -53,5 +53,60 @@
       "predominant role"
     ],
     "exampleSentence": "It was institutional inertia that proved the predominant obstacle to modern reform."
+  },
+  {
+    "word": "what_troubles_us_is",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "The exact matter that causes concern.",
+    "collocations": [
+      "what troubles us is",
+      "what troubles investors"
+    ],
+    "exampleSentence": "What troubles us is not the expenditure, but the lack of transparent auditing."
+  },
+  {
+    "word": "it_was_precisely_because",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Emphasizing the exact causal factor.",
+    "collocations": [
+      "it was precisely because",
+      "it was precisely why"
+    ],
+    "exampleSentence": "It was precisely because of regulatory complacency that the financial crisis unfolded."
+  },
+  {
+    "word": "all_he_desired_was",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Focusing exclusively on the single objective.",
+    "collocations": [
+      "all he desired was",
+      "all they wanted was"
+    ],
+    "exampleSentence": "All he desired was an opportunity to vindicate his professional reputation."
+  },
+  {
+    "word": "the_person_who_instigated",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Identifying the specific initiator of action.",
+    "collocations": [
+      "the person who instigated",
+      "the individual who"
+    ],
+    "exampleSentence": "The person who instigated the courtroom inquiry was the deputy ombudsman herself."
+  },
+  {
+    "word": "it_is_cohesion_which",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Highlighting syntactic or thematic connection.",
+    "collocations": [
+      "it is cohesion which",
+      "it is clarity which"
+    ],
+    "exampleSentence": "It is cohesion which elevates an ordinary persuasive brief into a masterpiece."
   }
 ]

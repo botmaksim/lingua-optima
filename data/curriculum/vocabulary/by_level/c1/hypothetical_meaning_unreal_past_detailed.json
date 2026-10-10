@@ -53,5 +53,60 @@
       "prepare for contingency"
     ],
     "exampleSentence": "Treasury analysts developed contingency models for sharp currency fluctuations."
+  },
+  {
+    "word": "it_is_about_time",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Expressing urgency that an overdue action occur.",
+    "collocations": [
+      "it is about time we",
+      "it is about time they"
+    ],
+    "exampleSentence": "It is about time international regulatory bodies intervened to protect marine habitats."
+  },
+  {
+    "word": "imagine_if",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Inviting consideration of an unreal possibility.",
+    "collocations": [
+      "imagine if humanity",
+      "imagine if they"
+    ],
+    "exampleSentence": "Imagine if sovereign states had ratified comprehensive emissions bans three decades ago."
+  },
+  {
+    "word": "what_if_we_had",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Contemplating a counterfactual historical choice.",
+    "collocations": [
+      "what if we had",
+      "what if humanity had"
+    ],
+    "exampleSentence": "What if we had prioritized geothermal over fossil fuel generation during the energy boom?"
+  },
+  {
+    "word": "as_if_he_knew",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Behaving as though aware of concealed facts.",
+    "collocations": [
+      "spoke as if he knew",
+      "looked as if"
+    ],
+    "exampleSentence": "The retired intelligence operative spoke as if he knew the precise whereabouts of the exile."
+  },
+  {
+    "word": "would_sooner_have",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Preferring an unrealized past alternative.",
+    "collocations": [
+      "would sooner have died",
+      "would sooner have"
+    ],
+    "exampleSentence": "The stubborn admiral would sooner have sunk the vessel than surrender his navy's cipher codes."
   }
 ]

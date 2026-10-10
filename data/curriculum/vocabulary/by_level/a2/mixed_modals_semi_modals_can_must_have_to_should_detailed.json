@@ -53,5 +53,60 @@
       "suggest that"
     ],
     "exampleSentence": "The travel guide suggests we should visit early."
+  },
+  {
+    "word": "require",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To need for a particular purpose.",
+    "collocations": [
+      "require assistance",
+      "require permits"
+    ],
+    "exampleSentence": "The safety regulations require that all workers wear helmets."
+  },
+  {
+    "word": "allow",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To give permission or opportunity for.",
+    "collocations": [
+      "allow entry",
+      "allow time"
+    ],
+    "exampleSentence": "The library rules do not allow eating inside."
+  },
+  {
+    "word": "obligation",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "An act or course of action to which a person is morally bound.",
+    "collocations": [
+      "legal obligation",
+      "sense of obligation"
+    ],
+    "exampleSentence": "Citizens have a moral obligation to protect civic amenities."
+  },
+  {
+    "word": "forbidden",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Not allowed; banned.",
+    "collocations": [
+      "strictly forbidden",
+      "forbidden area"
+    ],
+    "exampleSentence": "Taking photographs is strictly forbidden inside the gallery."
+  },
+  {
+    "word": "advice",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Guidance or recommendations offered with regard to prudent action.",
+    "collocations": [
+      "sound advice",
+      "take advice"
+    ],
+    "exampleSentence": "Her teacher gave her practical advice about study routines."
   }
 ]

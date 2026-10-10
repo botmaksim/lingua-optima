@@ -1,18 +1,12 @@
-{
-  "topic": "Modal Verbs (obligation, permission, advice)",
-  "cefrLevel": "B1",
-  "words": [
-    "obligation",
-    "advice",
-    "guideline",
-    "mandatory",
-    "recommendation",
-    "permission",
-    "procedure",
-    "requirement",
-    "protocol",
-    "discretion",
-    "compliance",
-    "priority"
-  ]
-}
+[
+  "mandatory",
+  "prohibited",
+  "advisable",
+  "permitted",
+  "comply",
+  "compulsory",
+  "optional",
+  "guideline",
+  "duty",
+  "rule"
+]

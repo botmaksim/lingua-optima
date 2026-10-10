@@ -53,5 +53,60 @@
       "needless to say that"
     ],
     "exampleSentence": "Needless to say, rigorous methodological replication remains the bedrock of science."
+  },
+  {
+    "word": "could_ill_afford",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Unable to afford without facing grave consequences.",
+    "collocations": [
+      "could ill afford to",
+      "could ill afford another"
+    ],
+    "exampleSentence": "With treasury reserves depleted, the wartime coalition could ill afford another fiscal gamble."
+  },
+  {
+    "word": "may_safely_assume",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Justified in concluding without risk of grave error.",
+    "collocations": [
+      "one may safely assume",
+      "we may safely assume"
+    ],
+    "exampleSentence": "Given the absence of conflicting telemetry, one may safely assume the satellite reached lunar orbit."
+  },
+  {
+    "word": "might_have_known",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Expressing exasperated recognition of typical behavior.",
+    "collocations": [
+      "might have known that",
+      "I might have known"
+    ],
+    "exampleSentence": "I might have known that bureaucratic red tape would postpone our environmental clearance by months."
+  },
+  {
+    "word": "cannot_but_admire",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Compelled by high quality to offer praise.",
+    "collocations": [
+      "cannot but admire his",
+      "one cannot but admire"
+    ],
+    "exampleSentence": "Scholars cannot but admire the structural elegance of Dante's intricate triple-rhyme stanzas."
+  },
+  {
+    "word": "would_have_thought",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Expressing disbelief or ironic skepticism.",
+    "collocations": [
+      "who would have thought",
+      "one would have thought"
+    ],
+    "exampleSentence": "One would have thought that experienced navigators would carry backup celestial charts."
   }
 ]

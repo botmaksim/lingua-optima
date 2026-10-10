@@ -53,5 +53,60 @@
       "feasible solution"
     ],
     "exampleSentence": "Would it be feasible to schedule a video conference tomorrow?"
+  },
+  {
+    "word": "respectfully",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "With deference and respect.",
+    "collocations": [
+      "respectfully request",
+      "respectfully decline"
+    ],
+    "exampleSentence": "We respectfully request that the steering board re-examine the fiscal forecast."
+  },
+  {
+    "word": "delegate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Entrust a task or responsibility to another person.",
+    "collocations": [
+      "delegate authority",
+      "delegate tasks"
+    ],
+    "exampleSentence": "An effective corporate executive must learn to delegate operational tasks."
+  },
+  {
+    "word": "correspondence",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "Communication by exchanging letters or emails.",
+    "collocations": [
+      "business correspondence",
+      "official correspondence"
+    ],
+    "exampleSentence": "Maintain an impartial tone in all formal business correspondence with regulators."
+  },
+  {
+    "word": "feasibility",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The state or degree of being easily or conveniently done.",
+    "collocations": [
+      "feasibility study",
+      "technical feasibility"
+    ],
+    "exampleSentence": "We commissioned a feasibility study before purchasing the commercial real estate."
+  },
+  {
+    "word": "clarification",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The action of making a statement or situation less confused.",
+    "collocations": [
+      "seek clarification",
+      "further clarification"
+    ],
+    "exampleSentence": "Should you require further clarification regarding the SLA, please contact compliance."
   }
 ]

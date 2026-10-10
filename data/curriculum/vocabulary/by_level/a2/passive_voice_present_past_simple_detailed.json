@@ -53,5 +53,60 @@
       "freshly served"
     ],
     "exampleSentence": "Breakfast is served in the hotel dining room from seven."
+  },
+  {
+    "word": "manufactured",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Produced on a large scale using machinery.",
+    "collocations": [
+      "manufactured goods",
+      "manufactured in"
+    ],
+    "exampleSentence": "These precision components are manufactured in Sweden."
+  },
+  {
+    "word": "produced",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Made or manufactured from raw materials.",
+    "collocations": [
+      "mass produced",
+      "produced locally"
+    ],
+    "exampleSentence": "Organic vegetables are produced locally on community farms."
+  },
+  {
+    "word": "spoken",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Expressed or conveyed in words.",
+    "collocations": [
+      "widely spoken",
+      "spoken language"
+    ],
+    "exampleSentence": "English is spoken by millions of people across the world."
+  },
+  {
+    "word": "invented",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Created something that has not existed before.",
+    "collocations": [
+      "invented by",
+      "was invented"
+    ],
+    "exampleSentence": "The telephone was invented in the late nineteenth century."
+  },
+  {
+    "word": "designed",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Planned and created the shape or form of something.",
+    "collocations": [
+      "designed by",
+      "beautifully designed"
+    ],
+    "exampleSentence": "The modern glass bridge was designed by an Italian architect."
   }
 ]

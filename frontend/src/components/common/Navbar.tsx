@@ -45,7 +45,7 @@ export const Navbar: React.FC = () => {
   const { user, isStudent, isTeacher, logout } = useAuth();
   const { setUser } = useAuthStore();
   const { remainingEvaluations, isQuotaExceeded, isUnlimited } = useUsage();
-  const { notifications, unreadCount, fetchNotifications, markAsRead, addToast } = useNotificationStore();
+  const { notifications, unreadCount, fetchNotifications, markAsRead, markAllAsRead, addToast } = useNotificationStore();
   const { openUpgradeWall } = useUIStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -337,16 +337,27 @@ export const Navbar: React.FC = () => {
                 </button>
 
                 {isNotifOpen && (
-                  <div className="absolute right-0 mt-2 w-80 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-3.5 pt-4 animate-in fade-in zoom-in-95 duration-150 z-50">
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-80 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-3.5 pt-4 animate-in fade-in zoom-in-95 duration-150 z-50">
                     <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-rose-500" />
                     <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 px-1.5">
                       <div className="flex items-center gap-2">
                         <Bell className="w-4 h-4 text-primary" />
                         <span className="text-sm font-black text-slate-900 tracking-tight">Notifications</span>
                       </div>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-                        {unreadCount} unread
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => markAllAsRead()}
+                            className="text-[11px] font-semibold text-primary hover:text-primary/80 hover:underline transition-colors cursor-pointer"
+                          >
+                            Mark all as read
+                          </button>
+                        )}
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                          {unreadCount} unread
+                        </span>
+                      </div>
                     </div>
                     <div className="max-h-72 overflow-y-auto space-y-1 py-1.5">
                       {notifications.length === 0 ? (

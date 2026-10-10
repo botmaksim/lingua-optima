@@ -48,10 +48,31 @@ export const axiosInstance = axios.create({
   },
 });
 
+/**
+ * @brief Retrieves or initializes a unique client device identifier persisted in localStorage.
+ */
+export const getDeviceId = (): string => {
+  try {
+    let id = localStorage.getItem('lingua_device_id');
+    if (!id) {
+      id = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : 'dev-' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+      localStorage.setItem('lingua_device_id', id);
+    }
+    return id;
+  } catch {
+    return 'fallback-browser-device';
+  }
+};
+
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    if (inMemoryAccessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${inMemoryAccessToken}`;
+    if (config.headers) {
+      if (inMemoryAccessToken) {
+        config.headers.Authorization = `Bearer ${inMemoryAccessToken}`;
+      }
+      config.headers['X-Device-Id'] = getDeviceId();
     }
     return config;
   },

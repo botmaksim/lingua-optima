@@ -53,5 +53,60 @@
       "clearly exemplify"
     ],
     "exampleSentence": "Her extensive humanitarian work exemplifies the spirit of selfless public service."
+  },
+  {
+    "word": "impeccable_credentials",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Flawless and unquestioned professional qualifications.",
+    "collocations": [
+      "boast impeccable credentials",
+      "impeccable academic credentials"
+    ],
+    "exampleSentence": "The supreme court nominee possessed impeccable credentials in constitutional jurisprudence."
+  },
+  {
+    "word": "profound_repercussions",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Deep and far-reaching consequences across domains.",
+    "collocations": [
+      "carry profound repercussions",
+      "profound geopolitical repercussions"
+    ],
+    "exampleSentence": "The dissolution of the bilateral missile pact will carry profound repercussions for global security."
+  },
+  {
+    "word": "scathing_rebuke",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "A bitterly harsh expression of sharp disapproval.",
+    "collocations": [
+      "deliver a scathing rebuke",
+      "face a scathing rebuke"
+    ],
+    "exampleSentence": "The parliamentary ombudsman delivered a scathing rebuke to the intelligence directorate for unlawful surveillance."
+  },
+  {
+    "word": "tenuous_connection",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "A very weak, slight, or unsubstantiated link.",
+    "collocations": [
+      "tenuous connection between",
+      "only a tenuous connection"
+    ],
+    "exampleSentence": "Forensic specialists dismissed the disputed hair follicle as exhibiting only a tenuous connection to the crime scene."
+  },
+  {
+    "word": "inextricably_linked",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Connected so tightly or intimately that separation is impossible.",
+    "collocations": [
+      "inextricably linked with",
+      "inextricably linked to"
+    ],
+    "exampleSentence": "Environmental stewardship and Indigenous territorial sovereignty are inextricably linked across the Amazonian basin."
   }
 ]

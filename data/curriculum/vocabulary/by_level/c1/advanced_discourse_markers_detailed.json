@@ -53,5 +53,60 @@
       "in essence means"
     ],
     "exampleSentence": "In essence, the argument hinges on whether state intervention fosters or stifles innovation."
+  },
+  {
+    "word": "inasmuch_as",
+    "partOfSpeech": "conjunction",
+    "cefrLevel": "C1",
+    "definition": "To the extent that; considering that.",
+    "collocations": [
+      "inasmuch as the",
+      "inasmuch as they"
+    ],
+    "exampleSentence": "The compromise is welcome, inasmuch as it avert immediate industrial strike action."
+  },
+  {
+    "word": "thereby",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "By that means; as a result of that.",
+    "collocations": [
+      "thereby reducing",
+      "thereby establishing"
+    ],
+    "exampleSentence": "The automated sorting mechanism speeds packaging, thereby reducing overhead expenditures."
+  },
+  {
+    "word": "insofar_as",
+    "partOfSpeech": "conjunction",
+    "cefrLevel": "C1",
+    "definition": "To the degree or extent that.",
+    "collocations": [
+      "insofar as it",
+      "insofar as possible"
+    ],
+    "exampleSentence": "Public rhetoric is influential only insofar as it translates into enacted legislation."
+  },
+  {
+    "word": "notwithstanding",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "C1",
+    "definition": "In spite of; although.",
+    "collocations": [
+      "notwithstanding difficulties",
+      "notwithstanding evidence"
+    ],
+    "exampleSentence": "Notwithstanding intense political pressure, the magistrates maintained judicial autonomy."
+  },
+  {
+    "word": "furthermore",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "In addition; besides.",
+    "collocations": [
+      "furthermore it illustrates",
+      "furthermore we argue"
+    ],
+    "exampleSentence": "Furthermore, empirical testing confirms the resilience of the carbon-fiber composite."
   }
 ]

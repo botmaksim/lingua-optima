@@ -53,5 +53,60 @@
       "adjust correspondingly"
     ],
     "exampleSentence": "As consumer demand escalated, manufacturing capabilities expanded correspondingly."
+  },
+  {
+    "word": "as_did",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "In the same manner as another party.",
+    "collocations": [
+      "as did his",
+      "as did millions"
+    ],
+    "exampleSentence": "The chancellor condemned the armed incursions, as did every allied member state."
+  },
+  {
+    "word": "so_too",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Likewise; similarly in addition.",
+    "collocations": [
+      "so too did",
+      "so too will"
+    ],
+    "exampleSentence": "Just as literary tastes shifted across the century, so too did standards of critique."
+  },
+  {
+    "word": "if_not",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Perhaps even; used to introduce a stronger alternative.",
+    "collocations": [
+      "if not impossible",
+      "if not improbable"
+    ],
+    "exampleSentence": "Resolving the maritime territorial dispute will prove arduous, if not impossible."
+  },
+  {
+    "word": "one_such",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "A single representative specimen of that kind.",
+    "collocations": [
+      "one such instance",
+      "one such example"
+    ],
+    "exampleSentence": "Deforestation drives species extinction; one such instance is the golden lion tamarin."
+  },
+  {
+    "word": "similarly_equipped",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Furnished with corresponding gear or faculties.",
+    "collocations": [
+      "similarly equipped",
+      "similarly endowed"
+    ],
+    "exampleSentence": "Domestic airlines are rarely similarly equipped to endure prolonged Arctic headwinds."
   }
 ]

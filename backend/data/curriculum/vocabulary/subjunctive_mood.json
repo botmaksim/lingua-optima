@@ -1,18 +1,12 @@
-{
-  "topic": "Subjunctive Mood",
-  "cefrLevel": "C1",
-  "words": [
-    "imperative",
-    "mandatory",
-    "stipulate",
-    "proprietary",
-    "mandative",
-    "statutory",
-    "impartially",
-    "adherence",
-    "compliance",
-    "decree",
-    "stringent",
-    "prerequisite"
-  ]
-}
+[
+  "imperative",
+  "mandate",
+  "stipulate",
+  "insistence",
+  "decree",
+  "stipulate_that",
+  "mandate_that",
+  "decree_that",
+  "propose_that",
+  "vital_that"
+]

@@ -1,16 +1,12 @@
-{
-  "topic": "Mixed Subjunctive, Inverted Conditionals & Unreal Past",
-  "cefrLevel": "C1",
-  "words": [
-    "mandative",
-    "conditional",
-    "inversion",
-    "stipulation",
-    "precondition",
-    "prerequisite",
-    "unreal past",
-    "governance",
-    "parliamentary",
-    "decree"
-  ]
-}
+[
+  "imperative",
+  "stipulate",
+  "had",
+  "should",
+  "were",
+  "had_they_known",
+  "were_it_not_for",
+  "should_there_be",
+  "suffice_it_to_say",
+  "lest_we_forget"
+]

@@ -22,6 +22,7 @@ import {
   Filter,
   RotateCcw,
   FileText,
+  Lock,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { userApi } from '../../api/userApi';
@@ -31,6 +32,7 @@ import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { useNotificationStore } from '../../store/notificationStore';
+import { useUIStore } from '../../store/uiStore';
 
 const CEFR_ORDER: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 };
 
@@ -40,6 +42,7 @@ const CEFR_ORDER: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, 
  */
 export const StudentGroups: React.FC = () => {
   const { addToast } = useNotificationStore();
+  const { openUpgradeWall } = useUIStore();
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -184,13 +187,17 @@ export const StudentGroups: React.FC = () => {
       setNewGroupName('');
       await loadGroups();
       await loadGroupDetails(created.id);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to create group:', err);
+      const msg = err.response?.data?.message || 'Could not create cohort group.';
       addToast({
         type: 'error',
         title: 'Creation Failed',
-        message: 'Could not create cohort group.',
+        message: msg,
       });
+      if (err.response?.status === 402 || err.response?.status === 429) {
+        openUpgradeWall(msg);
+      }
     } finally {
       setIsCreatingGroup(false);
     }
@@ -508,10 +515,20 @@ export const StudentGroups: React.FC = () => {
                           : 'hover:bg-slate-50 text-slate-700 font-medium'
                       }`}
                     >
-                      <span className="text-sm truncate">{g.name}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200/60 text-slate-600 font-mono">
-                        {g.studentCount}
-                      </span>
+                      <div className="flex items-center space-x-1.5 truncate">
+                        {g.isLocked && <Lock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />}
+                        <span className="text-sm truncate">{g.name}</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5 flex-shrink-0">
+                        {g.isLocked && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">
+                            Read-Only
+                          </span>
+                        )}
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200/60 text-slate-600 font-mono">
+                          {g.studentCount}
+                        </span>
+                      </div>
                     </button>
                   );
                 })
@@ -524,6 +541,15 @@ export const StudentGroups: React.FC = () => {
         <div className="lg:col-span-2 space-y-6">
           {selectedGroup ? (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+              {selectedGroup.isLocked && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start space-x-3 text-xs text-amber-950">
+                  <Lock className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold">Cohort in Read-Only Mode: </span>
+                    Your Free plan allows 1 active cohort. All historical student submissions, rosters, and analytics for this group are preserved safely. Upgrade to Educator Pro to reactivate assignment distribution for all cohorts.
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">{selectedGroup.name}</h2>

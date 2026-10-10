@@ -3,5 +3,10 @@
   "mandate",
   "stipulate",
   "insistence",
-  "decree"
+  "decree",
+  "stipulate_that",
+  "mandate_that",
+  "decree_that",
+  "propose_that",
+  "vital_that"
 ]

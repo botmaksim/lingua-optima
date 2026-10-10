@@ -53,5 +53,60 @@
       "was organized by"
     ],
     "exampleSentence": "The annual charity marathon was organized by a passionate group of volunteers."
+  },
+  {
+    "word": "emphasize",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Give special importance or prominence to something.",
+    "collocations": [
+      "emphasize the result",
+      "emphasize importance"
+    ],
+    "exampleSentence": "Using the passive voice emphasizes the experimental outcome over the agent."
+  },
+  {
+    "word": "converter",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A device or grammatical tool that alters format.",
+    "collocations": [
+      "syntax converter",
+      "voltage converter"
+    ],
+    "exampleSentence": "The teacher demonstrated an interactive syntax converter on screen."
+  },
+  {
+    "word": "recipient",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A person or thing that receives something.",
+    "collocations": [
+      "recipient of award",
+      "letter recipient"
+    ],
+    "exampleSentence": "In passive structures, the recipient of the action occupies subject position."
+  },
+  {
+    "word": "subject_switch",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The syntactic permutation changing grammatical subject.",
+    "collocations": [
+      "subject switch",
+      "syntactic switch"
+    ],
+    "exampleSentence": "A subject switch moves the direct object into the prime theme slot."
+  },
+  {
+    "word": "undergo",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Experience or be subjected to something.",
+    "collocations": [
+      "undergo changes",
+      "undergo tests"
+    ],
+    "exampleSentence": "The proposed policy will undergo substantial revision before approval."
   }
 ]

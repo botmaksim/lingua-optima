@@ -17,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,11 +59,19 @@ public class SubmissionController {
      */
     @PostMapping(value = "/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SubmissionResultResponse> submitImage(
-        @RequestParam("file") MultipartFile file,
+        @RequestParam(value = "file", required = false) MultipartFile file,
+        @RequestParam(value = "files", required = false) List<MultipartFile> files,
         @RequestParam(value = "assignmentId", required = false) UUID assignmentId,
         @AuthenticationPrincipal User student
     ) {
-        return ResponseEntity.ok(submissionService.submitImage(file, assignmentId, student));
+        List<MultipartFile> allFiles = new ArrayList<>();
+        if (files != null) {
+            allFiles.addAll(files);
+        }
+        if (file != null && !allFiles.contains(file)) {
+            allFiles.add(file);
+        }
+        return ResponseEntity.ok(submissionService.submitImages(allFiles, assignmentId, student));
     }
 
     /**

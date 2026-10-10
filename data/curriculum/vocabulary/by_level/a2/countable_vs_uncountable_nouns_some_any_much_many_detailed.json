@@ -53,5 +53,60 @@
       "have enough"
     ],
     "exampleSentence": "Make sure you drink enough water throughout the day."
+  },
+  {
+    "word": "carton",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A small cardboard box or container.",
+    "collocations": [
+      "carton of juice",
+      "milk carton"
+    ],
+    "exampleSentence": "Please pick up a carton of fresh orange juice."
+  },
+  {
+    "word": "kilo",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A kilogram, metric unit of weight.",
+    "collocations": [
+      "two kilos",
+      "kilo of apples"
+    ],
+    "exampleSentence": "She asked the grocer for one kilo of fresh apples."
+  },
+  {
+    "word": "slice",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A thin, broad piece of food cut from a larger portion.",
+    "collocations": [
+      "slice of bread",
+      "slice of cheese"
+    ],
+    "exampleSentence": "Would you like another slice of toasted bread?"
+  },
+  {
+    "word": "packet",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A paper or cardboard container in which goods are packed.",
+    "collocations": [
+      "packet of biscuits",
+      "small packet"
+    ],
+    "exampleSentence": "He opened a small packet of biscuits during the interval."
+  },
+  {
+    "word": "cup",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A small bowl-shaped container used for drinking.",
+    "collocations": [
+      "cup of tea",
+      "hot cup"
+    ],
+    "exampleSentence": "Could you prepare a hot cup of tea for our guest?"
   }
 ]

@@ -79,7 +79,7 @@ public class UsageService {
         PricingProperties.TierConfig config = pricingProperties.getTierConfig(tier);
 
         UsageCounter counter = getOrCreateCounter(user);
-        if (tier == SubscriptionTier.FREE && (counter.getWeekTokensUsed() + tokens > config.getWeeklyTokenLimit())) {
+        if (counter.getWeekTokensUsed() + tokens > config.getWeeklyTokenLimit()) {
             throw new QuotaExceededException(
                 "Weekly AI token allowance of " + config.getWeeklyTokenLimit() + " tokens exceeded. Upgrade to continue."
             );
@@ -99,46 +99,54 @@ public class UsageService {
     }
 
     /**
-     * @brief Increments evaluation counter for free-tier users, enforcing weekly cap.
+     * @brief Increments evaluation counter enforcing weekly tier cap.
      * @param user Authenticated user initiating evaluation.
-     * @throws QuotaExceededException if free user has exhausted weekly evaluation limit.
+     * @throws QuotaExceededException if user has exhausted weekly evaluation limit.
      */
     @Transactional
     public void incrementEvaluation(User user) {
         SubscriptionTier tier = getUserTier(user);
         PricingProperties.TierConfig config = pricingProperties.getTierConfig(tier);
 
-        if (tier != SubscriptionTier.FREE) {
-            return;
-        }
-
         UsageCounter counter = getOrCreateCounter(user);
         if (counter.getWeekEvaluations() >= config.getWeeklyEvaluationLimit()) {
-            throw new QuotaExceededException("Weekly evaluation limit reached. Please upgrade to continue.");
+            throw new QuotaExceededException(
+                "Weekly evaluation limit of " + config.getWeeklyEvaluationLimit() + " reached. Please upgrade to continue."
+            );
         }
         counter.setWeekEvaluations(counter.getWeekEvaluations() + 1);
         usageCounterRepository.save(counter);
     }
 
     /**
-     * @brief Increments OCR upload counter for free-tier users, enforcing weekly cap.
+     * @brief Increments OCR upload counter by 1 enforcing weekly tier cap.
      * @param user Authenticated user initiating OCR upload.
-     * @throws QuotaExceededException if free user has exhausted weekly OCR upload limit.
+     * @throws QuotaExceededException if user has exhausted weekly OCR upload limit.
      */
     @Transactional
     public void incrementOcr(User user) {
+        incrementOcr(user, 1);
+    }
+
+    /**
+     * @brief Increments OCR upload counter by a specified page count enforcing weekly tier cap.
+     * @param user Authenticated user initiating OCR uploads.
+     * @param count Number of pages/photos scanned.
+     * @throws QuotaExceededException if user has exhausted weekly OCR upload limit.
+     */
+    @Transactional
+    public void incrementOcr(User user, int count) {
+        if (count <= 0) return;
         SubscriptionTier tier = getUserTier(user);
         PricingProperties.TierConfig config = pricingProperties.getTierConfig(tier);
 
-        if (tier != SubscriptionTier.FREE) {
-            return;
-        }
-
         UsageCounter counter = getOrCreateCounter(user);
-        if (counter.getWeekOcrUploads() >= config.getWeeklyOcrLimit()) {
-            throw new QuotaExceededException("Weekly OCR upload limit reached. Please upgrade to continue.");
+        if (counter.getWeekOcrUploads() + count > config.getWeeklyOcrLimit()) {
+            throw new QuotaExceededException(
+                "Weekly OCR upload limit of " + config.getWeeklyOcrLimit() + " reached. Please upgrade to continue."
+            );
         }
-        counter.setWeekOcrUploads(counter.getWeekOcrUploads() + 1);
+        counter.setWeekOcrUploads(counter.getWeekOcrUploads() + count);
         usageCounterRepository.save(counter);
     }
 
@@ -165,38 +173,22 @@ public class UsageService {
         int ocrUsed = counter.getWeekOcrUploads();
         long tokensUsed = counter.getWeekTokensUsed();
 
-        if (tier == SubscriptionTier.FREE) {
-            int evalLimit = config.getWeeklyEvaluationLimit();
-            int ocrLimit = config.getWeeklyOcrLimit();
-            long tokenLimit = config.getWeeklyTokenLimit();
+        int evalLimit = config.getWeeklyEvaluationLimit();
+        int ocrLimit = config.getWeeklyOcrLimit();
+        long tokenLimit = config.getWeeklyTokenLimit();
 
-            return UsageResponse.builder()
-                .weekEvaluations(evalsUsed)
-                .weekOcrUploads(ocrUsed)
-                .weekTokensUsed(tokensUsed)
-                .tokenLimit(tokenLimit)
-                .tokensRemaining(Math.max(0L, tokenLimit - tokensUsed))
-                .evaluationLimit(evalLimit)
-                .ocrLimit(ocrLimit)
-                .evaluationsRemaining(Math.max(0, evalLimit - evalsUsed))
-                .ocrRemaining(Math.max(0, ocrLimit - ocrUsed))
-                .weekResetAt(counter.getWeekResetAt())
-                .build();
-        } else {
-            long tokenLimit = config.getWeeklyTokenLimit();
-            return UsageResponse.builder()
-                .weekEvaluations(evalsUsed)
-                .weekOcrUploads(ocrUsed)
-                .weekTokensUsed(tokensUsed)
-                .tokenLimit(tokenLimit)
-                .tokensRemaining(Math.max(0L, tokenLimit - tokensUsed))
-                .evaluationLimit(null)
-                .ocrLimit(null)
-                .evaluationsRemaining(Integer.MAX_VALUE)
-                .ocrRemaining(Integer.MAX_VALUE)
-                .weekResetAt(counter.getWeekResetAt())
-                .build();
-        }
+        return UsageResponse.builder()
+            .weekEvaluations(evalsUsed)
+            .weekOcrUploads(ocrUsed)
+            .weekTokensUsed(tokensUsed)
+            .tokenLimit(tokenLimit)
+            .tokensRemaining(Math.max(0L, tokenLimit - tokensUsed))
+            .evaluationLimit(evalLimit)
+            .ocrLimit(ocrLimit)
+            .evaluationsRemaining(Math.max(0, evalLimit - evalsUsed))
+            .ocrRemaining(Math.max(0, ocrLimit - ocrUsed))
+            .weekResetAt(counter.getWeekResetAt())
+            .build();
     }
 
     /**

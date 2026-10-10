@@ -53,5 +53,60 @@
       "textual cohesion"
     ],
     "exampleSentence": "Subtle substitution mechanisms enhance textual cohesion without introducing stylistic redundancy."
+  },
+  {
+    "word": "all_the_more_so",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "To an even greater degree in the specified circumstances.",
+    "collocations": [
+      "all the more so because",
+      "all the more so given"
+    ],
+    "exampleSentence": "Ethical constraints in genetics must be stringently enforced, all the more so given rapid CRISPR breakthroughs."
+  },
+  {
+    "word": "by_the_same_token",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "In the same way or for the same reason.",
+    "collocations": [
+      "by the same token we",
+      "by the same token it"
+    ],
+    "exampleSentence": "If the state demands civic loyalty, by the same token it must guarantee egalitarian economic protections."
+  },
+  {
+    "word": "mutatis_mutandis",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "With necessary alterations having been made.",
+    "collocations": [
+      "applied mutatis mutandis",
+      "holds mutatis mutandis"
+    ],
+    "exampleSentence": "The regulatory doctrines formulated for maritime salvage hold, mutatis mutandis, for commercial outer space exploration."
+  },
+  {
+    "word": "per_se",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "By or in itself or themselves; intrinsically.",
+    "collocations": [
+      "not illegal per se",
+      "evil per se"
+    ],
+    "exampleSentence": "Technological automation is not inherently detrimental per se, but rather in its exploitative deployment."
+  },
+  {
+    "word": "in_tandem_with",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Alongside each other; acting together in concert.",
+    "collocations": [
+      "in tandem with monetary",
+      "working in tandem with"
+    ],
+    "exampleSentence": "Fiscal stimulus must operate in close tandem with monetary adjustments to prevent runaway hyperinflation."
   }
 ]

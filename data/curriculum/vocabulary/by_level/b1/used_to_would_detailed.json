@@ -53,5 +53,60 @@
       "fondly reminisce"
     ],
     "exampleSentence": "The alumni met to reminisce about their university adventures."
+  },
+  {
+    "word": "former",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B1",
+    "definition": "Having previously filled a particular role or status.",
+    "collocations": [
+      "former champion",
+      "former resident"
+    ],
+    "exampleSentence": "The former champion reminisced about grueling training sessions."
+  },
+  {
+    "word": "routine",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A customary or regular way of doing things.",
+    "collocations": [
+      "daily routine",
+      "past routine"
+    ],
+    "exampleSentence": "Our past family routine involved long Sunday morning strolls."
+  },
+  {
+    "word": "familiar",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B1",
+    "definition": "Well known from long or close association.",
+    "collocations": [
+      "familiar sight",
+      "familiar voice"
+    ],
+    "exampleSentence": "The cobblestone lane was a familiar sight from her youth."
+  },
+  {
+    "word": "discontinued",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Ceased from doing, providing, or producing something.",
+    "collocations": [
+      "discontinued practice",
+      "discontinued line"
+    ],
+    "exampleSentence": "The municipal council discontinued horse-drawn trams over a century ago."
+  },
+  {
+    "word": "tradition",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The transmission of customs from generation to generation.",
+    "collocations": [
+      "family tradition",
+      "old tradition"
+    ],
+    "exampleSentence": "In our family, making plum jam in autumn used to be a tradition."
   }
 ]

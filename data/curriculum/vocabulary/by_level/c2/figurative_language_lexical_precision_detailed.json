@@ -53,5 +53,60 @@
       "lend verisimilitude"
     ],
     "exampleSentence": "The meticulous depiction of 18th-century naval vernacular lent extraordinary verisimilitude to the courtroom scene."
+  },
+  {
+    "word": "harbinger",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A person or thing that announces or signals the approach of another.",
+    "collocations": [
+      "harbinger of doom",
+      "harbinger of spring"
+    ],
+    "exampleSentence": "The sudden drop in atmospheric pressure proved an ominous harbinger of the approaching hurricane."
+  },
+  {
+    "word": "paradox",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A seemingly absurd or self-contradictory proposition that may prove true.",
+    "collocations": [
+      "apparent paradox",
+      "central paradox"
+    ],
+    "exampleSentence": "The central paradox of modern surveillance capitalism is that convenience exacts the forfeiture of liberty."
+  },
+  {
+    "word": "panoply",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A complete or impressive collection of things.",
+    "collocations": [
+      "panoply of options",
+      "rich panoply"
+    ],
+    "exampleSentence": "The constitutional monarch was escorted by a dazzling panoply of cavalry regiments and state heralds."
+  },
+  {
+    "word": "epiphany",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A moment of sudden and great revelation or realization.",
+    "collocations": [
+      "sudden epiphany",
+      "spiritual epiphany"
+    ],
+    "exampleSentence": "Listening to the fugue in solitude, the philosopher experienced a sudden epiphany regarding the nature of time."
+  },
+  {
+    "word": "crucible",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A situation of severe trial leading to the creation of something new.",
+    "collocations": [
+      "crucible of conflict",
+      "moral crucible"
+    ],
+    "exampleSentence": "The wartime siege became a moral crucible that tested the community's deepest bonds."
   }
 ]

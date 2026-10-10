@@ -53,5 +53,60 @@
       "give up smoking"
     ],
     "exampleSentence": "He refused to give up despite numerous experimental setbacks."
+  },
+  {
+    "word": "come_up_with",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "To produce or devise something such as an idea or plan.",
+    "collocations": [
+      "come up with ideas",
+      "come up with solutions"
+    ],
+    "exampleSentence": "The research intern came up with an ingenious design solution."
+  },
+  {
+    "word": "put_off",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "To postpone something until a later date.",
+    "collocations": [
+      "put off decisions",
+      "put off meeting"
+    ],
+    "exampleSentence": "Don't put off answering important emails until Friday evening."
+  },
+  {
+    "word": "take_after",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "To resemble an older family member in appearance or character.",
+    "collocations": [
+      "take after father",
+      "take after mother"
+    ],
+    "exampleSentence": "Elena really takes after her grandmother in musical ability."
+  },
+  {
+    "word": "look_into",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "To investigate or examine the facts about something.",
+    "collocations": [
+      "look into complaints",
+      "look into matter"
+    ],
+    "exampleSentence": "The customer relations officer promised to look into the matter."
+  },
+  {
+    "word": "carry_out",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Perform or execute a task or experiment.",
+    "collocations": [
+      "carry out research",
+      "carry out instructions"
+    ],
+    "exampleSentence": "Specialists will carry out extensive soil tests before construction."
   }
 ]

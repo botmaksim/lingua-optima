@@ -53,5 +53,60 @@
       "eat together"
     ],
     "exampleSentence": "We eat dinner together every evening."
+  },
+  {
+    "word": "drink",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To take liquid into the mouth and swallow it.",
+    "collocations": [
+      "drink water",
+      "drink coffee"
+    ],
+    "exampleSentence": "I drink a cup of coffee every morning."
+  },
+  {
+    "word": "sleep",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To rest in a state of natural unconsciousness.",
+    "collocations": [
+      "sleep well",
+      "go to sleep"
+    ],
+    "exampleSentence": "Children usually sleep for eight hours every night."
+  },
+  {
+    "word": "read",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To look at and comprehend written text.",
+    "collocations": [
+      "read books",
+      "read newspapers"
+    ],
+    "exampleSentence": "She reads an English story before going to bed."
+  },
+  {
+    "word": "walk",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To move on foot at a regular pace.",
+    "collocations": [
+      "walk to school",
+      "walk in the park"
+    ],
+    "exampleSentence": "We walk through the park every Sunday."
+  },
+  {
+    "word": "write",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To mark letters, words, or symbols on a surface.",
+    "collocations": [
+      "write emails",
+      "write letters"
+    ],
+    "exampleSentence": "He writes an email to his teacher."
   }
 ]

@@ -65,8 +65,9 @@ backend/
 │   │   ├── SubmissionController.java  — POST /text, /image; GET /{id}, /my; PUT /{id}/override
 │   │   ├── GroupController.java       — GET /, /{id}; POST /; POST /{id}/students; DELETE /{id}/students/{uid}, /{id}
 │   │   ├── ProgressController.java    — GET /me, /student/{id}, /group/{id}
-│   │   ├── NotificationController.java — GET /stream (SSE), /unread-count; PATCH /{id}/read
+│   │   ├── NotificationController.java — GET /stream (SSE), /unread-count, /; PATCH /{id}/read, PATCH /read-all
 │   │   ├── SubscriptionController.java — GET /me; POST /upgrade, /downgrade; GET /usage
+│   │   ├── CustomCurriculumController.java — GET /, POST /, DELETE /{id} (teacher custom rules and vocabulary sets)
 │   │   ├── ApiKeyController.java      — GET /, POST /, DELETE /{id}
 │   │   ├── LeaderboardController.java — GET /group/{groupId} (group-only leaderboard, NO global)
 │   │   └── ExportController.java      — GET /report/group/{id} (?format, ?from, ?to), /report/student/{id}, /report/group/{id}/preview (?from, ?to)
@@ -119,6 +120,7 @@ backend/
 │   │   ├── Group.java                 — id, name, teacher, createdAt, groupStudents
 │   │   ├── Notification.java          — id, user, message, type (TASK/GRADE/SYSTEM/CONTEXTUAL), isRead, createdAt
 │   │   ├── Subscription.java          — id, user, tier (FREE/PREMIUM/EDUCATOR), expiresAt, createdAt
+│   │   ├── CustomCurriculumEntry.java — id, user, curriculumType (RULE/VOCABULARY), title, content, cefrLevel, topic, createdAt
 │   │   ├── UsageCounter.java          — id, user, weekEvaluations, weekOcrUploads, weekResetAt
 │   │   └── enums/
 │   │       ├── Role.java              — STUDENT, TEACHER, ADMIN
@@ -142,6 +144,7 @@ backend/
 │   │   ├── SubmissionRepository.java  — findByStudent(), findByAssignment(), findByAssignmentStudentInAndAssignmentTaskIn()
 │   │   ├── ProgressRecordRepository.java — findByStudent(), findByStudentAndGrammarTopic(), findByStudentAndMasteryScoreLessThan()
 │   │   ├── GroupRepository.java       — findByTeacher(), findByTeacherAndStudentsContaining()
+│   │   ├── CustomCurriculumRepository.java — findByUserAndCurriculumTypeOrderByCreatedAtDesc()
 │   │   ├── NotificationRepository.java — findByUserAndIsReadFalse(), countByUserAndIsReadFalse()
 │   │   ├── SubscriptionRepository.java — findByUser()
 │   │   └── UsageCounterRepository.java — findByUser()
@@ -157,10 +160,12 @@ backend/
 │   │   ├── ScoringService.java        — scoreGrammarTask() (compares with answerKey via AI), scoreEssay() (rubric: TA, Coherence, LR, GR)
 │   │   ├── OCRService.java            — extractText(byte[]) via Tesseract (tess4j), zero-retention RAM wipe. Throws OcrException on failure.
 │   │   ├── ProgressService.java       — updateFromSubmission(), updateFromOverride(), getGapsForStudent(), getGroupProgress(), checkCefrLevelUp(), confirmLevelUp()
-│   │   ├── GroupService.java          — createGroup(), addStudent() (checks if student was previously in group and reactivates them), removeStudent() (SOFT DELETE: sets is_active=false, removed_at=now()), deleteGroup()
-│   │   ├── NotificationService.java   — send(), sendToGroup(), getUnreadCount(), markAsRead(), SSE emitter management
+│   │   ├── GroupService.java          — createGroup(), addStudent(), removeStudent() (soft-delete), getGroupsForTeacher() (marks surplus locked groups on downgrade), deleteGroup()
+│   │   ├── NotificationService.java   — send(), sendToGroup(), getUnreadCount(), markAsRead(), markAllAsRead(), SSE emitter management
+│   │   ├── CustomCurriculumService.java — getCustomEntries(), saveCustomEntry() (enforces tier quotas for custom rules/vocab), deleteCustomEntry()
+│   │   ├── GenerationProtectionService.java — validateDeviceBinding() (12h device TTL), acquireExclusiveGenerationLease() (90s concurrency=1 lock)
 │   │   ├── GamificationService.java   — onSubmissionCompleted() (streak +1, freeze token every 7 days), applyDailyStreakCheck() (called by scheduler)
-│   │   ├── SubscriptionService.java   — getSubscription(), upgrade() (calls PaymentService), downgrade(), checkQuota(), isFeatureAllowed()
+│   │   ├── SubscriptionService.java   — getSubscription(), upgrade() (calls PaymentService), downgrade() (locks surplus cohorts without data deletion), checkQuota(), isFeatureAllowed()
 │   │   ├── PaymentService.java        — processPayment() — STUB: always returns success. Has full PaymentResult with transactionId and error handling infrastructure.
 │   │   ├── UsageService.java          — incrementEvaluation(), incrementOcr(), getRemainingUsage(), resetWeeklyCounters() (called by scheduler)
 │   │   ├── ExportService.java         — generateGroupReport(format), generateStudentReport(format) — PDF via OpenPDF, CSV via OpenCSV with strict IDOR protection. Streamed, not persisted.

@@ -53,5 +53,60 @@
       "arrange travel"
     ],
     "exampleSentence": "We are going to arrange our flights this weekend."
+  },
+  {
+    "word": "intend",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To have in mind as a purpose or plan.",
+    "collocations": [
+      "intend to",
+      "firmly intend"
+    ],
+    "exampleSentence": "She intends to study medicine next academic year."
+  },
+  {
+    "word": "expect",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To regard something as likely to happen.",
+    "collocations": [
+      "expect that",
+      "expect guests"
+    ],
+    "exampleSentence": "I expect they will arrive before eight o'clock."
+  },
+  {
+    "word": "schedule",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To plan for an activity to occur at a time.",
+    "collocations": [
+      "schedule a meeting",
+      "tightly scheduled"
+    ],
+    "exampleSentence": "We will schedule the job interviews for Thursday."
+  },
+  {
+    "word": "forecast",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To predict or estimate a future event.",
+    "collocations": [
+      "weather forecast",
+      "economic forecast"
+    ],
+    "exampleSentence": "The news forecasts a sunny weekend ahead."
+  },
+  {
+    "word": "plan",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To decide on and make arrangements for in advance.",
+    "collocations": [
+      "plan to",
+      "future plans"
+    ],
+    "exampleSentence": "We are going to plan our summer vacation tomorrow."
   }
 ]

@@ -63,8 +63,14 @@ class SubmissionControllerTest {
         assertEquals(HttpStatus.OK, submissionController.submitText(req, user).getStatusCode());
 
         MockMultipartFile file = new MockMultipartFile("file", "test.png", "image/png", new byte[]{1, 2});
-        when(submissionService.submitImage(file, null, user)).thenReturn(resultResponse);
-        assertEquals(HttpStatus.OK, submissionController.submitImage(file, null, user).getStatusCode());
+        MockMultipartFile file2 = new MockMultipartFile("file2", "test2.png", "image/png", new byte[]{3, 4});
+        UUID assignmentId = UUID.randomUUID();
+
+        when(submissionService.submitImages(List.of(file), null, user)).thenReturn(resultResponse);
+        assertEquals(HttpStatus.OK, submissionController.submitImage(file, null, null, user).getStatusCode());
+
+        when(submissionService.submitImages(List.of(file, file2), assignmentId, user)).thenReturn(resultResponse);
+        assertEquals(HttpStatus.OK, submissionController.submitImage(null, List.of(file, file2), assignmentId, user).getStatusCode());
     }
 
     /**

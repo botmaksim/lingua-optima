@@ -53,5 +53,60 @@
       "focalized attention"
     ],
     "exampleSentence": "The reason why the committee chose to focalize administrative spending was the escalating municipal deficit."
+  },
+  {
+    "word": "what_transpires_ultimately_is",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Complex wh-cleft revealing the definitive consequence.",
+    "collocations": [
+      "what transpires ultimately is",
+      "what transpires is"
+    ],
+    "exampleSentence": "What transpires ultimately is not a triumph of virtue, but a tragic reconciliation with compromise."
+  },
+  {
+    "word": "it_was_by_dint_of",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "It-cleft pinpointing tireless perseverance as prime mechanism.",
+    "collocations": [
+      "it was by dint of",
+      "it is by dint of"
+    ],
+    "exampleSentence": "It was by dint of superhuman persistence that the solitary alpinist scaled the treacherous north ridge."
+  },
+  {
+    "word": "it_is_none_other_than",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Emphatic focalizing cleft unmasking surprising agency.",
+    "collocations": [
+      "it is none other than",
+      "was none other than"
+    ],
+    "exampleSentence": "The anonymous whistleblower who leaked the petrochemical documents is none other than the chief compliance officer."
+  },
+  {
+    "word": "all_that_survives_is",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Exclusive pseudo-cleft stressing fragile remnants.",
+    "collocations": [
+      "all that survives is",
+      "all that remains is"
+    ],
+    "exampleSentence": "All that survives of the magnificent Hellenistic library is a fragmented papyrus fragment in Alexandria."
+  },
+  {
+    "word": "what_arrests_our_gaze_is",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C2",
+    "definition": "Aesthetic focalizing cleft directing critical perception.",
+    "collocations": [
+      "what arrests our gaze is",
+      "what arrests the eye"
+    ],
+    "exampleSentence": "What arrests our gaze in Rembrandt's late self-portraits is the merciless candor of his self-appraisal."
   }
 ]

@@ -53,5 +53,60 @@
       "glancing at clock"
     ],
     "exampleSentence": "Glancing nervously at his watch, the diplomat hurried into the conference chamber."
+  },
+  {
+    "word": "having_been_briefed",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Perfect passive participle clause denoting prior instruction.",
+    "collocations": [
+      "having been briefed by",
+      "having been briefed on"
+    ],
+    "exampleSentence": "Having been briefed on cyber vulnerabilities, the network administrators reconfigured the enterprise firewalls."
+  },
+  {
+    "word": "confronted_with",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Past participle clause denoting meeting adversity.",
+    "collocations": [
+      "confronted with evidence",
+      "confronted with crisis"
+    ],
+    "exampleSentence": "Confronted with undeniable satellite imagery, the rogue delegation reluctantly ceased border skirmishes."
+  },
+  {
+    "word": "though_skeptical",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Reduced concessive adverbial clause.",
+    "collocations": [
+      "though skeptical of",
+      "though skeptical at first"
+    ],
+    "exampleSentence": "Though skeptical of the proposed geothermal paradigm, the board financed a preliminary exploratory bore."
+  },
+  {
+    "word": "whilst_conceding",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Reduced concurrent concessive adverbial clause.",
+    "collocations": [
+      "whilst conceding that",
+      "whilst conceding errors"
+    ],
+    "exampleSentence": "Whilst conceding that delivery delays occurred, the contractor disputed claims of mechanical inferiority."
+  },
+  {
+    "word": "acting_upon",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Present participle clause denoting execution of orders.",
+    "collocations": [
+      "acting upon intelligence",
+      "acting upon advice"
+    ],
+    "exampleSentence": "Acting upon reliable intelligence reports, naval patrols intercepted the contraband vessel at dawn."
   }
 ]

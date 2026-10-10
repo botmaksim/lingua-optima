@@ -53,5 +53,60 @@
       "seek to remedy"
     ],
     "exampleSentence": "If only we could remedy the communication gap between the two teams."
+  },
+  {
+    "word": "longing",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A yearning desire.",
+    "collocations": [
+      "deep longing",
+      "sense of longing"
+    ],
+    "exampleSentence": "He experienced an acute longing for the peaceful shores of his hometown."
+  },
+  {
+    "word": "dissatisfaction",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "Lack of satisfaction; discontent.",
+    "collocations": [
+      "express dissatisfaction",
+      "growing dissatisfaction"
+    ],
+    "exampleSentence": "Commuters voiced deep dissatisfaction with the erratic bus timetables."
+  },
+  {
+    "word": "regret",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A feeling of sadness, repentance, or disappointment over an occurrence.",
+    "collocations": [
+      "deep regret",
+      "express regret"
+    ],
+    "exampleSentence": "She felt profound regret over not accepting the overseas scholarship."
+  },
+  {
+    "word": "yearning",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A feeling of intense longing for something.",
+    "collocations": [
+      "yearning for freedom",
+      "nostalgic yearning"
+    ],
+    "exampleSentence": "The exiled poet expressed a passionate yearning for his native mountains."
+  },
+  {
+    "word": "lament",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Express regret or disappointment about something.",
+    "collocations": [
+      "lament the loss",
+      "openly lament"
+    ],
+    "exampleSentence": "Local historians lament the demolition of the art deco cinema."
   }
 ]

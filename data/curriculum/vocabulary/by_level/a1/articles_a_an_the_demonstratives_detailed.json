@@ -53,5 +53,60 @@
       "comfortable chair"
     ],
     "exampleSentence": "These chairs are very comfortable."
+  },
+  {
+    "word": "orange",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A round juicy citrus fruit with orange skin.",
+    "collocations": [
+      "eat an orange",
+      "sweet orange"
+    ],
+    "exampleSentence": "She bought an orange and an apple at the market."
+  },
+  {
+    "word": "table",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A piece of furniture with a flat top and legs.",
+    "collocations": [
+      "on the table",
+      "wooden table"
+    ],
+    "exampleSentence": "The notebook is lying on the table."
+  },
+  {
+    "word": "bag",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A flexible container with an opening at the top.",
+    "collocations": [
+      "school bag",
+      "heavy bag"
+    ],
+    "exampleSentence": "Put this book in that bag."
+  },
+  {
+    "word": "door",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A barrier used to close an entrance.",
+    "collocations": [
+      "open the door",
+      "front door"
+    ],
+    "exampleSentence": "Please close that door behind you."
+  },
+  {
+    "word": "notebook",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A book with blank pages for recording notes.",
+    "collocations": [
+      "new notebook",
+      "write in notebook"
+    ],
+    "exampleSentence": "This notebook belongs to the new student."
   }
 ]

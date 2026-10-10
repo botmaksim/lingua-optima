@@ -297,11 +297,16 @@ export const AIReview: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {itemsToRender.map((item) => (
+            {itemsToRender.map((item) => {
+              const cleanStudent = (item.studentAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+              const cleanCorrect = (item.correctAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+              const isEffectivelyCorrect = item.isCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect);
+
+              return (
               <div
                 key={item.questionNumber}
                 className={`p-5 rounded-2xl border transition space-y-3 ${
-                  item.isCorrect
+                  isEffectivelyCorrect
                     ? 'border-emerald-200 bg-emerald-50/20'
                     : 'border-rose-200 bg-rose-50/20'
                 }`}
@@ -311,7 +316,7 @@ export const AIReview: React.FC = () => {
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-lg bg-white border border-slate-200 text-slate-700">
                     Sentence #{item.questionNumber}
                   </span>
-                  {item.isCorrect ? (
+                  {isEffectivelyCorrect ? (
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 flex items-center space-x-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Correct</span>
@@ -331,7 +336,7 @@ export const AIReview: React.FC = () => {
 
                 {/* Answer comparison */}
                 <div className="space-y-2 pt-1">
-                  {item.isCorrect ? (
+                  {isEffectivelyCorrect ? (
                     <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs font-medium flex items-center justify-between">
                       <div className="space-x-1">
                         <span className="font-semibold text-emerald-800">Your answer:</span>
@@ -376,7 +381,8 @@ export const AIReview: React.FC = () => {
                   </p>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         </div>
       )}

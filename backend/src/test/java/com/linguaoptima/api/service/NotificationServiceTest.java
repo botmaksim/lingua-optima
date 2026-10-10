@@ -229,4 +229,25 @@ class NotificationServiceTest {
         when(notificationRepository.findById(missing)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> notificationService.markAsRead(missing, user));
     }
+
+    /**
+     * @brief Verifies unit test scenario: mark all as read when unread exist and when none exist.
+     */
+    @Test
+    void testMarkAllAsRead() {
+        Notification n1 = Notification.builder().id(UUID.randomUUID()).user(user).isRead(false).build();
+        Notification n2 = Notification.builder().id(UUID.randomUUID()).user(user).isRead(false).build();
+
+        when(notificationRepository.findByUserIdAndIsReadFalse(user.getId())).thenReturn(List.of(n1, n2));
+
+        notificationService.markAllAsRead(user);
+
+        assertTrue(n1.isRead());
+        assertTrue(n2.isRead());
+        verify(notificationRepository).saveAll(List.of(n1, n2));
+
+        // When no unread notifications exist
+        when(notificationRepository.findByUserIdAndIsReadFalse(user.getId())).thenReturn(List.of());
+        notificationService.markAllAsRead(user);
+    }
 }

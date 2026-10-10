@@ -53,5 +53,60 @@
       "high performance"
     ],
     "exampleSentence": "Her exceptional sales performance earned her an employee award."
+  },
+  {
+    "word": "revenue",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "Income, especially when of a company or organization.",
+    "collocations": [
+      "annual revenue",
+      "generate revenue"
+    ],
+    "exampleSentence": "The tech startup grew its annual revenue by forty percent."
+  },
+  {
+    "word": "client",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A person or organization using the services of a professional person.",
+    "collocations": [
+      "corporate client",
+      "meet clients"
+    ],
+    "exampleSentence": "We scheduled a video conference with our primary corporate client."
+  },
+  {
+    "word": "presentation",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A speech or talk in which a new product or idea is shown.",
+    "collocations": [
+      "slide presentation",
+      "give a presentation"
+    ],
+    "exampleSentence": "He gave a professional presentation on corporate sustainability."
+  },
+  {
+    "word": "strategy",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A plan of action designed to achieve a long-term goal.",
+    "collocations": [
+      "business strategy",
+      "effective strategy"
+    ],
+    "exampleSentence": "Management devised a new business strategy for foreign expansion."
+  },
+  {
+    "word": "contract",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A written or spoken agreement intended to be enforceable by law.",
+    "collocations": [
+      "sign a contract",
+      "employment contract"
+    ],
+    "exampleSentence": "Both commercial parties reviewed and signed the lease contract."
   }
 ]

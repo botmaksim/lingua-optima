@@ -252,7 +252,7 @@ class SubmissionServiceTest {
         assertNotNull(res);
         assertEquals(SubmissionType.IMAGE, res.getSubmissionType());
         assertEquals("Recognized handwritten text", res.getOriginalText());
-        verify(usageService).incrementOcr(student);
+        verify(usageService).incrementOcr(student, 1);
         verify(usageService).incrementEvaluation(student);
     }
 

@@ -53,5 +53,60 @@
       "close friendship"
     ],
     "exampleSentence": "Their university friendship endured despite living on opposite continents."
+  },
+  {
+    "word": "chores",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "Routine tasks, especially household ones.",
+    "collocations": [
+      "household chores",
+      "daily chores"
+    ],
+    "exampleSentence": "Sharing household chores keeps the domestic atmosphere harmonious."
+  },
+  {
+    "word": "lifestyle",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The way in which a person or group lives.",
+    "collocations": [
+      "healthy lifestyle",
+      "urban lifestyle"
+    ],
+    "exampleSentence": "Adopting an active lifestyle reduces vulnerability to stress."
+  },
+  {
+    "word": "neighbor",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A person living near or next door to another.",
+    "collocations": [
+      "friendly neighbor",
+      "next-door neighbor"
+    ],
+    "exampleSentence": "Our friendly neighbor water our plants while we travel abroad."
+  },
+  {
+    "word": "acquaintance",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A person one knows slightly, but who is not a close friend.",
+    "collocations": [
+      "casual acquaintance",
+      "mutual acquaintance"
+    ],
+    "exampleSentence": "We met through a mutual acquaintance at an alumni dinner."
+  },
+  {
+    "word": "support",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "Material, emotional, or logistical assistance.",
+    "collocations": [
+      "mutual support",
+      "emotional support"
+    ],
+    "exampleSentence": "Family members offer vital emotional support during crises."
   }
 ]

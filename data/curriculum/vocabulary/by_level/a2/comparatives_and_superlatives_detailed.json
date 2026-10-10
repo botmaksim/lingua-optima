@@ -53,5 +53,60 @@
       "feel better"
     ],
     "exampleSentence": "I feel much better after getting a good night's rest."
+  },
+  {
+    "word": "tastier",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Having a more delicious flavor.",
+    "collocations": [
+      "tastier dish",
+      "much tastier"
+    ],
+    "exampleSentence": "Fresh homemade soup is tastier than canned soup."
+  },
+  {
+    "word": "louder",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Producing more volume of sound.",
+    "collocations": [
+      "much louder",
+      "speak louder"
+    ],
+    "exampleSentence": "The live music became louder as midnight approached."
+  },
+  {
+    "word": "simplest",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Most easily understood or done.",
+    "collocations": [
+      "simplest way",
+      "the simplest"
+    ],
+    "exampleSentence": "Walking is often the simplest way to explore the town center."
+  },
+  {
+    "word": "closest",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Shortest in distance or time.",
+    "collocations": [
+      "closest station",
+      "closest friend"
+    ],
+    "exampleSentence": "Where is the closest underground station from this hotel?"
+  },
+  {
+    "word": "deeper",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Extending further down from the top or surface.",
+    "collocations": [
+      "deeper water",
+      "deeper understanding"
+    ],
+    "exampleSentence": "The river is much deeper near the ancient stone bridge."
   }
 ]

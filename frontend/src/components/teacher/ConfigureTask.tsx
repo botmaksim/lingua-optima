@@ -49,6 +49,9 @@ import {
   buildProviderOptionGroups,
   isSystemFreeProvider,
 } from '../../constants/aiModels';
+import { useUIStore } from '../../store/uiStore';
+import { customCurriculumApi } from '../../api/customCurriculumApi';
+import { CustomCurriculumEntry } from '../../types/curriculum';
 import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
 
 /**
@@ -58,6 +61,7 @@ import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
 export const ConfigureTask: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useNotificationStore();
+  const { openUpgradeWall } = useUIStore();
 
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
@@ -105,6 +109,12 @@ export const ConfigureTask: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
+  // Saved curriculum sets from library
+  const [savedRules, setSavedRules] = useState<CustomCurriculumEntry[]>([]);
+  const [savedVocabSets, setSavedVocabSets] = useState<CustomCurriculumEntry[]>([]);
+  const [isSavingRule, setIsSavingRule] = useState<boolean>(false);
+  const [isSavingVocab, setIsSavingVocab] = useState<boolean>(false);
+
   useEffect(() => {
     groupApi
       .getGroups()
@@ -130,7 +140,71 @@ export const ConfigureTask: React.FC = () => {
         }
       })
       .catch(() => {});
+
+    customCurriculumApi.getCustomCurriculum('RULE')
+      .then(setSavedRules)
+      .catch(() => {});
+
+    customCurriculumApi.getCustomCurriculum('VOCABULARY')
+      .then(setSavedVocabSets)
+      .catch(() => {});
   }, []);
+
+  const handleSaveRuleToLibrary = async () => {
+    if (!customRule.trim()) return;
+    setIsSavingRule(true);
+    try {
+      const title = grammarTopic ? `${grammarTopic} Rule` : 'Custom Grammar Rule';
+      const saved = await customCurriculumApi.createCustomCurriculum({
+        title,
+        cefrLevel,
+        curriculumType: 'RULE',
+        content: customRule.trim(),
+      });
+      setSavedRules((prev) => [saved, ...prev]);
+      addToast({
+        type: 'success',
+        title: 'Rule Saved to Library',
+        message: `Custom rule "${saved.title}" saved.`,
+      });
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Failed to save rule.';
+      addToast({ type: 'error', title: 'Save Failed', message: msg });
+      if (err.response?.status === 402 || err.response?.status === 429) {
+        openUpgradeWall(msg);
+      }
+    } finally {
+      setIsSavingRule(false);
+    }
+  };
+
+  const handleSaveVocabToLibrary = async () => {
+    if (!customVocabulary.trim()) return;
+    setIsSavingVocab(true);
+    try {
+      const title = grammarTopic ? `${grammarTopic} Vocabulary` : 'Custom Vocabulary';
+      const saved = await customCurriculumApi.createCustomCurriculum({
+        title,
+        cefrLevel,
+        curriculumType: 'VOCABULARY',
+        content: customVocabulary.trim(),
+      });
+      setSavedVocabSets((prev) => [saved, ...prev]);
+      addToast({
+        type: 'success',
+        title: 'Vocabulary Saved to Library',
+        message: `Custom vocabulary "${saved.title}" saved.`,
+      });
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Failed to save vocabulary.';
+      addToast({ type: 'error', title: 'Save Failed', message: msg });
+      if (err.response?.status === 402 || err.response?.status === 429) {
+        openUpgradeWall(msg);
+      }
+    } finally {
+      setIsSavingVocab(false);
+    }
+  };
 
   const userConfiguredProviders = useMemo(() => savedKeys.map((k) => k.provider), [savedKeys]);
   const providerGroups = useMemo(() => buildProviderOptionGroups(userConfiguredProviders), [userConfiguredProviders]);
@@ -879,6 +953,35 @@ export const ConfigureTask: React.FC = () => {
                     </div>
                   )}
 
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                    {savedRules.length > 0 ? (
+                      <select
+                        onChange={(e) => {
+                          const found = savedRules.find((r) => r.id === e.target.value);
+                          if (found) setCustomRule(found.content);
+                        }}
+                        defaultValue=""
+                        className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 w-full sm:w-auto"
+                      >
+                        <option value="" disabled>Load saved rule from library ({savedRules.length})...</option>
+                        {savedRules.map((r) => (
+                          <option key={r.id} value={r.id}>{r.title}</option>
+                        ))}
+                      </select>
+                    ) : <div />}
+                    {customRule.trim() && (
+                      <button
+                        type="button"
+                        onClick={handleSaveRuleToLibrary}
+                        disabled={isSavingRule}
+                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1"
+                      >
+                        <Bookmark className="w-3.5 h-3.5" />
+                        <span>{isSavingRule ? 'Saving...' : 'Save Rule to Library'}</span>
+                      </button>
+                    )}
+                  </div>
+
                   <textarea
                     value={customRule}
                     onChange={(e) => setCustomRule(e.target.value)}
@@ -932,6 +1035,35 @@ export const ConfigureTask: React.FC = () => {
                       </button>
                     </div>
                   )}
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                    {savedVocabSets.length > 0 ? (
+                      <select
+                        onChange={(e) => {
+                          const found = savedVocabSets.find((v) => v.id === e.target.value);
+                          if (found) setCustomVocabulary(found.content);
+                        }}
+                        defaultValue=""
+                        className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 w-full sm:w-auto"
+                      >
+                        <option value="" disabled>Load saved vocabulary ({savedVocabSets.length})...</option>
+                        {savedVocabSets.map((v) => (
+                          <option key={v.id} value={v.id}>{v.title}</option>
+                        ))}
+                      </select>
+                    ) : <div />}
+                    {customVocabulary.trim() && (
+                      <button
+                        type="button"
+                        onClick={handleSaveVocabToLibrary}
+                        disabled={isSavingVocab}
+                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1"
+                      >
+                        <Bookmark className="w-3.5 h-3.5" />
+                        <span>{isSavingVocab ? 'Saving...' : 'Save Vocabulary to Library'}</span>
+                      </button>
+                    )}
+                  </div>
 
                   <textarea
                     value={customVocabulary}

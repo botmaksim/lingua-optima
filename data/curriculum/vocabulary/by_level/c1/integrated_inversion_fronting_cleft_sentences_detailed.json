@@ -53,5 +53,60 @@
       "substantiate findings"
     ],
     "exampleSentence": "Only through archival records did historians substantiate the controversial claim."
+  },
+  {
+    "word": "scarcely_ever_does",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Inverted fronting denoting extreme rarity.",
+    "collocations": [
+      "scarcely ever does a",
+      "scarcely ever do we"
+    ],
+    "exampleSentence": "Scarcely ever does an independent film achieve both commercial triumph and critical adulation."
+  },
+  {
+    "word": "what_demands_scrutiny_is",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Wh-cleft focalizing urgent examination.",
+    "collocations": [
+      "what demands scrutiny is",
+      "what demands scrutiny are"
+    ],
+    "exampleSentence": "What demands scrutiny is the methodology through which regional clinical trials were conducted."
+  },
+  {
+    "word": "only_by_virtue_of",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Inverted condition emphasizing sole enabling factor.",
+    "collocations": [
+      "only by virtue of",
+      "only by virtue of compromise"
+    ],
+    "exampleSentence": "Only by virtue of bipartisan compromise did the comprehensive immigration statute gain passage."
+  },
+  {
+    "word": "it_stands_to_reason_that",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Emphatic rhetorical assertion of logical deduction.",
+    "collocations": [
+      "it stands to reason that",
+      "surely it stands to reason"
+    ],
+    "exampleSentence": "It stands to reason that prolonged exposure to high acoustic levels impairs inner ear hair cells."
+  },
+  {
+    "word": "never_before_has_a",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Inverted superlative historical opening.",
+    "collocations": [
+      "never before has a",
+      "never before have"
+    ],
+    "exampleSentence": "Never before has a sovereign administration confronted so intricate a technological disruption."
   }
 ]

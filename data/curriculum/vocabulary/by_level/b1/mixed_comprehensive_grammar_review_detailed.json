@@ -53,5 +53,60 @@
       "regular intervals"
     ],
     "exampleSentence": "Establishing a regular study schedule is the most effective habit for language learners."
+  },
+  {
+    "word": "consolidation",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The action of making something stronger or more solid.",
+    "collocations": [
+      "grammar consolidation",
+      "period of consolidation"
+    ],
+    "exampleSentence": "This weekly module provides deep consolidation of intermediate grammar structures."
+  },
+  {
+    "word": "proficiency",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A high degree of competence or skill.",
+    "collocations": [
+      "language proficiency",
+      "demonstrate proficiency"
+    ],
+    "exampleSentence": "Regular deliberate practice is required to achieve genuine B2 proficiency."
+  },
+  {
+    "word": "application",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The practical use of a rule or method.",
+    "collocations": [
+      "practical application",
+      "grammar application"
+    ],
+    "exampleSentence": "Focus on the practical application of grammar rules in conversation."
+  },
+  {
+    "word": "synthesis",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The combination of ideas to form a theory or system.",
+    "collocations": [
+      "synthesis of rules",
+      "conceptual synthesis"
+    ],
+    "exampleSentence": "The cumulative test demands synthesis of narrative and modal structures."
+  },
+  {
+    "word": "competence",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "The ability to do something successfully or efficiently.",
+    "collocations": [
+      "linguistic competence",
+      "core competence"
+    ],
+    "exampleSentence": "Syntactic accuracy is a hallmark of developing communicative competence."
   }
 ]

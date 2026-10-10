@@ -3,5 +3,10 @@
   "helmet",
   "permission",
   "safety",
-  "urgent"
+  "urgent",
+  "obey",
+  "prohibit",
+  "permit",
+  "wear",
+  "sign"
 ]

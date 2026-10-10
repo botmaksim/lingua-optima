@@ -53,5 +53,60 @@
       "explore possibility"
     ],
     "exampleSentence": "If they offer me the internship, I will accept without hesitation."
+  },
+  {
+    "word": "consequence",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A result or effect of an action or condition.",
+    "collocations": [
+      "direct consequence",
+      "logical consequence"
+    ],
+    "exampleSentence": "Missing two lessons carries the direct consequence of extra homework."
+  },
+  {
+    "word": "provided",
+    "partOfSpeech": "conjunction",
+    "cefrLevel": "B1",
+    "definition": "On the condition or understanding that.",
+    "collocations": [
+      "provided that",
+      "provided they agree"
+    ],
+    "exampleSentence": "We can go sailing tomorrow provided that the wind remains calm."
+  },
+  {
+    "word": "suppose",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Assume that something is true for the sake of argument.",
+    "collocations": [
+      "suppose we go",
+      "suppose that"
+    ],
+    "exampleSentence": "Suppose you won a scholarship; which university would you select?"
+  },
+  {
+    "word": "situation",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B1",
+    "definition": "A set of circumstances in which one finds oneself.",
+    "collocations": [
+      "complex situation",
+      "handle situation"
+    ],
+    "exampleSentence": "A calm approach is essential when handling an unexpected situation."
+  },
+  {
+    "word": "predict",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B1",
+    "definition": "Say or estimate that a specified thing will happen in the future.",
+    "collocations": [
+      "predict outcome",
+      "hard to predict"
+    ],
+    "exampleSentence": "It is difficult to predict how the trade negotiations will unfold."
   }
 ]
