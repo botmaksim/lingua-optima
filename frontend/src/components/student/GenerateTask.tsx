@@ -31,6 +31,7 @@ import { CefrLevel } from '../../types/user';
 import { TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
 import { CefrBadge } from '../common/CefrBadge';
 import { CustomSelect } from '../common/CustomSelect';
+import { TopicSelector } from '../common/TopicSelector';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import {
   AI_PROVIDER_CATALOG,
@@ -38,94 +39,7 @@ import {
   getDefaultModelForProvider,
   useProviderModels,
 } from '../../constants/aiModels';
-
-const DEFAULT_CEFR_TOPICS: Record<CefrLevel, string[]> = {
-  A1: [
-    'Present Simple (to be & common verbs)',
-    'Articles (a, an, the) & Demonstratives',
-    'Basic Prepositions of Place & Time (in, at, on)',
-    "Can / Can't for Ability & Permission",
-    "Possessive Adjectives & Possessive 's",
-    'Imperatives & Basic Question Formation',
-  ],
-  A2: [
-    'Past Simple (Regular & Irregular Verbs)',
-    "Future with 'Going to' vs 'Will'",
-    'Comparative and Superlative Adjectives',
-    'Countable vs Uncountable Nouns (some, any, much, many)',
-    'Have to & Must (Basic Rules)',
-    'Present Continuous for Future Arrangements',
-  ],
-  B1: [
-    'Present Perfect vs Past Simple',
-    'Past Continuous',
-    'Conditionals (First & Second)',
-    'Modal Verbs of Obligation',
-    'Passive Voice (Basic)',
-    'Relative Clauses (Defining)',
-    'Used to & Would',
-  ],
-  B2: [
-    'Third & Mixed Conditionals',
-    'Passive Voice (Advanced & Causative)',
-    'Reported Speech',
-    'Wish & If Only Structures',
-    'Modal Verbs of Deduction',
-    'Inversion for Emphasis',
-    'Participle Clauses',
-  ],
-  C1: [
-    'Advanced Inversion & Fronting',
-    'Subjunctive Mood',
-    'Cleft Sentences',
-    'Complex Gerunds & Infinitives',
-    'Discourse Markers & Nuance',
-    'Ellipsis & Substitution',
-  ],
-  C2: [
-    'Stylistic Inversion & Rhetorical Fronting',
-    'Subtle Modal Nuances & Speculative Stance',
-    'Complex Cleft Constructions & Focalization',
-    'Idiomatic Phrasal Collocations & Register Shifts',
-    'Advanced Ellipsis, Substitution & Cohesive Ties',
-    'Figurative Language & Lexical Precision',
-  ],
-};
-
-const DEFAULT_MIXED_TOPICS: Record<CefrLevel, string[]> = {
-  A1: [
-    'Present Simple vs Present Continuous in Daily Routines',
-    'Articles, Plurals, and Demonstrative Pronouns',
-    'Question Formation with To Be, Do/Does, and Can',
-  ],
-  A2: [
-    'Past Simple vs Past Continuous Narrative Interruption',
-    'Future Plans: Going to vs Present Continuous vs Will',
-    'Comparatives, Superlatives, and As...As Equality',
-  ],
-  B1: [
-    'Narrative Tenses: Past Simple, Continuous, and Perfect',
-    'Mixed Modal Verbs: Obligation, Permission, and Advice',
-    'Zero, First, and Second Conditionals with Unless',
-  ],
-  B2: [
-    'Mixed Conditionals (Past Cause with Present Result)',
-    'Advanced Passive and Causative Structures (Have/Get something done)',
-    'Reported Speech Shifts with Reporting Verbs & Modals',
-  ],
-  C1: [
-    'Negative Inversion and Cleft Sentences Combined',
-    'Participle Clauses with Reduced Relatives & Adverbials',
-    'Subjunctive Mood and Formulaic Mandative Expressions',
-  ],
-  C2: [
-    'Stylistic Inversion, Clefting, and Focal Fronting',
-    'Epistemic Stance, Subtle Modal Nuances, and Hedging',
-    'Advanced Ellipsis, Substitution, and Cohesive Chaining',
-  ],
-};
-
-const DOMAINS = ['Daily Life', 'Business', 'Academic', 'Technology', 'Travel & Culture'];
+import { DEFAULT_CEFR_TOPICS, DOMAINS } from '../../constants/topics';
 
 /**
  * @brief Form component to configure and generate AI-driven practice tasks.
@@ -139,10 +53,9 @@ export const GenerateTask: React.FC = () => {
 
   const [catalog, setCatalog] = useState<TopicsCatalogResponse | null>(null);
   const [cefrLevel, setCefrLevel] = useState<CefrLevel>(user?.cefrLevel || 'A1');
-  const [selectedTopicOption, setSelectedTopicOption] = useState<string>(
+  const [grammarTopic, setGrammarTopic] = useState<string>(
     DEFAULT_CEFR_TOPICS[user?.cefrLevel || 'A1']?.[0] || DEFAULT_CEFR_TOPICS.A1[0]
   );
-  const [customTopicText, setCustomTopicText] = useState<string>('');
   const [domain, setDomain] = useState<string>(DOMAINS[0]);
   const [taskType, setTaskType] = useState<TaskType>('MCQ');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('MEDIUM');
@@ -200,17 +113,6 @@ export const GenerateTask: React.FC = () => {
       .catch(() => {});
   }, []);
 
-  const isCustomTopic = selectedTopicOption === '__CUSTOM__';
-  const effectiveGrammarTopic = isCustomTopic
-    ? customTopicText.trim() || 'Custom Practice Topic'
-    : selectedTopicOption;
-
-  const currentLevelTopics =
-    catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel] || [];
-  const currentLevelMixedTopics =
-    catalog?.mixedTopicsByLevel?.[cefrLevel] || DEFAULT_MIXED_TOPICS[cefrLevel] || [];
-  const crossLevelTopics = catalog?.crossLevelTopics || [];
-
   /**
    * @brief Event handler updating selected AI provider and its associated model.
    * @param nextProvider New AI provider identifier.
@@ -227,8 +129,8 @@ export const GenerateTask: React.FC = () => {
   const handleCefrChange = (newLevel: CefrLevel) => {
     setCefrLevel(newLevel);
     const available = catalog?.topicsByLevel?.[newLevel] || DEFAULT_CEFR_TOPICS[newLevel];
-    if (!isCustomTopic && available && available.length > 0) {
-      setSelectedTopicOption(available[0]);
+    if (available && available.length > 0) {
+      setGrammarTopic(available[0]);
     }
   };
 
@@ -239,7 +141,7 @@ export const GenerateTask: React.FC = () => {
     setIsLoadingRef(true);
     setRefNotice(null);
     try {
-      const ref = await taskApi.getCurriculumReference(cefrLevel, effectiveGrammarTopic);
+      const ref = await taskApi.getCurriculumReference(cefrLevel, grammarTopic);
       if (ref.referenceRule) {
         setCustomRule(ref.referenceRule);
       }
@@ -277,7 +179,7 @@ export const GenerateTask: React.FC = () => {
     }
 
     try {
-      const res = await taskApi.uploadCurriculumFile(file, type, effectiveGrammarTopic);
+      const res = await taskApi.uploadCurriculumFile(file, type, grammarTopic);
       if (type === 'RULE') {
         setUploadedRuleFile({
           fileName: res.fileName,
@@ -330,7 +232,7 @@ export const GenerateTask: React.FC = () => {
     try {
       const task = await taskApi.generateTask({
         cefrLevel,
-        grammarTopic: effectiveGrammarTopic,
+        grammarTopic: grammarTopic.trim() || 'General Practice',
         domain,
         taskType,
         difficulty,
@@ -366,10 +268,9 @@ export const GenerateTask: React.FC = () => {
    */
   const handleClear = () => {
     setCefrLevel(user?.cefrLevel || 'B1');
-    setSelectedTopicOption(
+    setGrammarTopic(
       DEFAULT_CEFR_TOPICS[user?.cefrLevel || 'B1']?.[0] || DEFAULT_CEFR_TOPICS.B1[0]
     );
-    setCustomTopicText('');
     setDomain(DOMAINS[0]);
     setTaskType('MCQ');
     setDifficulty('MEDIUM');
@@ -406,7 +307,7 @@ export const GenerateTask: React.FC = () => {
                 Generating Custom CEFR {cefrLevel} Practice...
               </h3>
               <p className="text-xs text-indigo-700 font-medium">
-                Engine: <span className="font-mono font-semibold">{provider} ({modelName})</span> · Topic: <span className="font-semibold">{effectiveGrammarTopic}</span>
+                Engine: <span className="font-mono font-semibold">{provider} ({modelName})</span> · Topic: <span className="font-semibold">{grammarTopic}</span>
               </p>
             </div>
           </div>
@@ -554,95 +455,14 @@ export const GenerateTask: React.FC = () => {
         </div>
 
         {/* Topic Selection with Standard, Mixed Challenges, and Custom Topic */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Practice Topic & Mixed Challenges
-            </label>
-            <button
-              type="button"
-              onClick={() => {
-                if (isCustomTopic) {
-                  setSelectedTopicOption(currentLevelTopics[0] || 'Present Simple');
-                } else {
-                  setSelectedTopicOption('__CUSTOM__');
-                }
-              }}
-              className="text-xs font-semibold text-primary hover:text-primary-hover transition flex items-center space-x-1"
-            >
-              <span>{isCustomTopic ? '← Switch to Syllabus List' : '✏️ Enter Custom Topic'}</span>
-            </button>
-          </div>
-
-          <CustomSelect
-            size="lg"
-            value={selectedTopicOption}
-            onChange={(val) => setSelectedTopicOption(val)}
-            ariaLabel="Practice Topic & Mixed Challenges"
-            groups={[
-              {
-                label: `Core Syllabus Topics (CEFR ${cefrLevel})`,
-                options: currentLevelTopics.map((topic) => ({
-                  value: topic,
-                  label: topic,
-                  badge: cefrLevel,
-                })),
-              },
-              ...(currentLevelMixedTopics.length > 0
-                ? [
-                    {
-                      label: `🔀 Mixed Challenges (CEFR ${cefrLevel})`,
-                      options: currentLevelMixedTopics.map((topic) => ({
-                        value: topic,
-                        label: topic,
-                        badge: 'Mixed',
-                      })),
-                    },
-                  ]
-                : []),
-              ...(crossLevelTopics.length > 0
-                ? [
-                    {
-                      label: '🌐 Thematic & Cross-Level Challenges',
-                      options: crossLevelTopics.map((topic) => ({
-                        value: topic,
-                        label: topic,
-                        badge: 'Cross-Level',
-                      })),
-                    },
-                  ]
-                : []),
-              {
-                label: 'Custom Practice',
-                options: [
-                  {
-                    value: '__CUSTOM__',
-                    label: '✏️ Custom Topic (Enter your own)...',
-                    badge: 'Custom',
-                  },
-                ],
-              },
-            ]}
-          />
-
-          {isCustomTopic && (
-            <div className="mt-3 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 space-y-2 animate-in fade-in duration-200">
-              <label className="block text-xs font-bold text-indigo-900">
-                Custom Practice Subject or Specialized Rule:
-              </label>
-              <input
-                type="text"
-                value={customTopicText}
-                onChange={(e) => setCustomTopicText(e.target.value)}
-                placeholder="e.g. Mixed Conditionals in Contract Law, Medical Passive Voice, Tech Startup Pitch Collocations..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-indigo-200 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-              />
-              <p className="text-[11px] text-indigo-700">
-                💡 Tip: You can also attach your own reference grammar rules and vocabulary lists in the Curriculum Context section below.
-              </p>
-            </div>
-          )}
-        </div>
+        <TopicSelector
+          cefrLevel={cefrLevel}
+          topic={grammarTopic}
+          onTopicChange={setGrammarTopic}
+          catalog={catalog}
+          showDomain={false}
+          size="lg"
+        />
 
         {/* Eco Mode (Token Saver) Toggle */}
         <div className={`p-4 rounded-2xl border transition ${
@@ -858,27 +678,16 @@ export const GenerateTask: React.FC = () => {
         </div>
 
         {/* Vocabulary Domain */}
-        <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-            Vocabulary Domain
-          </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {DOMAINS.map((d) => (
-              <button
-                type="button"
-                key={d}
-                onClick={() => setDomain(d)}
-                className={`py-2.5 px-3 rounded-xl border text-xs font-semibold transition ${
-                  domain === d
-                    ? 'border-sky-500 bg-sky-50 text-sky-700'
-                    : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                }`}
-              >
-                {d}
-              </button>
-            ))}
-          </div>
-        </div>
+        <TopicSelector
+          cefrLevel={cefrLevel}
+          topic={grammarTopic}
+          onTopicChange={setGrammarTopic}
+          domain={domain}
+          onDomainChange={setDomain}
+          showTopic={false}
+          showDomain={true}
+          size="md"
+        />
 
         {/* Task Type */}
         <div>

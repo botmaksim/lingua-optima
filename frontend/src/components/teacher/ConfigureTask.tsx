@@ -28,6 +28,7 @@ import { Task, TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../ty
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 import { CustomSelect } from '../common/CustomSelect';
+import { TopicSelector } from '../common/TopicSelector';
 import { useNotificationStore } from '../../store/notificationStore';
 import { sanitizeTaskContent } from '../../utils/textSanitizer';
 import {
@@ -36,92 +37,7 @@ import {
   getDefaultModelForProvider,
   useProviderModels,
 } from '../../constants/aiModels';
-
-const DEFAULT_CEFR_TOPICS: Record<CefrLevel, string[]> = {
-  A1: [
-    'Present Simple (to be & common verbs)',
-    'Articles (a, an, the) & Demonstratives',
-    'Basic Prepositions of Place & Time (in, at, on)',
-    "Can / Can't for Ability & Permission",
-    "Possessive Adjectives & Possessive 's",
-    'Imperatives & Basic Question Formation',
-  ],
-  A2: [
-    'Past Simple (Regular & Irregular Verbs)',
-    "Future with 'Going to' vs 'Will'",
-    'Comparative and Superlative Adjectives',
-    'Countable vs Uncountable Nouns (some, any, much, many)',
-    'Have to & Must (Basic Rules)',
-    'Present Continuous for Future Arrangements',
-  ],
-  B1: [
-    'Present Perfect vs Past Simple',
-    'Past Continuous',
-    'Conditionals (First & Second)',
-    'Modal Verbs of Obligation',
-    'Passive Voice (Basic)',
-    'Relative Clauses (Defining)',
-    'Used to & Would',
-  ],
-  B2: [
-    'Third & Mixed Conditionals',
-    'Passive Voice (Advanced & Causative)',
-    'Reported Speech',
-    'Wish & If Only Structures',
-    'Modal Verbs of Deduction',
-    'Inversion for Emphasis',
-    'Participle Clauses',
-  ],
-  C1: [
-    'Advanced Inversion & Fronting',
-    'Subjunctive Mood',
-    'Cleft Sentences',
-    'Complex Gerunds & Infinitives',
-    'Discourse Markers & Nuance',
-    'Ellipsis & Substitution',
-  ],
-  C2: [
-    'Stylistic Inversion & Rhetorical Fronting',
-    'Subtle Modal Nuances & Speculative Stance',
-    'Complex Cleft Constructions & Focalization',
-    'Idiomatic Phrasal Collocations & Register Shifts',
-    'Advanced Ellipsis, Substitution & Cohesive Ties',
-    'Figurative Language & Lexical Precision',
-  ],
-};
-
-const DEFAULT_MIXED_TOPICS: Record<CefrLevel, string[]> = {
-  A1: [
-    'Present Simple vs Present Continuous in Daily Routines',
-    'Articles, Plurals, and Demonstrative Pronouns',
-    'Question Formation with To Be, Do/Does, and Can',
-  ],
-  A2: [
-    'Past Simple vs Past Continuous Narrative Interruption',
-    'Future Plans: Going to vs Present Continuous vs Will',
-    'Comparatives, Superlatives, and As...As Equality',
-  ],
-  B1: [
-    'Narrative Tenses: Past Simple, Continuous, and Perfect',
-    'Mixed Modal Verbs: Obligation, Permission, and Advice',
-    'Zero, First, and Second Conditionals with Unless',
-  ],
-  B2: [
-    'Mixed Conditionals (Past Cause with Present Result)',
-    'Advanced Passive and Causative Structures (Have/Get something done)',
-    'Reported Speech Shifts with Reporting Verbs & Modals',
-  ],
-  C1: [
-    'Negative Inversion and Cleft Sentences Combined',
-    'Participle Clauses with Reduced Relatives & Adverbials',
-    'Subjunctive Mood and Formulaic Mandative Expressions',
-  ],
-  C2: [
-    'Stylistic Inversion, Clefting, and Focal Fronting',
-    'Epistemic Stance, Subtle Modal Nuances, and Hedging',
-    'Advanced Ellipsis, Substitution, and Cohesive Chaining',
-  ],
-};
+import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
 
 /**
  * @brief Teacher component for configuring and deploying AI-generated assignments to student groups.
@@ -202,12 +118,6 @@ export const ConfigureTask: React.FC = () => {
       })
       .catch(() => {});
   }, []);
-
-  const currentLevelTopics =
-    catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel] || [];
-  const currentLevelMixedTopics =
-    catalog?.mixedTopicsByLevel?.[cefrLevel] || DEFAULT_MIXED_TOPICS[cefrLevel] || [];
-  const crossLevelTopics = catalog?.crossLevelTopics || [];
 
   /**
    * @brief Event handler updating selected AI provider and its associated model.
@@ -538,86 +448,17 @@ export const ConfigureTask: React.FC = () => {
             </div>
           </div>
 
-          {/* Grammar Topic & Domain */}
-          <div className="space-y-3">
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                  Grammar Topic / Subject
-                </label>
-                <div className="text-[11px] text-slate-500">
-                  Select a syllabus preset or enter custom topic
-                </div>
-              </div>
-
-              {/* Quick Select Preset Dropdown */}
-              <CustomSelect
-                size="sm"
-                className="mb-2"
-                value={grammarTopic}
-                placeholder="💡 Pick from Syllabus Presets & Mixed Challenges..."
-                onChange={(val) => {
-                  if (val) setGrammarTopic(val);
-                }}
-                ariaLabel="Grammar Topic Preset"
-                groups={[
-                  {
-                    label: `Core Syllabus (CEFR ${cefrLevel})`,
-                    options: currentLevelTopics.map((t) => ({
-                      value: t,
-                      label: t,
-                      badge: cefrLevel,
-                    })),
-                  },
-                  ...(currentLevelMixedTopics.length > 0
-                    ? [
-                        {
-                          label: `🔀 Mixed Challenges (CEFR ${cefrLevel})`,
-                          options: currentLevelMixedTopics.map((t) => ({
-                            value: t,
-                            label: t,
-                            badge: 'Mixed',
-                          })),
-                        },
-                      ]
-                    : []),
-                  ...(crossLevelTopics.length > 0
-                    ? [
-                        {
-                          label: '🌐 Cross-Level & Thematic Challenges',
-                          options: crossLevelTopics.map((t) => ({
-                            value: t,
-                            label: t,
-                            badge: 'Cross-Level',
-                          })),
-                        },
-                      ]
-                    : []),
-                ]}
-              />
-
-              <input
-                type="text"
-                value={grammarTopic}
-                onChange={(e) => setGrammarTopic(e.target.value)}
-                placeholder="Enter custom topic or customize selected..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Vocabulary Domain
-              </label>
-              <input
-                type="text"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-                placeholder="e.g. Academic, Business, Science, Law..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-              />
-            </div>
-          </div>
+          {/* Topic & Domain Selection via unified TopicSelector */}
+          <TopicSelector
+            cefrLevel={cefrLevel}
+            topic={grammarTopic}
+            onTopicChange={(t) => setGrammarTopic(t)}
+            domain={domain}
+            onDomainChange={(d) => setDomain(d)}
+            catalog={catalog}
+            showDomain={true}
+            size="sm"
+          />
 
           {/* Eco Mode (Token Saver) Toggle */}
           <div className={`p-4 rounded-2xl border transition ${
