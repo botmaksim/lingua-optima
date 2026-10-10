@@ -16,4 +16,13 @@ public class AIServiceException extends RuntimeException {
     public AIServiceException(String message) {
         super(message);
     }
+
+    /**
+     * @brief Constructs an AIServiceException with an explanatory error message and root cause.
+     * @param message Detailed reason for the AI service failure.
+     * @param cause Underlying root exception cause.
+     */
+    public AIServiceException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

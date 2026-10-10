@@ -80,6 +80,8 @@ class AIBrokerServiceTest {
     void setUp() {
         when(groqProvider.getProviderName()).thenReturn("GROQ");
         when(geminiProvider.getProviderName()).thenReturn("GEMINI");
+        lenient().when(groqProvider.isConfigured()).thenReturn(true);
+        lenient().when(geminiProvider.isConfigured()).thenReturn(true);
 
         aiBrokerService = new AIBrokerService(
             groqProvider,

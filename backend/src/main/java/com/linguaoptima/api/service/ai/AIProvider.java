@@ -22,4 +22,12 @@ public interface AIProvider {
      * @return Provider name string (e.g. "GROQ", "GEMINI", "OPENAI", "ANTHROPIC").
      */
     String getProviderName();
+
+    /**
+     * @brief Indicates whether this provider has a valid, configured API key.
+     * @return true if credentials are configured, false otherwise.
+     */
+    default boolean isConfigured() {
+        return true;
+    }
 }

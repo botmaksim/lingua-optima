@@ -25,7 +25,7 @@ import java.util.Objects;
 public class GeminiProvider implements AIProvider {
 
     /** @brief Default Gemini model identifier. */
-    public static final String DEFAULT_MODEL = "gemini-3.8-flash";
+    public static final String DEFAULT_MODEL = "gemini-flash-latest";
 
     /** @brief Field representing api key in GeminiProvider. */
     private final String apiKey;
@@ -97,6 +97,15 @@ public class GeminiProvider implements AIProvider {
     }
 
     /**
+     * @brief Checks if Gemini API key is present and not a dummy/mock placeholder.
+     * @return true if valid key is set.
+     */
+    @Override
+    public boolean isConfigured() {
+        return apiKey != null && !apiKey.isBlank() && !apiKey.contains("mock") && !apiKey.contains("dummy");
+    }
+
+    /**
      * @brief Sends content generation request to Google Gemini API using the configured model.
      * @param prompt Input prompt text.
      * @return Generated model candidate text.
@@ -109,8 +118,10 @@ public class GeminiProvider implements AIProvider {
         }
 
         List<String> modelsToTry = new java.util.ArrayList<>();
-        modelsToTry.add(modelName);
-        for (String m : List.of("gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.6-flash", "gemini-3.5-flash")) {
+        if (modelName != null && !modelName.isBlank()) {
+            modelsToTry.add(modelName);
+        }
+        for (String m : List.of("gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-pro-latest")) {
             if (!modelsToTry.contains(m)) {
                 modelsToTry.add(m);
             }

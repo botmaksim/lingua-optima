@@ -97,6 +97,15 @@ public class GroqProvider implements AIProvider {
     }
 
     /**
+     * @brief Checks if Groq API key is present and not a dummy/mock placeholder.
+     * @return true if valid key is set.
+     */
+    @Override
+    public boolean isConfigured() {
+        return apiKey != null && !apiKey.isBlank() && !apiKey.contains("mock") && !apiKey.contains("dummy");
+    }
+
+    /**
      * @brief Sends chat completion request to Groq API using the configured model.
      * @param prompt User prompt text.
      * @return Model completion text content.

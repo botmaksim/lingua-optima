@@ -125,7 +125,9 @@ public class AIBrokerService {
         if (customProvider != null) {
             return executeWithUserKey(customProvider, prompt);
         }
-        return executeWithFallback(groqProvider, geminiProvider, prompt, user, "TASK_GENERATION");
+        AIProvider primary = groqProvider.isConfigured() ? groqProvider : geminiProvider;
+        AIProvider secondary = (primary == groqProvider) ? geminiProvider : groqProvider;
+        return executeWithFallback(primary, secondary, prompt, user, "TASK_GENERATION");
     }
 
     /**
@@ -140,7 +142,9 @@ public class AIBrokerService {
         if (customProvider != null) {
             return executeWithUserKey(customProvider, prompt);
         }
-        return executeWithFallback(geminiProvider, groqProvider, prompt, user, "ESSAY_SCORING");
+        AIProvider primary = geminiProvider.isConfigured() ? geminiProvider : groqProvider;
+        AIProvider secondary = (primary == geminiProvider) ? groqProvider : geminiProvider;
+        return executeWithFallback(primary, secondary, prompt, user, "ESSAY_SCORING");
     }
 
     /**
@@ -155,7 +159,9 @@ public class AIBrokerService {
         if (customProvider != null) {
             return executeWithUserKey(customProvider, prompt);
         }
-        return executeWithFallback(groqProvider, geminiProvider, prompt, user, "GRAMMAR_CHECK");
+        AIProvider primary = groqProvider.isConfigured() ? groqProvider : geminiProvider;
+        AIProvider secondary = (primary == groqProvider) ? geminiProvider : groqProvider;
+        return executeWithFallback(primary, secondary, prompt, user, "GRAMMAR_CHECK");
     }
 
     /**
@@ -185,6 +191,23 @@ public class AIBrokerService {
      * @throws AIServiceException if all providers fail, after enqueuing for background processing.
      */
     private String executeWithFallback(AIProvider primary, AIProvider secondary, String prompt, User user, String taskType) {
+        if (!primary.isConfigured() && secondary.isConfigured()) {
+            try {
+                return secondary.complete(prompt);
+            } catch (Exception e) {
+                log.error("Configured provider {} failed: {}", secondary.getProviderName(), e.getMessage());
+                if (user != null && user.getId() != null) {
+                    pendingAiTaskRepository.save(PendingAiTask.builder()
+                        .userId(user.getId())
+                        .taskType(taskType)
+                        .prompt(prompt)
+                        .status("QUEUED")
+                        .build());
+                }
+                throw new AIServiceException("AI service temporarily unavailable. Your request has been queued.", e);
+            }
+        }
+
         try {
             log.info("Attempting primary AI provider: {}", primary.getProviderName());
             return primary.complete(prompt);
