@@ -51,7 +51,9 @@ frontend/
 │   │   ├── common/            — Shared UI components
 │   │   │   ├── Navbar.tsx     — Logo, streamlined primary navigation links + compact "More ▾" dropdown for secondary learning tools & educator actions, notifications bell + counter, avatar dropdown with 1-click instant Role Switcher (Student ⇄ Teacher), remaining daily evaluations badge, and global TranslatorDropdown
 │   │   │   ├── TranslatorDropdown.tsx — Automated website translation menu integrating official Google Translate and Yandex Translate widgets with failover web proxies and English revert
-│   │   │   ├── Footer.tsx     — Privacy Policy, Terms of Service, Help Center, © Lingua Optima
+│   │   │   ├── Footer.tsx     — Navigation links to Privacy Policy (/privacy), Terms of Service (/terms), Help Center (/help), Presentation, and © Lingua Optima
+│   │   │   ├── TopicSelector.tsx — Reusable CEFR topic selector with domain categorization, curriculum catalog, and custom topic input
+│   │   │   ├── CustomSelect.tsx — Accessible dropdown select with custom styled menu items
 │   │   │   ├── ProtectedRoute.tsx — Checks auth + role, redirects to /login
 │   │   │   ├── RoleGuard.tsx  — Shows different content based on STUDENT/TEACHER role
 │   │   │   ├── UpgradeWall.tsx — Modal: 'Upgrade to continue' with [Upgrade to Premium] and [Use own API key] options
@@ -77,10 +79,10 @@ frontend/
 │   │   │
 │   │   ├── teacher/           — Teacher-only components
 │   │   │   ├── TeacherDashboard.tsx   — Educator Command Center: summary stats, Educator Toolkit & Modules grid (Cohorts, Configurator, Submissions, Reports), student groups list with quick actions
-│   │   │   ├── StudentGroups.tsx      — Group list (name, student count). Per group: student cards (name, avg score). Buttons: [+ New Group] [+ Add Student by Email] [Remove Student] [Delete Group]
-│   │   │   ├── ConfigureTask.tsx      — AI Provider & Model selector, task type, CEFR, grammar topic, domain, target group selector (multi), due date picker. Buttons: [Preview] [Deploy to Students] [Save Template]
-│   │   │   ├── SubmissionsReview.tsx  — Educator review queue (`GET /api/submissions/teacher`) strictly isolated to taught student submissions (excludes teacher's own practice). Filters: Group/Student/Task/Status. Table: Student|Task|AI Score|Status. Expandable row: AI feedback + student answer. Buttons per row: [Override Score] [Approve AI Grade] [Add Teacher Comment]
-│   │   │   └── ExportReports.tsx      — Group selector, date range picker, format (CSV/PDF). Buttons: [Generate Report] [Download Last]
+│   │   │   ├── StudentGroups.tsx      — Group list (name, student count), student search, CEFR filters, hide/unhide toggles, pagination, and student alias renaming modal. Buttons: [+ New Group] [+ Add Student by Email] [Edit Student Name] [Remove Student] [Delete Group]
+│   │   │   ├── ConfigureTask.tsx      — AI Provider & Model selector, Eco Mode, curriculum catalog & custom topic selector, point budgeting (auto/manual question scores), interactive live preview editor (reorder, delete, edit questions & answer key). Buttons: [Preview] [Deploy to Students] [Save Template]
+│   │   │   ├── SubmissionsReview.tsx  — Educator review queue (`GET /api/submissions/teacher`) strictly isolated to taught student submissions. Search by student/group/task, status filter, hide/unhide toggles, pagination. Expandable question-by-question breakdown with answer options, inline AI feedback & advice editor, and manual grade override without clobbering.
+│   │   │   └── ExportReports.tsx      — Cohort performance report generator (PDF/CSV) featuring comprehensive breakdown across all assigned homeworks, student submission statuses, attempt counters, scores, and teacher commentary.
 │   │   │
 │   │   └── auth/              — Auth pages
 │   │       ├── LoginPage.tsx          — Tab: Log In / Register. Log In (email/pass + Google OAuth). Register: 2-step flow (Step 1: details + code dispatch via Gmail SMTP; Step 2: 6-digit confirmation code input with 60s cooldown timer + submit) or 1-click Google OAuth
@@ -123,6 +125,9 @@ frontend/
 │       ├── TeacherApp.tsx     — Layout wrapper for teacher routes
 │       ├── ProfilePage.tsx    — Avatar, name, email, role toggle (Student ⇄ Educator), 6-level CEFR selector (A1–C2), platform FAQ guide, AI Provider & Model BYOK section (7 providers: DeepSeek, Qwen, Kimi, OpenAI, Anthropic, Gemini, Groq with modern 2026 models & AES-256-GCM encryption)
 │       ├── SubscriptionPage.tsx — Free/Premium/Educator tier cards, current plan highlight, [Upgrade] buttons, payment stub
+│       ├── PrivacyPolicy.tsx  — Zero-Retention OCR RAM-only architecture guarantee, AI evaluation transparency, and GDPR/CCPA data rights
+│       ├── TermsOfService.tsx — Academic integrity, educator review authority, and fair use tier quotas
+│       ├── HelpCenter.tsx     — Searchable FAQ knowledge base with category filters and interactive question accordions
 │       └── NotFound.tsx
 │
 ├── tailwind.config.ts         — Colors (#4F46E5, #0284C7, #F8FAFC), fonts (Inter, JetBrains Mono)
@@ -197,6 +202,10 @@ flowchart LR
 |------|-----------|---------------|-------------|
 | `/` | `Landing.tsx` | *None* | Public landing page for unauthenticated visitors. |
 | `/login` | `LoginPage.tsx` | *None* | Sign-in and registration page (Email/Password + Google OAuth2). |
+| `/forgot-password` | `ForgotPassword.tsx` | *None* | Password reset request page. |
+| `/privacy` | `PrivacyPolicy.tsx` | *None* | Public Privacy Policy highlighting Zero-Retention OCR and GDPR rights. |
+| `/terms` | `TermsOfService.tsx` | *None* | Public Terms of Service outlining educator authority and fair use quotas. |
+| `/help` | `HelpCenter.tsx` | *None* | Public Help Center with searchable FAQ and interactive category filters. |
 | `/student/*` | `StudentApp.tsx` | `STUDENT` | Primary student workspace (Dashboard, Tasks, CAT Sessions, Progress). |
 | `/teacher/*` | `TeacherApp.tsx` | `TEACHER` | Primary educator portal (Groups, Submissions Review, Task Deployment). |
 | `/profile` | `ProfilePage.tsx` | `STUDENT`, `TEACHER` | Profile management, BYOK API key configuration, and preferences. |
@@ -221,3 +230,9 @@ The application implements full Progressive Web App (PWA) support to ensure a re
   - **UI (Headings & Body Text):** `Inter`
   - **Data (Code, Metrics & Tables):** `JetBrains Mono`
 - **Accessibility:** All color contrast ratios and font sizes conform to the **WCAG AA** accessibility standard.
+
+---
+
+## 📄 License
+
+Lingua Optima is open-source software licensed under the **[MIT License](../LICENSE)**.

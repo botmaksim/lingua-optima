@@ -542,13 +542,14 @@ erDiagram
 | GET | `/api/users/me` | Any | Retrieve the current authenticated user's profile |
 | PUT | `/api/users/me` | Any | Update user profile details |
 | PUT | `/api/users/me/password` | Any | Change account password |
+| PUT | `/api/users/{id}/name` | TEACHER | Update displayed roster name/alias for an enrolled student |
 | DELETE | `/api/users/me` | Any | Delete account and anonymize data (GDPR Right to Erasure) |
 | **Tasks** | | | |
-| POST | `/api/tasks/generate` | Any | Generate a new exercise via AI |
+| POST | `/api/tasks/generate` | Any | Generate a new exercise via AI (supports Eco Mode, topic catalog, custom topics) |
 | POST | `/api/tasks/preview` | Any | Preview an AI-generated task without saving |
 | GET | `/api/tasks` | Any | List accessible tasks and assignments |
 | GET | `/api/tasks/{id}` | Any | Retrieve a specific task by ID |
-| POST | `/api/tasks/{id}/assign` | TEACHER | Assign a task to one or more student groups |
+| POST | `/api/tasks/{id}/assign` | TEACHER | Assign a task to one or more student groups with custom points |
 | POST | `/api/tasks/template` | TEACHER | Save a task as a reusable template |
 | **Sessions (CAT)** | | | |
 | POST | `/api/sessions/start` | STUDENT | Start a new Computerized Adaptive Test session |
@@ -560,8 +561,9 @@ erDiagram
 | POST | `/api/submissions/text` | STUDENT | Submit text or an essay for AI evaluation |
 | POST | `/api/submissions/image` | STUDENT | Upload a handwritten homework photo for OCR + AI grading |
 | GET | `/api/submissions/my` | STUDENT | List the current student's submissions |
+| GET | `/api/submissions/teacher` | TEACHER | Review queue for educator's students (excludes self-practice) |
 | GET | `/api/submissions/{id}` | Any | Retrieve detailed grading results for a submission |
-| PUT | `/api/submissions/{id}/override` | TEACHER | Override the AI score and attach teacher feedback |
+| PUT | `/api/submissions/{id}/override` | TEACHER | Override AI score, edit feedback advice, and attach teacher comment without clobbering |
 | **Groups** | | | |
 | GET | `/api/groups` | TEACHER | List the teacher's student groups |
 | POST | `/api/groups` | TEACHER | Create a new student group |
@@ -603,6 +605,9 @@ erDiagram
 | `/` | Landing | Public | Landing page |
 | `/login` | LoginPage | Public | Sign In / Registration (Email + Google OAuth2) |
 | `/forgot-password` | ForgotPassword | Public | Password reset request page |
+| `/privacy` | PrivacyPolicy | Public | Privacy Policy (Zero-Retention OCR RAM-only, AI data security, GDPR/CCPA) |
+| `/terms` | TermsOfService | Public | Terms of Service (Academic integrity, educator rights, fair use quotas) |
+| `/help` | HelpCenter | Public | Help Center & FAQ with searchable knowledge base and interactive accordions |
 | `/student` | Dashboard | STUDENT | Student dashboard with Learning Modules & Practice Modes grid |
 | `/student/generate` | GenerateTask | STUDENT | Self-service AI task generator (A1–C2, 7 AI providers) |
 | `/student/task/:taskId` | TaskView | STUDENT | Interactive task completion view |
@@ -614,10 +619,10 @@ erDiagram
 | `/student/progress` | Progress | STUDENT | Grammar mastery, CEFR matrix, and radar chart analytics |
 | `/student/leaderboard` | GroupLeaderboard | STUDENT | Intra-cohort weekly leaderboard |
 | `/teacher` | TeacherDashboard | TEACHER | Educator portal overview with Educator Toolkit & Modules |
-| `/teacher/groups` | StudentGroups | TEACHER | Student group/cohort management |
-| `/teacher/configure` | ConfigureTask | TEACHER | AI task configuration and cohort deployment |
-| `/teacher/submissions` | SubmissionsReview | TEACHER | Student submission review and grade override |
-| `/teacher/export` | ExportReports | TEACHER | PDF and CSV report exports |
+| `/teacher/groups` | StudentGroups | TEACHER | Student group management, search, CEFR filters, hide toggles, and alias renaming |
+| `/teacher/configure` | ConfigureTask | TEACHER | AI task configuration, curriculum & custom topics, point budgeting, and interactive preview editor |
+| `/teacher/submissions` | SubmissionsReview | TEACHER | Educator review queue, question-by-question breakdown, inline feedback/advice editor, and score overrides |
+| `/teacher/export` | ExportReports | TEACHER | PDF and CSV report exports with comprehensive assigned homework breakdown |
 | `/profile` | ProfilePage | Any | User profile, 1-click Role Switcher, CEFR ladder, and BYOK API keys |
 | `/subscription` | SubscriptionPage | Any | Subscription plan and quota management |
 
@@ -897,3 +902,10 @@ Lingua Optima supports the complete 6-level Common European Framework of Referen
 | [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Markdown | AI providers, prompt templates, fallback chain, caching, OCR pipeline, and CAT algorithm |
 | [DEVOPS.md](./DEVOPS.md) | Markdown | Docker Compose, Dockerfiles, CI/CD, Flyway migrations, monitoring, and security checklist |
 | [Doxygen Generated API Reference](index.html) | HTML (Doxygen) | Automatically compiled Doxygen reference for all packages, classes, and functions |
+
+---
+
+## 📄 License
+
+Lingua Optima is open-source software licensed under the **[MIT License](../LICENSE)**.
+See the [LICENSE](../LICENSE) file in the project root for full terms and conditions.

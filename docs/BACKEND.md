@@ -263,13 +263,14 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **User** | GET | `/api/users/me` | Yes | ALL | — | `UserResponse` | Retrieve the current authenticated user's profile |
 | **User** | PUT | `/api/users/me` | Yes | ALL | `UpdateProfileRequest` | `UserResponse` | Update user profile (name, avatar, role switch: STUDENT ↔ TEACHER) |
 | **User** | PUT | `/api/users/me/password` | Yes | ALL | `ChangePasswordRequest` | 200 OK | Change account password |
+| **User** | PUT | `/api/users/{id}/name` | Yes | TEACHER | `UpdateStudentNameRequest` (`fullName`) | `UserResponse` | Update displayed roster name/alias of an enrolled student |
 | **User** | DELETE | `/api/users/me` | Yes | ALL | — | 204 No Content | Delete account and cascade assignments/submissions (GDPR) |
 | **Task** | GET | `/api/tasks` | Yes | ALL | — | `List<TaskResponse>` | List accessible tasks (templates, self-created, assigned) |
 | **Task** | GET | `/api/tasks/{id}` | Yes | ALL | — | `TaskResponse` | Retrieve task details by ID |
-| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task (with self-assignment for students) |
+| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task (supports Eco Mode, topic catalog, custom topics) |
 | **Task** | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Preview an AI-generated task without persisting |
 | **Task** | POST | `/api/tasks/template` | Yes | TEACHER | `TaskParamsRequest` | `TaskResponse` | Save a task as a reusable template |
-| **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups |
+| **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups with custom point budgets |
 | **Session** | POST | `/api/sessions/start` | Yes | STUDENT, TEACHER | `StartSessionRequest` (`assignmentId` or `taskId`) | `SessionStateResponse` | Start an adaptive test session (auto-creates assignment if needed) |
 | **Session** | GET | `/api/sessions/active` | Yes | STUDENT, TEACHER | — | `SessionStateResponse` | Retrieve the active unfinished session (resume) |
 | **Session** | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT, TEACHER | — | `QuestionResponse` | Fetch the next question via the CAT algorithm |
@@ -280,7 +281,7 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **Submissions** | GET | `/api/submissions/{id}` | Yes | ALL | — | `SubmissionResultResponse` | Retrieve submission evaluation details |
 | **Submissions** | GET | `/api/submissions/my`, `/me` | Yes | ALL | — | `List<SubmissionResultResponse>` | List current user's personal student practice submissions |
 | **Submissions** | GET | `/api/submissions/teacher` | Yes | TEACHER | — | `List<SubmissionResultResponse>` | Educator review queue: returns submissions of taught students (strictly excludes teacher's own practice) |
-| **Submissions** | POST/PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` (`overrideScore`, `comment`) | `SubmissionResultResponse` | Override AI score (updates effectiveScore, preserves original aiScore) |
+| **Submissions** | POST/PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` (`overrideScore`, `comment`, `feedback`) | `SubmissionResultResponse` | Override AI score, update diagnostic feedback, and attach teacher comment |
 | **Group** | GET | `/api/groups` | Yes | TEACHER | — | `List<GroupResponse>` | List the teacher's student cohorts |
 | **Group** | GET | `/api/groups/{id}` | Yes | TEACHER | — | `GroupResponse` | Retrieve group details and student roster |
 | **Group** | POST | `/api/groups` | Yes | TEACHER | `CreateGroupRequest` (`name`) | `GroupResponse` | Create a new student cohort |
@@ -560,3 +561,9 @@ The system registers 3 scheduled background jobs (`@Scheduled`).
 | `UnauthorizedException` | `401 Unauthorized` | Missing, expired, or invalid JWT / OAuth2 token |
 | `ForbiddenException` | `403 Forbidden` | Insufficient permissions (e.g., attempting to modify another teacher's group) |
 | `ResourceNotFoundException` | `404 Not Found` | Requested entity (`Task`, `Group`, `User`, etc.) does not exist |
+
+---
+
+## 📄 License
+
+Lingua Optima is open-source software licensed under the **[MIT License](../LICENSE)**.

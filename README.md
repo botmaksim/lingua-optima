@@ -33,7 +33,8 @@
    - **AI Essay Scoring** — automated essay grading across 4 rubric criteria (*Task Achievement*, *Coherence & Cohesion*, *Lexical Resource*, *Grammatical Range & Accuracy*).
    - **Computerized Adaptive Testing (CAT)** — real-time question difficulty adjustment (scale 1–5) and difficulty-weighted mastery score calculation.
    - **Progress & Gap Analytics** — topic mastery radar charts, weak-spot identification (`masteryScore < 60%`), baseline start at A1, and automated CEFR level-up recommendations (`>= 85%` mastery across `>= 80%` of syllabus topics).
-   - **Educator Portal & Cohort Management** — student group/cohort management (up to 200 students per group, join codes, email invitations), task deployment with AI model customization, manual AI grade adjustments (*Teacher Override*), and **PDF / CSV** report exports.
+   - **Educator Portal & Cohort Management** — student group/cohort management (up to 200 students per group, join codes, email invitations), task deployment with AI model customization and Eco Mode, **Interactive Task Preview Editor** (custom question prompts, answer key configuration, question reordering/deletion), **Point Budgeting** (custom total points with auto-distribution and per-question score editing), **Submission Review & Feedback Editor** (question-by-question student answer inspection, inline editing of AI diagnostic feedback, teacher advice, and score overrides without clobbering), search, filtering, hide toggles, pagination, student alias renaming (`PUT /api/users/{id}/name`), and **comprehensive academic report exports (PDF / CSV)** detailing all assigned homeworks, completion statuses, attempt counters, and teacher feedback.
+   - **Legal, Privacy & Knowledge Base Center** — dedicated public pages for **Privacy Policy** (`/privacy`, highlighting Zero-Retention OCR RAM-only processing, secure TLS AI communication, and GDPR/CCPA data rights), **Terms of Service** (`/terms`, academic integrity, fair use quotas, educator authority), and **Help Center & FAQ** (`/help`, live keyword search and categorized interactive accordions).
    - **Self-Service Role Switching** — instant switching between Student and Educator modes via Profile (`PUT /api/users/me`), allowing users to both learn and teach.
 
 2. **Security, Authentication & Privacy (Security by Design)**:
@@ -95,3 +96,10 @@ doxygen Doxyfile
 cd backend && ./gradlew javadoc
 ```
 Compiled documentation is saved to `docs/generated/html/index.html` (the `docs/generated/` directory is listed in `.gitignore`).
+
+---
+
+## 📄 License
+
+This project is open-source and licensed under the **[MIT License](./LICENSE)**.
+See the [LICENSE](./LICENSE) file for complete terms and permissions.
