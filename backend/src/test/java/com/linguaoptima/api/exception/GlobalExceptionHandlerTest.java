@@ -67,6 +67,10 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorResponse> res = handler.handleAIServiceException(new AIServiceException("AI down"));
         assertEquals(HttpStatus.SERVICE_UNAVAILABLE, res.getStatusCode());
         assertEquals(503, res.getBody().getStatus());
+
+        AIServiceException withCause = new AIServiceException("AI down", new RuntimeException("Root cause"));
+        assertEquals("AI down", withCause.getMessage());
+        assertNotNull(withCause.getCause());
     }
 
     /**

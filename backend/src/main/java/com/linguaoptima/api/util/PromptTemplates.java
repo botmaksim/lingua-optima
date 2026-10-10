@@ -54,6 +54,12 @@ public final class PromptTemplates {
         if (targetVocabulary != null && !targetVocabulary.isBlank()) {
             contextBuilder.append("\n- TARGET VOCABULARY & COLLOCATIONS TO INCORPORATE:\n").append(targetVocabulary.trim()).append("\n");
         }
+        contextBuilder.append("\n- CEFR LEVEL LEXICAL CALIBRATION:\n")
+            .append("All vocabulary, context sentences, distractors, and questions MUST strictly conform to CEFR ")
+            .append(cefrLevel)
+            .append(". For lower levels (A1, A2, B1), strictly avoid advanced or academic C1/C2 vocabulary. Ensure language is natural, authentic, and perfectly calibrated for ")
+            .append(cefrLevel)
+            .append(" learners.\n");
         String extraContext = contextBuilder.toString();
 
         if ("ESSAY".equalsIgnoreCase(taskType)) {

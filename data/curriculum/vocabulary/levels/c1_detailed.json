@@ -1,0 +1,827 @@
+[
+  {
+    "word": "paramount",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "More important than anything else; supreme.",
+    "collocations": [
+      "paramount importance",
+      "of paramount"
+    ],
+    "exampleSentence": "Maintaining rigorous methodological integrity is of paramount importance."
+  },
+  {
+    "word": "pivotal",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Of crucial importance in relation to the development or success of something.",
+    "collocations": [
+      "pivotal role",
+      "pivotal moment"
+    ],
+    "exampleSentence": "Her empirical study played a pivotal role in reshaping monetary policy."
+  },
+  {
+    "word": "substantiate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To provide evidence to support or prove the truth of.",
+    "collocations": [
+      "substantiate claim",
+      "substantiate hypothesis"
+    ],
+    "exampleSentence": "Researchers must substantiate their empirical findings with verifiable datasets."
+  },
+  {
+    "word": "nonetheless",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "In spite of that; nevertheless.",
+    "collocations": [
+      "nonetheless essential",
+      "proves nonetheless"
+    ],
+    "exampleSentence": "The preliminary trials were costly; nonetheless, they proved invaluable."
+  },
+  {
+    "word": "culminate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To reach a climax or point of highest development.",
+    "collocations": [
+      "culminate in",
+      "culminated with"
+    ],
+    "exampleSentence": "Years of collaborative research culminated in a groundbreaking publication."
+  },
+  {
+    "word": "salient",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Most noticeable or important.",
+    "collocations": [
+      "salient features",
+      "salient points"
+    ],
+    "exampleSentence": "The executive summary highlights the most salient aspects of the reform."
+  },
+  {
+    "word": "inextricable",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Impossible to disentangle or separate.",
+    "collocations": [
+      "inextricably linked",
+      "inextricable connection"
+    ],
+    "exampleSentence": "Socioeconomic equality and democratic stability are inextricably linked."
+  },
+  {
+    "word": "consequently",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "As a result.",
+    "collocations": [
+      "consequently led",
+      "consequently observed"
+    ],
+    "exampleSentence": "The budget was reduced drastically; consequently, recruitment paused."
+  },
+  {
+    "word": "furthermore",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "In addition; moreover.",
+    "collocations": [
+      "furthermore noted",
+      "furthermore suggests"
+    ],
+    "exampleSentence": "Furthermore, the cross-sectional data revealed significant regional disparities."
+  },
+  {
+    "word": "notwithstanding",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "C1",
+    "definition": "In spite of; despite.",
+    "collocations": [
+      "notwithstanding delays",
+      "notwithstanding that"
+    ],
+    "exampleSentence": "Notwithstanding geopolitical friction, international scientific cooperation continued."
+  },
+  {
+    "word": "inasmuch",
+    "partOfSpeech": "conjunction",
+    "cefrLevel": "C1",
+    "definition": "To the extent that; in so far as.",
+    "collocations": [
+      "inasmuch as",
+      "valid inasmuch"
+    ],
+    "exampleSentence": "The hypothesis is robust inasmuch as it accounts for outlier anomalies."
+  },
+  {
+    "word": "catalyst",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "A person or thing that precipitates an event or change.",
+    "collocations": [
+      "act as catalyst",
+      "catalyst for change"
+    ],
+    "exampleSentence": "The energy crisis served as a powerful catalyst for renewable innovation."
+  },
+  {
+    "word": "discrepancy",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "An illogical or surprising lack of compatibility or similarity.",
+    "collocations": [
+      "glaring discrepancy",
+      "reconcile discrepancy"
+    ],
+    "exampleSentence": "Auditors discovered a glaring discrepancy between projected and actual outlays."
+  },
+  {
+    "word": "subsequent",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Coming after something in time; following.",
+    "collocations": [
+      "subsequent analysis",
+      "subsequent developments"
+    ],
+    "exampleSentence": "Subsequent investigations demonstrated that the initial assumptions were flawed."
+  },
+  {
+    "word": "cohesion",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "The action or fact of forming a united whole.",
+    "collocations": [
+      "social cohesion",
+      "textual cohesion"
+    ],
+    "exampleSentence": "Effective essays utilize cohesive discourse markers to maintain structural clarity."
+  },
+  {
+    "word": "foremost",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Most prominent in rank, importance, or position.",
+    "collocations": [
+      "first and foremost",
+      "foremost expert"
+    ],
+    "exampleSentence": "Foremost among the delegation's priorities was international climate compliance."
+  },
+  {
+    "word": "incurred",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Became subject to something unwelcome as a result of one's own behavior.",
+    "collocations": [
+      "costs incurred",
+      "debt incurred"
+    ],
+    "exampleSentence": "Great were the financial obligations incurred during the infrastructure overhaul."
+  },
+  {
+    "word": "profound",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Very great or intense; having deep insight.",
+    "collocations": [
+      "profound impact",
+      "profound insight"
+    ],
+    "exampleSentence": "So profound was the demographic shift that urban planners redrew all transit maps."
+  },
+  {
+    "word": "resonant",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Deep, clear, and continuing to sound or reverberate.",
+    "collocations": [
+      "resonant tone",
+      "culturally resonant"
+    ],
+    "exampleSentence": "Never had a theatrical production sounded so resonant in the grand hall."
+  },
+  {
+    "word": "scarcely",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "Only just; almost not.",
+    "collocations": [
+      "scarcely had",
+      "scarcely ever"
+    ],
+    "exampleSentence": "Scarcely had the legislation passed when civil organizations filed constitutional challenges."
+  },
+  {
+    "word": "imperative",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Of vital importance; crucial.",
+    "collocations": [
+      "imperative that",
+      "morally imperative"
+    ],
+    "exampleSentence": "It is imperative that the judicial committee review the constitutional amendment."
+  },
+  {
+    "word": "mandate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To give an official order or commission to do something.",
+    "collocations": [
+      "mandate that",
+      "mandated by"
+    ],
+    "exampleSentence": "International treaties mandate that carbon emissions be documented transparently."
+  },
+  {
+    "word": "stipulate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To demand or specify a requirement as part of an agreement.",
+    "collocations": [
+      "stipulate that",
+      "law stipulates"
+    ],
+    "exampleSentence": "Academic bylaws stipulate that all doctoral dissertations be publicly defended."
+  },
+  {
+    "word": "insistence",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "The act or an instance of insisting on something.",
+    "collocations": [
+      "at insistence of",
+      "firm insistence"
+    ],
+    "exampleSentence": "At the auditor's firm insistence, all financial ledgers were subjected to forensic scrutiny."
+  },
+  {
+    "word": "decree",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To order something by decree.",
+    "collocations": [
+      "decreed that",
+      "royal decree"
+    ],
+    "exampleSentence": "The high court decreed that the public records be made accessible immediately."
+  },
+  {
+    "word": "focalize",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To bring into focus; concentrate attention upon.",
+    "collocations": [
+      "focalize attention",
+      "focalized on"
+    ],
+    "exampleSentence": "It was the lack of transparency that focalized public outrage on the council."
+  },
+  {
+    "word": "underscore",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To emphasize or show the importance of something.",
+    "collocations": [
+      "underscore importance",
+      "further underscore"
+    ],
+    "exampleSentence": "What this longitudinal study underscores is the resilience of small-scale agriculture."
+  },
+  {
+    "word": "distinctive",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Characteristic of one person or thing, serving to distinguish it.",
+    "collocations": [
+      "distinctive feature",
+      "highly distinctive"
+    ],
+    "exampleSentence": "It is her distinctive methodology that sets her econometric papers apart."
+  },
+  {
+    "word": "accentuate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "To make more noticeable or prominent.",
+    "collocations": [
+      "accentuate difference",
+      "further accentuate"
+    ],
+    "exampleSentence": "What the report accentuated was the growing disparity in municipal healthcare funding."
+  },
+  {
+    "word": "predominant",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Present as the strongest or main element.",
+    "collocations": [
+      "predominant factor",
+      "predominant role"
+    ],
+    "exampleSentence": "It was institutional inertia that proved the predominant obstacle to modern reform."
+  },
+  {
+    "word": "confronted",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Faced up to and dealt with a problem or difficulty.",
+    "collocations": [
+      "confronted with",
+      "confronted by"
+    ],
+    "exampleSentence": "Confronted with compelling counter-evidence, the authors revised their conclusion."
+  },
+  {
+    "word": "equipped",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Supplied with the necessary items for a particular purpose.",
+    "collocations": [
+      "equipped with",
+      "properly equipped"
+    ],
+    "exampleSentence": "Equipped with advanced econometric toolkits, the analysts discerned subtle market trends."
+  },
+  {
+    "word": "spanning",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Extending across a period of time or space.",
+    "collocations": [
+      "spanning decades",
+      "spanning borders"
+    ],
+    "exampleSentence": "Spanning three decades of census data, the investigation traced deep demographic shifts."
+  },
+  {
+    "word": "yielding",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Producing or providing a natural or experimental result.",
+    "collocations": [
+      "yielding insights",
+      "yielding results"
+    ],
+    "exampleSentence": "Yielding unexpected insights, the pilot study prompted an expanded national trial."
+  },
+  {
+    "word": "stemming",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Originating or developing from.",
+    "collocations": [
+      "stemming from",
+      "issues stemming"
+    ],
+    "exampleSentence": "Stemming from unresolved geopolitical disputes, cross-border trade slowed considerably."
+  },
+  {
+    "word": "likewise",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "In the same way; also.",
+    "collocations": [
+      "likewise observed",
+      "do likewise"
+    ],
+    "exampleSentence": "Some stakeholders accepted the compromise; others, likewise, voiced cautious approval."
+  },
+  {
+    "word": "thereof",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "Of the thing just mentioned; of that.",
+    "collocations": [
+      "terms thereof",
+      "parts thereof"
+    ],
+    "exampleSentence": "The treaty and the immediate implementation thereof were ratified by parliament."
+  },
+  {
+    "word": "whereby",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "By which or according to which.",
+    "collocations": [
+      "mechanism whereby",
+      "process whereby"
+    ],
+    "exampleSentence": "A framework was instituted whereby participating universities share research facilities."
+  },
+  {
+    "word": "redundancy",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "The state of being superfluous or unnecessarily repetitive.",
+    "collocations": [
+      "avoid redundancy",
+      "eliminate redundancy"
+    ],
+    "exampleSentence": "Skillful academic prose eliminates syntactic redundancy through purposeful ellipsis."
+  },
+  {
+    "word": "correspondingly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "In an analogous or equivalent way.",
+    "collocations": [
+      "correspondingly increased",
+      "adjust correspondingly"
+    ],
+    "exampleSentence": "As consumer demand escalated, manufacturing capabilities expanded correspondingly."
+  },
+  {
+    "word": "albeit",
+    "partOfSpeech": "conjunction",
+    "cefrLevel": "C1",
+    "definition": "Though; even though.",
+    "collocations": [
+      "albeit slowly",
+      "effective albeit"
+    ],
+    "exampleSentence": "The economy showed signs of recovery, albeit at a far more modest pace than forecast."
+  },
+  {
+    "word": "conversely",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "Introducing a statement which reverses one just made.",
+    "collocations": [
+      "conversely argued",
+      "conversely found"
+    ],
+    "exampleSentence": "Urban density promotes transit efficiency; conversely, it amplifies localized heat island effects."
+  },
+  {
+    "word": "to that end",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "For that reason or purpose.",
+    "collocations": [
+      "to that end established",
+      "worked to that end"
+    ],
+    "exampleSentence": "The council sought to reduce vehicular emissions; to that end, congestion tariffs were imposed."
+  },
+  {
+    "word": "in essence",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Fundamentally; in essence.",
+    "collocations": [
+      "in essence argued",
+      "in essence means"
+    ],
+    "exampleSentence": "In essence, the argument hinges on whether state intervention fosters or stifles innovation."
+  },
+  {
+    "word": "arguably",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "It may be argued (used to hedge a scholarly claim).",
+    "collocations": [
+      "arguably the most",
+      "can arguably be"
+    ],
+    "exampleSentence": "This is arguably the most significant archaeological discovery of the decade."
+  },
+  {
+    "word": "purportedly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "According to what is claimed (hedging certainty).",
+    "collocations": [
+      "purportedly showing",
+      "purportedly written"
+    ],
+    "exampleSentence": "The manuscript was purportedly authored in fourteenth-century Bologna."
+  },
+  {
+    "word": "predominantly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "Mainly; for the most part.",
+    "collocations": [
+      "predominantly composed of",
+      "predominantly rural"
+    ],
+    "exampleSentence": "The cohort was predominantly composed of postgraduate researchers."
+  },
+  {
+    "word": "subsequently",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "After a particular event or time.",
+    "collocations": [
+      "subsequently published",
+      "subsequently amended"
+    ],
+    "exampleSentence": "The policy was drafted in May and subsequently ratified in November."
+  },
+  {
+    "word": "thereby",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "By that means; as a result of that.",
+    "collocations": [
+      "thereby reducing",
+      "thereby establishing"
+    ],
+    "exampleSentence": "The engine consumes less fuel, thereby minimizing carbon emissions."
+  },
+  {
+    "word": "whereas",
+    "partOfSpeech": "conjunction",
+    "cefrLevel": "C1",
+    "definition": "In contrast or comparison with the fact that.",
+    "collocations": [
+      "whereas the former",
+      "whereas in contrast"
+    ],
+    "exampleSentence": "Urban populations grew by ten percent, whereas rural numbers remained static."
+  },
+  {
+    "word": "provisional",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Arranged or existing for the present, possibly to be changed later.",
+    "collocations": [
+      "provisional agreement",
+      "provisional hypothesis"
+    ],
+    "exampleSentence": "The committee reached a provisional accord pending final budgetary approval."
+  },
+  {
+    "word": "shortfall",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "A deficit of something required.",
+    "collocations": [
+      "projected shortfall",
+      "budgetary shortfall"
+    ],
+    "exampleSentence": "Had the department anticipated the revenue shortfall, cuts would have been averted."
+  },
+  {
+    "word": "supposition",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "An uncertain belief.",
+    "collocations": [
+      "pure supposition",
+      "based on supposition"
+    ],
+    "exampleSentence": "The entire revision was predicated upon the supposition that fuel prices would normalize."
+  },
+  {
+    "word": "premise",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "A previous statement or proposition from which another is inferred.",
+    "collocations": [
+      "false premise",
+      "underlying premise"
+    ],
+    "exampleSentence": "The hypothesis rests upon the questionable premise that market actors behave rationally."
+  },
+  {
+    "word": "contingency",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "A future event which is possible but cannot be predicted with certainty.",
+    "collocations": [
+      "contingency allocation",
+      "prepare for contingency"
+    ],
+    "exampleSentence": "Treasury analysts developed contingency models for sharp currency fluctuations."
+  },
+  {
+    "word": "counterpart",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C1",
+    "definition": "A person or thing corresponding to another in a different setting.",
+    "collocations": [
+      "foreign counterpart",
+      "industry counterpart"
+    ],
+    "exampleSentence": "The minister consulted with her French counterpart prior to the summit."
+  },
+  {
+    "word": "correlate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Have a mutual relationship or connection.",
+    "collocations": [
+      "correlate positively with",
+      "strongly correlate"
+    ],
+    "exampleSentence": "Empirical studies correlate bilingual education with heightened problem-solving agility."
+  },
+  {
+    "word": "empirical",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Based on observation or experience rather than theory.",
+    "collocations": [
+      "empirical evidence",
+      "empirical study"
+    ],
+    "exampleSentence": "The hypothesis requires rigorous validation through empirical clinical data."
+  },
+  {
+    "word": "rigorous",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Extremely thorough and careful.",
+    "collocations": [
+      "rigorous analysis",
+      "rigorous standard"
+    ],
+    "exampleSentence": "Applicants must undergo a rigorous academic evaluation before admission."
+  },
+  {
+    "word": "seldom",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "Not often; rarely.",
+    "collocations": [
+      "seldom have I",
+      "seldom seen"
+    ],
+    "exampleSentence": "Seldom have I witnessed such dedication in an undergraduate research group."
+  },
+  {
+    "word": "distinctly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "In a way that is readily distinguishable by the senses; clearly.",
+    "collocations": [
+      "distinctly remember",
+      "distinctly different"
+    ],
+    "exampleSentence": "What impressed the selection committee was distinctly her clarity of thought."
+  },
+  {
+    "word": "noteworthy",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Interesting, significant, or unusual.",
+    "collocations": [
+      "noteworthy aspect",
+      "particularly noteworthy"
+    ],
+    "exampleSentence": "It was his remarkable resilience that was particularly noteworthy during the expedition."
+  },
+  {
+    "word": "had",
+    "partOfSpeech": "auxiliary",
+    "cefrLevel": "C1",
+    "definition": "Used in inverted third conditionals.",
+    "collocations": [
+      "had we known",
+      "had it not been for"
+    ],
+    "exampleSentence": "Had they known the severe weather warning in advance, they would have postponed the voyage."
+  },
+  {
+    "word": "should",
+    "partOfSpeech": "auxiliary",
+    "cefrLevel": "C1",
+    "definition": "Used in inverted first conditional formal registers.",
+    "collocations": [
+      "should you require",
+      "should anything happen"
+    ],
+    "exampleSentence": "Should any technical discrepancy arise, please consult the senior engineer immediately."
+  },
+  {
+    "word": "were",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C1",
+    "definition": "Used in hypothetical subjunctive inversions.",
+    "collocations": [
+      "were he to resign",
+      "were it not for"
+    ],
+    "exampleSentence": "Were the board to approve the merger, international operations would expand substantially."
+  },
+  {
+    "word": "inevitably",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "As is certain to happen; unavoidably.",
+    "collocations": [
+      "inevitably lead to",
+      "inevitably occur"
+    ],
+    "exampleSentence": "Complex multi-tiered bureaucracies inevitably introduce procedural friction."
+  },
+  {
+    "word": "conceivably",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "It is conceivable or imaginable that.",
+    "collocations": [
+      "could conceivably",
+      "conceivably happen"
+    ],
+    "exampleSentence": "Autonomous electric transport systems could conceivably replace urban buses by 2035."
+  },
+  {
+    "word": "ostensibly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C1",
+    "definition": "As appears or is stated to be true, though perhaps not in reality.",
+    "collocations": [
+      "ostensibly aimed at",
+      "ostensibly neutral"
+    ],
+    "exampleSentence": "The treaty was ostensibly framed to protect merchant shipping, while securing strategic sea lanes."
+  },
+  {
+    "word": "bound",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C1",
+    "definition": "Certain or extremely likely to happen.",
+    "collocations": [
+      "bound to happen",
+      "bound to succeed"
+    ],
+    "exampleSentence": "Under persistent economic inflationary pressure, central interest rates are bound to climb."
+  },
+  {
+    "word": "needless to say",
+    "partOfSpeech": "phrase",
+    "cefrLevel": "C1",
+    "definition": "Words are unnecessary to explain.",
+    "collocations": [
+      "needless to say, the results",
+      "needless to say that"
+    ],
+    "exampleSentence": "Needless to say, rigorous methodological replication remains the bedrock of science."
+  },
+  {
+    "word": "bearing",
+    "partOfSpeech": "participle",
+    "cefrLevel": "C1",
+    "definition": "Carrying or having in mind.",
+    "collocations": [
+      "bearing in mind",
+      "bearing the burden"
+    ],
+    "exampleSentence": "Bearing in mind the severe budgetary limitations, the committee chose the modest proposal."
+  },
+  {
+    "word": "having",
+    "partOfSpeech": "participle",
+    "cefrLevel": "C1",
+    "definition": "Auxiliary participle used in perfect participle clauses.",
+    "collocations": [
+      "having examined",
+      "having completed"
+    ],
+    "exampleSentence": "Having evaluated all experimental samples, the lead toxicologist published the final verdict."
+  },
+  {
+    "word": "realizing",
+    "partOfSpeech": "participle",
+    "cefrLevel": "C1",
+    "definition": "Becoming fully aware of something as a fact.",
+    "collocations": [
+      "realizing the danger",
+      "suddenly realizing"
+    ],
+    "exampleSentence": "Realizing the tide was turning rapidly, the stranded sailors signaled for immediate assistance."
+  },
+  {
+    "word": "considering",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "C1",
+    "definition": "Taking something into account.",
+    "collocations": [
+      "considering that",
+      "all things considered"
+    ],
+    "exampleSentence": "Considering the unprecedented economic volatility, the firm posted admirable quarterly profits."
+  },
+  {
+    "word": "glancing",
+    "partOfSpeech": "participle",
+    "cefrLevel": "C1",
+    "definition": "Taking a brief or hurried look.",
+    "collocations": [
+      "glancing around",
+      "glancing at clock"
+    ],
+    "exampleSentence": "Glancing nervously at his watch, the diplomat hurried into the conference chamber."
+  }
+]

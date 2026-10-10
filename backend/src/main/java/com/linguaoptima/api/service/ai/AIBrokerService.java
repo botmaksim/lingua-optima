@@ -191,23 +191,6 @@ public class AIBrokerService {
      * @throws AIServiceException if all providers fail, after enqueuing for background processing.
      */
     private String executeWithFallback(AIProvider primary, AIProvider secondary, String prompt, User user, String taskType) {
-        if (!primary.isConfigured() && secondary.isConfigured()) {
-            try {
-                return secondary.complete(prompt);
-            } catch (Exception e) {
-                log.error("Configured provider {} failed: {}", secondary.getProviderName(), e.getMessage());
-                if (user != null && user.getId() != null) {
-                    pendingAiTaskRepository.save(PendingAiTask.builder()
-                        .userId(user.getId())
-                        .taskType(taskType)
-                        .prompt(prompt)
-                        .status("QUEUED")
-                        .build());
-                }
-                throw new AIServiceException("AI service temporarily unavailable. Your request has been queued.", e);
-            }
-        }
-
         try {
             log.info("Attempting primary AI provider: {}", primary.getProviderName());
             return primary.complete(prompt);

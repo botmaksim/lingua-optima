@@ -63,6 +63,11 @@ public class CurriculumStorageService {
         try {
             Files.createDirectories(rootStoragePath.resolve("rules"));
             Files.createDirectories(rootStoragePath.resolve("vocabulary"));
+            Files.createDirectories(rootStoragePath.resolve("vocabulary/levels"));
+            Files.createDirectories(rootStoragePath.resolve("vocabulary/by_level"));
+            for (CefrLevel lvl : CefrLevel.values()) {
+                Files.createDirectories(rootStoragePath.resolve("vocabulary/by_level/" + lvl.name().toLowerCase()));
+            }
             Files.createDirectories(rootStoragePath.resolve("custom/rules"));
             Files.createDirectories(rootStoragePath.resolve("custom/vocabulary"));
             log.info("Initialized curriculum storage at: {}", rootStoragePath);
@@ -186,7 +191,19 @@ public class CurriculumStorageService {
         // 1. Check for exact or normalized slug match in canonical files
         String slug = toSlug(safeTopic);
         String rule = readCanonicalFile("rules/" + slug + ".md");
-        List<String> vocab = readCanonicalVocabulary("vocabulary/" + slug + ".json");
+
+        // Attempt resolution: 1) by_level/<level>/<slug>.json, 2) <slug>.json, 3) levels/<level>.json, 4) default level words
+        List<String> vocab = readCanonicalVocabulary("vocabulary/by_level/" + safeLevel.toLowerCase() + "/" + slug + ".json");
+        if (vocab == null || vocab.isEmpty()) {
+            vocab = readCanonicalVocabulary("vocabulary/" + slug + ".json");
+        }
+        if (vocab == null || vocab.isEmpty()) {
+            vocab = readCanonicalVocabulary("vocabulary/levels/" + safeLevel.toLowerCase() + ".json");
+        }
+        if (vocab == null || vocab.isEmpty()) {
+            vocab = getDefaultVocabularyForLevel(level);
+        }
+
         if (rule != null) {
             return CurriculumReferenceResponse.builder()
                 .cefrLevel(safeLevel)
@@ -226,7 +243,7 @@ public class CurriculumStorageService {
         }
 
         if (lowerTopic.contains("business") || lowerTopic.contains("work")) {
-            List<String> busVocab = readCanonicalVocabulary("vocabulary/business_advanced.json");
+            List<String> busVocab = readCanonicalVocabulary("vocabulary/business_advanced.json", level);
             return CurriculumReferenceResponse.builder()
                 .cefrLevel(safeLevel)
                 .grammarTopic(safeTopic)
@@ -237,7 +254,7 @@ public class CurriculumStorageService {
         }
 
         if (lowerTopic.contains("academic") || lowerTopic.contains("science")) {
-            List<String> acadVocab = readCanonicalVocabulary("vocabulary/academic_collocations.json");
+            List<String> acadVocab = readCanonicalVocabulary("vocabulary/academic_collocations.json", level);
             return CurriculumReferenceResponse.builder()
                 .cefrLevel(safeLevel)
                 .grammarTopic(safeTopic)
@@ -247,7 +264,7 @@ public class CurriculumStorageService {
                 .build();
         }
 
-        // 2. Synthesize pedagogical reference
+        // 3. Synthesize pedagogical reference
         return CurriculumReferenceResponse.builder()
             .cefrLevel(safeLevel)
             .grammarTopic(safeTopic)
@@ -258,6 +275,25 @@ public class CurriculumStorageService {
     }
 
     /**
+     * @brief Supplies pedagogically authentic default vocabulary matching target CEFR level.
+     * @param level Target CEFR level.
+     * @return List of CEFR-calibrated vocabulary words.
+     */
+    public static List<String> getDefaultVocabularyForLevel(CefrLevel level) {
+        if (level == null) {
+            return List.of("essential", "comprehensive", "effective", "perspectives", "context");
+        }
+        return switch (level) {
+            case A1 -> List.of("family", "morning", "friend", "happy", "everyday", "house", "school", "water");
+            case A2 -> List.of("journey", "weather", "weekend", "holiday", "together", "yesterday", "arrive", "simple");
+            case B1 -> List.of("experience", "opinion", "situation", "decision", "improve", "opportunity", "community", "solution");
+            case B2 -> List.of("essential", "effective", "challenge", "consequence", "influence", "resilience", "anticipate", "strategy");
+            case C1 -> List.of("essential", "comprehensive", "perspective", "substantial", "paramount", "pivotal", "substantiate", "cohesion");
+            case C2 -> List.of("ubiquitous", "paramount", "nuanced", "scrutiny", "delineate", "quintessential", "perspicacity", "verisimilitude");
+        };
+    }
+
+    /**
      * @brief Reads a canonical rule markdown file from root storage path.
      * @param relativePath Relative file path.
      * @return File content or null if not found.
@@ -265,7 +301,7 @@ public class CurriculumStorageService {
     private String readCanonicalFile(String relativePath) {
         try {
             Path file = rootStoragePath.resolve(relativePath);
-            if (Files.exists(file)) {
+            if (Files.exists(file) && !Files.isDirectory(file)) {
                 return Files.readString(file, StandardCharsets.UTF_8).trim();
             }
         } catch (Exception ignored) {
@@ -277,17 +313,25 @@ public class CurriculumStorageService {
     /**
      * @brief Reads canonical vocabulary word lists from JSON file in root storage path.
      * @param relativePath Relative file path.
-     * @return List of vocabulary words or fallback default list.
+     * @return List of vocabulary words or null if not found.
      */
     private List<String> readCanonicalVocabulary(String relativePath) {
         try {
             Path file = rootStoragePath.resolve(relativePath);
-            if (Files.exists(file)) {
+            if (Files.exists(file) && !Files.isDirectory(file)) {
                 JsonNode root = objectMapper.readTree(file.toFile());
                 List<String> words = new ArrayList<>();
-                if (root.has("words")) {
+                if (root.isObject() && root.has("words")) {
                     for (JsonNode w : root.path("words")) {
                         words.add(w.asText());
+                    }
+                } else if (root.isArray()) {
+                    for (JsonNode item : root) {
+                        if (item.isTextual()) {
+                            words.add(item.asText());
+                        } else if (item.isObject() && item.has("word")) {
+                            words.add(item.get("word").asText());
+                        }
                     }
                 }
                 if (!words.isEmpty()) {
@@ -297,7 +341,21 @@ public class CurriculumStorageService {
         } catch (Exception ignored) {
             log.trace("Unable to read canonical vocabulary: {}", relativePath);
         }
-        return List.of("essential", "comprehensive", "effective", "perspectives", "context");
+        return null;
+    }
+
+    /**
+     * @brief Reads canonical vocabulary word lists with CEFR-level fallback.
+     * @param relativePath Relative file path.
+     * @param level Target CEFR level.
+     * @return List of vocabulary words or fallback default list for the level.
+     */
+    private List<String> readCanonicalVocabulary(String relativePath, CefrLevel level) {
+        List<String> words = readCanonicalVocabulary(relativePath);
+        if (words != null && !words.isEmpty()) {
+            return words;
+        }
+        return getDefaultVocabularyForLevel(level);
     }
 
     /**

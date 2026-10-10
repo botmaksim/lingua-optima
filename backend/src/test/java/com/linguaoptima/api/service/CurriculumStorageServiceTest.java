@@ -309,4 +309,81 @@ class CurriculumStorageServiceTest {
         assertNotNull(ref.getReferenceVocabulary());
         assertTrue(ref.getReferenceVocabulary().contains("always"));
     }
+
+    @Test
+    void testGetDefaultVocabularyForLevel() {
+        assertNotNull(CurriculumStorageService.getDefaultVocabularyForLevel(null));
+        assertTrue(CurriculumStorageService.getDefaultVocabularyForLevel(null).contains("essential"));
+
+        assertTrue(CurriculumStorageService.getDefaultVocabularyForLevel(CefrLevel.A1).contains("family"));
+        assertTrue(CurriculumStorageService.getDefaultVocabularyForLevel(CefrLevel.A2).contains("journey"));
+        assertTrue(CurriculumStorageService.getDefaultVocabularyForLevel(CefrLevel.B1).contains("opportunity"));
+        assertTrue(CurriculumStorageService.getDefaultVocabularyForLevel(CefrLevel.B2).contains("resilience"));
+        assertTrue(CurriculumStorageService.getDefaultVocabularyForLevel(CefrLevel.C1).contains("paramount"));
+        assertTrue(CurriculumStorageService.getDefaultVocabularyForLevel(CefrLevel.C2).contains("quintessential"));
+    }
+
+    @Test
+    void testCanonicalVocabularyArrayAndDetailedFormats() throws IOException {
+        Path vocabDir = tempDir.resolve("vocabulary");
+        Path rulesDir = tempDir.resolve("rules");
+
+        // 1. Array of strings format: ["apple", "umbrella"]
+        Files.writeString(rulesDir.resolve("articles_demo.md"), "Use 'a' before consonants and 'an' before vowels.");
+        Files.writeString(vocabDir.resolve("articles_demo.json"), "[\"apple\", \"umbrella\"]");
+
+        CurriculumReferenceResponse stringArrayRef = storageService.getReferenceCurriculum(
+            CefrLevel.A1, "Articles Demo"
+        );
+        assertNotNull(stringArrayRef);
+        assertEquals("CANONICAL", stringArrayRef.getSource());
+        assertTrue(stringArrayRef.getReferenceVocabulary().contains("apple"));
+        assertTrue(stringArrayRef.getReferenceVocabulary().contains("umbrella"));
+
+        // 2. Array of detailed objects format: [{"word": "desk"}, {"word": "chair"}]
+        Files.writeString(rulesDir.resolve("furniture_demo.md"), "Demonstratives with furniture items.");
+        Files.writeString(vocabDir.resolve("furniture_demo.json"),
+            "[{\"word\":\"desk\",\"partOfSpeech\":\"noun\"},{\"word\":\"chair\",\"partOfSpeech\":\"noun\"}]");
+
+        CurriculumReferenceResponse detailedArrayRef = storageService.getReferenceCurriculum(
+            CefrLevel.A1, "Furniture Demo"
+        );
+        assertNotNull(detailedArrayRef);
+        assertEquals("CANONICAL", detailedArrayRef.getSource());
+        assertTrue(detailedArrayRef.getReferenceVocabulary().contains("desk"));
+        assertTrue(detailedArrayRef.getReferenceVocabulary().contains("chair"));
+    }
+
+    @Test
+    void testByLevelFolderAndLevelBankResolution() throws IOException {
+        Path vocabDir = tempDir.resolve("vocabulary");
+        Path rulesDir = tempDir.resolve("rules");
+
+        // Create by_level/a1 directory
+        Path a1Dir = vocabDir.resolve("by_level/a1");
+        Files.createDirectories(a1Dir);
+
+        Files.writeString(rulesDir.resolve("level_specific_topic.md"), "Rule content here");
+        Files.writeString(a1Dir.resolve("level_specific_topic.json"), "[\"morning\", \"breakfast\"]");
+
+        CurriculumReferenceResponse byLevelRef = storageService.getReferenceCurriculum(
+            CefrLevel.A1, "level_specific_topic"
+        );
+        assertNotNull(byLevelRef);
+        assertEquals("CANONICAL", byLevelRef.getSource());
+        assertTrue(byLevelRef.getReferenceVocabulary().contains("morning"));
+
+        // Test level bank fallback when topic vocab is missing but level bank exists
+        Path levelsDir = vocabDir.resolve("levels");
+        Files.createDirectories(levelsDir);
+        Files.writeString(levelsDir.resolve("a2.json"), "[\"weekend\", \"holiday\"]");
+        Files.writeString(rulesDir.resolve("unknown_a2_topic.md"), "Rule for unknown A2");
+
+        CurriculumReferenceResponse levelBankRef = storageService.getReferenceCurriculum(
+            CefrLevel.A2, "unknown_a2_topic"
+        );
+        assertNotNull(levelBankRef);
+        assertEquals("CANONICAL", levelBankRef.getSource());
+        assertTrue(levelBankRef.getReferenceVocabulary().contains("weekend"));
+    }
 }

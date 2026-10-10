@@ -685,6 +685,59 @@ class AuthServiceTest {
         assertThrows(IllegalArgumentException.class, () -> authService.resetPassword(request));
     }
 
+    @Test
+    void testForgotPassword_ValidationAndRateLimit() {
+        assertThrows(IllegalArgumentException.class, () -> authService.forgotPassword(ForgotPasswordRequest.builder().email(null).build()));
+        assertThrows(IllegalArgumentException.class, () -> authService.forgotPassword(ForgotPasswordRequest.builder().email("   ").build()));
+
+        when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(sampleUser));
+        when(valueOperations.setIfAbsent(anyString(), anyString(), any(Duration.class))).thenReturn(false);
+        assertThrows(QuotaExceededException.class, () -> authService.forgotPassword(ForgotPasswordRequest.builder().email("student@lingua.com").build()));
+    }
+
+    @Test
+    void testForgotPasswordAndReset_FallbackMemoryAndRedisExceptions() {
+        AuthService noRedisAuth = new AuthService(userRepository, subscriptionRepository, passwordEncoder, jwtService, null, emailService);
+        when(userRepository.findByEmail("student@lingua.com")).thenReturn(Optional.of(sampleUser));
+        when(passwordEncoder.encode("newSecretPass")).thenReturn("encodedNewSecret");
+
+        // Request code with no Redis (uses in-memory fallback)
+        noRedisAuth.forgotPassword(ForgotPasswordRequest.builder().email("student@lingua.com").build());
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        verify(emailService).sendPasswordResetCode(eq("student@lingua.com"), codeCaptor.capture());
+        String sentCode = codeCaptor.getValue();
+
+        // Reset password with in-memory fallback
+        ResetPasswordRequest resetReq = ResetPasswordRequest.builder()
+            .email("student@lingua.com")
+            .code(sentCode)
+            .newPassword("newSecretPass")
+            .build();
+        assertDoesNotThrow(() -> noRedisAuth.resetPassword(resetReq));
+
+        // Test validation branches on resetPassword
+        assertThrows(IllegalArgumentException.class, () -> noRedisAuth.resetPassword(ResetPasswordRequest.builder().email("").code("123456").newPassword("pass123").build()));
+        assertThrows(IllegalArgumentException.class, () -> noRedisAuth.resetPassword(ResetPasswordRequest.builder().email(null).code("123456").newPassword("pass123").build()));
+        assertThrows(IllegalArgumentException.class, () -> noRedisAuth.resetPassword(ResetPasswordRequest.builder().email("student@lingua.com").code("").newPassword("pass123").build()));
+        assertThrows(IllegalArgumentException.class, () -> noRedisAuth.resetPassword(ResetPasswordRequest.builder().email("student@lingua.com").code(null).newPassword("pass123").build()));
+
+        // Test Redis exception swallowed gracefully during rate check, save, and verify
+        when(valueOperations.setIfAbsent(anyString(), anyString(), any(Duration.class))).thenThrow(new RuntimeException("Redis down"));
+        doThrow(new RuntimeException("Redis save down")).when(valueOperations).set(anyString(), anyString(), any(Duration.class));
+        assertDoesNotThrow(() -> authService.forgotPassword(ForgotPasswordRequest.builder().email("student@lingua.com").build()));
+
+        when(valueOperations.get(anyString())).thenThrow(new RuntimeException("Redis get down"));
+        // Code still in in-memory fallback
+        ArgumentCaptor<String> codeCaptor2 = ArgumentCaptor.forClass(String.class);
+        verify(emailService, atLeastOnce()).sendPasswordResetCode(eq("student@lingua.com"), codeCaptor2.capture());
+        ResetPasswordRequest redisDownReq = ResetPasswordRequest.builder()
+            .email("student@lingua.com")
+            .code(codeCaptor2.getValue())
+            .newPassword("newSecretPass")
+            .build();
+        assertDoesNotThrow(() -> authService.resetPassword(redisDownReq));
+    }
+
     /**
      * @brief Verifies unit test scenario: Redis null, rate-limit first attempt, Redis exceptions, and missing user on refresh.
      */

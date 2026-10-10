@@ -1,0 +1,673 @@
+[
+  {
+    "word": "quintessential",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Representing the most perfect or typical example of a quality or class.",
+    "collocations": [
+      "quintessential example",
+      "quintessential embodiment"
+    ],
+    "exampleSentence": "Her monograph represents the quintessential synthesis of structural linguistics and cognitive science."
+  },
+  {
+    "word": "verisimilitude",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The appearance of being true or real.",
+    "collocations": [
+      "air of verisimilitude",
+      "historical verisimilitude"
+    ],
+    "exampleSentence": "The historical novelist achieved an uncanny degree of verisimilitude in describing court diplomacy."
+  },
+  {
+    "word": "audacious",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Showing a willingness to take surprisingly bold risks.",
+    "collocations": [
+      "audacious gambit",
+      "audacious proposal"
+    ],
+    "exampleSentence": "The architect's audacious cantilevered design stunned the international jury."
+  },
+  {
+    "word": "inexorable",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Impossible to stop or prevent; relentless.",
+    "collocations": [
+      "inexorable advance",
+      "inexorable decline"
+    ],
+    "exampleSentence": "Scholars debated whether the decline of the maritime empire was an inexorable historical process."
+  },
+  {
+    "word": "perspicacity",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The quality of having a ready insight into things; shrewdness.",
+    "collocations": [
+      "intellectual perspicacity",
+      "remarkable perspicacity"
+    ],
+    "exampleSentence": "With characteristic perspicacity, the philosopher dissected the paradoxes of moral relativism."
+  },
+  {
+    "word": "mellifluous",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Sweet or musical; pleasant to hear.",
+    "collocations": [
+      "mellifluous cadence",
+      "mellifluous prose"
+    ],
+    "exampleSentence": "The diplomat's mellifluous cadence masked the uncompromising rigidity of his demands."
+  },
+  {
+    "word": "epitomize",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "To be a perfect example of.",
+    "collocations": [
+      "epitomize the era",
+      "epitomizes mastery"
+    ],
+    "exampleSentence": "The chamber symphony epitomizes the late romantic struggle between tonality and chromaticism."
+  },
+  {
+    "word": "delineate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "To describe or portray something precisely.",
+    "collocations": [
+      "delineate boundaries",
+      "clearly delineate"
+    ],
+    "exampleSentence": "The white paper delineates the constitutional prerogatives of autonomous regional bodies."
+  },
+  {
+    "word": "kaleidoscopic",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Having complex patterns of colors or scenes; constantly changing.",
+    "collocations": [
+      "kaleidoscopic array",
+      "kaleidoscopic diversity"
+    ],
+    "exampleSentence": "The metropolis presents a kaleidoscopic tapestry of competing subcultures and dialects."
+  },
+  {
+    "word": "labyrinthine",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Complicated and confusing; like a labyrinth.",
+    "collocations": [
+      "labyrinthine bureaucracy",
+      "labyrinthine corridors"
+    ],
+    "exampleSentence": "Navigating the labyrinthine regulatory framework required exhaustive forensic expertise."
+  },
+  {
+    "word": "cacophony",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A harsh discordant mixture of sounds.",
+    "collocations": [
+      "cacophony of voices",
+      "jarring cacophony"
+    ],
+    "exampleSentence": "Amid the cacophony of speculative punditry, measured empirical analysis was conspicuously absent."
+  },
+  {
+    "word": "epiphany",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "An experience of sudden and striking realization.",
+    "collocations": [
+      "moment of epiphany",
+      "sudden epiphany"
+    ],
+    "exampleSentence": "His sudden epiphany regarding neural network convergence revolutionized the laboratory's trajectory."
+  },
+  {
+    "word": "scintillating",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Brilliantly and excitingly clever or skillful.",
+    "collocations": [
+      "scintillating dialogue",
+      "scintillating critique"
+    ],
+    "exampleSentence": "The essayist delivered a scintillating critique of contemporary socio-political orthodoxies."
+  },
+  {
+    "word": "penchant",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A strong or habitual liking for something or tendency to do it.",
+    "collocations": [
+      "penchant for drama",
+      "particular penchant"
+    ],
+    "exampleSentence": "The prime minister retained an incurable penchant for dramatic, eleventh-hour diplomatic overtures."
+  },
+  {
+    "word": "vicissitude",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A change of circumstances or fortune, typically one that is unwelcome.",
+    "collocations": [
+      "vicissitudes of life",
+      "historical vicissitudes"
+    ],
+    "exampleSentence": "The manuscript survived the vicissitudes of war, censorship, and bibliographic neglect."
+  },
+  {
+    "word": "resonant",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Deep, clear, and continuing to sound.",
+    "collocations": [
+      "resonant prose",
+      "richly resonant"
+    ],
+    "exampleSentence": "Richly resonant was the poet's eulogy, moving seasoned delegates to uncharacteristic tears."
+  },
+  {
+    "word": "ephemeral",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Lasting for a very short time.",
+    "collocations": [
+      "ephemeral fame",
+      "ephemeral nature"
+    ],
+    "exampleSentence": "Ephemeral though commercial accolades may be, enduring literary merit transcends its era."
+  },
+  {
+    "word": "poignant",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Evoking a keen sense of sadness or regret.",
+    "collocations": [
+      "poignant reminder",
+      "poignantly observed"
+    ],
+    "exampleSentence": "Poignantly articulated was the diaspora's yearning for cultural roots long eradicated by industrialization."
+  },
+  {
+    "word": "swept",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "Moved swiftly and with force.",
+    "collocations": [
+      "down swept",
+      "swept across"
+    ],
+    "exampleSentence": "Down swept the alpine blizzard upon the unprepared caravan, rendering navigation impossible."
+  },
+  {
+    "word": "purportedly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C2",
+    "definition": "As appears or is stated to be true, though not necessarily so.",
+    "collocations": [
+      "purportedly authentic",
+      "purportedly signed"
+    ],
+    "exampleSentence": "The disputed charter was purportedly penned by the monarch himself, though paleographers demur."
+  },
+  {
+    "word": "ostensibly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "C2",
+    "definition": "As appears or is stated to be true, though perhaps not in reality.",
+    "collocations": [
+      "ostensibly aimed",
+      "ostensibly neutral"
+    ],
+    "exampleSentence": "The treaty was ostensibly framed to safeguard merchant shipping, whilst secretly securing naval hegemony."
+  },
+  {
+    "word": "conjectural",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Based on or involving conjecture; speculative.",
+    "collocations": [
+      "purely conjectural",
+      "conjectural hypothesis"
+    ],
+    "exampleSentence": "Any attribution of intentional malice to the minister remains entirely conjectural at this juncture."
+  },
+  {
+    "word": "specious",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Superficially plausible, but actually wrong.",
+    "collocations": [
+      "specious reasoning",
+      "specious argument"
+    ],
+    "exampleSentence": "Under relentless cross-examination, the defendant's specious alibi unraveled completely."
+  },
+  {
+    "word": "unassailable",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Unable to be attacked, questioned, or defeated.",
+    "collocations": [
+      "unassailable logic",
+      "unassailable position"
+    ],
+    "exampleSentence": "The mathematician constructed an unassailable formal proof of the centuries-old conjecture."
+  },
+  {
+    "word": "crystallize",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "To make or become definite and clear.",
+    "collocations": [
+      "crystallize thought",
+      "crystallized debate"
+    ],
+    "exampleSentence": "It was the revelation of internal emails that crystallized public skepticism regarding corporate governance."
+  },
+  {
+    "word": "ineffable",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Too great or extreme to be expressed or described in words.",
+    "collocations": [
+      "ineffable beauty",
+      "ineffable grace"
+    ],
+    "exampleSentence": "It was with an ineffable mixture of triumph and sorrow that the treaty was finally countersigned."
+  },
+  {
+    "word": "paradigm",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A typical example or pattern of something; a model.",
+    "collocations": [
+      "paradigm shift",
+      "dominant paradigm"
+    ],
+    "exampleSentence": "All that the new cognitive framework achieved was to inaugurate a long-overdue paradigm shift in epistemology."
+  },
+  {
+    "word": "focalize",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "To bring into focus or center.",
+    "collocations": [
+      "focalize narrative",
+      "focalized attention"
+    ],
+    "exampleSentence": "The reason why the committee chose to focalize administrative spending was the escalating municipal deficit."
+  },
+  {
+    "word": "umbrage",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "Offence or annoyance.",
+    "collocations": [
+      "take umbrage at",
+      "deep umbrage"
+    ],
+    "exampleSentence": "Diplomats took profound umbrage at the ambassador's patronizing innuendos regarding border control."
+  },
+  {
+    "word": "loggerheads",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "In violent dispute or disagreement.",
+    "collocations": [
+      "at loggerheads with",
+      "remained at loggerheads"
+    ],
+    "exampleSentence": "The Treasury and the Department of Defense remained at loggerheads over procurement allocations."
+  },
+  {
+    "word": "sine qua non",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "An essential condition; a thing that is absolutely necessary.",
+    "collocations": [
+      "sine qua non of",
+      "absolute sine qua non"
+    ],
+    "exampleSentence": "Unfettered freedom of investigative inquiry is the sine qua non of a robust democratic society."
+  },
+  {
+    "word": "par excellence",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Better than all others of the same kind; quintessential.",
+    "collocations": [
+      "statesman par excellence",
+      "diplomat par excellence"
+    ],
+    "exampleSentence": "He was a negotiator par excellence, capable of reconciling the most intransigent diplomatic adversaries."
+  },
+  {
+    "word": "vis-a-vis",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "C2",
+    "definition": "In relation to; with regard to.",
+    "collocations": [
+      "vis-a-vis policy",
+      "position vis-a-vis"
+    ],
+    "exampleSentence": "The ministry sought to clarify its statutory obligations vis-a-vis multilateral trade agreements."
+  },
+  {
+    "word": "tapestry",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "An intricate or complex combination of things.",
+    "collocations": [
+      "rich tapestry",
+      "cultural tapestry"
+    ],
+    "exampleSentence": "The dramatist weaves a sumptuous tapestry of competing loyalties, dynastic ambition, and tragic hubris."
+  },
+  {
+    "word": "quandary",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A state of perplexity or uncertainty over what to do in a difficult situation.",
+    "collocations": [
+      "moral quandary",
+      "in a quandary"
+    ],
+    "exampleSentence": "The bioethics council found itself mired in an intractable quandary regarding gene-editing boundaries."
+  },
+  {
+    "word": "apogee",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The highest point in the development of something; a climax or culmination.",
+    "collocations": [
+      "apogee of career",
+      "reach its apogee"
+    ],
+    "exampleSentence": "The Florentine Renaissance reached its cultural apogee during the closing decades of the Quattrocento."
+  },
+  {
+    "word": "chiasmus",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A rhetorical device in which words are repeated in reverse order.",
+    "collocations": [
+      "employ chiasmus",
+      "rhetorical chiasmus"
+    ],
+    "exampleSentence": "The orator employed striking chiasmus to dramatize the ideological gulf between both factions."
+  },
+  {
+    "word": "agrarian",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Relating to cultivated land or the cultivation of land.",
+    "collocations": [
+      "agrarian society",
+      "agrarian economy"
+    ],
+    "exampleSentence": "Nomadic communities transitioned gradually toward agrarian stability, and urban guilds likewise."
+  },
+  {
+    "word": "succinct",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Briefly and clearly expressed.",
+    "collocations": [
+      "succinct summary",
+      "succinct phrasing"
+    ],
+    "exampleSentence": "Through purposeful ellipsis, the legal codex achieved an admirably succinct formulation."
+  },
+  {
+    "word": "nominalization",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The use of a word which is not a noun (e.g. a verb or adjective) as a noun.",
+    "collocations": [
+      "heavy nominalization",
+      "grammatical nominalization"
+    ],
+    "exampleSentence": "Academic prose frequently resorts to nominalization to compress complex propositions."
+  },
+  {
+    "word": "cohesion",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The grammatical and lexical linking within a text.",
+    "collocations": [
+      "discourse cohesion",
+      "textual cohesion"
+    ],
+    "exampleSentence": "Subtle substitution mechanisms enhance textual cohesion without introducing stylistic redundancy."
+  },
+  {
+    "word": "irrespective",
+    "partOfSpeech": "preposition",
+    "cefrLevel": "C2",
+    "definition": "Regardless of.",
+    "collocations": [
+      "irrespective of whether",
+      "irrespective of background"
+    ],
+    "exampleSentence": "Grants are awarded to gifted applicants irrespective of financial background."
+  },
+  {
+    "word": "tantamount",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Equivalent in seriousness to.",
+    "collocations": [
+      "tantamount to admission",
+      "tantamount to refusal"
+    ],
+    "exampleSentence": "His prolonged silence was considered tantamount to an admission of guilt."
+  },
+  {
+    "word": "jeopardize",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "Put someone or something into a danger of loss or harm.",
+    "collocations": [
+      "jeopardize career",
+      "seriously jeopardize"
+    ],
+    "exampleSentence": "A reckless move could jeopardize months of delicate diplomatic negotiations."
+  },
+  {
+    "word": "culminate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "Reach a climax or point of highest development.",
+    "collocations": [
+      "culminate in success",
+      "culminate in victory"
+    ],
+    "exampleSentence": "Years of rigorous linguistic research culminated in the publication of the treatise."
+  },
+  {
+    "word": "infallible",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Incapable of making mistakes or being wrong.",
+    "collocations": [
+      "infallible method",
+      "hardly infallible"
+    ],
+    "exampleSentence": "No predictive algorithm is entirely infallible under turbulent market conditions."
+  },
+  {
+    "word": "epitome",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A person or thing that is a perfect example of a quality.",
+    "collocations": [
+      "the epitome of",
+      "virtually the epitome"
+    ],
+    "exampleSentence": "Her serene demeanor during the debate was the epitome of grace under pressure."
+  },
+  {
+    "word": "precipitous",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Dangerously steep; done suddenly without careful thought.",
+    "collocations": [
+      "precipitous drop",
+      "precipitous decision"
+    ],
+    "exampleSentence": "The company experienced a precipitous decline in shareholder confidence."
+  },
+  {
+    "word": "ubiquitous",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Present, appearing, or found everywhere.",
+    "collocations": [
+      "ubiquitous presence",
+      "almost ubiquitous"
+    ],
+    "exampleSentence": "Smartphones have become a ubiquitous feature of contemporary social life."
+  },
+  {
+    "word": "tenuous",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Very weak or slight.",
+    "collocations": [
+      "tenuous link",
+      "tenuous hold"
+    ],
+    "exampleSentence": "The historical link between the two archaeological artifacts remains tenuous."
+  },
+  {
+    "word": "exemplify",
+    "partOfSpeech": "verb",
+    "cefrLevel": "C2",
+    "definition": "Be a typical example of.",
+    "collocations": [
+      "exemplify the ideal",
+      "clearly exemplify"
+    ],
+    "exampleSentence": "Her extensive humanitarian work exemplifies the spirit of selfless public service."
+  },
+  {
+    "word": "colloquial",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Used in ordinary or familiar conversation; not formal.",
+    "collocations": [
+      "colloquial expression",
+      "colloquial tone"
+    ],
+    "exampleSentence": "Writers must be careful not to introduce colloquial idioms into formal legal submissions."
+  },
+  {
+    "word": "circumlocution",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The use of many words where fewer would do.",
+    "collocations": [
+      "employ circumlocution",
+      "diplomatic circumlocution"
+    ],
+    "exampleSentence": "The ambassador relied on subtle circumlocution to avoid committing to a timeline."
+  },
+  {
+    "word": "euphemism",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A mild word substituted for one considered too blunt.",
+    "collocations": [
+      "polite euphemism",
+      "use a euphemism"
+    ],
+    "exampleSentence": "Corporate restructuring is often used as a euphemism for widespread redundancies."
+  },
+  {
+    "word": "courteous",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Polite, respectful, or considerate in manner.",
+    "collocations": [
+      "courteous reply",
+      "extremely courteous"
+    ],
+    "exampleSentence": "Diplomatic correspondents maintain a courteous register even in contentious debates."
+  },
+  {
+    "word": "discreet",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Careful and prudent in one's speech or actions.",
+    "collocations": [
+      "discreet inquiry",
+      "remain discreet"
+    ],
+    "exampleSentence": "The financial advisor conducted discreet inquiries before making an official offer."
+  },
+  {
+    "word": "rhetoric",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The art of effective or persuasive speaking or writing.",
+    "collocations": [
+      "persuasive rhetoric",
+      "political rhetoric"
+    ],
+    "exampleSentence": "The prime minister employed masterful rhetoric to rally parliamentary support for the bill."
+  },
+  {
+    "word": "juxtaposition",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "The fact of two things being placed close together with contrasting effect.",
+    "collocations": [
+      "stark juxtaposition",
+      "striking juxtaposition"
+    ],
+    "exampleSentence": "The novel achieves emotional depth through the stark juxtaposition of wealth and squalor."
+  },
+  {
+    "word": "antithesis",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "A person or thing that is the direct opposite of another.",
+    "collocations": [
+      "the exact antithesis",
+      "antithesis of"
+    ],
+    "exampleSentence": "His cynical demeanor was the exact antithesis of his predecessor's unbridled optimism."
+  },
+  {
+    "word": "eloquence",
+    "partOfSpeech": "noun",
+    "cefrLevel": "C2",
+    "definition": "Fluent or persuasive speaking or writing.",
+    "collocations": [
+      "remarkable eloquence",
+      "speak with eloquence"
+    ],
+    "exampleSentence": "Her defense counsel argued with remarkable eloquence throughout the trial proceedings."
+  },
+  {
+    "word": "profound",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "C2",
+    "definition": "Very great or intense; having deep insight.",
+    "collocations": [
+      "profound impact",
+      "profound insight"
+    ],
+    "exampleSentence": "The discovery of quantum entanglement exerted a profound impact on twentieth-century physics."
+  }
+]

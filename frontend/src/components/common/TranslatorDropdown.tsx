@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Check,
   Languages,
+  ExternalLink,
 } from 'lucide-react';
 
 interface LanguageOption {
@@ -189,26 +190,13 @@ export const TranslatorDropdown: React.FC = () => {
   };
 
   /**
-   * @brief Initializes and triggers Yandex Translate in-page widget.
+   * @brief Opens webpage translation via official Yandex Translate web service in a new tab.
    */
   const handleTranslateYandex = () => {
-    clearGoogleTranslateCookie();
-    localStorage.setItem('lingua_translate_engine', 'yandex');
-    setActiveEngine('yandex');
-    setCurrentLang('ru');
     setIsOpen(false);
-
-    if (!document.getElementById('yandex-translate-script')) {
-      const script = document.createElement('script');
-      script.id = 'yandex-translate-script';
-      script.src = 'https://translate.yandex.net/website-widget/v1/widget.js?widgetId=ytWidget&pageLang=en&widgetTheme=light&autoMode=false';
-      script.async = true;
-      document.body.appendChild(script);
-    } else if ((window as any).ya?.translate?.changeLang) {
-      (window as any).ya.translate.changeLang('ru');
-    } else {
-      window.location.reload();
-    }
+    const targetUrl = window.location.href;
+    const yandexUrl = `https://translate.yandex.ru/translate?url=${encodeURIComponent(targetUrl)}&lang=en-ru`;
+    window.open(yandexUrl, '_blank', 'noopener,noreferrer');
   };
 
   /**
@@ -354,25 +342,17 @@ export const TranslatorDropdown: React.FC = () => {
                 </span>
                 <span className="text-xs font-bold text-slate-900">Yandex Translate</span>
               </div>
-              <span className="text-[10px] font-semibold text-slate-400">RU / CIS In-Page</span>
+              <span className="text-[10px] font-semibold text-slate-400">Web Translation</span>
             </div>
 
             <div className="pt-1">
               <button
                 type="button"
                 onClick={handleTranslateYandex}
-                className={`w-full py-1.5 px-3 text-[11px] font-semibold rounded-lg border transition text-left flex items-center justify-between ${
-                  activeEngine === 'yandex'
-                    ? 'bg-red-50 border-red-300 text-red-700 shadow-2xs font-bold'
-                    : 'bg-white hover:bg-red-50/50 text-slate-700 border-slate-200'
-                }`}
+                className="w-full py-2 px-3 text-[11px] font-semibold rounded-lg border bg-white hover:bg-red-50/50 text-slate-700 hover:text-red-700 hover:border-red-300 border-slate-200 transition text-left flex items-center justify-between group"
               >
-                <span>🇷🇺 Russian (RU)</span>
-                {activeEngine === 'yandex' ? (
-                  <Check className="w-3.5 h-3.5 text-red-600" />
-                ) : (
-                  <span className="text-[10px] text-slate-400 font-normal">Translate</span>
-                )}
+                <span>🇷🇺 Translate on Yandex.ru</span>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-red-600 transition" />
               </button>
             </div>
           </div>

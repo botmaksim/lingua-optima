@@ -1,0 +1,827 @@
+[
+  {
+    "word": "yesterday",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "On the day before today.",
+    "collocations": [
+      "yesterday afternoon",
+      "like yesterday"
+    ],
+    "exampleSentence": "We visited the art gallery yesterday."
+  },
+  {
+    "word": "journey",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "An act of travelling from one place to another.",
+    "collocations": [
+      "safe journey",
+      "long journey"
+    ],
+    "exampleSentence": "Their train journey took nearly five hours."
+  },
+  {
+    "word": "holiday",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "An extended period of leisure and recreation.",
+    "collocations": [
+      "summer holiday",
+      "on holiday"
+    ],
+    "exampleSentence": "Where are you planning to go on holiday?"
+  },
+  {
+    "word": "expensive",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Costing a lot of money.",
+    "collocations": [
+      "too expensive",
+      "expensive item"
+    ],
+    "exampleSentence": "Hotels in the city center are quite expensive."
+  },
+  {
+    "word": "comfortable",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Providing physical ease and relaxation.",
+    "collocations": [
+      "comfortable bed",
+      "feel comfortable"
+    ],
+    "exampleSentence": "These leather shoes are extremely comfortable."
+  },
+  {
+    "word": "advice",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Guidance or recommendations offered with regard to prudent action.",
+    "collocations": [
+      "good advice",
+      "piece of advice"
+    ],
+    "exampleSentence": "She gave me helpful advice about my studies."
+  },
+  {
+    "word": "information",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Facts provided or learned about something or someone.",
+    "collocations": [
+      "tourist information",
+      "useful information"
+    ],
+    "exampleSentence": "Can you give me some information about the tour?"
+  },
+  {
+    "word": "traffic",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Vehicles moving on a road or public highway.",
+    "collocations": [
+      "heavy traffic",
+      "traffic jam"
+    ],
+    "exampleSentence": "There was heavy traffic on the motorway this morning."
+  },
+  {
+    "word": "appointment",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "An arrangement to meet someone at a particular time and place.",
+    "collocations": [
+      "doctor appointment",
+      "make an appointment"
+    ],
+    "exampleSentence": "I have a dentist appointment on Thursday morning."
+  },
+  {
+    "word": "decide",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To come to a resolution in the mind as a result of consideration.",
+    "collocations": [
+      "decide to",
+      "decide on"
+    ],
+    "exampleSentence": "We decided to spend the weekend in the countryside."
+  },
+  {
+    "word": "popular",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Liked, admired, or enjoyed by many people.",
+    "collocations": [
+      "popular place",
+      "very popular"
+    ],
+    "exampleSentence": "This cafe is very popular with university students."
+  },
+  {
+    "word": "ticket",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A piece of paper or card that gives the holder a certain right.",
+    "collocations": [
+      "plane ticket",
+      "buy a ticket"
+    ],
+    "exampleSentence": "Remember to book your train ticket in advance."
+  },
+  {
+    "word": "weather",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "The state of the atmosphere at a place and time.",
+    "collocations": [
+      "nice weather",
+      "weather forecast"
+    ],
+    "exampleSentence": "The weather was sunny during our entire trip."
+  },
+  {
+    "word": "village",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A group of houses and associated buildings in a rural area.",
+    "collocations": [
+      "quiet village",
+      "small village"
+    ],
+    "exampleSentence": "My grandparents live in a peaceful mountain village."
+  },
+  {
+    "word": "luggage",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Suitcases or other bags in which to pack personal belongings.",
+    "collocations": [
+      "heavy luggage",
+      "pack luggage"
+    ],
+    "exampleSentence": "Please keep your luggage with you at all times."
+  },
+  {
+    "word": "travelled",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Went from one place to another, typically over a distance.",
+    "collocations": [
+      "travelled abroad",
+      "travelled by train"
+    ],
+    "exampleSentence": "Last summer we travelled across southern Italy."
+  },
+  {
+    "word": "visited",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Went to see someone or a place.",
+    "collocations": [
+      "visited museum",
+      "visited relatives"
+    ],
+    "exampleSentence": "They visited three historical museums in Prague."
+  },
+  {
+    "word": "bought",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Acquired in exchange for payment.",
+    "collocations": [
+      "bought gifts",
+      "bought online"
+    ],
+    "exampleSentence": "She bought some lovely souvenirs for her friends."
+  },
+  {
+    "word": "caught",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Intercepted and held something moving, or boarded transport.",
+    "collocations": [
+      "caught the train",
+      "caught a cold"
+    ],
+    "exampleSentence": "We caught the express train just before departure."
+  },
+  {
+    "word": "arrived",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Reached a destination.",
+    "collocations": [
+      "arrived safely",
+      "arrived at airport"
+    ],
+    "exampleSentence": "The plane arrived twenty minutes ahead of schedule."
+  },
+  {
+    "word": "tomorrow",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "On the day after today.",
+    "collocations": [
+      "tomorrow morning",
+      "see you tomorrow"
+    ],
+    "exampleSentence": "I am going to start my fitness routine tomorrow."
+  },
+  {
+    "word": "promise",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To assure someone that one will definitely do something.",
+    "collocations": [
+      "promise to",
+      "make a promise"
+    ],
+    "exampleSentence": "I will help you with your homework, I promise."
+  },
+  {
+    "word": "probably",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Almost certainly; as far as one knows or can tell.",
+    "collocations": [
+      "probably rain",
+      "will probably"
+    ],
+    "exampleSentence": "It will probably rain later this afternoon."
+  },
+  {
+    "word": "predict",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To say or estimate that a specified thing will happen.",
+    "collocations": [
+      "predict weather",
+      "hard to predict"
+    ],
+    "exampleSentence": "Scientists predict warmer temperatures next week."
+  },
+  {
+    "word": "arrange",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To plan or organize the details of something future.",
+    "collocations": [
+      "arrange a meeting",
+      "arrange travel"
+    ],
+    "exampleSentence": "We are going to arrange our flights this weekend."
+  },
+  {
+    "word": "cheaper",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Costing less money than something else.",
+    "collocations": [
+      "much cheaper",
+      "cheaper option"
+    ],
+    "exampleSentence": "Buying train tickets online is much cheaper."
+  },
+  {
+    "word": "crowded",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Full of people, leaving little or no room for movement.",
+    "collocations": [
+      "very crowded",
+      "crowded bus"
+    ],
+    "exampleSentence": "The subway station is crowded during rush hour."
+  },
+  {
+    "word": "safest",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Protected from or not exposed to danger or risk.",
+    "collocations": [
+      "safest route",
+      "safest way"
+    ],
+    "exampleSentence": "Taking the marked trail is the safest route down."
+  },
+  {
+    "word": "modern",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Relating to the present or recent times as opposed to the remote past.",
+    "collocations": [
+      "modern building",
+      "modern facility"
+    ],
+    "exampleSentence": "The newly renovated library is modern and bright."
+  },
+  {
+    "word": "quieter",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Making little or no noise compared to others.",
+    "collocations": [
+      "quieter room",
+      "much quieter"
+    ],
+    "exampleSentence": "The suburbs are much quieter than the downtown area."
+  },
+  {
+    "word": "faster",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Moving or capable of moving at high speed.",
+    "collocations": [
+      "much faster",
+      "run faster"
+    ],
+    "exampleSentence": "The express train is much faster than the local coach."
+  },
+  {
+    "word": "healthier",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "In a good physical condition.",
+    "collocations": [
+      "healthier lifestyle",
+      "much healthier"
+    ],
+    "exampleSentence": "Eating fresh fruit is healthier than eating sweets."
+  },
+  {
+    "word": "farthest",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "At the greatest distance.",
+    "collocations": [
+      "the farthest corner",
+      "farthest away"
+    ],
+    "exampleSentence": "He sat at the desk farthest from the noisy door."
+  },
+  {
+    "word": "earliest",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Happening or done before the usual or expected time.",
+    "collocations": [
+      "earliest opportunity",
+      "earliest flight"
+    ],
+    "exampleSentence": "Please arrive at the station at the earliest possible time."
+  },
+  {
+    "word": "better",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Of a more excellent or effective type.",
+    "collocations": [
+      "much better",
+      "feel better"
+    ],
+    "exampleSentence": "I feel much better after getting a good night's rest."
+  },
+  {
+    "word": "furniture",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Large movable equipment used to make a room suitable for living.",
+    "collocations": [
+      "wooden furniture",
+      "modern furniture"
+    ],
+    "exampleSentence": "They bought some stylish furniture for the flat."
+  },
+  {
+    "word": "sugar",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A sweet crystalline substance obtained from various plants.",
+    "collocations": [
+      "spoon of sugar",
+      "too much sugar"
+    ],
+    "exampleSentence": "Do you take any sugar in your morning coffee?"
+  },
+  {
+    "word": "money",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A current medium of exchange in the form of coins and banknotes.",
+    "collocations": [
+      "spend money",
+      "save money"
+    ],
+    "exampleSentence": "How much money do we need for the museum trip?"
+  },
+  {
+    "word": "bottle",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A container with a narrow neck used for storing liquids.",
+    "collocations": [
+      "glass bottle",
+      "bottle of water"
+    ],
+    "exampleSentence": "There are three bottles of mineral water in the fridge."
+  },
+  {
+    "word": "enough",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A2",
+    "definition": "As much or as many as required.",
+    "collocations": [
+      "enough time",
+      "have enough"
+    ],
+    "exampleSentence": "Make sure you drink enough water throughout the day."
+  },
+  {
+    "word": "uniform",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "The distinctive clothing worn by members of the same organization.",
+    "collocations": [
+      "wear uniform",
+      "school uniform"
+    ],
+    "exampleSentence": "Students must wear their school uniform during exams."
+  },
+  {
+    "word": "helmet",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A hard or padded protective hat.",
+    "collocations": [
+      "safety helmet",
+      "wear a helmet"
+    ],
+    "exampleSentence": "Cyclists have to wear a safety helmet on the road."
+  },
+  {
+    "word": "permission",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "Consent or authorization.",
+    "collocations": [
+      "ask permission",
+      "without permission"
+    ],
+    "exampleSentence": "You must ask for permission before leaving the room."
+  },
+  {
+    "word": "safety",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "The condition of being protected from or unlikely to cause danger.",
+    "collocations": [
+      "safety rules",
+      "road safety"
+    ],
+    "exampleSentence": "Workers have to follow all workplace safety rules."
+  },
+  {
+    "word": "urgent",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "Requiring immediate action or attention.",
+    "collocations": [
+      "urgent matter",
+      "urgent message"
+    ],
+    "exampleSentence": "I must make an urgent phone call before boarding."
+  },
+  {
+    "word": "meeting",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "An assembly of people for a particular purpose.",
+    "collocations": [
+      "business meeting",
+      "schedule meeting"
+    ],
+    "exampleSentence": "I am meeting my university tutor at three o'clock."
+  },
+  {
+    "word": "dentist",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A person qualified to treat the diseases and conditions of teeth.",
+    "collocations": [
+      "visit dentist",
+      "see dentist"
+    ],
+    "exampleSentence": "She is seeing the dentist for a check-up on Tuesday."
+  },
+  {
+    "word": "flight",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A journey made by flying, especially in an aeroplane.",
+    "collocations": [
+      "book flight",
+      "morning flight"
+    ],
+    "exampleSentence": "We are flying to Barcelona next Saturday morning."
+  },
+  {
+    "word": "concert",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A musical performance given in public.",
+    "collocations": [
+      "live concert",
+      "attend concert"
+    ],
+    "exampleSentence": "They are attending an acoustic concert tonight."
+  },
+  {
+    "word": "departure",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "The action of leaving, especially to start a journey.",
+    "collocations": [
+      "time of departure",
+      "flight departure"
+    ],
+    "exampleSentence": "Our tour group is departing at dawn tomorrow."
+  },
+  {
+    "word": "routine",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A sequence of actions regularly followed.",
+    "collocations": [
+      "daily routine",
+      "usual routine"
+    ],
+    "exampleSentence": "Exercise is an essential part of her daily routine."
+  },
+  {
+    "word": "suddenly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Quickly and unexpectedly.",
+    "collocations": [
+      "happened suddenly",
+      "stopped suddenly"
+    ],
+    "exampleSentence": "While walking in the park, it suddenly started to snow."
+  },
+  {
+    "word": "moment",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A very brief period of time.",
+    "collocations": [
+      "at the moment",
+      "wait a moment"
+    ],
+    "exampleSentence": "He is reading a mystery novel at the moment."
+  },
+  {
+    "word": "ago",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Before the present; earlier.",
+    "collocations": [
+      "two years ago",
+      "long ago"
+    ],
+    "exampleSentence": "They moved to this coastal town three years ago."
+  },
+  {
+    "word": "habit",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A settled or regular tendency or practice.",
+    "collocations": [
+      "good habit",
+      "healthy habit"
+    ],
+    "exampleSentence": "Reading before bed is a beneficial habit."
+  },
+  {
+    "word": "recommend",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To put forward someone or something with approval as suitable.",
+    "collocations": [
+      "recommend to",
+      "highly recommend"
+    ],
+    "exampleSentence": "I should definitely recommend this local bakery to you."
+  },
+  {
+    "word": "patient",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "A person receiving or registered to receive medical treatment.",
+    "collocations": [
+      "hospital patient",
+      "care for patient"
+    ],
+    "exampleSentence": "The doctor says the patient must rest for three days."
+  },
+  {
+    "word": "healthy",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A2",
+    "definition": "In a good physical or mental condition.",
+    "collocations": [
+      "healthy diet",
+      "stay healthy"
+    ],
+    "exampleSentence": "You should maintain a balanced and healthy diet."
+  },
+  {
+    "word": "medicine",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A2",
+    "definition": "The science or practice of diagnosis, treatment, and prevention of disease.",
+    "collocations": [
+      "take medicine",
+      "prescribe medicine"
+    ],
+    "exampleSentence": "You have to take this prescribed medicine with water."
+  },
+  {
+    "word": "suggest",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "To put forward for consideration.",
+    "collocations": [
+      "suggest a plan",
+      "suggest that"
+    ],
+    "exampleSentence": "The travel guide suggests we should visit early."
+  },
+  {
+    "word": "built",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Constructed by putting parts or materials together.",
+    "collocations": [
+      "was built",
+      "built by"
+    ],
+    "exampleSentence": "The castle was built over four hundred years ago."
+  },
+  {
+    "word": "written",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Composed and put down in letters or characters.",
+    "collocations": [
+      "written by",
+      "was written"
+    ],
+    "exampleSentence": "The novel was written by a famous Irish author."
+  },
+  {
+    "word": "painted",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Covered the surface of something with paint, or produced an artwork.",
+    "collocations": [
+      "was painted",
+      "beautifully painted"
+    ],
+    "exampleSentence": "The portrait was painted during the eighteenth century."
+  },
+  {
+    "word": "discovered",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Found unexpectedly or through exploration.",
+    "collocations": [
+      "was discovered",
+      "first discovered"
+    ],
+    "exampleSentence": "Gold was discovered in the mountain valley in 1849."
+  },
+  {
+    "word": "served",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Provided food or drink, or acted as a public facility.",
+    "collocations": [
+      "is served",
+      "freshly served"
+    ],
+    "exampleSentence": "Breakfast is served in the hotel dining room from seven."
+  },
+  {
+    "word": "already",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Before now or before a specified time.",
+    "collocations": [
+      "already done",
+      "has already"
+    ],
+    "exampleSentence": "I have already booked the hotel rooms for our trip."
+  },
+  {
+    "word": "recently",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "Not long ago.",
+    "collocations": [
+      "recently visited",
+      "heard recently"
+    ],
+    "exampleSentence": "They have recently opened a new cinema downtown."
+  },
+  {
+    "word": "never",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "At no time in the past or future.",
+    "collocations": [
+      "have never",
+      "never been"
+    ],
+    "exampleSentence": "She has never flown on an airplane before."
+  },
+  {
+    "word": "ever",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "At any time.",
+    "collocations": [
+      "have you ever",
+      "hardly ever"
+    ],
+    "exampleSentence": "Have you ever tried traditional Japanese noodles?"
+  },
+  {
+    "word": "just",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A2",
+    "definition": "A very short time ago.",
+    "collocations": [
+      "just finished",
+      "has just"
+    ],
+    "exampleSentence": "We have just finished our lunch at the bistro."
+  },
+  {
+    "word": "occurred",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Took place or happened.",
+    "collocations": [
+      "incident occurred",
+      "suddenly occurred"
+    ],
+    "exampleSentence": "The incident occurred while passengers were boarding."
+  },
+  {
+    "word": "witnessed",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Saw an event with one's own eyes.",
+    "collocations": [
+      "witnessed the event",
+      "closely witnessed"
+    ],
+    "exampleSentence": "A passerby witnessed the accident at the crossing."
+  },
+  {
+    "word": "unfolded",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Happened or developed gradually.",
+    "collocations": [
+      "events unfolded",
+      "drama unfolded"
+    ],
+    "exampleSentence": "As the afternoon unfolded, the hikers realized they were lost."
+  },
+  {
+    "word": "noticed",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Became aware of.",
+    "collocations": [
+      "noticed that",
+      "hardly noticed"
+    ],
+    "exampleSentence": "She noticed that she had left her umbrella on the train."
+  },
+  {
+    "word": "realized",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A2",
+    "definition": "Became fully aware of something as a fact.",
+    "collocations": [
+      "suddenly realized",
+      "realized that"
+    ],
+    "exampleSentence": "He realized that he had forgotten the house keys."
+  }
+]

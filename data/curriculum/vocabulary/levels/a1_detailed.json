@@ -1,0 +1,662 @@
+[
+  {
+    "word": "morning",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "The early part of the day from sunrise to noon.",
+    "collocations": [
+      "every morning",
+      "good morning"
+    ],
+    "exampleSentence": "I wake up early in the morning."
+  },
+  {
+    "word": "family",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A group of people related by blood or marriage.",
+    "collocations": [
+      "family member",
+      "close family"
+    ],
+    "exampleSentence": "My family lives in a quiet town."
+  },
+  {
+    "word": "friend",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A person with whom one has a bond of mutual affection.",
+    "collocations": [
+      "best friend",
+      "old friend"
+    ],
+    "exampleSentence": "Anna is my best friend from school."
+  },
+  {
+    "word": "student",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A person who is studying at a school or college.",
+    "collocations": [
+      "new student",
+      "university student"
+    ],
+    "exampleSentence": "He is a student at the language school."
+  },
+  {
+    "word": "teacher",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A person who teaches, especially in a school.",
+    "collocations": [
+      "English teacher",
+      "helpful teacher"
+    ],
+    "exampleSentence": "Our teacher explains the rules clearly."
+  },
+  {
+    "word": "house",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A building for human habitation.",
+    "collocations": [
+      "big house",
+      "at house"
+    ],
+    "exampleSentence": "They live in a beautiful white house."
+  },
+  {
+    "word": "school",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "An institution for educating children.",
+    "collocations": [
+      "at school",
+      "after school"
+    ],
+    "exampleSentence": "The children walk to school together."
+  },
+  {
+    "word": "happy",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Feeling or showing pleasure or contentment.",
+    "collocations": [
+      "very happy",
+      "happy day"
+    ],
+    "exampleSentence": "We are very happy to meet you."
+  },
+  {
+    "word": "water",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A clear liquid essential for animal and plant life.",
+    "collocations": [
+      "glass of water",
+      "cold water"
+    ],
+    "exampleSentence": "Please give me a glass of cold water."
+  },
+  {
+    "word": "book",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A written or printed work consisting of pages.",
+    "collocations": [
+      "open book",
+      "read a book"
+    ],
+    "exampleSentence": "She reads an interesting book every evening."
+  },
+  {
+    "word": "table",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A piece of furniture with a flat top and legs.",
+    "collocations": [
+      "on the table",
+      "wooden table"
+    ],
+    "exampleSentence": "The keys are lying on the kitchen table."
+  },
+  {
+    "word": "city",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A large town.",
+    "collocations": [
+      "big city",
+      "beautiful city"
+    ],
+    "exampleSentence": "London is a large and exciting city."
+  },
+  {
+    "word": "street",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A public road in a city or town.",
+    "collocations": [
+      "main street",
+      "on the street"
+    ],
+    "exampleSentence": "There are many small shops on this street."
+  },
+  {
+    "word": "today",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A1",
+    "definition": "On or in the course of the present day.",
+    "collocations": [
+      "today morning",
+      "like today"
+    ],
+    "exampleSentence": "Today is sunny and warm."
+  },
+  {
+    "word": "room",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "Space that can be occupied, or a partitioned part of a building.",
+    "collocations": [
+      "hotel room",
+      "living room"
+    ],
+    "exampleSentence": "My room has a big window with a garden view."
+  },
+  {
+    "word": "wake",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To emerge or cause to emerge from sleep.",
+    "collocations": [
+      "wake up",
+      "wake early"
+    ],
+    "exampleSentence": "I wake up at seven o'clock every morning."
+  },
+  {
+    "word": "work",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To engage in physical or mental activity to achieve a purpose.",
+    "collocations": [
+      "work hard",
+      "work in office"
+    ],
+    "exampleSentence": "Maria works in a local hospital."
+  },
+  {
+    "word": "live",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To remain alive or have one's home in a specified place.",
+    "collocations": [
+      "live in",
+      "live with"
+    ],
+    "exampleSentence": "They live with their grandparents in Madrid."
+  },
+  {
+    "word": "like",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To find agreeable, enjoyable, or satisfactory.",
+    "collocations": [
+      "like to",
+      "really like"
+    ],
+    "exampleSentence": "Do you like drinking green tea?"
+  },
+  {
+    "word": "eat",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To put food into the mouth and swallow it.",
+    "collocations": [
+      "eat breakfast",
+      "eat together"
+    ],
+    "exampleSentence": "We eat dinner together every evening."
+  },
+  {
+    "word": "apple",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "The round fruit of a tree of the rose family.",
+    "collocations": [
+      "eat an apple",
+      "red apple"
+    ],
+    "exampleSentence": "There is an apple on the desk."
+  },
+  {
+    "word": "pencil",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "An instrument for writing or drawing.",
+    "collocations": [
+      "sharp pencil",
+      "with a pencil"
+    ],
+    "exampleSentence": "Can I borrow a pencil, please?"
+  },
+  {
+    "word": "umbrella",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A device consisting of a circular canopy of cloth on a folding frame.",
+    "collocations": [
+      "take an umbrella",
+      "rain umbrella"
+    ],
+    "exampleSentence": "Take an umbrella because it might rain."
+  },
+  {
+    "word": "window",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "An opening in the wall or roof of a building fitted with glass.",
+    "collocations": [
+      "open window",
+      "near the window"
+    ],
+    "exampleSentence": "Please close that window over there."
+  },
+  {
+    "word": "chair",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A separate seat for one person, typically with four legs.",
+    "collocations": [
+      "sit on chair",
+      "comfortable chair"
+    ],
+    "exampleSentence": "These chairs are very comfortable."
+  },
+  {
+    "word": "clock",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A mechanical or electrical device for measuring time.",
+    "collocations": [
+      "on the clock",
+      "look at clock"
+    ],
+    "exampleSentence": "The clock on the wall shows three o'clock."
+  },
+  {
+    "word": "corner",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A place or angle where two or more sides or edges meet.",
+    "collocations": [
+      "at the corner",
+      "in the corner"
+    ],
+    "exampleSentence": "The pharmacy is at the corner of the street."
+  },
+  {
+    "word": "calendar",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A chart showing the days, weeks, and months of a year.",
+    "collocations": [
+      "check calendar",
+      "wall calendar"
+    ],
+    "exampleSentence": "Mark the appointment on your calendar."
+  },
+  {
+    "word": "station",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A regular stopping place on a public transport route.",
+    "collocations": [
+      "at the station",
+      "train station"
+    ],
+    "exampleSentence": "We arrived at the station just on time."
+  },
+  {
+    "word": "weekend",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "Saturday and Sunday.",
+    "collocations": [
+      "at the weekend",
+      "on the weekend"
+    ],
+    "exampleSentence": "I like relaxing at home on the weekend."
+  },
+  {
+    "word": "swim",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To propel oneself through water by bodily movements.",
+    "collocations": [
+      "swim well",
+      "can swim"
+    ],
+    "exampleSentence": "He can swim across the river easily."
+  },
+  {
+    "word": "drive",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To operate the direction and speed of a motor vehicle.",
+    "collocations": [
+      "drive a car",
+      "can drive"
+    ],
+    "exampleSentence": "Can you drive a manual car?"
+  },
+  {
+    "word": "speak",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To utter words or communicate in a specified language.",
+    "collocations": [
+      "speak English",
+      "speak slowly"
+    ],
+    "exampleSentence": "She can speak three languages fluently."
+  },
+  {
+    "word": "cook",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To prepare food by heating it.",
+    "collocations": [
+      "cook dinner",
+      "cook well"
+    ],
+    "exampleSentence": "My father can cook delicious pasta."
+  },
+  {
+    "word": "play",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To engage in activity for enjoyment or perform music.",
+    "collocations": [
+      "play guitar",
+      "play football"
+    ],
+    "exampleSentence": "They can play chess very well."
+  },
+  {
+    "word": "brother",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A man or boy in relation to other sons and daughters of his parents.",
+    "collocations": [
+      "older brother",
+      "my brother"
+    ],
+    "exampleSentence": "My brother's car is parked outside."
+  },
+  {
+    "word": "sister",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A woman or girl in relation to other daughters and sons of her parents.",
+    "collocations": [
+      "younger sister",
+      "her sister"
+    ],
+    "exampleSentence": "Her sister's name is Emma."
+  },
+  {
+    "word": "parents",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A father or mother.",
+    "collocations": [
+      "my parents",
+      "live with parents"
+    ],
+    "exampleSentence": "His parents' house has a lovely garden."
+  },
+  {
+    "word": "pet",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "A domestic animal kept for companionship.",
+    "collocations": [
+      "family pet",
+      "pet dog"
+    ],
+    "exampleSentence": "Their pet's collar is bright red."
+  },
+  {
+    "word": "passport",
+    "partOfSpeech": "noun",
+    "cefrLevel": "A1",
+    "definition": "An official document certifying identity and citizenship.",
+    "collocations": [
+      "valid passport",
+      "show passport"
+    ],
+    "exampleSentence": "Our teacher's passport is on the desk."
+  },
+  {
+    "word": "listen",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To give one's attention to a sound.",
+    "collocations": [
+      "listen carefully",
+      "listen to"
+    ],
+    "exampleSentence": "Listen carefully to the instructions."
+  },
+  {
+    "word": "open",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To move or be moved so as to leave an empty space.",
+    "collocations": [
+      "open door",
+      "open book"
+    ],
+    "exampleSentence": "Please open your book to page ten."
+  },
+  {
+    "word": "where",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A1",
+    "definition": "In or to what place or position.",
+    "collocations": [
+      "where is",
+      "where do you live"
+    ],
+    "exampleSentence": "Where is the nearest train station?"
+  },
+  {
+    "word": "when",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A1",
+    "definition": "At what time.",
+    "collocations": [
+      "when does",
+      "when is"
+    ],
+    "exampleSentence": "When does the English lesson start?"
+  },
+  {
+    "word": "help",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To make it easier for someone to do something by offering services.",
+    "collocations": [
+      "help me",
+      "need help"
+    ],
+    "exampleSentence": "Help me carry these heavy bags, please."
+  },
+  {
+    "word": "clean",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Free from dirt, marks, or stains.",
+    "collocations": [
+      "clean room",
+      "keep clean"
+    ],
+    "exampleSentence": "Keep your desk tidy and clean."
+  },
+  {
+    "word": "busy",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Actively engaged in an action or task.",
+    "collocations": [
+      "busy day",
+      "busy street"
+    ],
+    "exampleSentence": "The city center is very busy today."
+  },
+  {
+    "word": "early",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A1",
+    "definition": "Before the usual or expected time.",
+    "collocations": [
+      "wake early",
+      "early morning"
+    ],
+    "exampleSentence": "We must leave early tomorrow."
+  },
+  {
+    "word": "late",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "A1",
+    "definition": "After the expected, proper, or usual time.",
+    "collocations": [
+      "arrive late",
+      "too late"
+    ],
+    "exampleSentence": "Don't be late for your morning class."
+  },
+  {
+    "word": "ready",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "In a suitable state for an action or situation.",
+    "collocations": [
+      "ready to go",
+      "get ready"
+    ],
+    "exampleSentence": "Are you ready to start the lesson?"
+  },
+  {
+    "word": "some",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "An unspecified amount or number of.",
+    "collocations": [
+      "some milk",
+      "have some"
+    ],
+    "exampleSentence": "Would you like some warm tea?"
+  },
+  {
+    "word": "any",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "Used to refer to one or some of a thing or number of things.",
+    "collocations": [
+      "any questions",
+      "have any"
+    ],
+    "exampleSentence": "Do you have any questions about the homework?"
+  },
+  {
+    "word": "many",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "A large number of.",
+    "collocations": [
+      "how many",
+      "many students"
+    ],
+    "exampleSentence": "How many books do you read in a month?"
+  },
+  {
+    "word": "much",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "A large amount of.",
+    "collocations": [
+      "how much",
+      "too much"
+    ],
+    "exampleSentence": "How much water do you drink every day?"
+  },
+  {
+    "word": "few",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "A1",
+    "definition": "A small number of.",
+    "collocations": [
+      "a few minutes",
+      "few friends"
+    ],
+    "exampleSentence": "We will leave in a few minutes."
+  },
+  {
+    "word": "tired",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "In need of sleep or rest; weary.",
+    "collocations": [
+      "feel tired",
+      "very tired"
+    ],
+    "exampleSentence": "I am not tired after the long walk."
+  },
+  {
+    "word": "hungry",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Feeling or displaying the need for food.",
+    "collocations": [
+      "feel hungry",
+      "very hungry"
+    ],
+    "exampleSentence": "Are you hungry yet? Let's eat lunch."
+  },
+  {
+    "word": "understand",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To perceive the intended meaning of words or ideas.",
+    "collocations": [
+      "understand well",
+      "don't understand"
+    ],
+    "exampleSentence": "Do you understand the question clearly?"
+  },
+  {
+    "word": "easy",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "A1",
+    "definition": "Achieved without great effort; presenting few difficulties.",
+    "collocations": [
+      "easy task",
+      "easy to do"
+    ],
+    "exampleSentence": "This grammar exercise is very easy."
+  },
+  {
+    "word": "repeat",
+    "partOfSpeech": "verb",
+    "cefrLevel": "A1",
+    "definition": "To say or do something again.",
+    "collocations": [
+      "repeat after",
+      "repeat please"
+    ],
+    "exampleSentence": "Can you repeat that sentence, please?"
+  }
+]

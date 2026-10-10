@@ -119,7 +119,7 @@ describe('TranslatorDropdown component', () => {
     expect(screen.getByText('Translate Webpage')).toBeInTheDocument();
     expect(screen.getByText('Google Translate')).toBeInTheDocument();
     expect(screen.getByText('Yandex Translate')).toBeInTheDocument();
-    expect(screen.getAllByText(/Russian \(RU\)/i)).toHaveLength(2);
+    expect(screen.getByText(/Translate on Yandex\.ru/i)).toBeInTheDocument();
   });
 });
 

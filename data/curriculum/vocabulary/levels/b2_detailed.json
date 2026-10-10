@@ -1,0 +1,827 @@
+[
+  {
+    "word": "plausible",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Seeming reasonable or probable.",
+    "collocations": [
+      "plausible explanation",
+      "highly plausible"
+    ],
+    "exampleSentence": "The detective offered a plausible explanation for the disappearance."
+  },
+  {
+    "word": "implication",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The conclusion that can be drawn from something although it is not explicitly stated.",
+    "collocations": [
+      "broad implication",
+      "serious implications"
+    ],
+    "exampleSentence": "The new tax policy has far-reaching economic implications."
+  },
+  {
+    "word": "contingency",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A future event or circumstance which is possible but cannot be predicted with certainty.",
+    "collocations": [
+      "contingency plan",
+      "prepare for contingencies"
+    ],
+    "exampleSentence": "Project managers established a contingency reserve for unexpected delays."
+  },
+  {
+    "word": "resilience",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The capacity to recover quickly from difficulties; toughness.",
+    "collocations": [
+      "mental resilience",
+      "community resilience"
+    ],
+    "exampleSentence": "The local economy demonstrated remarkable resilience during the crisis."
+  },
+  {
+    "word": "speculate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To form a theory or conjecture about a subject without firm evidence.",
+    "collocations": [
+      "speculate on",
+      "widely speculate"
+    ],
+    "exampleSentence": "Financial analysts speculate that interest rates will stabilize soon."
+  },
+  {
+    "word": "scrutinize",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To examine or inspect closely and thoroughly.",
+    "collocations": [
+      "scrutinize data",
+      "closely scrutinized"
+    ],
+    "exampleSentence": "Auditors scrutinized the company's financial records for discrepancies."
+  },
+  {
+    "word": "hesitate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To pause before saying or doing something through uncertainty.",
+    "collocations": [
+      "hesitate to",
+      "without hesitation"
+    ],
+    "exampleSentence": "Do not hesitate to reach out if you require further clarification."
+  },
+  {
+    "word": "repercussion",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "An unintended consequence occurring some time after an event or action.",
+    "collocations": [
+      "severe repercussions",
+      "political repercussions"
+    ],
+    "exampleSentence": "Environmental degradation carries severe repercussions for coastal cities."
+  },
+  {
+    "word": "forecast",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To predict or estimate a future event or trend.",
+    "collocations": [
+      "forecast growth",
+      "economic forecast"
+    ],
+    "exampleSentence": "Meteorologists forecast severe thunderstorms across the northern coast."
+  },
+  {
+    "word": "monitored",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Observed and checked the progress or quality of something over a period.",
+    "collocations": [
+      "closely monitored",
+      "monitored system"
+    ],
+    "exampleSentence": "Air pollution levels are monitored continuously by sensor networks."
+  },
+  {
+    "word": "anticipate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To regard as probable; expect or predict.",
+    "collocations": [
+      "anticipate problems",
+      "eagerly anticipated"
+    ],
+    "exampleSentence": "We anticipate significant interest in the new postgraduate programme."
+  },
+  {
+    "word": "prominent",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Important; famous; standing out.",
+    "collocations": [
+      "prominent figure",
+      "play a prominent role"
+    ],
+    "exampleSentence": "Several prominent scientists contributed to the interdisciplinary study."
+  },
+  {
+    "word": "clarify",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To make a statement or situation less confused and more comprehensible.",
+    "collocations": [
+      "clarify position",
+      "seek to clarify"
+    ],
+    "exampleSentence": "The spokesperson clarified the government's stance on international trade."
+  },
+  {
+    "word": "acknowledgement",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "Acceptance of the truth or existence of something.",
+    "collocations": [
+      "express acknowledgement",
+      "public acknowledgement"
+    ],
+    "exampleSentence": "Her breakthrough research received widespread acknowledgement."
+  },
+  {
+    "word": "controversial",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Giving rise or likely to give rise to public disagreement.",
+    "collocations": [
+      "controversial issue",
+      "highly controversial"
+    ],
+    "exampleSentence": "The proposal to construct a highway through the forest remains controversial."
+  },
+  {
+    "word": "hindsight",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "Understanding of a situation only after it has happened.",
+    "collocations": [
+      "in hindsight",
+      "benefit of hindsight"
+    ],
+    "exampleSentence": "In hindsight, had we booked tickets earlier, we would have saved money."
+  },
+  {
+    "word": "unforeseen",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Not anticipated or predicted.",
+    "collocations": [
+      "unforeseen delays",
+      "unforeseen consequence"
+    ],
+    "exampleSentence": "Had unforeseen delays not intervened, the bridge would be open today."
+  },
+  {
+    "word": "catastrophe",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "An event causing great and often sudden damage or suffering.",
+    "collocations": [
+      "environmental catastrophe",
+      "avert catastrophe"
+    ],
+    "exampleSentence": "If emergency teams had arrived earlier, the catastrophe would have been averted."
+  },
+  {
+    "word": "alternative",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "One of two or more available possibilities.",
+    "collocations": [
+      "viable alternative",
+      "explore alternatives"
+    ],
+    "exampleSentence": "If an alternative route had existed, commuters would not be stranded now."
+  },
+  {
+    "word": "intervention",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The action or process of intervening.",
+    "collocations": [
+      "timely intervention",
+      "medical intervention"
+    ],
+    "exampleSentence": "Without diplomatic intervention, a major trade war would have erupted."
+  },
+  {
+    "word": "undertaken",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Committed oneself to and began an enterprise or responsibility.",
+    "collocations": [
+      "was undertaken",
+      "work undertaken"
+    ],
+    "exampleSentence": "An extensive environmental survey has been undertaken by researchers."
+  },
+  {
+    "word": "restructured",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Organized differently.",
+    "collocations": [
+      "restructured company",
+      "has been restructured"
+    ],
+    "exampleSentence": "The internal management system is currently being restructured."
+  },
+  {
+    "word": "streamlined",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Made an organization or system more efficient.",
+    "collocations": [
+      "streamlined process",
+      "has been streamlined"
+    ],
+    "exampleSentence": "Administrative procedures have been streamlined across all campuses."
+  },
+  {
+    "word": "commissioned",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Brought something newly produced into working condition.",
+    "collocations": [
+      "commissioned study",
+      "was commissioned"
+    ],
+    "exampleSentence": "An independent inquiry has been commissioned to investigate safety standards."
+  },
+  {
+    "word": "scrutinized",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Examined closely and thoroughly.",
+    "collocations": [
+      "being scrutinized",
+      "carefully scrutinized"
+    ],
+    "exampleSentence": "The candidate's credentials are being scrutinized by the admissions board."
+  },
+  {
+    "word": "insisted",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Demanded something forcefully, not accepting refusal.",
+    "collocations": [
+      "insisted that",
+      "insisted on"
+    ],
+    "exampleSentence": "The chief executive insisted that all safety protocols had been upheld."
+  },
+  {
+    "word": "confessed",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Admitted that one has committed a crime or done something wrong.",
+    "collocations": [
+      "confessed to",
+      "confessed that"
+    ],
+    "exampleSentence": "The suspect confessed that he had manipulated the security logs."
+  },
+  {
+    "word": "advocated",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Publicly recommended or supported.",
+    "collocations": [
+      "advocated for",
+      "advocated reform"
+    ],
+    "exampleSentence": "The committee advocated that educational funding should be doubled."
+  },
+  {
+    "word": "reassured",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Said or did something to remove doubts or fears.",
+    "collocations": [
+      "reassured the public",
+      "reassured that"
+    ],
+    "exampleSentence": "The doctor reassured the family that the patient was recovering steadily."
+  },
+  {
+    "word": "stipulated",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Demanded or specified a requirement, typically as part of a bargain.",
+    "collocations": [
+      "stipulated that",
+      "contract stipulated"
+    ],
+    "exampleSentence": "The contract stipulated that delivery had to take place before December."
+  },
+  {
+    "word": "frustration",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The feeling of being upset or annoyed as a result of being unable to change something.",
+    "collocations": [
+      "sense of frustration",
+      "express frustration"
+    ],
+    "exampleSentence": "She expressed deep frustration that her colleagues would not cooperate."
+  },
+  {
+    "word": "aspiration",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A hope or ambition of achieving something.",
+    "collocations": [
+      "career aspiration",
+      "personal aspiration"
+    ],
+    "exampleSentence": "If only my practical skills matched my artistic aspirations."
+  },
+  {
+    "word": "unfulfilled",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Not carried out or brought to completion.",
+    "collocations": [
+      "unfulfilled potential",
+      "remain unfulfilled"
+    ],
+    "exampleSentence": "I wish that our collaborative goals had not remained unfulfilled."
+  },
+  {
+    "word": "grievance",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A real or imagined cause for complaint, especially unfair treatment.",
+    "collocations": [
+      "address grievance",
+      "file a grievance"
+    ],
+    "exampleSentence": "Employees wished management had addressed their grievances much sooner."
+  },
+  {
+    "word": "remedy",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To set right an undesirable situation.",
+    "collocations": [
+      "remedy the situation",
+      "seek to remedy"
+    ],
+    "exampleSentence": "If only we could remedy the communication gap between the two teams."
+  },
+  {
+    "word": "undoubtedly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Without doubt; certainly.",
+    "collocations": [
+      "undoubtedly true",
+      "undoubtedly played"
+    ],
+    "exampleSentence": "The historic document must undoubtedly have been misplaced in the archives."
+  },
+  {
+    "word": "misplaced",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Put in the wrong place and lost temporarily.",
+    "collocations": [
+      "misplaced keys",
+      "was misplaced"
+    ],
+    "exampleSentence": "He could not have misplaced the confidential blueprint intentionally."
+  },
+  {
+    "word": "presumed",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Supposed that something is the case on the basis of probability.",
+    "collocations": [
+      "presumed dead",
+      "was presumed"
+    ],
+    "exampleSentence": "The ancient vessel may well have sunk during the severe gale."
+  },
+  {
+    "word": "unaccounted",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Not explained or taken into consideration.",
+    "collocations": [
+      "unaccounted for",
+      "funds unaccounted"
+    ],
+    "exampleSentence": "A small amount of laboratory equipment remains unaccounted for."
+  },
+  {
+    "word": "conclusive",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Serving to settle an issue; decisive.",
+    "collocations": [
+      "conclusive evidence",
+      "conclusive proof"
+    ],
+    "exampleSentence": "The forensic team must have found conclusive evidence at the scene."
+  },
+  {
+    "word": "contemplate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To look thoughtfully for a long time at, or think about.",
+    "collocations": [
+      "contemplate doing",
+      "contemplate career"
+    ],
+    "exampleSentence": "She is contemplating accepting the fellowship offer in Zurich."
+  },
+  {
+    "word": "postpone",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To cause or arrange for something to take place at a time later than scheduled.",
+    "collocations": [
+      "postpone meeting",
+      "postpone until"
+    ],
+    "exampleSentence": "Management decided to postpone launching the software product."
+  },
+  {
+    "word": "venture",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To dare to do or say something that may be dangerous or risky.",
+    "collocations": [
+      "venture into",
+      "venture to suggest"
+    ],
+    "exampleSentence": "The startup hesitated to venture into international retail markets."
+  },
+  {
+    "word": "resent",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To feel bitterness or indignation at a circumstance, action, or person.",
+    "collocations": [
+      "resent being",
+      "deeply resent"
+    ],
+    "exampleSentence": "He resented having to justify his decisions to the steering committee."
+  },
+  {
+    "word": "strive",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "To make great efforts to achieve or obtain something.",
+    "collocations": [
+      "strive to achieve",
+      "strive for"
+    ],
+    "exampleSentence": "Educational institutions strive to cultivate independent critical thinkers."
+  },
+  {
+    "word": "scarcely",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Only just; almost not.",
+    "collocations": [
+      "scarcely had",
+      "scarcely ever"
+    ],
+    "exampleSentence": "Scarcely had the keynote speaker begun when a technical fault occurred."
+  },
+  {
+    "word": "seldom",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Not often; rarely.",
+    "collocations": [
+      "seldom has",
+      "seldom seen"
+    ],
+    "exampleSentence": "Seldom has a breakthrough technology captured public attention so rapidly."
+  },
+  {
+    "word": "rarely",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Not often; seldom.",
+    "collocations": [
+      "rarely do",
+      "rarely seen"
+    ],
+    "exampleSentence": "Rarely do regulatory authorities grant immediate exemptions to startups."
+  },
+  {
+    "word": "hardly",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Scarcely; barely; only just.",
+    "collocations": [
+      "hardly had",
+      "hardly ever"
+    ],
+    "exampleSentence": "Hardly had the treaty been signed when border disputes re-emerged."
+  },
+  {
+    "word": "little",
+    "partOfSpeech": "adverb",
+    "cefrLevel": "B2",
+    "definition": "Hardly; not much; not at all.",
+    "collocations": [
+      "little did they know",
+      "little suspected"
+    ],
+    "exampleSentence": "Little did the explorers suspect what monumental discoveries awaited them."
+  },
+  {
+    "word": "collaborate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Work jointly on an activity or project.",
+    "collocations": [
+      "collaborate closely",
+      "collaborate on project"
+    ],
+    "exampleSentence": "Our engineering and marketing teams collaborate on product launches."
+  },
+  {
+    "word": "proposal",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A plan or suggestion put forward for consideration.",
+    "collocations": [
+      "submit proposal",
+      "business proposal"
+    ],
+    "exampleSentence": "Could you please submit your revised proposal by Friday morning?"
+  },
+  {
+    "word": "stakeholder",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A person with an interest or concern in a business.",
+    "collocations": [
+      "key stakeholder",
+      "stakeholder meeting"
+    ],
+    "exampleSentence": "We would appreciate if all key stakeholders attended the briefing."
+  },
+  {
+    "word": "negotiate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Obtain or bring about by discussion.",
+    "collocations": [
+      "negotiate contract",
+      "negotiate terms"
+    ],
+    "exampleSentence": "The procurement director is negotiating new supplier agreements."
+  },
+  {
+    "word": "feasible",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Possible to do easily or conveniently.",
+    "collocations": [
+      "economically feasible",
+      "feasible solution"
+    ],
+    "exampleSentence": "Would it be feasible to schedule a video conference tomorrow?"
+  },
+  {
+    "word": "scenario",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A postulated sequence or development of events.",
+    "collocations": [
+      "worst-case scenario",
+      "hypothetical scenario"
+    ],
+    "exampleSentence": "If they had prepared for that scenario, they would not be struggling today."
+  },
+  {
+    "word": "alternate",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Available as another possibility.",
+    "collocations": [
+      "alternate route",
+      "alternate plan"
+    ],
+    "exampleSentence": "If we had taken an alternate route, we would be home right now."
+  },
+  {
+    "word": "regret",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "A feeling of sadness or disappointment over something that has happened.",
+    "collocations": [
+      "express regret",
+      "deep regret"
+    ],
+    "exampleSentence": "If he had accepted the scholarship, he would have no regrets today."
+  },
+  {
+    "word": "outcome",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "The way a thing turns out; a consequence.",
+    "collocations": [
+      "desirable outcome",
+      "eventual outcome"
+    ],
+    "exampleSentence": "If she had trained diligently last month, the race outcome would be different."
+  },
+  {
+    "word": "acknowledge",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Accept or admit the existence or truth of.",
+    "collocations": [
+      "acknowledge making",
+      "acknowledge receipt of"
+    ],
+    "exampleSentence": "The spokesperson acknowledged having made a clerical error on the form."
+  },
+  {
+    "word": "appreciate",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Recognize the full worth of.",
+    "collocations": [
+      "appreciate having",
+      "greatly appreciate"
+    ],
+    "exampleSentence": "I truly appreciate your offering to help with our presentation."
+  },
+  {
+    "word": "deduce",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Arrive at a fact or conclusion by reasoning.",
+    "collocations": [
+      "deduce from",
+      "logically deduce"
+    ],
+    "exampleSentence": "Detectives deduced that the intruder must have entered through an unlocked window."
+  },
+  {
+    "word": "certainty",
+    "partOfSpeech": "noun",
+    "cefrLevel": "B2",
+    "definition": "Firm conviction that something is the case.",
+    "collocations": [
+      "with certainty",
+      "state with certainty"
+    ],
+    "exampleSentence": "We cannot state with absolute certainty that the original painting was destroyed."
+  },
+  {
+    "word": "presume",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Suppose that something is the case on the basis of probability.",
+    "collocations": [
+      "presume that",
+      "safely presume"
+    ],
+    "exampleSentence": "Since the office lights are extinguished, we can safely presume everyone has departed."
+  },
+  {
+    "word": "convincing",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Capable of causing someone to believe that something is true.",
+    "collocations": [
+      "convincing evidence",
+      "convincing argument"
+    ],
+    "exampleSentence": "Her alibi could not have been more convincing to the investigating panel."
+  },
+  {
+    "word": "insist",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Demand something forcefully, not accepting refusal.",
+    "collocations": [
+      "insist on doing",
+      "insisted that"
+    ],
+    "exampleSentence": "The supervisor insisted that all team members submit their progress reports by noon."
+  },
+  {
+    "word": "persuade",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Induce someone to do something through reasoning or argument.",
+    "collocations": [
+      "persuade someone to",
+      "successfully persuade"
+    ],
+    "exampleSentence": "She persuaded her colleagues to support the green energy initiative."
+  },
+  {
+    "word": "admit",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Confess to be true or to be the case.",
+    "collocations": [
+      "admit having",
+      "reluctantly admit"
+    ],
+    "exampleSentence": "The spokesperson reluctantly admitted that production deadlines had been missed."
+  },
+  {
+    "word": "deny",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "State that one refuses to admit the truth or existence of.",
+    "collocations": [
+      "deny doing",
+      "firmly deny"
+    ],
+    "exampleSentence": "The minister firmly denied having participated in the controversial financial scheme."
+  },
+  {
+    "word": "reassure",
+    "partOfSpeech": "verb",
+    "cefrLevel": "B2",
+    "definition": "Say or do something to remove the doubts and fears of someone.",
+    "collocations": [
+      "reassure that",
+      "reassure public"
+    ],
+    "exampleSentence": "The airline captain reassured passengers that the turbulence was entirely standard."
+  },
+  {
+    "word": "whom",
+    "partOfSpeech": "pronoun",
+    "cefrLevel": "B2",
+    "definition": "Used as the object of a verb or preposition in formal English.",
+    "collocations": [
+      "to whom",
+      "with whom"
+    ],
+    "exampleSentence": "Dr. Aris, with whom we conducted the field trials, received an international award."
+  },
+  {
+    "word": "whose",
+    "partOfSpeech": "determiner",
+    "cefrLevel": "B2",
+    "definition": "Belonging to or associated with which person.",
+    "collocations": [
+      "whose research",
+      "whose findings"
+    ],
+    "exampleSentence": "The institute, whose research focuses on clean energy, secured major government backing."
+  },
+  {
+    "word": "which",
+    "partOfSpeech": "pronoun",
+    "cefrLevel": "B2",
+    "definition": "Used referring to something previously mentioned in non-defining clauses.",
+    "collocations": [
+      "which is located",
+      "which suggests"
+    ],
+    "exampleSentence": "The cathedral, which was completed in 1380, dominates the city skyline."
+  },
+  {
+    "word": "incidental",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Accompanying but not forming an essential part of something.",
+    "collocations": [
+      "incidental detail",
+      "incidental information"
+    ],
+    "exampleSentence": "Non-defining relative clauses provide incidental information rather than essential identification."
+  },
+  {
+    "word": "noteworthy",
+    "partOfSpeech": "adjective",
+    "cefrLevel": "B2",
+    "definition": "Worthy of paying attention to.",
+    "collocations": [
+      "noteworthy feature",
+      "particularly noteworthy"
+    ],
+    "exampleSentence": "The conference center, which was built last year, features noteworthy acoustic design."
+  }
+]
