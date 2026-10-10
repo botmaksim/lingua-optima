@@ -94,4 +94,21 @@ class UserControllerTest {
         assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
         verify(userService).deleteAccount(user);
     }
+
+    /**
+     * @brief Verifies educator can update student name via UserController.
+     */
+    @Test
+    void testUpdateStudentName() {
+        UUID studentId = UUID.randomUUID();
+        com.linguaoptima.api.dto.request.UpdateStudentNameRequest req =
+            com.linguaoptima.api.dto.request.UpdateStudentNameRequest.builder().fullName("Renamed").build();
+        UserResponse response = UserResponse.builder().id(studentId).fullName("Renamed").build();
+        when(userService.updateStudentName(studentId, req, user)).thenReturn(response);
+
+        ResponseEntity<UserResponse> res = userController.updateStudentName(studentId, req, user);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals("Renamed", res.getBody().getFullName());
+    }
 }
+

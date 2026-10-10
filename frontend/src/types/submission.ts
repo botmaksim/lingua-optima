@@ -68,6 +68,10 @@ export interface SubmissionResult {
   assignmentId?: string;
   /** @brief Property representing student id in SubmissionResult. */
   studentId: string;
+  /** @brief Property representing student full name in SubmissionResult. */
+  studentName?: string;
+  /** @brief Property representing student registered email in SubmissionResult. */
+  studentEmail?: string;
   /** @brief Property representing submission type in SubmissionResult. */
   submissionType: SubmissionType;
   /** @brief Property representing original text in SubmissionResult. */

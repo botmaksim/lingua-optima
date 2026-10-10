@@ -6,6 +6,7 @@ package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.ChangePasswordRequest;
+import com.linguaoptima.api.dto.request.UpdateStudentNameRequest;
 import com.linguaoptima.api.dto.request.UpdateUserRequest;
 import com.linguaoptima.api.dto.response.UserResponse;
 import com.linguaoptima.api.service.UserService;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 /**
  * @brief REST controller for user profile management, password updates, and GDPR account deletion.
@@ -25,6 +28,23 @@ public class UserController {
 
     /** @brief Field representing user service in UserController. */
     private final UserService userService;
+
+    /**
+     * @brief Allows educators or administrators to update the displayed name of an enrolled student.
+     *
+     * @param studentId Identifier of the student account.
+     * @param request Update payload with new full name.
+     * @param teacher Authenticated teacher or admin principal.
+     * @return HTTP 200 with updated UserResponse.
+     */
+    @PutMapping("/{id}/name")
+    public ResponseEntity<UserResponse> updateStudentName(
+        @PathVariable("id") UUID studentId,
+        @Valid @RequestBody UpdateStudentNameRequest request,
+        @AuthenticationPrincipal User teacher
+    ) {
+        return ResponseEntity.ok(userService.updateStudentName(studentId, request, teacher));
+    }
 
     /**
      * @brief Retrieves profile and CEFR proficiency level for current user.

@@ -5,7 +5,9 @@
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.User;
+import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.dto.request.ChangePasswordRequest;
+import com.linguaoptima.api.dto.request.UpdateStudentNameRequest;
 import com.linguaoptima.api.dto.request.UpdateUserRequest;
 import com.linguaoptima.api.dto.response.UserResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -32,6 +34,8 @@ public class UserService {
 
     /** @brief Field representing user repository in UserService. */
     private final UserRepository userRepository;
+    /** @brief Field representing group repository in UserService. */
+    private final GroupRepository groupRepository;
     /** @brief Field representing api key repository in UserService. */
     private final ApiKeyRepository apiKeyRepository;
     /** @brief Field representing progress record repository in UserService. */
@@ -92,6 +96,36 @@ public class UserService {
         }
 
         User saved = userRepository.save(existing);
+        return UserResponse.fromEntity(saved);
+    }
+
+    /**
+     * @brief Allows an educator or administrator to update the displayed name of an enrolled student.
+     * @param studentId Identifier of the student to rename.
+     * @param request Update payload containing new full name.
+     * @param teacher Authenticated educator or administrator principal.
+     * @return UserResponse DTO reflecting updated student identity.
+     * @throws ResourceNotFoundException if student does not exist.
+     * @throws ForbiddenException if teacher is not an instructor of the student.
+     */
+    @Transactional
+    public UserResponse updateStudentName(UUID studentId, UpdateStudentNameRequest request, User teacher) {
+        User student = userRepository.findById(studentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Student not found: " + studentId));
+
+        if (teacher.getRole() != Role.ADMIN) {
+            if (teacher.getRole() != Role.TEACHER) {
+                throw new ForbiddenException("Only educators or administrators can update student names.");
+            }
+            boolean isTeacherOfStudent = groupRepository.findByTeacher(teacher).stream()
+                .anyMatch(g -> groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(g.getId(), studentId));
+            if (!isTeacherOfStudent) {
+                throw new ForbiddenException("Access denied: You are not an instructor of this student.");
+            }
+        }
+
+        student.setFullName(request.getFullName().trim());
+        User saved = userRepository.save(student);
         return UserResponse.fromEntity(saved);
     }
 

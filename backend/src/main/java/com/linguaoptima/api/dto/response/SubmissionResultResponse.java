@@ -36,6 +36,12 @@ public class SubmissionResultResponse {
     /** @brief Identifier of the student who submitted the work. */
     private UUID studentId;
 
+    /** @brief Full name of the student who submitted the work. */
+    private String studentName;
+
+    /** @brief Registered email of the student who submitted the work. */
+    private String studentEmail;
+
     /** @brief Submission modality (TEXT or IMAGE). */
     private SubmissionType submissionType;
 
@@ -119,6 +125,8 @@ public class SubmissionResultResponse {
             .id(submission.getId())
             .assignmentId(submission.getAssignment() != null ? submission.getAssignment().getId() : null)
             .studentId(submission.getStudent() != null ? submission.getStudent().getId() : null)
+            .studentName(submission.getStudent() != null ? submission.getStudent().getFullName() : null)
+            .studentEmail(submission.getStudent() != null ? submission.getStudent().getEmail() : null)
             .submissionType(submission.getSubmissionType())
             .originalText(submission.getStudentText())
             .score(submission.getAiScore() != null ? submission.getAiScore() : submission.getEffectiveScore())

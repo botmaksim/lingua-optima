@@ -5,6 +5,7 @@
 package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.domain.ApiKey;
+import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.ProgressRecord;
 import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.TaskAssignment;
@@ -12,6 +13,7 @@ import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.dto.request.ChangePasswordRequest;
+import com.linguaoptima.api.dto.request.UpdateStudentNameRequest;
 import com.linguaoptima.api.dto.request.UpdateUserRequest;
 import com.linguaoptima.api.dto.response.UserResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -57,6 +59,9 @@ class UserServiceTest {
     /** @brief Test fixture or mock dependency for usage counter repository. */
     @Mock
     private UsageCounterRepository usageCounterRepository;
+    /** @brief Test fixture or mock dependency for group repository. */
+    @Mock
+    private GroupRepository groupRepository;
     /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
@@ -211,6 +216,91 @@ class UserServiceTest {
         when(userRepository.findById(uid)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> userService.updateUser(sampleUser, UpdateUserRequest.builder().build()));
         assertThrows(ResourceNotFoundException.class, () -> userService.changePassword(sampleUser, ChangePasswordRequest.builder().oldPassword("a").newPassword("b").build()));
+    }
+
+    /**
+     * @brief Verifies educator can successfully rename an enrolled student.
+     */
+    @Test
+    void testUpdateStudentNameSuccess() {
+        User teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        User student = User.builder().id(UUID.randomUUID()).fullName("Old Name").role(Role.STUDENT).build();
+        Group group = Group.builder().id(UUID.randomUUID()).teacher(teacher).build();
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("New Name").build();
+        UserResponse response = userService.updateStudentName(student.getId(), req, teacher);
+
+        assertNotNull(response);
+        assertEquals("New Name", response.getFullName());
+        verify(userRepository).save(argThat(u -> "New Name".equals(u.getFullName())));
+    }
+
+    /**
+     * @brief Verifies administrator can rename any student without group membership check.
+     */
+    @Test
+    void testUpdateStudentNameAdminSuccess() {
+        User admin = User.builder().id(UUID.randomUUID()).role(Role.ADMIN).build();
+        User student = User.builder().id(UUID.randomUUID()).fullName("Student Old").role(Role.STUDENT).build();
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Student Renamed").build();
+        UserResponse response = userService.updateStudentName(student.getId(), req, admin);
+
+        assertNotNull(response);
+        assertEquals("Student Renamed", response.getFullName());
+    }
+
+    /**
+     * @brief Verifies non-educator user cannot rename students.
+     */
+    @Test
+    void testUpdateStudentNameNonTeacherThrows() {
+        User otherStudent = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
+        User targetStudent = User.builder().id(UUID.randomUUID()).fullName("Target").role(Role.STUDENT).build();
+
+        when(userRepository.findById(targetStudent.getId())).thenReturn(Optional.of(targetStudent));
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Hacked Name").build();
+
+        assertThrows(ForbiddenException.class, () -> userService.updateStudentName(targetStudent.getId(), req, otherStudent));
+    }
+
+    /**
+     * @brief Verifies educator cannot rename a student not enrolled in their groups.
+     */
+    @Test
+    void testUpdateStudentNameNotTeacherOfStudentThrows() {
+        User teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        User student = User.builder().id(UUID.randomUUID()).fullName("Independent Student").role(Role.STUDENT).build();
+        Group group = Group.builder().id(UUID.randomUUID()).teacher(teacher).build();
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(false);
+
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Renamed").build();
+        assertThrows(ForbiddenException.class, () -> userService.updateStudentName(student.getId(), req, teacher));
+    }
+
+    /**
+     * @brief Verifies student not found throws ResourceNotFoundException.
+     */
+    @Test
+    void testUpdateStudentNameNotFoundThrows() {
+        User teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        UUID nonExistent = UUID.randomUUID();
+
+        when(userRepository.findById(nonExistent)).thenReturn(Optional.empty());
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Renamed").build();
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.updateStudentName(nonExistent, req, teacher));
     }
 }
 

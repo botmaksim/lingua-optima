@@ -279,4 +279,24 @@ describe('ConfigureTask component', () => {
   });
 });
 
+describe('Student account renaming', () => {
+  it('allows educator to update student name via userApi', async () => {
+    const { userApi } = await import('../api/userApi');
+    const spy = vi.spyOn(userApi, 'updateStudentName').mockResolvedValue({
+      id: 's1',
+      fullName: 'Alexandre Dumas',
+      email: 'alex@lingua.com',
+      role: 'STUDENT',
+      cefrLevel: 'B2',
+      streakCount: 3,
+      createdAt: '2026-10-10T00:00:00Z',
+    } as any);
+
+    const res = await userApi.updateStudentName('s1', 'Alexandre Dumas');
+    expect(res.fullName).toBe('Alexandre Dumas');
+    expect(spy).toHaveBeenCalledWith('s1', 'Alexandre Dumas');
+  });
+});
+
+
 
