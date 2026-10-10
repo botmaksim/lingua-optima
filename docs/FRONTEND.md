@@ -72,14 +72,14 @@ frontend/
 │   │   │   ├── AIReview.tsx           — Original text (strikethrough red), corrected text (green highlights), tags [Rule] [Level] [Domain], essay rubric breakdown (TA/Coherence/LR/GR out of 10), overall score. Buttons: [Save to My Units] [Try Another Task] [Share Result]
 │   │   │   ├── MyUnits.tsx            — Filters: CEFR/Topic/Domain/Date. Task cards with name/date/score/type. Buttons per card: [Retry Task] [Delete]
 │   │   │   ├── Progress.tsx           — Grammar mastery radar chart, timeline score graph, topic/errors/mastery table, AI recommendations. Button: [Generate Targeted Task]
-│   │   │   ├── GroupLeaderboard.tsx   — Group-only leaderboard (teacher assigns group). Shows rank, display_alias (auto 'Linguist #ID' or custom), weekly score. NO global leaderboard.
+│   │   │   ├── GroupLeaderboard.tsx   — Group-only leaderboard with cohort selector. Shows rank, customizable display alias (defaults to full name), CEFR level, task completion progress (X/Y tasks, progress bar, %), average score, study streak, and weekly score. NO global leaderboard.
 │   │   │   └── LevelUpModal.tsx       — Dynamic progression modal across all 6 levels (A1→A2→B1→B2→C1→C2) with [Yes, level up] [Stay on current level] buttons
 │   │   │
 │   │   ├── teacher/           — Teacher-only components
 │   │   │   ├── TeacherDashboard.tsx   — Educator Command Center: summary stats, Educator Toolkit & Modules grid (Cohorts, Configurator, Submissions, Reports), student groups list with quick actions
 │   │   │   ├── StudentGroups.tsx      — Group list (name, student count). Per group: student cards (name, avg score). Buttons: [+ New Group] [+ Add Student by Email] [Remove Student] [Delete Group]
 │   │   │   ├── ConfigureTask.tsx      — AI Provider & Model selector, task type, CEFR, grammar topic, domain, target group selector (multi), due date picker. Buttons: [Preview] [Deploy to Students] [Save Template]
-│   │   │   ├── SubmissionsReview.tsx  — Filters: Group/Student/Task/Status. Table: Student|Task|AI Score|Status. Expandable row: AI feedback + student answer. Buttons per row: [Override Score] [Approve AI Grade] [Add Teacher Comment]
+│   │   │   ├── SubmissionsReview.tsx  — Educator review queue (`GET /api/submissions/teacher`) strictly isolated to taught student submissions (excludes teacher's own practice). Filters: Group/Student/Task/Status. Table: Student|Task|AI Score|Status. Expandable row: AI feedback + student answer. Buttons per row: [Override Score] [Approve AI Grade] [Add Teacher Comment]
 │   │   │   └── ExportReports.tsx      — Group selector, date range picker, format (CSV/PDF). Buttons: [Generate Report] [Download Last]
 │   │   │
 │   │   └── auth/              — Auth pages

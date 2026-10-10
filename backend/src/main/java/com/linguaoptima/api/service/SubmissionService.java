@@ -323,6 +323,24 @@ public class SubmissionService {
     }
 
     /**
+     * @brief Retrieves all student submissions across all groups and assignments belonging to this educator.
+     *
+     * Explicitly excludes any self-submissions the educator made as a student for personal practice.
+     *
+     * @param teacher Authenticated educator principal.
+     * @return List of student SubmissionResultResponse DTOs pending or reviewed by the educator.
+     */
+    @Transactional(readOnly = true)
+    public List<SubmissionResultResponse> getTeacherSubmissions(User teacher) {
+        if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only educators can access the educator submissions review queue.");
+        }
+        return submissionRepository.findTeacherStudentSubmissions(teacher.getId()).stream()
+            .map(SubmissionResultResponse::fromEntity)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * @brief Retrieves a specific submission by identifier, ensuring authorization access control.
      * @param submissionId Unique identifier of the submission.
      * @param user User requesting to view the submission.

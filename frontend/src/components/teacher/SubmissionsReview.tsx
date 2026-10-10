@@ -42,10 +42,10 @@ export const SubmissionsReview: React.FC = () => {
    */
   const loadSubmissions = async () => {
     try {
-      const data = await submissionApi.getMySubmissions();
+      const data = await submissionApi.getTeacherSubmissions();
       setSubmissions(data);
     } catch (err) {
-      console.error('Failed to load submissions:', err);
+      console.error('Failed to load educator submissions queue:', err);
     } finally {
       setIsLoading(false);
     }

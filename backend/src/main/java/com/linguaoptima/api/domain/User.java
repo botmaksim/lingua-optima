@@ -133,7 +133,9 @@ public class User {
             cefrLevel = CefrLevel.A1;
         }
         if (displayAlias == null || displayAlias.isBlank()) {
-            displayAlias = "Linguist #" + (id != null ? id.toString().substring(0, 8) : "Learner");
+            displayAlias = (fullName != null && !fullName.isBlank())
+                ? fullName.trim()
+                : "Linguist #" + (id != null ? id.toString().substring(0, 8) : "Learner");
         }
     }
 }

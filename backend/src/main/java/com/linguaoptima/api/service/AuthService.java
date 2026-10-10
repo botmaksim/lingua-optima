@@ -149,10 +149,12 @@ public class AuthService {
         Role role = request.getRole() != null ? request.getRole() : Role.STUDENT;
         CefrLevel cefrLevel = request.getCefrLevel() != null ? request.getCefrLevel() : CefrLevel.A1;
 
+        String chosenName = request.getFullName().trim();
         User user = User.builder()
             .email(email)
             .passwordHash(passwordEncoder.encode(request.getPassword()))
-            .fullName(request.getFullName().trim())
+            .fullName(chosenName)
+            .displayAlias(chosenName)
             .role(role)
             .cefrLevel(cefrLevel)
             .createdAt(LocalDateTime.now())

@@ -65,4 +65,19 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     @Query("SELECT s FROM Submission s JOIN GroupStudent gs ON s.student.id = gs.student.id " +
            "WHERE gs.group.id = :groupId AND gs.isActive = true ORDER BY s.submittedAt DESC")
     List<Submission> findActiveGroupSubmissions(@Param("groupId") UUID groupId);
+
+    /**
+     * @brief Finds all submissions from students taught by the educator, excluding the educator's own personal practice.
+     * @param teacherId Educator user UUID.
+     * @return List of student submissions ordered by submission date descending.
+     */
+    @Query("SELECT DISTINCT s FROM Submission s " +
+           "WHERE s.student.id != :teacherId AND (" +
+           "  (s.assignment IS NOT NULL AND s.assignment.assignedBy.id = :teacherId) " +
+           "  OR s.student.id IN (" +
+           "    SELECT gs.student.id FROM GroupStudent gs " +
+           "    WHERE gs.group.teacher.id = :teacherId AND gs.isActive = true" +
+           "  )" +
+           ") ORDER BY s.submittedAt DESC")
+    List<Submission> findTeacherStudentSubmissions(@Param("teacherId") UUID teacherId);
 }

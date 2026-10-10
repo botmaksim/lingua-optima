@@ -270,15 +270,16 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **Task** | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Preview an AI-generated task without persisting |
 | **Task** | POST | `/api/tasks/template` | Yes | TEACHER | `TaskParamsRequest` | `TaskResponse` | Save a task as a reusable template |
 | **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups |
-| **Session** | POST | `/api/sessions/start` | Yes | STUDENT | `StartSessionRequest` (`assignmentId` or `taskId`) | `SessionStateResponse` | Start an adaptive test session (auto-creates assignment if needed) |
-| **Session** | GET | `/api/sessions/active` | Yes | STUDENT | — | `SessionStateResponse` | Retrieve the active unfinished session (resume) |
-| **Session** | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT | — | `QuestionResponse` | Fetch the next question via the CAT algorithm |
-| **Session** | POST | `/api/sessions/{id}/answer` | Yes | STUDENT | `AnswerRequest` | `AnswerFeedbackResponse` | Submit an answer to the current question |
-| **Session** | POST | `/api/sessions/{id}/complete` | Yes | STUDENT | — | `SubmissionResultResponse` | Complete the adaptive session (idempotent, streak +1) |
-| **Submissions** | POST | `/api/submissions/text` | Yes | STUDENT | `TextSubmissionRequest` (`text`, `taskId`?) | `SubmissionResultResponse` | Submit text or essay for AI grading (links or creates assignment) |
-| **Submissions** | POST | `/api/submissions/image` | Yes | STUDENT | `MultipartFile` | `SubmissionResultResponse` | Upload a handwritten response image (Zero-Retention OCR) |
+| **Session** | POST | `/api/sessions/start` | Yes | STUDENT, TEACHER | `StartSessionRequest` (`assignmentId` or `taskId`) | `SessionStateResponse` | Start an adaptive test session (auto-creates assignment if needed) |
+| **Session** | GET | `/api/sessions/active` | Yes | STUDENT, TEACHER | — | `SessionStateResponse` | Retrieve the active unfinished session (resume) |
+| **Session** | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT, TEACHER | — | `QuestionResponse` | Fetch the next question via the CAT algorithm |
+| **Session** | POST | `/api/sessions/{id}/answer` | Yes | STUDENT, TEACHER | `AnswerRequest` | `AnswerFeedbackResponse` | Submit an answer to the current question |
+| **Session** | POST | `/api/sessions/{id}/complete` | Yes | STUDENT, TEACHER | — | `SubmissionResultResponse` | Complete the adaptive session (idempotent, streak +1) |
+| **Submissions** | POST | `/api/submissions/text` | Yes | STUDENT, TEACHER | `TextSubmissionRequest` (`text`, `taskId`?) | `SubmissionResultResponse` | Submit text or essay for AI grading (links or creates assignment) |
+| **Submissions** | POST | `/api/submissions/image` | Yes | STUDENT, TEACHER | `MultipartFile` | `SubmissionResultResponse` | Upload a handwritten response image (Zero-Retention OCR) |
 | **Submissions** | GET | `/api/submissions/{id}` | Yes | ALL | — | `SubmissionResultResponse` | Retrieve submission evaluation details |
-| **Submissions** | GET | `/api/submissions/my`, `/me` | Yes | ALL | — | `List<SubmissionResultResponse>` | List student submissions (or all group submissions for teachers) |
+| **Submissions** | GET | `/api/submissions/my`, `/me` | Yes | ALL | — | `List<SubmissionResultResponse>` | List current user's personal student practice submissions |
+| **Submissions** | GET | `/api/submissions/teacher` | Yes | TEACHER | — | `List<SubmissionResultResponse>` | Educator review queue: returns submissions of taught students (strictly excludes teacher's own practice) |
 | **Submissions** | POST/PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` (`overrideScore`, `comment`) | `SubmissionResultResponse` | Override AI score (updates effectiveScore, preserves original aiScore) |
 | **Group** | GET | `/api/groups` | Yes | TEACHER | — | `List<GroupResponse>` | List the teacher's student cohorts |
 | **Group** | GET | `/api/groups/{id}` | Yes | TEACHER | — | `GroupResponse` | Retrieve group details and student roster |

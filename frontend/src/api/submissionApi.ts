@@ -50,6 +50,16 @@ export const submissionApi = {
   },
 
   /**
+   * @brief Retrieves student submissions across all cohorts and assignments managed by the authenticated educator.
+   * Strictly excludes the educator's own personal practice submissions.
+   * @return Promise resolving to array of student SubmissionResult objects.
+   */
+  getTeacherSubmissions: async (): Promise<SubmissionResult[]> => {
+    const res = await axiosInstance.get<SubmissionResult[]>('/submissions/teacher');
+    return res.data;
+  },
+
+  /**
    * @brief Retrieves detailed evaluation result for a single submission.
    * @param id Submission identifier.
    * @return Promise resolving to SubmissionResult.

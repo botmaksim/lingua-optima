@@ -900,4 +900,38 @@ class SubmissionServiceTest {
         assertEquals(2, res.getItems().size());
         verify(progressService).updateFromTaskSubmission(eq(student), eq("General"), eq(2), eq(1));
     }
+
+    /**
+     * @brief Verifies unit test scenario: retrieving educator submissions queue successfully.
+     */
+    @Test
+    void testGetTeacherSubmissionsSuccess() {
+        Submission studentSub = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .aiScore(88.0)
+            .build();
+
+        when(submissionRepository.findTeacherStudentSubmissions(teacher.getId()))
+            .thenReturn(List.of(studentSub));
+
+        List<SubmissionResultResponse> teacherQueue = submissionService.getTeacherSubmissions(teacher);
+        assertNotNull(teacherQueue);
+        assertEquals(1, teacherQueue.size());
+        assertEquals(studentSub.getId(), teacherQueue.get(0).getId());
+
+        User adminUser = User.builder().id(UUID.randomUUID()).role(Role.ADMIN).build();
+        when(submissionRepository.findTeacherStudentSubmissions(adminUser.getId()))
+            .thenReturn(List.of(studentSub));
+        List<SubmissionResultResponse> adminQueue = submissionService.getTeacherSubmissions(adminUser);
+        assertEquals(1, adminQueue.size());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: student attempting to access educator submissions queue is rejected.
+     */
+    @Test
+    void testGetTeacherSubmissionsForbiddenForStudent() {
+        assertThrows(ForbiddenException.class, () -> submissionService.getTeacherSubmissions(student));
+    }
 }

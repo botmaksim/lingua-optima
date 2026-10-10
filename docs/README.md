@@ -835,18 +835,31 @@ Lingua Optima maintains three automated Spring Boot CRON schedulers along with a
 
 ## 15. Role Switching & Cohort Management {#sec15}
 
-### Self-Service Role Switching
-Users can switch between **Student** (`Role.STUDENT`) and **Educator** (`Role.TEACHER`) at any time directly through their Profile:
-- **API Endpoint**: `PUT /api/users/me` with `{"role": "TEACHER"}` or `{"role": "STUDENT"}`.
-- **Data Preservation**: Switching roles does not discard progress, submissions, or created groups; when in Educator mode, the user gains access to the Teacher Dashboard, Group Management, and Task Assignment.
+### Workspace Overlay Architecture (Student Mode vs. Educator Mode)
+Rather than treating Student and Teacher as mutually exclusive, locking database identities, Lingua Optima employs a **dual-persona workspace overlay architecture**:
+- **Instant Workspace Switching**: Users can switch between **Student Mode** and **Educator Mode** on demand via `PUT /api/users/me` with `{"role": "TEACHER"}` or `{"role": "STUDENT"}`.
+- **Cross-Persona Access Without Friction**: Educators retain full permissions to generate personal tasks, complete self-practice essays (`/api/submissions/text`), upload handwriting scans (`/api/submissions/image`), and take Computerized Adaptive Tests (`/api/sessions/**`) without facing 403 Forbidden errors.
+- **Strict Submission Queue Isolation**:
+  - **Personal Practice Queue (`GET /api/submissions/me`)**: Contains only the user's personal learning submissions created while solving tasks as a student.
+  - **Educator Review Queue (`GET /api/submissions/teacher`)**: Strictly queries homework submitted by students enrolled in the teacher's cohorts or assigned tasks (`s.student.id != :teacherId`). An educator's own student practice submissions are completely prevented from leaking into their review queue, ensuring an educator can never grade or override their own practice attempts.
+
+### Intra-Group Leaderboards & Nicknames
+- **Cohort Privacy Enforcement**: Global leaderboards across unaffiliated users are disabled. Leaderboards (`GET /api/leaderboard/group/{id}`) are strictly computed within individual teacher-led study groups.
+- **Customizable Nicknames**: Students can set a custom display pseudonym (`displayAlias`) in their profile settings. If unset, it gracefully defaults to their actual legal full name (`fullName`), completely replacing generic masked IDs (such as `Linguist #...`).
+- **Progress Tracking Metrics**: Leaderboard rankings compute:
+  - **Weekly Points**: Sum of evaluation scores earned Monday 00:00 through Sunday 23:59.
+  - **Cohort Task Completion**: Number of teacher-assigned tasks submitted (`completedTasks / totalTasks`) alongside visual percentage progress bars (`completionRate`).
+  - **Average Score**: Mean percentage score across all cohort submissions.
+  - **Study Streak**: Consecutive active learning days protected by freeze tokens.
 
 ### Study Cohort (Group) Lifecycle
 1. **Cohort Creation**: Educators create a group via `POST /api/groups` (`{"name": "Upper-Intermediate Group A"}`). The system generates a unique invite code.
 2. **Student Enrollment**: Educators enroll students by email (`POST /api/groups/{id}/students` with `{"email": "student@domain.com"}`).
+   - When added, the student receives an interactive notification with Accept/Decline actions (`/api/groups/invitations/{id}/accept`).
    - If the student was previously enrolled and removed, the system restores their membership and unhides their historical submissions.
 3. **Soft Deletion**: Removing a student (`DELETE /api/groups/{id}/students/{studentId}`) sets `is_active = false`. The student's past submissions are safely hidden from the teacher's group view while protecting student privacy.
 4. **Task Deployment**: Educators deploy AI-customized tasks to their cohorts via `POST /api/tasks/{id}/assign` with target group IDs and optional due dates. Students receive instant in-app notifications.
-5. **Teacher Score Overrides**: Educators can review AI assessments and adjust grades via `POST/PUT /api/submissions/{id}/override` (`{"overrideScore": 95.0, "teacherComment": "..."}`).
+5. **Teacher Score Overrides**: Educators review AI assessments and adjust grades via `POST/PUT /api/submissions/{id}/override` (`{"overrideScore": 95.0, "teacherComment": "..."}`).
    - The response preserves the initial AI evaluation (`score`) while updating `effectiveScore: 95.0`, allowing the UI to display clear teacher feedback.
 6. **Academic Export**: Educators can download individual student or cohort performance reports in PDF or CSV formats (`GET /api/export/student/{id}?format=csv|pdf`). Strict authorization checks verify that the requester is the student, an admin, or the teacher of an active group containing that student, completely preventing IDOR access.
 

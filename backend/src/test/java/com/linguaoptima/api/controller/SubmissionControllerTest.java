@@ -93,4 +93,15 @@ class SubmissionControllerTest {
         ResponseEntity<SubmissionResultResponse> res = submissionController.overrideScore(resultResponse.getId(), req, user);
         assertEquals(HttpStatus.OK, res.getStatusCode());
     }
+
+    /**
+     * @brief Verifies unit test scenario: retrieving educator submissions queue.
+     */
+    @Test
+    void testGetTeacherSubmissions() {
+        when(submissionService.getTeacherSubmissions(user)).thenReturn(List.of(resultResponse));
+        ResponseEntity<List<SubmissionResultResponse>> res = submissionController.getTeacherSubmissions(user);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(1, res.getBody().size());
+    }
 }

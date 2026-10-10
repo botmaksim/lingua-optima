@@ -92,6 +92,21 @@ public class SubmissionController {
     }
 
     /**
+     * @brief Fetches all student submissions for groups and assignments belonging to the educator.
+     *
+     * Ensures educator self-practice submissions are excluded from the review queue.
+     *
+     * @param teacher Authenticated educator principal.
+     * @return HTTP 200 with list of student submissions for educator review.
+     */
+    @GetMapping("/teacher")
+    public ResponseEntity<List<SubmissionResultResponse>> getTeacherSubmissions(
+        @AuthenticationPrincipal User teacher
+    ) {
+        return ResponseEntity.ok(submissionService.getTeacherSubmissions(teacher));
+    }
+
+    /**
      * @brief Retrieves submission evaluation details by ID.
      *
      * @param submissionId Unique identifier of submission.

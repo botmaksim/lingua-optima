@@ -4,9 +4,11 @@
  */
 package com.linguaoptima.api.service;
 
+import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.Submission;
+import com.linguaoptima.api.domain.TaskAssignment;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.response.LeaderboardEntryResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -14,6 +16,7 @@ import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
+import com.linguaoptima.api.repository.TaskAssignmentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,6 +45,8 @@ public class LeaderboardService {
     private final GroupStudentRepository groupStudentRepository;
     /** @brief Field representing submission repository in LeaderboardService. */
     private final SubmissionRepository submissionRepository;
+    /** @brief Field representing task assignment repository in LeaderboardService. */
+    private final TaskAssignmentRepository taskAssignmentRepository;
 
     /**
      * @brief Computes weekly leaderboard rankings for active students within a designated group.
@@ -93,15 +98,42 @@ public class LeaderboardService {
         int rank = 1;
         for (Map.Entry<UUID, Double> entry : sorted) {
             User student = userMap.get(entry.getKey());
-            String alias = (student.getDisplayAlias() != null && !student.getDisplayAlias().isBlank())
-                ? student.getDisplayAlias()
-                : "Linguist #" + student.getId().toString().substring(0, 8);
+            String alias;
+            if (student.getDisplayAlias() != null && !student.getDisplayAlias().isBlank() && !student.getDisplayAlias().startsWith("Linguist #")) {
+                alias = student.getDisplayAlias();
+            } else if (student.getFullName() != null && !student.getFullName().isBlank()) {
+                alias = student.getFullName();
+            } else {
+                alias = "Linguist #" + (student.getId() != null ? student.getId().toString().substring(0, 8) : "Learner");
+            }
+
+            // Calculate task completion progress in this teacher's cohort
+            List<TaskAssignment> studentAssignments = taskAssignmentRepository.findByStudentIdOrderByCreatedAtDesc(student.getId()).stream()
+                .filter(a -> a.getAssignedBy() != null && a.getAssignedBy().getId().equals(group.getTeacher().getId()))
+                .toList();
+            int totalTasks = studentAssignments.size();
+            int completedTasks = (int) studentAssignments.stream()
+                .filter(a -> a.getStatus() == AssignmentStatus.SUBMITTED || a.getStatus() == AssignmentStatus.GRADED)
+                .count();
+            int completionRate = totalTasks > 0 ? (int) Math.round((double) completedTasks / totalTasks * 100.0) : 0;
+
+            // Calculate average score on group tasks
+            List<Submission> allGroupSubs = submissionRepository.findActiveGroupSubmissions(groupId).stream()
+                .filter(sub -> sub.getStudent().getId().equals(student.getId()))
+                .toList();
+            double avgScore = allGroupSubs.isEmpty() ? 0.0
+                : Math.round(allGroupSubs.stream().mapToDouble(Submission::getEffectiveScore).average().orElse(0.0) * 10.0) / 10.0;
 
             leaderboard.add(LeaderboardEntryResponse.builder()
                 .rank(rank++)
                 .studentId(student.getId())
                 .displayAlias(alias)
+                .fullName(student.getFullName())
                 .weeklyScore(Math.round(entry.getValue() * 10.0) / 10.0)
+                .completedTasks(completedTasks)
+                .totalTasks(totalTasks)
+                .completionRate(completionRate)
+                .averageScore(avgScore)
                 .cefrLevel(student.getCefrLevel())
                 .streakCount(student.getStreakCount())
                 .build());

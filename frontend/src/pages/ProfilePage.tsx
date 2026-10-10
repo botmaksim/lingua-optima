@@ -70,6 +70,8 @@ export const ProfilePage: React.FC = () => {
   const [profileMessage, setProfileMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState('');
+  const [isEditingAlias, setIsEditingAlias] = useState(false);
+  const [aliasInput, setAliasInput] = useState('');
 
   /**
    * @brief Updates the user's full name.
@@ -86,6 +88,26 @@ export const ProfilePage: React.FC = () => {
       setTimeout(() => setProfileMessage(null), 3000);
     } catch (err: any) {
       setProfileMessage({ text: err.response?.data?.message || 'Failed to update name.', type: 'error' });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  /**
+   * @brief Updates the user's leaderboard display alias.
+   */
+  const handleSaveAlias = async () => {
+    if (!user) return;
+    setIsUpdatingProfile(true);
+    setProfileMessage(null);
+    try {
+      const updated = await authApi.updateProfile({ displayAlias: aliasInput.trim() || user.fullName });
+      setUser(updated);
+      setIsEditingAlias(false);
+      setProfileMessage({ text: 'Leaderboard display nickname successfully updated.', type: 'success' });
+      setTimeout(() => setProfileMessage(null), 3000);
+    } catch (err: any) {
+      setProfileMessage({ text: err.response?.data?.message || 'Failed to update leaderboard nickname.', type: 'error' });
     } finally {
       setIsUpdatingProfile(false);
     }
@@ -318,6 +340,59 @@ export const ProfilePage: React.FC = () => {
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">{user.email}</p>
+
+              {/* Leaderboard Nickname */}
+              <div className="flex items-center space-x-2 text-xs text-slate-500 mt-2">
+                <span className="font-semibold text-slate-600">Leaderboard Name:</span>
+                {isEditingAlias ? (
+                  <div className="flex items-center space-x-1.5">
+                    <input
+                      type="text"
+                      value={aliasInput}
+                      onChange={(e) => setAliasInput(e.target.value)}
+                      className="px-2 py-0.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary font-semibold text-slate-900 bg-white"
+                      placeholder={user.fullName}
+                      autoFocus
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSaveAlias}
+                      disabled={isUpdatingProfile}
+                      className="p-1 bg-primary text-white rounded-md hover:bg-primary-hover transition"
+                      title="Save nickname"
+                    >
+                      <Check className="w-3 h-3" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAliasInput(user.displayAlias || user.fullName);
+                        setIsEditingAlias(false);
+                      }}
+                      className="p-1 bg-slate-100 text-slate-600 rounded-md hover:bg-slate-200 transition"
+                      title="Cancel"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-1.5">
+                    <span className="font-bold text-slate-900">{user.displayAlias || user.fullName}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAliasInput(user.displayAlias || user.fullName);
+                        setIsEditingAlias(true);
+                      }}
+                      className="p-1 text-slate-400 hover:text-slate-600 rounded transition"
+                      title="Edit leaderboard nickname"
+                    >
+                      <Edit2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center space-x-2 mt-2">
                 <span className={`text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider flex items-center space-x-1 ${
                   user.role === 'TEACHER'
