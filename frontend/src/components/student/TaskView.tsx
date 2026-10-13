@@ -11,6 +11,7 @@ import { submissionApi } from '../../api/submissionApi';
 import { Task, TaskQuestion } from '../../types/task';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import { saveDraftLocal, getDraftLocal } from '../../utils/offlineSync';
 import { sanitizeTaskContent } from '../../utils/textSanitizer';
 
@@ -28,6 +29,7 @@ export const TaskView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showUnansweredConfirm, setShowUnansweredConfirm] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   useEffect(() => {
@@ -85,7 +87,29 @@ export const TaskView: React.FC = () => {
   /**
    * @brief Event handler or helper executing handle submit.
    */
-  const handleSubmit = async () => {
+  const questions: TaskQuestion[] = task?.questions || [];
+  const answeredCount = questions.filter((q) => {
+    const val = answers[q.id];
+    return val !== undefined && val !== null && val.trim() !== '';
+  }).length;
+  const unansweredCount = questions.length - answeredCount;
+
+  /**
+   * @brief Handles submit button click, warning the student if questions remain unanswered.
+   */
+  const handleSubmitClick = () => {
+    if (!task) return;
+    if (unansweredCount > 0) {
+      setShowUnansweredConfirm(true);
+    } else {
+      executeSubmit();
+    }
+  };
+
+  /**
+   * @brief Executes final submission payload transmission to the backend.
+   */
+  const executeSubmit = async () => {
     if (!task) return;
     setIsSubmitting(true);
     setSubmitError(null);
@@ -134,8 +158,6 @@ export const TaskView: React.FC = () => {
     const secs = totalSecs % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
-
-  const questions: TaskQuestion[] = task.questions || [];
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -199,7 +221,7 @@ export const TaskView: React.FC = () => {
               <div className="pt-2 flex flex-wrap gap-2 text-xs">
                 <button
                   type="button"
-                  onClick={handleSubmit}
+                  onClick={executeSubmit}
                   className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
@@ -352,33 +374,58 @@ export const TaskView: React.FC = () => {
         )}
       </div>
 
-      <div className="flex items-center space-x-3 pt-4">
-        <button
-          type="button"
-          onClick={handleSaveDraft}
-          disabled={task.canSubmit === false}
-          className="flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          <span>{saveSuccess ? 'Draft Saved!' : 'Save Draft'}</span>
-        </button>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
+        <div className="flex items-center space-x-3 text-xs font-semibold text-slate-500">
+          <span>{answeredCount} of {questions.length} answered</span>
+          <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{ width: `${questions.length > 0 ? (answeredCount / questions.length) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
 
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSubmitting || task.canSubmit === false}
-          className="flex-1 flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
-        >
-          {isSubmitting ? (
-            <LoadingSpinner size="sm" className="p-0 text-white" />
-          ) : (
-            <>
-              <Send className="w-4 h-4" />
-              <span>{task.canSubmit === false ? 'Attempt Already Submitted' : 'Submit Answers'}</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center space-x-3">
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={task.canSubmit === false}
+            className="flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            <span>{saveSuccess ? 'Draft Saved!' : 'Save Draft'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSubmitClick}
+            disabled={isSubmitting || task.canSubmit === false}
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
+          >
+            {isSubmitting ? (
+              <LoadingSpinner size="sm" className="p-0 text-white" />
+            ) : (
+              <>
+                <Send className="w-4 h-4" />
+                <span>{task.canSubmit === false ? 'Attempt Already Submitted' : 'Submit Answers'}</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={showUnansweredConfirm}
+        title="Unanswered Questions Detected"
+        message={`You have ${unansweredCount} unanswered questions out of ${questions.length}. Any unanswered questions will receive 0 points. Are you sure you want to submit your attempt now?`}
+        confirmText="Submit Anyway"
+        cancelText="Keep Answering"
+        onConfirm={() => {
+          setShowUnansweredConfirm(false);
+          executeSubmit();
+        }}
+        onCancel={() => setShowUnansweredConfirm(false)}
+      />
     </div>
   );
 };

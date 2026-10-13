@@ -18,6 +18,7 @@ import {
   BrainCircuit,
   Target,
   FileCheck,
+  HelpCircle,
 } from 'lucide-react';
 import { submissionApi } from '../../api/submissionApi';
 import { SubmissionResult, SubmissionItem, SentenceCorrection } from '../../types/submission';
@@ -122,7 +123,16 @@ export const AIReview: React.FC = () => {
   }, [submission, rubric]);
 
   /**
-   * @brief Resolves AI gap analysis data with safe defaults.
+   * @brief Helper to check whether an answer string represents an unattempted question.
+   */
+  const isSkippedAnswer = (ans?: string) => {
+    if (!ans || !ans.trim()) return true;
+    const t = ans.trim().toLowerCase();
+    return t === 'no answer' || t === 'no_answer' || t === 'skipped' || t === 'unanswered' || t === '-';
+  };
+
+  /**
+   * @brief Resolves AI gap analysis data with strict mutual exclusivity and attempt analytics.
    */
   const aiAnalysis = React.useMemo(() => {
     if (!submission) {
@@ -134,19 +144,60 @@ export const AIReview: React.FC = () => {
         suggestedTopics: [],
       };
     }
+
+    const norm = (s: string) => s.trim().toLowerCase();
+
     if (submission.aiAnalysis) {
-      return submission.aiAnalysis;
+      const rawWeaknesses = (submission.aiAnalysis.weaknesses || []).filter(Boolean);
+      const rawStrengths = (submission.aiAnalysis.strengths || []).filter(Boolean);
+
+      const weaknesses = Array.from(new Set(rawWeaknesses));
+      // Strict mutual exclusivity: purge any weakness from strengths!
+      const strengths = Array.from(new Set(rawStrengths)).filter(
+        (s) => !weaknesses.some((w) => norm(w) === norm(s))
+      );
+
+      const rawSuggested = (submission.aiAnalysis.suggestedTopics || []).filter(Boolean);
+      const suggestedTopics = (rawSuggested.length > 0 ? rawSuggested : weaknesses)
+        .filter((t) => !strengths.some((s) => norm(s) === norm(t)));
+
+      return {
+        ...submission.aiAnalysis,
+        weaknesses,
+        strengths,
+        suggestedTopics: suggestedTopics.length > 0 ? suggestedTopics : (weaknesses.length > 0 ? weaknesses : [submission.grammarTopic || 'Grammar & Sentence Structure']),
+      };
     }
 
-    const failedRules: string[] = [];
-    const passedRules: string[] = [];
+    // Fallback gap analysis calculation if backend aiAnalysis was not present
+    const ruleStats = new Map<string, { total: number; correct: number; incorrect: number; skipped: number }>();
 
     itemsToRender.forEach((item) => {
       const rule = item.grammarRule || submission.grammarTopic || 'Target Grammar Structure';
-      if (!item.isCorrect) {
-        if (!failedRules.includes(rule)) failedRules.push(rule);
+      const stat = ruleStats.get(rule) || { total: 0, correct: 0, incorrect: 0, skipped: 0 };
+      stat.total++;
+      const isSkipped = item.isSkipped || isSkippedAnswer(item.studentAnswer);
+      if (isSkipped) {
+        stat.skipped++;
+      } else if (item.isCorrect) {
+        stat.correct++;
       } else {
-        if (!passedRules.includes(rule)) passedRules.push(rule);
+        stat.incorrect++;
+      }
+      ruleStats.set(rule, stat);
+    });
+
+    const failedRules: string[] = [];
+    const passedRules: string[] = [];
+    const skippedRules: string[] = [];
+
+    ruleStats.forEach((stat, rule) => {
+      if (stat.incorrect > 0) {
+        failedRules.push(rule);
+      } else if (stat.skipped > 0) {
+        skippedRules.push(rule);
+      } else if (stat.correct > 0) {
+        passedRules.push(rule);
       }
     });
 
@@ -155,21 +206,73 @@ export const AIReview: React.FC = () => {
       if (!failedRules.includes(rule)) failedRules.push(rule);
     });
 
-    const isHighScoring = effectiveScore >= 80;
-    const defaultTopic = submission.grammarTopic || 'Tense & Clause Structure';
+    const weaknesses = failedRules;
+    const strengths = passedRules.filter((s) => !weaknesses.some((w) => norm(w) === norm(s)));
+
+    const suggestedTopics = weaknesses.length > 0
+      ? weaknesses
+      : (skippedRules.length > 0
+          ? skippedRules
+          : [submission.grammarTopic ? `${submission.grammarTopic} (Advanced Practice)` : 'Grammar & Sentence Structure']);
+
+    const totalQuestions = itemsToRender.length;
+    const skippedCount = itemsToRender.filter((it) => it.isSkipped || isSkippedAnswer(it.studentAnswer)).length;
+    const attemptedCount = totalQuestions - skippedCount;
+    const correctCount = itemsToRender.filter((it) => it.isCorrect).length;
+    const attemptPercent = attemptedCount > 0 ? Math.round((correctCount / attemptedCount) * 100) : 0;
+
+    const summary = totalQuestions > 0
+      ? (skippedCount > 0
+          ? `You answered ${correctCount} out of ${totalQuestions} questions correctly (${Math.round(effectiveScore)}% overall score). Attempt accuracy: ${attemptPercent}% (${correctCount} of ${attemptedCount} answered, ${skippedCount} skipped).`
+          : `You completed ${totalQuestions} questions. Accuracy: ${Math.round(effectiveScore)}%.`)
+      : `Evaluation completed with an overall score of ${Math.round(effectiveScore)}/100.`;
+
+    const recommendations = weaknesses.length > 0
+      ? `Focus on reviewing: ${weaknesses.join(', ')}. Pay special attention to core grammatical rules and tense markers.`
+      : (skippedRules.length > 0
+          ? `Good accuracy on attempted questions! Make sure to attempt all questions in ${skippedRules.join(', ')} to demonstrate complete mastery.`
+          : 'Solid performance across target linguistic structures. Advance to higher difficulty tasks to expand spontaneous fluency.');
 
     return {
-      summary: itemsToRender.length > 0
-        ? `You completed ${itemsToRender.length} questions. Accuracy: ${Math.round(effectiveScore)}%.`
-        : `Evaluation completed with an overall score of ${Math.round(effectiveScore)}/100.`,
-      weaknesses: failedRules.length > 0 ? failedRules : (isHighScoring ? [] : [defaultTopic]),
-      strengths: passedRules.length > 0 ? passedRules : (isHighScoring ? [defaultTopic] : []),
-      recommendations: failedRules.length > 0
-        ? `Focus on reviewing: ${failedRules.join(', ')}. Pay special attention to auxiliary verb placement and tense triggers.`
-        : 'Solid performance across target linguistic structures. Advance to higher difficulty tasks to expand spontaneous fluency.',
-      suggestedTopics: failedRules.length > 0 ? failedRules : [defaultTopic],
+      summary,
+      weaknesses,
+      strengths,
+      recommendations,
+      suggestedTopics,
+      attemptedCount,
+      correctCount,
+      totalQuestions,
+      skippedCount,
+      attemptAccuracy: attemptPercent,
     };
   }, [submission, itemsToRender, correctionsToRender, effectiveScore]);
+
+  /**
+   * @brief Consolidated attempt metrics resolving both backend analysis and rendered question items.
+   */
+  const attemptMetrics = React.useMemo(() => {
+    if (aiAnalysis.totalQuestions != null && aiAnalysis.attemptedCount != null && aiAnalysis.skippedCount != null) {
+      return {
+        totalQuestions: aiAnalysis.totalQuestions,
+        attemptedCount: aiAnalysis.attemptedCount,
+        correctCount: aiAnalysis.correctCount ?? 0,
+        skippedCount: aiAnalysis.skippedCount,
+        attemptAccuracy: aiAnalysis.attemptAccuracy ?? (aiAnalysis.attemptedCount > 0 ? Math.round(((aiAnalysis.correctCount ?? 0) / aiAnalysis.attemptedCount) * 100) : 0),
+      };
+    }
+    const totalQuestions = itemsToRender.length;
+    const skippedCount = itemsToRender.filter((it) => it.isSkipped || isSkippedAnswer(it.studentAnswer)).length;
+    const attemptedCount = totalQuestions - skippedCount;
+    const correctCount = itemsToRender.filter((it) => it.isCorrect).length;
+    const attemptAccuracy = attemptedCount > 0 ? Math.round((correctCount / attemptedCount) * 100) : 0;
+    return {
+      totalQuestions,
+      attemptedCount,
+      correctCount,
+      skippedCount,
+      attemptAccuracy,
+    };
+  }, [aiAnalysis, itemsToRender]);
 
   /**
    * @brief Copies a formatted summary of the submission score to the system clipboard.
@@ -241,13 +344,23 @@ export const AIReview: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-100 w-32 h-32 flex-shrink-0">
+        <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-100 min-w-32 min-h-32 flex-shrink-0 text-center">
           <div className={`text-4xl font-black tracking-tight ${effectiveScore >= 70 ? 'text-primary' : 'text-rose-600'}`}>
             {Math.round(effectiveScore)}
           </div>
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-1">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
             out of 100
           </span>
+          {attemptMetrics.skippedCount > 0 && (
+            <div className="mt-2 pt-2 border-t border-indigo-100/80 flex flex-col items-center">
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-100/90 px-2 py-0.5 rounded-full whitespace-nowrap">
+                {attemptMetrics.attemptAccuracy}% Attempt Accuracy
+              </span>
+              <span className="text-[9px] text-slate-500 mt-0.5 whitespace-nowrap font-medium">
+                {attemptMetrics.correctCount}/{attemptMetrics.attemptedCount} answered · {attemptMetrics.skippedCount} skipped
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -313,7 +426,8 @@ export const AIReview: React.FC = () => {
             {itemsToRender.map((item) => {
               const cleanStudent = (item.studentAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
               const cleanCorrect = (item.correctAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
-              const isEffectivelyCorrect = item.isCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect);
+              const isSkipped = item.isSkipped || (!cleanStudent || cleanStudent === 'no answer' || cleanStudent === 'no_answer' || cleanStudent === 'skipped' || cleanStudent === 'unanswered' || cleanStudent === '-');
+              const isEffectivelyCorrect = !isSkipped && (item.isCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect));
 
               return (
               <div
@@ -321,6 +435,8 @@ export const AIReview: React.FC = () => {
                 className={`p-5 rounded-2xl border transition space-y-3 ${
                   isEffectivelyCorrect
                     ? 'border-emerald-200 bg-emerald-50/20'
+                    : isSkipped
+                    ? 'border-amber-200/80 bg-amber-50/20'
                     : 'border-rose-200 bg-rose-50/20'
                 }`}
               >
@@ -333,6 +449,11 @@ export const AIReview: React.FC = () => {
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 flex items-center space-x-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Correct</span>
+                    </span>
+                  ) : isSkipped ? (
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200 flex items-center space-x-1">
+                      <HelpCircle className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Skipped (0 pts)</span>
                     </span>
                   ) : (
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 flex items-center space-x-1">
@@ -357,6 +478,24 @@ export const AIReview: React.FC = () => {
                       </div>
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     </div>
+                  ) : isSkipped ? (
+                    <>
+                      <div className="p-3 rounded-xl bg-amber-50/80 border border-amber-200 text-amber-950 text-xs font-medium flex items-center justify-between">
+                        <div className="space-x-1">
+                          <span className="font-semibold text-amber-800">Your answer:</span>
+                          <span className="italic text-amber-900 font-semibold">No answer submitted</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Unanswered</span>
+                      </div>
+
+                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs font-medium flex items-center justify-between">
+                        <div className="space-x-1">
+                          <span className="font-semibold text-emerald-800">Correct answer:</span>
+                          <span className="font-bold text-emerald-900">{item.correctAnswer}</span>
+                        </div>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      </div>
+                    </>
                   ) : (
                     <>
                       <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-950 text-xs font-medium flex items-center justify-between">
@@ -482,7 +621,7 @@ export const AIReview: React.FC = () => {
         )}
 
         {/* Mastered Strengths */}
-        {aiAnalysis.strengths.length > 0 && (
+        {aiAnalysis.strengths.length > 0 ? (
           <div className="space-y-2">
             <div className="flex items-center space-x-1.5 text-xs font-bold text-emerald-800 uppercase tracking-wider">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -499,6 +638,16 @@ export const AIReview: React.FC = () => {
                 </span>
               ))}
             </div>
+          </div>
+        ) : (
+          <div className="space-y-1 pt-0.5">
+            <div className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <CheckCircle2 className="w-3.5 h-3.5 text-slate-400" />
+              <span>Mastered Concepts:</span>
+            </div>
+            <p className="text-xs text-slate-500 italic pl-5">
+              Complete all questions for a target rule with 100% accuracy to demonstrate mastery.
+            </p>
           </div>
         )}
 

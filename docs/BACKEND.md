@@ -96,9 +96,9 @@ backend/
 │   │       ├── QuestionResponse.java  — id, questionText, options (for MCQ), difficulty
 │   │       ├── AnswerFeedbackResponse.java — isCorrect, correctAnswer, explanation, newDifficulty
 │   │       ├── SubmissionResultResponse.java — originalText, items, corrections, score, feedback, rubric breakdown, aiAnalysis
-│   │       ├── SubmissionItemResponse.java — questionNumber, sentence, studentAnswer, correctAnswer, isCorrect, explanation, grammarRule
+│   │       ├── SubmissionItemResponse.java — questionNumber, sentence, studentAnswer, correctAnswer, isCorrect, isSkipped, explanation, grammarRule, points, options
 │   │       ├── SentenceCorrectionResponse.java — original, corrected, explanation, grammarRule
-│   │       ├── AiAnalysisResponse.java — summary, weaknesses[], strengths[], recommendations, suggestedTopics[]
+│   │       ├── AiAnalysisResponse.java — summary, weaknesses[], strengths[], recommendations, suggestedTopics[], attemptedCount, correctCount, totalQuestions, skippedCount, attemptAccuracy
 │   │       ├── ProgressResponse.java  — grammarTopic, totalAttempts, errorCount, masteryScore
 │   │       ├── GroupResponse.java     — id, name, studentCount, avgScore
 │   │       ├── LeaderboardEntryResponse.java — rank, displayAlias, weeklyScore, cefrLevel
@@ -568,6 +568,27 @@ The system registers 3 scheduled background jobs (`@Scheduled`).
 | `UnauthorizedException` | `401 Unauthorized` | Missing, expired, or invalid JWT / OAuth2 token |
 | `ForbiddenException` | `403 Forbidden` | Insufficient permissions (e.g., attempting to modify another teacher's group) |
 | `ResourceNotFoundException` | `404 Not Found` | Requested entity (`Task`, `Group`, `User`, etc.) does not exist |
+
+## 9. Diagnostic Rule Segregation & Submission Analytics Engine
+
+The submission evaluation engine (`SubmissionService.enrichSubmissionResult`) executes a deterministic diagnostic analysis pipeline ensuring mathematical transparency, strict mutual exclusivity between mastered concepts and identified gaps, and granular attempt metrics:
+
+### 9.1 Rule Accumulation & Statistics
+For every item evaluated (from CAT session, task questions, or synthesized answers), performance is tracked per grammar rule via an internal accumulator (`RuleStat`):
+* **`total`**: Total questions testing the rule in this assignment.
+* **`attempted`**: Questions where the student provided an active answer.
+* **`correct`**: Questions answered correctly.
+* **`incorrect`**: Questions answered with grammatical/syntactic errors.
+* **`skipped`**: Questions left blank or submitted as `"No answer"`.
+
+### 9.2 Strict Mutual Exclusivity Invariant
+* **Weaknesses (`weaknesses`)**: Rules where active mistakes occurred (`incorrect > 0`), ranked in descending order of error count and error rate, supplemented by sentence-level corrections.
+* **Mastered Concepts (`strengths`)**: Rules where the student demonstrated complete mastery (`correct > 0`, `incorrect == 0`, and `skipped == 0`). If any question for a rule is skipped or failed, it is disqualified from Mastered Concepts.
+* **Disjoint Invariant**: $\text{strengths} \cap \text{weaknesses} = \emptyset$. The engine strictly purges any weakness from strengths (`dedupStrengths.removeIf(s -> weaknesses.contains(s))`), preventing the contradictory display of the same concept in both categories.
+
+### 9.3 Actionable Recommendations & Next Step Engine
+* **`suggestedTopics[0]`**: Targets the rule with the highest error count strictly chosen from `weaknesses`. If no errors occurred but questions were skipped, it targets `skippedRules`. If 100% mastery was achieved, it recommends advanced practice modules. Mastered concepts are never recommended for remediation.
+* **`summary` & Metrics**: Emits `attemptedCount`, `correctCount`, `totalQuestions`, `skippedCount`, and `attemptAccuracy` alongside overall score, eliminating ambiguity when students submit partially completed tasks.
 
 ---
 

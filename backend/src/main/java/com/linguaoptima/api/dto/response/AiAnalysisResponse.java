@@ -38,4 +38,19 @@ public class AiAnalysisResponse {
     /** @brief Suggested next topics or practice areas to close detected gaps. */
     @Builder.Default
     private List<String> suggestedTopics = new ArrayList<>();
+
+    /** @brief Number of questions the student actively answered. */
+    private Integer attemptedCount;
+
+    /** @brief Number of questions answered correctly. */
+    private Integer correctCount;
+
+    /** @brief Total questions presented in this exercise. */
+    private Integer totalQuestions;
+
+    /** @brief Number of questions left unattempted or skipped. */
+    private Integer skippedCount;
+
+    /** @brief Percentage accuracy on attempted questions (0-100 scale). */
+    private Double attemptAccuracy;
 }

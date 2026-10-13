@@ -30,6 +30,8 @@ export interface SubmissionItem {
   points?: number;
   /** @brief Multiple-choice options or choices if applicable. */
   options?: string[];
+  /** @brief True if this question was skipped or unattempted by the student. */
+  isSkipped?: boolean;
 }
 
 /**
@@ -60,6 +62,16 @@ export interface AiAnalysis {
   recommendations: string;
   /** @brief Suggested next topics or practice areas to close detected gaps. */
   suggestedTopics: string[];
+  /** @brief Number of questions the student actively answered. */
+  attemptedCount?: number;
+  /** @brief Number of questions answered correctly. */
+  correctCount?: number;
+  /** @brief Total questions presented in this exercise. */
+  totalQuestions?: number;
+  /** @brief Number of questions left unattempted or skipped. */
+  skippedCount?: number;
+  /** @brief Percentage accuracy on attempted questions (0-100 scale). */
+  attemptAccuracy?: number;
 }
 
 /**

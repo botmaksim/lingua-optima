@@ -481,46 +481,42 @@ public class SubmissionService {
 
         List<SubmissionItemResponse> items = new ArrayList<>();
         List<SentenceCorrectionResponse> corrections = new ArrayList<>();
-        List<String> weaknesses = new ArrayList<>();
-        List<String> strengths = new ArrayList<>();
+        List<String> rawWeaknesses = new ArrayList<>();
+        List<String> rawStrengths = new ArrayList<>();
 
         // 1. Check CAT Session
         if (submission.getAssignment() != null) {
             Optional<SessionState> sessionOpt = sessionStateRepository.findByAssignmentId(submission.getAssignment().getId());
             if (sessionOpt.isPresent() && sessionOpt.get().getAnswersJson() != null && !sessionOpt.get().getAnswersJson().isBlank()) {
-                enrichFromCatSession(sessionOpt.get(), items, weaknesses, strengths);
+                enrichFromCatSession(sessionOpt.get(), items, rawWeaknesses, rawStrengths);
             }
         }
 
         // 2. Check Task Questions (MCQ, GAP_FILL, REWRITE, etc.)
-        if (items.isEmpty() && submission.getAssignment() != null && submission.getAssignment().getTask() != null) {
-            Task task = submission.getAssignment().getTask();
-            enrichFromTaskQuestions(task, submission.getStudentText(), items, weaknesses, strengths);
+        if (items.isEmpty()) {
+            Task task = null;
+            if (submission.getAssignment() != null && submission.getAssignment().getTask() != null) {
+                task = submission.getAssignment().getTask();
+            } else if (response.getTaskId() != null) {
+                task = taskRepository.findById(response.getTaskId()).orElse(null);
+            }
+            if (task != null) {
+                enrichFromTaskQuestions(task, submission.getStudentText(), items, rawWeaknesses, rawStrengths);
+            }
         }
 
         // 3. Extract from Rubric
         if (rubric != null) {
-            extractFromRubric(rubric, corrections, weaknesses, strengths, items);
+            extractFromRubric(rubric, corrections, rawWeaknesses, rawStrengths, items);
         }
 
         // 4. Synthesize questions from studentText only if items still empty and student text contains explicit question markers (e.g. Q1:, Question 1:)
         if (items.isEmpty() && submission.getStudentText() != null && hasQuestionMarkers(submission.getStudentText())) {
-            enrichFromParsedStudentAnswers(submission.getStudentText(), submission.getAiFeedback(), items, weaknesses, strengths);
+            enrichFromParsedStudentAnswers(submission.getStudentText(), submission.getAiFeedback(), items, rawWeaknesses, rawStrengths);
         }
 
         // 5. Extract from Feedback if it contains JSON
-        extractFromFeedback(submission.getAiFeedback(), corrections, weaknesses, strengths);
-
-        // Deduplicate
-        List<String> dedupWeaknesses = weaknesses.stream()
-            .filter(w -> w != null && !w.isBlank())
-            .distinct()
-            .collect(Collectors.toList());
-
-        List<String> dedupStrengths = strengths.stream()
-            .filter(s -> s != null && !s.isBlank())
-            .distinct()
-            .collect(Collectors.toList());
+        extractFromFeedback(submission.getAiFeedback(), corrections, rawWeaknesses, rawStrengths);
 
         if (!items.isEmpty()) {
             int totalWeight = items.stream().mapToInt(it -> (it.getPoints() != null && it.getPoints() > 0) ? it.getPoints() : 1).sum();
@@ -546,9 +542,116 @@ public class SubmissionService {
             }
         }
 
-        String summary = buildSummary(response, items, corrections);
-        String recommendations = buildRecommendations(response, dedupWeaknesses, dedupStrengths);
-        List<String> suggestedTopics = buildSuggestedTopics(response, dedupWeaknesses);
+        // Consolidate Diagnostics with Strict Mutual Exclusivity and Question Analytics
+        Map<String, RuleStat> ruleStats = new LinkedHashMap<>();
+        int attemptedCount = 0;
+        int correctCount = 0;
+        int skippedCount = 0;
+
+        if (!items.isEmpty()) {
+            for (SubmissionItemResponse item : items) {
+                String rule = item.getGrammarRule();
+                if (rule == null || rule.isBlank()) {
+                    rule = response.getGrammarTopic() != null && !response.getGrammarTopic().isBlank()
+                        ? response.getGrammarTopic()
+                        : "Target Grammar Structure";
+                }
+                rule = rule.trim();
+
+                RuleStat stat = ruleStats.computeIfAbsent(rule, RuleStat::new);
+                stat.total++;
+
+                boolean isSkipped = item.isSkipped() || isSkippedAnswer(item.getStudentAnswer());
+                if (isSkipped) {
+                    stat.skipped++;
+                    skippedCount++;
+                } else {
+                    attemptedCount++;
+                    stat.attempted++;
+                    if (item.isCorrect()) {
+                        stat.correct++;
+                        correctCount++;
+                    } else {
+                        stat.incorrect++;
+                    }
+                }
+            }
+        }
+
+        // 1. Weaknesses: Rules where mistakes occurred (sorted by errors descending)
+        List<String> dedupWeaknesses = new ArrayList<>();
+        if (!ruleStats.isEmpty()) {
+            dedupWeaknesses = ruleStats.values().stream()
+                .filter(stat -> stat.incorrect > 0)
+                .sorted((a, b) -> {
+                    int cmp = Integer.compare(b.incorrect, a.incorrect);
+                    if (cmp != 0) return cmp;
+                    return Double.compare(b.errorRate(), a.errorRate());
+                })
+                .map(stat -> stat.ruleName)
+                .collect(Collectors.toList());
+        }
+
+        for (SentenceCorrectionResponse corr : corrections) {
+            if (corr.getGrammarRule() != null && !corr.getGrammarRule().isBlank()) {
+                String cRule = corr.getGrammarRule().trim();
+                if (dedupWeaknesses.stream().noneMatch(w -> w.equalsIgnoreCase(cRule))) {
+                    dedupWeaknesses.add(cRule);
+                }
+            }
+        }
+
+        for (String rw : rawWeaknesses) {
+            if (rw != null && !rw.isBlank()) {
+                String trimmed = rw.trim();
+                if (dedupWeaknesses.stream().noneMatch(w -> w.equalsIgnoreCase(trimmed))) {
+                    dedupWeaknesses.add(trimmed);
+                }
+            }
+        }
+
+        // 2. Skipped Rules: Rules where questions were skipped, but NO errors occurred
+        List<String> skippedRules = new ArrayList<>();
+        if (!ruleStats.isEmpty()) {
+            final List<String> currentWeaknesses = dedupWeaknesses;
+            skippedRules = ruleStats.values().stream()
+                .filter(stat -> stat.skipped > 0 && stat.incorrect == 0)
+                .map(stat -> stat.ruleName)
+                .filter(r -> currentWeaknesses.stream().noneMatch(w -> w.equalsIgnoreCase(r)))
+                .collect(Collectors.toList());
+        }
+
+        // 3. Strengths (Mastered Concepts):
+        // Demonstrated complete mastery: at least 1 correct answer, ZERO errors, ZERO skipped!
+        List<String> dedupStrengths = new ArrayList<>();
+        if (!ruleStats.isEmpty()) {
+            dedupStrengths = ruleStats.values().stream()
+                .filter(stat -> stat.correct > 0 && stat.incorrect == 0 && stat.skipped == 0)
+                .map(stat -> stat.ruleName)
+                .collect(Collectors.toList());
+        } else {
+            for (String rs : rawStrengths) {
+                if (rs != null && !rs.isBlank()) {
+                    String trimmed = rs.trim();
+                    if (dedupStrengths.stream().noneMatch(s -> s.equalsIgnoreCase(trimmed))) {
+                        dedupStrengths.add(trimmed);
+                    }
+                }
+            }
+        }
+
+        // STRICT INVARIANT: Strengths and Weaknesses MUST be completely disjoint!
+        final List<String> finalWeaknesses = dedupWeaknesses;
+        dedupStrengths.removeIf(s -> finalWeaknesses.stream().anyMatch(w -> w.equalsIgnoreCase(s.trim())));
+
+        // 4. Recommendations and Suggested Topics
+        String summary = buildSummary(response, items, corrections, attemptedCount, correctCount, skippedCount);
+        String recommendations = buildRecommendations(response, dedupWeaknesses, dedupStrengths, skippedRules);
+        List<String> suggestedTopics = buildSuggestedTopics(response, dedupWeaknesses, skippedRules);
+
+        double attemptAccuracy = attemptedCount > 0
+            ? Math.round(((double) correctCount / attemptedCount) * 1000.0) / 10.0
+            : 0.0;
 
         AiAnalysisResponse analysis = AiAnalysisResponse.builder()
             .summary(summary)
@@ -556,11 +659,32 @@ public class SubmissionService {
             .strengths(dedupStrengths)
             .recommendations(recommendations)
             .suggestedTopics(suggestedTopics)
+            .attemptedCount(attemptedCount)
+            .correctCount(correctCount)
+            .totalQuestions(items.size())
+            .skippedCount(skippedCount)
+            .attemptAccuracy(attemptAccuracy)
             .build();
 
         response.setItems(items);
         response.setCorrections(corrections);
         response.setAiAnalysis(analysis);
+    }
+
+    /**
+     * @brief Determines whether a student response represents a skipped or blank question.
+     * @param answer Raw student response.
+     * @return True if response represents an unattempted question.
+     */
+    private boolean isSkippedAnswer(String answer) {
+        if (answer == null || answer.isBlank()) return true;
+        String trimmed = answer.trim().toLowerCase();
+        return trimmed.equals("no answer")
+            || trimmed.equals("no_answer")
+            || trimmed.equals("unanswered")
+            || trimmed.equals("skipped")
+            || trimmed.equals("none")
+            || trimmed.equals("-");
     }
 
     /**
@@ -593,18 +717,20 @@ public class SubmissionService {
 
         for (int qNum : sortedKeys) {
             String ans = studentAnswers.get(qNum);
+            boolean isSkipped = isSkippedAnswer(ans);
             boolean mentionsError = lowerFeedback.contains("q" + qNum) && (lowerFeedback.contains("incorrect") || lowerFeedback.contains("wrong") || lowerFeedback.contains("error"));
-            boolean isCorrect = !mentionsError;
+            boolean isCorrect = !isSkipped && !mentionsError;
 
             String rule = "Question " + qNum + " Application";
-            String explanation = isCorrect ? "Accurate application of grammatical rule." : "Needs review: see diagnostic feedback.";
+            String explanation = isCorrect ? "Accurate application of grammatical rule." : (isSkipped ? "Unanswered question." : "Needs review: see diagnostic feedback.");
 
             items.add(SubmissionItemResponse.builder()
                 .questionNumber(qNum)
-                .sentence("Question " + qNum + ": " + ans)
-                .studentAnswer(ans)
+                .sentence("Question " + qNum + ": " + (isSkipped ? "No answer" : ans))
+                .studentAnswer(isSkipped ? "No answer" : ans)
                 .correctAnswer(isCorrect ? ans : "See feedback")
                 .isCorrect(isCorrect)
+                .isSkipped(isSkipped)
                 .explanation(explanation)
                 .grammarRule(rule)
                 .options(new ArrayList<>())
@@ -612,7 +738,7 @@ public class SubmissionService {
 
             if (isCorrect) {
                 strengths.add(rule);
-            } else {
+            } else if (!isSkipped) {
                 weaknesses.add(rule);
             }
         }
@@ -634,12 +760,11 @@ public class SubmissionService {
 
         for (TaskQuestion q : task.getQuestions()) {
             int qOrder = q.getQuestionOrder();
-            String studentAns = studentAnswers.getOrDefault(qOrder, "");
-            if (studentAns.isBlank()) {
-                studentAns = "No answer";
-            }
+            String rawAns = studentAnswers.getOrDefault(qOrder, "");
+            boolean isSkipped = isSkippedAnswer(rawAns);
+            String studentAns = isSkipped ? "No answer" : rawAns;
             String correctAns = q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "";
-            boolean isCorrect = isAnswerMatching(studentAns, correctAns);
+            boolean isCorrect = !isSkipped && isAnswerMatching(studentAns, correctAns);
 
             String rule = q.getGrammarRule() != null && !q.getGrammarRule().isBlank()
                 ? q.getGrammarRule()
@@ -649,6 +774,8 @@ public class SubmissionService {
             if (explanation == null || explanation.isBlank()) {
                 if (isCorrect) {
                     explanation = "Correct! Accurately applies the rule: " + rule + ".";
+                } else if (isSkipped) {
+                    explanation = "Unanswered question. The expected answer is '" + correctAns + "'. Tested rule: " + rule + ".";
                 } else {
                     explanation = "Incorrect. The expected answer is '" + correctAns + "'. Tested rule: " + rule + ".";
                 }
@@ -662,6 +789,7 @@ public class SubmissionService {
                 .studentAnswer(studentAns)
                 .correctAnswer(correctAns)
                 .isCorrect(isCorrect)
+                .isSkipped(isSkipped)
                 .explanation(explanation)
                 .grammarRule(rule)
                 .points(q.getPoints())
@@ -670,7 +798,7 @@ public class SubmissionService {
 
             if (isCorrect) {
                 strengths.add(rule);
-            } else {
+            } else if (!isSkipped) {
                 weaknesses.add(rule);
             }
         }
@@ -857,13 +985,16 @@ public class SubmissionService {
                         ans = node.path("givenAnswer").asText("");
                     }
                     String corr = node.path("correctAnswer").asText("");
-                    boolean isCorr = node.path("isCorrect").asBoolean(false) || isAnswerMatching(ans, corr);
+                    boolean isSkipped = isSkippedAnswer(ans);
+                    boolean isCorr = !isSkipped && (node.path("isCorrect").asBoolean(false) || isAnswerMatching(ans, corr));
                     String rule = node.path("grammarRule").asText("Adaptive grammar assessment");
                     int diff = node.path("difficulty").asInt(2);
 
                     String exp = isCorr
                         ? "Correct! Demonstrated mastery at CAT difficulty level " + diff + "/4. Tested rule: " + rule + "."
-                        : "Incorrect. The expected answer is '" + corr + "'. Tested rule: " + rule + ".";
+                        : (isSkipped
+                            ? "Unanswered question. The expected answer is '" + corr + "'. Tested rule: " + rule + "."
+                            : "Incorrect. The expected answer is '" + corr + "'. Tested rule: " + rule + ".");
 
                     List<String> options = new ArrayList<>();
                     if (node.has("options") && node.get("options").isArray()) {
@@ -875,9 +1006,10 @@ public class SubmissionService {
                     items.add(SubmissionItemResponse.builder()
                         .questionNumber(qNum)
                         .sentence(qText)
-                        .studentAnswer(ans)
+                        .studentAnswer(isSkipped ? "No answer" : ans)
                         .correctAnswer(corr)
                         .isCorrect(isCorr)
+                        .isSkipped(isSkipped)
                         .explanation(exp)
                         .grammarRule(rule)
                         .options(options)
@@ -885,7 +1017,7 @@ public class SubmissionService {
 
                     if (isCorr) {
                         strengths.add(rule);
-                    } else {
+                    } else if (!isSkipped) {
                         weaknesses.add(rule);
                     }
                 }
@@ -991,14 +1123,20 @@ public class SubmissionService {
      * @param response Submission response DTO.
      * @param items List of evaluated sentence items.
      * @param corrections List of sentence corrections.
+     * @param attemptedCount Number of questions answered.
+     * @param correctCount Number of questions correct.
+     * @param skippedCount Number of questions skipped.
      * @return Diagnostic summary sentence.
      */
-    private String buildSummary(SubmissionResultResponse response, List<SubmissionItemResponse> items, List<SentenceCorrectionResponse> corrections) {
+    private String buildSummary(SubmissionResultResponse response, List<SubmissionItemResponse> items, List<SentenceCorrectionResponse> corrections, int attemptedCount, int correctCount, int skippedCount) {
         if (!items.isEmpty()) {
-            long correct = items.stream().filter(SubmissionItemResponse::isCorrect).count();
             int total = items.size();
-            long percent = Math.round(((double) correct / total) * 100);
-            return "You answered " + correct + " out of " + total + " questions correctly (" + percent + "% accuracy).";
+            long overallPercent = Math.round(((double) correctCount / total) * 100);
+            if (skippedCount > 0) {
+                long attemptPercent = attemptedCount > 0 ? Math.round(((double) correctCount / attemptedCount) * 100) : 0;
+                return "You answered " + correctCount + " out of " + total + " questions correctly (" + overallPercent + "% overall score). Attempt accuracy: " + attemptPercent + "% (" + correctCount + " of " + attemptedCount + " answered, " + skippedCount + " skipped).";
+            }
+            return "You answered " + correctCount + " out of " + total + " questions correctly (" + overallPercent + "% accuracy).";
         }
         if (!corrections.isEmpty()) {
             return "Essay evaluated against CEFR criteria. Identified " + corrections.size() + " sentence-level corrections to enhance accuracy and style.";
@@ -1007,15 +1145,19 @@ public class SubmissionService {
     }
 
     /**
-     * @brief Generates actionable personalized recommendations from diagnostic strengths and weaknesses.
+     * @brief Generates actionable personalized recommendations from diagnostic strengths, weaknesses, and skipped rules.
      * @param response Submission response DTO.
      * @param weaknesses Detected grammar weaknesses.
      * @param strengths Demonstrated grammar strengths.
+     * @param skippedRules Rules where questions were left unanswered with zero errors.
      * @return Recommendation narrative string.
      */
-    private String buildRecommendations(SubmissionResultResponse response, List<String> weaknesses, List<String> strengths) {
+    private String buildRecommendations(SubmissionResultResponse response, List<String> weaknesses, List<String> strengths, List<String> skippedRules) {
         if (!weaknesses.isEmpty()) {
-            return "Identified areas for practice: " + String.join(", ", weaknesses) + ". Focus on reviewing verb conjugation patterns and clause structure to solidify accuracy.";
+            return "Identified areas for practice: " + String.join(", ", weaknesses) + ". Focus on reviewing core structural rules and contrastive patterns to eliminate recurring errors.";
+        }
+        if (!skippedRules.isEmpty()) {
+            return "Good accuracy on attempted questions! To consolidate complete mastery, be sure to attempt all questions, especially in: " + String.join(", ", skippedRules) + ".";
         }
         if (!strengths.isEmpty()) {
             return "Solid mastery demonstrated across: " + String.join(", ", strengths) + ". Continue with advanced tasks to expand grammatical range.";
@@ -1027,16 +1169,40 @@ public class SubmissionService {
      * @brief Resolves suggested next syllabus modules to close detected grammar gaps.
      * @param response Submission response DTO.
      * @param weaknesses Detected grammar weaknesses.
+     * @param skippedRules Rules where questions were left unanswered.
      * @return List of suggested follow-up study topics.
      */
-    private List<String> buildSuggestedTopics(SubmissionResultResponse response, List<String> weaknesses) {
+    private List<String> buildSuggestedTopics(SubmissionResultResponse response, List<String> weaknesses, List<String> skippedRules) {
         if (!weaknesses.isEmpty()) {
             return weaknesses;
+        }
+        if (!skippedRules.isEmpty()) {
+            return skippedRules;
         }
         if (response.getGrammarTopic() != null && !response.getGrammarTopic().isBlank()) {
             return List.of(response.getGrammarTopic() + " (Advanced Practice)");
         }
         return List.of("Grammar & Sentence Structure");
+    }
+
+    /**
+     * @brief Helper accumulator tracking item-level performance per grammar rule.
+     */
+    private static class RuleStat {
+        final String ruleName;
+        int total = 0;
+        int attempted = 0;
+        int correct = 0;
+        int incorrect = 0;
+        int skipped = 0;
+
+        RuleStat(String ruleName) {
+            this.ruleName = ruleName;
+        }
+
+        double errorRate() {
+            return attempted > 0 ? (double) incorrect / attempted : 0.0;
+        }
     }
 
     /**

@@ -4,6 +4,7 @@
  */
 package com.linguaoptima.api.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +36,10 @@ public class SubmissionItemResponse {
 
     /** @brief True if student's answer was evaluated as correct. */
     private boolean isCorrect;
+
+    /** @brief True if this question was skipped or unattempted by the student. */
+    @JsonProperty("isSkipped")
+    private boolean isSkipped;
 
     /** @brief Pedagogical explanation of why the answer is correct or incorrect. */
     private String explanation;

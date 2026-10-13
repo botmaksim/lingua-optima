@@ -697,8 +697,8 @@ class SubmissionServiceTest {
         assertTrue(respCustom.getItems().get(1).isCorrect());
         assertFalse(respCustom.getItems().get(2).isCorrect());
         assertEquals("No answer", respCustom.getItems().get(2).getStudentAnswer());
-        assertTrue(respCustom.getItems().get(0).getExplanation().contains("Correct! Accurately applies the rule: Grammar"));
-        assertTrue(respCustom.getItems().get(2).getExplanation().contains("Incorrect. The expected answer is 'omega'"));
+        assertTrue(respCustom.getItems().get(2).isSkipped());
+        assertTrue(respCustom.getItems().get(2).getExplanation().contains("The expected answer is 'omega'"));
 
         // 6. CAT session with incorrect answers and malformed JSON
         com.linguaoptima.api.domain.SessionState catFail = com.linguaoptima.api.domain.SessionState.builder()
@@ -998,5 +998,94 @@ class SubmissionServiceTest {
 
         SubmissionResultResponse res = submissionService.overrideScore(sub.getId(), req, teacher);
         assertEquals(70.0, res.getOverrideScore());
+    }
+
+    /**
+     * @brief Verifies strict mutual exclusivity between strengths and weaknesses,
+     * accurate attempt metrics calculation, and proper diagnostic recommendations.
+     */
+    @Test
+    void testDiagnosticSegregationAndAttemptMetrics() {
+        Task task = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Conditionals")
+            .build();
+
+        com.linguaoptima.api.domain.TaskQuestion q1 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(1).questionText("Q1").correctAnswer("ans1").grammarRule("Conditional 0").build();
+        com.linguaoptima.api.domain.TaskQuestion q2 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(2).questionText("Q2").correctAnswer("ans2").grammarRule("Conditional 1").build();
+        com.linguaoptima.api.domain.TaskQuestion q3 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(3).questionText("Q3").correctAnswer("ans3").grammarRule("Conditional 2").build();
+        com.linguaoptima.api.domain.TaskQuestion q4 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(4).questionText("Q4").correctAnswer("correct4").grammarRule("Conditional 1").build();
+        com.linguaoptima.api.domain.TaskQuestion q5 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(5).questionText("Q5").correctAnswer("correct5").grammarRule("Conditional 0").build();
+        com.linguaoptima.api.domain.TaskQuestion q6 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(6).questionText("Q6").correctAnswer("correct6").grammarRule("Conditional 2").build();
+        com.linguaoptima.api.domain.TaskQuestion q7 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(7).questionText("Q7").correctAnswer("correct7").grammarRule("Conditional 1").build();
+        com.linguaoptima.api.domain.TaskQuestion q8 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(8).questionText("Q8").correctAnswer("correct8").grammarRule("Conditional 0").build();
+        com.linguaoptima.api.domain.TaskQuestion q9 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(9).questionText("Q9").correctAnswer("correct9").grammarRule("Conditional 0").build();
+        com.linguaoptima.api.domain.TaskQuestion q10 = com.linguaoptima.api.domain.TaskQuestion.builder()
+            .questionOrder(10).questionText("Q10").correctAnswer("correct10").grammarRule("Conditional 2").build();
+
+        task.setQuestions(List.of(q1, q2, q3, q4, q5, q6, q7, q8, q9, q10));
+
+        TaskAssignment assign = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(student)
+            .build();
+
+        // Student answers Q1-Q3 correctly, Q4-Q5 incorrectly, Q6-Q10 left unanswered
+        String studentText = "Q1: ans1\nQ2: ans2\nQ3: ans3\nQ4: wrong4\nQ5: wrong5\nQ6: No answer\nQ7: No answer\nQ8: No answer\nQ9: No answer\nQ10: No answer";
+
+        Submission sub = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(assign)
+            .student(student)
+            .studentText(studentText)
+            .aiScore(30.0)
+            .build();
+
+        SubmissionResultResponse resp = SubmissionResultResponse.fromEntity(sub);
+        submissionService.enrichSubmissionResult(resp, sub, null);
+
+        assertNotNull(resp.getAiAnalysis());
+        var analysis = resp.getAiAnalysis();
+
+        // Check metrics: 10 questions total, 5 attempted, 3 correct, 5 skipped
+        assertEquals(10, analysis.getTotalQuestions());
+        assertEquals(5, analysis.getAttemptedCount());
+        assertEquals(3, analysis.getCorrectCount());
+        assertEquals(5, analysis.getSkippedCount());
+        assertEquals(60.0, analysis.getAttemptAccuracy());
+
+        // Weaknesses should contain Conditional 0 and Conditional 1 (where mistakes occurred)
+        assertTrue(analysis.getWeaknesses().contains("Conditional 0"));
+        assertTrue(analysis.getWeaknesses().contains("Conditional 1"));
+
+        // Mastered concepts (strengths) MUST NOT contain Conditional 0, Conditional 1, or Conditional 2
+        // because Conditional 0 & 1 had errors, and Conditional 2 had skipped questions!
+        assertFalse(analysis.getStrengths().contains("Conditional 0"));
+        assertFalse(analysis.getStrengths().contains("Conditional 1"));
+        assertFalse(analysis.getStrengths().contains("Conditional 2"));
+
+        // Strict mutual exclusivity
+        for (String w : analysis.getWeaknesses()) {
+            assertFalse(analysis.getStrengths().contains(w), "Strengths must never contain weakness: " + w);
+        }
+
+        // Suggested topic must target an actual weakness
+        assertFalse(analysis.getSuggestedTopics().isEmpty());
+        assertTrue(analysis.getWeaknesses().contains(analysis.getSuggestedTopics().get(0)));
+
+        // Summary must include both overall score and attempt accuracy
+        assertTrue(analysis.getSummary().contains("3 out of 10 questions correctly (30% overall score)"));
+        assertTrue(analysis.getSummary().contains("Attempt accuracy: 60%"));
+        assertTrue(analysis.getSummary().contains("5 skipped"));
     }
 }

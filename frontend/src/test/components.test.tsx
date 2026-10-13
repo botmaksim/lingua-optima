@@ -14,6 +14,8 @@ import { ForgotPassword } from '../components/auth/ForgotPassword';
 import { authApi } from '../api/authApi';
 import { TranslatorDropdown } from '../components/common/TranslatorDropdown';
 import { AIReview } from '../components/student/AIReview';
+import { TaskView } from '../components/student/TaskView';
+import { taskApi } from '../api/taskApi';
 import { submissionApi } from '../api/submissionApi';
 import { useAuthStore } from '../store/authStore';
 import { Footer } from '../components/common/Footer';
@@ -184,6 +186,161 @@ describe('AIReview component', () => {
     expect(screen.getByText(/In affirmative sentences, do not use auxiliary did/i)).toBeInTheDocument();
     expect(screen.getAllByText('Past Simple Auxiliary Usage').length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Practice This Topic')).toBeInTheDocument();
+  });
+
+  it('renders skipped questions with badge and unattempted metrics, enforcing mutual exclusivity', async () => {
+    vi.spyOn(submissionApi, 'getSubmissionById').mockResolvedValue({
+      id: 'sub-456',
+      studentId: 'user-1',
+      submissionType: 'TEXT',
+      originalText: 'Q1: demonstrates\nQ2: wrong_ans\nQ3: No answer',
+      score: 30,
+      effectiveScore: 30,
+      feedback: 'Good attempt, review conditionals.',
+      submittedAt: new Date().toISOString(),
+      grammarTopic: 'Conditionals 0, 1, 2',
+      items: [
+        {
+          questionNumber: 1,
+          sentence: 'If water reaches 100 degrees, it boils.',
+          studentAnswer: 'demonstrates',
+          correctAnswer: 'demonstrates',
+          isCorrect: true,
+          isSkipped: false,
+          explanation: 'Correct application of zero conditional.',
+          grammarRule: 'Conditional 0 (General truths)',
+        },
+        {
+          questionNumber: 2,
+          sentence: 'If it rains, we will stay home.',
+          studentAnswer: 'wrong_ans',
+          correctAnswer: 'integrate',
+          isCorrect: false,
+          isSkipped: false,
+          explanation: 'Incorrect form.',
+          grammarRule: 'Conditional 1 (Real possibilities)',
+        },
+        {
+          questionNumber: 3,
+          sentence: 'If I had a million dollars, I would travel.',
+          studentAnswer: 'No answer',
+          correctAnswer: 'would travel',
+          isCorrect: false,
+          isSkipped: true,
+          explanation: 'Unanswered question.',
+          grammarRule: 'Conditional 2 (Hypothetical situations)',
+        },
+      ],
+      aiAnalysis: {
+        summary: 'You answered 1 out of 3 questions correctly (33% overall score). Attempt accuracy: 50% (1 of 2 answered, 1 skipped).',
+        weaknesses: ['Conditional 1 (Real possibilities)'],
+        strengths: ['Conditional 0 (General truths)'],
+        recommendations: 'Focus on Conditional 1.',
+        suggestedTopics: ['Conditional 1 (Real possibilities)'],
+        attemptedCount: 2,
+        correctCount: 1,
+        totalQuestions: 3,
+        skippedCount: 1,
+        attemptAccuracy: 50,
+      },
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/student/review/sub-456']}>
+        <Routes>
+          <Route path="/student/review/:submissionId" element={<AIReview />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Submission Results')).toBeInTheDocument();
+    expect(screen.getByText('50% Attempt Accuracy')).toBeInTheDocument();
+    expect(screen.getByText('1/2 answered · 1 skipped')).toBeInTheDocument();
+    expect(screen.getByText('Skipped (0 pts)')).toBeInTheDocument();
+    expect(screen.getByText('No answer submitted')).toBeInTheDocument();
+
+    // Check mutual exclusivity: Conditional 1 in weaknesses and recommendation, Conditional 0 in strengths
+    expect(screen.getAllByText('Conditional 1 (Real possibilities)').length).toBe(2);
+    expect(screen.getByText('Conditional 0 (General truths)')).toBeInTheDocument();
+  });
+});
+
+describe('TaskView component', () => {
+  it('renders questions, tracks answered count, and prompts confirmation when submitting with unanswered questions', async () => {
+    vi.spyOn(taskApi, 'getTaskById').mockResolvedValue({
+      id: 'task-999',
+      grammarTopic: 'Conditionals',
+      cefrLevel: 'B1',
+      totalPoints: 20,
+      questions: [
+        {
+          id: 'q-1',
+          questionOrder: 1,
+          questionText: 'If you heat ice, it ___ (melt).',
+          correctAnswer: 'melts',
+          options: ['melts', 'melted', 'will melt'],
+          difficulty: 1,
+          points: 10,
+        },
+        {
+          id: 'q-2',
+          questionOrder: 2,
+          questionText: 'If it rains tomorrow, I ___ (take) an umbrella.',
+          correctAnswer: 'will take',
+          options: ['will take', 'take', 'took'],
+          difficulty: 2,
+          points: 10,
+        },
+      ],
+    } as any);
+
+    const submitSpy = vi.spyOn(submissionApi, 'submitText').mockResolvedValue({
+      id: 'sub-new-123',
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/student/task/task-999']}>
+        <Routes>
+          <Route path="/student/task/:taskId" element={<TaskView />} />
+          <Route path="/student/review/:submissionId" element={<div>Review Page for sub-new-123</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/If you heat ice, it ___ \(melt\)\./i)).toBeInTheDocument();
+    expect(screen.getByText('0 of 2 answered')).toBeInTheDocument();
+
+    // Click answer for Q1
+    fireEvent.click(screen.getByText('melts'));
+    expect(screen.getByText('1 of 2 answered')).toBeInTheDocument();
+
+    // Click Submit Answers while Q2 is unanswered
+    fireEvent.click(screen.getByText('Submit Answers'));
+
+    // Confirmation dialog should appear
+    expect(await screen.findByText('Unanswered Questions Detected')).toBeInTheDocument();
+    expect(screen.getByText(/You have 1 unanswered questions out of 2/i)).toBeInTheDocument();
+
+    // Click "Keep Answering" to dismiss
+    fireEvent.click(screen.getByText('Keep Answering'));
+    await waitFor(() => {
+      expect(screen.queryByText('Unanswered Questions Detected')).not.toBeInTheDocument();
+    });
+    expect(submitSpy).not.toHaveBeenCalled();
+
+    // Click Submit Answers again and confirm
+    fireEvent.click(screen.getByText('Submit Answers'));
+    expect(await screen.findByText('Unanswered Questions Detected')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Submit Anyway'));
+
+    await waitFor(() => {
+      expect(submitSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          taskId: 'task-999',
+          text: expect.stringContaining('Q1: melts\nQ2: No answer'),
+        })
+      );
+    });
   });
 });
 
