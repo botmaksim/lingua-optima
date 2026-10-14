@@ -18,6 +18,7 @@ import com.linguaoptima.api.dto.request.OverrideRequest;
 import com.linguaoptima.api.dto.request.TextSubmissionRequest;
 import com.linguaoptima.api.dto.response.SubmissionResultResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
+import com.linguaoptima.api.exception.OcrException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.SessionStateRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
@@ -1087,5 +1088,166 @@ class SubmissionServiceTest {
         assertTrue(analysis.getSummary().contains("3 out of 10 questions correctly (30% overall score)"));
         assertTrue(analysis.getSummary().contains("Attempt accuracy: 60%"));
         assertTrue(analysis.getSummary().contains("5 skipped"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: submit images validations and multi-page processing.
+     */
+    @Test
+    void testSubmitImagesSuccessAndValidations() {
+        // 1. Null / empty file list
+        assertThrows(OcrException.class, () -> submissionService.submitImages(null, assignment.getId(), student));
+        assertThrows(OcrException.class, () -> submissionService.submitImages(List.of(), assignment.getId(), student));
+        MockMultipartFile emptyFile = new MockMultipartFile("files", "empty.png", "image/png", new byte[0]);
+        assertThrows(OcrException.class, () -> submissionService.submitImages(List.of(emptyFile), assignment.getId(), student));
+
+        // 2. Too many photos (> 5)
+        MockMultipartFile smallFile = new MockMultipartFile("files", "p.png", "image/png", new byte[]{1, 2, 3});
+        List<org.springframework.web.multipart.MultipartFile> sixFiles = List.of(smallFile, smallFile, smallFile, smallFile, smallFile, smallFile);
+        assertThrows(OcrException.class, () -> submissionService.submitImages(sixFiles, assignment.getId(), student));
+
+        // 3. Single photo > 10MB
+        MockMultipartFile largeSingle = new MockMultipartFile("files", "huge.png", "image/png", new byte[11 * 1024 * 1024]);
+        assertThrows(OcrException.class, () -> submissionService.submitImages(List.of(largeSingle), assignment.getId(), student));
+
+        // 4. OCR returns blank
+        when(ocrService.extractText(any())).thenReturn("   ");
+        assertThrows(OcrException.class, () -> submissionService.submitImages(List.of(smallFile), assignment.getId(), student));
+
+        // 5. Successful multi-page submission
+        MockMultipartFile page1 = new MockMultipartFile("files", "p1.png", "image/png", new byte[]{10, 20});
+        MockMultipartFile page2 = new MockMultipartFile("files", "p2.png", "image/png", new byte[]{30, 40});
+
+        when(ocrService.extractText(eq(new byte[]{10, 20}))).thenReturn("Page one answers");
+        when(ocrService.extractText(eq(new byte[]{30, 40}))).thenReturn("Page two answers");
+
+        when(taskAssignmentRepository.findById(assignment.getId())).thenReturn(Optional.of(assignment));
+        when(scoringService.scoreGrammarTask(anyString(), anyString(), eq(student)))
+            .thenReturn(Map.of("score", 90.0, "feedback", "Great job"));
+        when(scoringService.extractScore(any())).thenReturn(90.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
+            Submission s = inv.getArgument(0);
+            s.setId(UUID.randomUUID());
+            return s;
+        });
+
+        SubmissionResultResponse res = submissionService.submitImages(List.of(page1, page2), assignment.getId(), student);
+        assertNotNull(res);
+        assertEquals(90.0, res.getScore());
+        verify(usageService).incrementOcr(student, 2);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: advanced diagnostic edge cases, score override, and answer variants.
+     */
+    @Test
+    void testEnrichSubmissionResultAdvancedScenarios() {
+        Task task = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Reported Speech")
+            .build();
+
+        // Q1: Target Grammar Structure fallback (rule is blank, task has grammarTopic)
+        TaskQuestion q1 = TaskQuestion.builder()
+            .questionOrder(1)
+            .questionText("Question 1")
+            .correctAnswer("don't / do not")
+            .grammarRule("")
+            .optionsJson("[\"do not\", \"does not\"]")
+            .points(1)
+            .build();
+
+        // Q2: Variant matching with comma, Rule A (1 mistake out of 1 attempted -> 100% error rate)
+        TaskQuestion q2 = TaskQuestion.builder()
+            .questionOrder(2)
+            .questionText("Question 2")
+            .correctAnswer("color, colour")
+            .grammarRule("Spelling Rule A")
+            .optionsJson("not valid json{")
+            .points(1)
+            .build();
+
+        // Q3: Rule B (1 mistake out of 2 attempted -> 50% error rate)
+        TaskQuestion q3 = TaskQuestion.builder()
+            .questionOrder(3)
+            .questionText("Question 3")
+            .correctAnswer("were")
+            .grammarRule("Past Subjunctive B")
+            .points(1)
+            .build();
+
+        // Q4: Rule B second attempt (correct)
+        TaskQuestion q4 = TaskQuestion.builder()
+            .questionOrder(4)
+            .questionText("Question 4")
+            .correctAnswer("had been")
+            .grammarRule("Past Subjunctive B")
+            .points(1)
+            .build();
+
+        // Q5: Rule C (100% correct, 0 incorrect, 0 skipped -> Mastered Strength!)
+        TaskQuestion q5 = TaskQuestion.builder()
+            .questionOrder(5)
+            .questionText("Question 5")
+            .correctAnswer("apple")
+            .grammarRule("Articles Mastered")
+            .points(1)
+            .build();
+
+        task.setQuestions(List.of(q1, q2, q3, q4, q5));
+
+        TaskAssignment assign = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(student)
+            .build();
+
+        // Student answers:
+        // Q1: "do not" matches variant "don't / do not" -> correct!
+        // Q2: "wrong-spelling" -> incorrect!
+        // Q3: "wrong-verb" -> incorrect!
+        // Q4: "had been" -> correct!
+        // Q5: "apple" -> correct!
+        String studentText = "Q1: do not\nQ2: wrong-spelling\nQ3: wrong-verb\nQ4: had been\nQ5: apple";
+
+        Submission sub = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(assign)
+            .student(student)
+            .studentText(studentText)
+            .aiScore(60.0)
+            .overrideScore(95.0) // Teacher override
+            .build();
+
+        SubmissionResultResponse resp = SubmissionResultResponse.fromEntity(sub);
+        submissionService.enrichSubmissionResult(resp, sub, null);
+
+        // Effective score should be teacher override
+        assertEquals(95.0, resp.getEffectiveScore());
+        assertEquals(60.0, resp.getScore());
+
+        assertNotNull(resp.getAiAnalysis());
+        var analysis = resp.getAiAnalysis();
+
+        // Mastered concept Articles Mastered must be in strengths!
+        assertTrue(analysis.getStrengths().contains("Articles Mastered"));
+
+        // Spelling Rule A (1 error / 1 attempt = 100% error rate) should rank before Past Subjunctive B (1 error / 2 attempts = 50% error rate)
+        int idxA = analysis.getWeaknesses().indexOf("Spelling Rule A");
+        int idxB = analysis.getWeaknesses().indexOf("Past Subjunctive B");
+        assertTrue(idxA >= 0);
+        assertTrue(idxB >= 0);
+        assertTrue(idxA < idxB, "Rule A with higher error rate should come before Rule B");
+
+        // Verify fallback when ruleStats is empty
+        Submission emptySub = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("Free text with no questions")
+            .aiScore(80.0)
+            .build();
+        SubmissionResultResponse emptyResp = SubmissionResultResponse.fromEntity(emptySub);
+        submissionService.enrichSubmissionResult(emptyResp, emptySub, null);
+        assertNotNull(emptyResp.getAiAnalysis());
     }
 }

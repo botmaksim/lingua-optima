@@ -162,4 +162,26 @@ class GlobalExceptionHandlerTest {
         assertEquals("An unexpected internal error occurred",
             handler.handleGeneric(new RuntimeException((String) null)).getBody().getMessage());
     }
+
+    /**
+     * @brief Verifies unit test scenario: handle concurrent generation exception and its device details.
+     */
+    @Test
+    void testHandleConcurrentGeneration() {
+        ConcurrentGenerationException exWithDevice = new ConcurrentGenerationException("Generation active", "device-abc-123");
+        assertEquals("device-abc-123", exWithDevice.getActiveDeviceId());
+        assertTrue(exWithDevice.isCanTakeover());
+
+        ResponseEntity<ErrorResponse> res = handler.handleConcurrentGeneration(exWithDevice);
+        assertEquals(HttpStatus.CONFLICT, res.getStatusCode());
+        assertEquals(409, res.getBody().getStatus());
+        assertEquals("CONCURRENT_GENERATION", res.getBody().getErrorCode());
+        assertEquals("Generation active", res.getBody().getMessage());
+
+        // Fallback constructor and null values
+        ConcurrentGenerationException exWithoutDevice = new ConcurrentGenerationException((String) null);
+        assertNull(exWithoutDevice.getActiveDeviceId());
+        ResponseEntity<ErrorResponse> resNull = handler.handleConcurrentGeneration(exWithoutDevice);
+        assertEquals("AI task generation is currently running on another device.", resNull.getBody().getMessage());
+    }
 }

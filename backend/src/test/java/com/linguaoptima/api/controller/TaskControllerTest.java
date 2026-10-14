@@ -120,4 +120,34 @@ class TaskControllerTest {
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(taskResponse, res.getBody());
     }
+
+    /**
+     * @brief Verifies unit test scenario: takeover generation.
+     */
+    @Test
+    void testTakeoverGeneration() {
+        ResponseEntity<java.util.Map<String, Object>> res = taskController.takeoverGeneration("device-123", user);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(true, res.getBody().get("success"));
+        verify(taskService).takeoverGeneration(user, "device-123");
+    }
+
+    /**
+     * @brief Verifies unit test scenario: get generation status.
+     */
+    @Test
+    void testGetGenerationStatus() {
+        com.linguaoptima.api.dto.response.GenerationStatusResponse statusResp =
+            com.linguaoptima.api.dto.response.GenerationStatusResponse.builder()
+                .isGenerating(true)
+                .activeDeviceId("device-123")
+                .isCurrentDevice(true)
+                .build();
+        when(taskService.getGenerationStatus(user, "device-123")).thenReturn(statusResp);
+
+        ResponseEntity<com.linguaoptima.api.dto.response.GenerationStatusResponse> res =
+            taskController.getGenerationStatus("device-123", user);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(statusResp, res.getBody());
+    }
 }
