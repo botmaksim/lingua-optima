@@ -18,7 +18,9 @@ import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
 import com.linguaoptima.api.dto.request.CustomQuestionRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
+import com.linguaoptima.api.dto.request.TransferTaskRequest;
 import com.linguaoptima.api.dto.response.GenerationStatusResponse;
+import com.linguaoptima.api.dto.response.GroupTaskResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -125,6 +127,15 @@ public class TaskService {
                     .build();
                 taskAssignmentRepository.save(selfAssignment);
                 log.info("Created self-service assignment for student {}", user.getEmail());
+            } else if ((user.getRole() == Role.TEACHER || user.getRole() == Role.ADMIN) &&
+                       params.getGroupIds() != null && !params.getGroupIds().isEmpty()) {
+                AssignTaskRequest assignReq = AssignTaskRequest.builder()
+                    .groupIds(params.getGroupIds())
+                    .dueDate(params.getDueDate())
+                    .maxAttempts(params.getMaxAttempts())
+                    .build();
+                assignTask(savedTask.getId(), assignReq, user);
+                log.info("Directly assigned generated task {} to cohorts {}", savedTask.getId(), params.getGroupIds());
             }
 
             return TaskResponse.fromEntity(savedTask);
@@ -400,6 +411,200 @@ public class TaskService {
                 notificationService.send(student,
                     "📝 New task assigned: " + task.getType() + " (" + task.getCefrLevel() + ") by " + teacher.getFullName(),
                     NotificationType.TASK);
+            }
+        }
+    }
+
+    /**
+     * @brief Retrieves all educational tasks currently assigned to students of a specific cohort.
+     * @param groupId Identifier of the cohort group.
+     * @param teacher Authenticated educator.
+     * @return List of GroupTaskResponse DTOs ordered by creation date descending.
+     * @throws ForbiddenException if caller is not the owner of the cohort.
+     * @throws ResourceNotFoundException if cohort does not exist.
+     */
+    @Transactional(readOnly = true)
+    public List<GroupTaskResponse> getTasksForGroup(UUID groupId, User teacher) {
+        if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only educators can view group tasks.");
+        }
+
+        Group group = groupRepository.findById(groupId)
+            .orElseThrow(() -> new ResourceNotFoundException("Group not found: " + groupId));
+        if (!group.getTeacher().getId().equals(teacher.getId())) {
+            throw new ForbiddenException("You are not the owner of group: " + group.getName());
+        }
+
+        List<GroupStudent> students = groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId);
+        if (students.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<UUID> studentIds = students.stream().map(gs -> gs.getStudent().getId()).toList();
+        List<TaskAssignment> assignments = taskAssignmentRepository.findByStudentIdsWithTaskAndStudent(studentIds);
+
+        Map<UUID, List<TaskAssignment>> assignmentsByTask = assignments.stream()
+            .collect(Collectors.groupingBy(ta -> ta.getTask().getId(), LinkedHashMap::new, Collectors.toList()));
+
+        List<GroupTaskResponse> result = new ArrayList<>();
+        for (Map.Entry<UUID, List<TaskAssignment>> entry : assignmentsByTask.entrySet()) {
+            List<TaskAssignment> taskAssignments = entry.getValue();
+            Task task = taskAssignments.get(0).getTask();
+            LocalDateTime earliestDue = taskAssignments.stream()
+                .map(TaskAssignment::getDueDate)
+                .filter(Objects::nonNull)
+                .min(LocalDateTime::compareTo)
+                .orElse(null);
+            Integer maxAttempts = taskAssignments.stream()
+                .map(TaskAssignment::getMaxAttempts)
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(1);
+
+            int assignedCount = taskAssignments.size();
+            long completedCount = taskAssignments.stream()
+                .filter(ta -> ta.getStatus() == AssignmentStatus.GRADED || ta.getStatus() == AssignmentStatus.SUBMITTED)
+                .count();
+
+            List<UUID> assignmentIds = taskAssignments.stream().map(TaskAssignment::getId).toList();
+            List<Submission> submissions = submissionRepository.findByAssignmentIdIn(assignmentIds);
+            Double avgScore = null;
+            if (submissions != null && !submissions.isEmpty()) {
+                double sum = 0.0;
+                int scoredCount = 0;
+                for (Submission s : submissions) {
+                    Double score = s.getOverrideScore() != null ? s.getOverrideScore() : s.getAiScore();
+                    if (score != null) {
+                        sum += score;
+                        scoredCount++;
+                    }
+                }
+                if (scoredCount > 0) {
+                    avgScore = Math.round((sum / scoredCount) * 10.0) / 10.0;
+                }
+            }
+
+            result.add(GroupTaskResponse.builder()
+                .taskId(task.getId())
+                .type(task.getType())
+                .cefrLevel(task.getCefrLevel())
+                .grammarTopic(task.getGrammarTopic())
+                .domain(task.getDomain())
+                .totalPoints(task.getTotalPoints())
+                .dueDate(earliestDue)
+                .maxAttempts(maxAttempts)
+                .assignedStudentCount(assignedCount)
+                .completedStudentCount((int) completedCount)
+                .avgScore(avgScore)
+                .createdAt(task.getCreatedAt())
+                .build());
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief Transfers or copies an assigned task from one cohort to another, managing student assignment states.
+     * @param sourceGroupId Source cohort identifier.
+     * @param taskId Unique identifier of the task being transferred.
+     * @param request Transfer parameters including targetGroupId and keepInSource mode.
+     * @param teacher Authenticated educator.
+     * @throws ForbiddenException if educator does not own both cohorts.
+     * @throws ResourceNotFoundException if cohort or task does not exist.
+     * @throws IllegalArgumentException if source and target cohorts are identical.
+     * @throws com.linguaoptima.api.exception.QuotaExceededException if target cohort is in read-only subscription mode.
+     */
+    @Transactional
+    public void transferTask(UUID sourceGroupId, UUID taskId, TransferTaskRequest request, User teacher) {
+        if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only educators can transfer tasks between groups.");
+        }
+
+        if (sourceGroupId.equals(request.getTargetGroupId())) {
+            throw new IllegalArgumentException("Source and target group cannot be the same.");
+        }
+
+        Group sourceGroup = groupRepository.findById(sourceGroupId)
+            .orElseThrow(() -> new ResourceNotFoundException("Source group not found: " + sourceGroupId));
+        if (!sourceGroup.getTeacher().getId().equals(teacher.getId())) {
+            throw new ForbiddenException("You are not the owner of source group: " + sourceGroup.getName());
+        }
+
+        Group targetGroup = groupRepository.findById(request.getTargetGroupId())
+            .orElseThrow(() -> new ResourceNotFoundException("Target group not found: " + request.getTargetGroupId()));
+        if (!targetGroup.getTeacher().getId().equals(teacher.getId())) {
+            throw new ForbiddenException("You are not the owner of target group: " + targetGroup.getName());
+        }
+
+        SubscriptionTier teacherTier = usageService != null ? usageService.getUserTier(teacher) : SubscriptionTier.FREE;
+        int maxAllowedGroups = pricingProperties != null ? pricingProperties.getTierConfig(teacherTier).getMaxGroups() : 1;
+        List<Group> teacherGroups = groupRepository.findByTeacher(teacher);
+        int targetGroupIdx = -1;
+        for (int i = 0; i < teacherGroups.size(); i++) {
+            if (teacherGroups.get(i).getId().equals(request.getTargetGroupId())) {
+                targetGroupIdx = i;
+                break;
+            }
+        }
+        if (targetGroupIdx >= maxAllowedGroups) {
+            throw new com.linguaoptima.api.exception.QuotaExceededException("Target group '" + targetGroup.getName() + "' is in read-only mode on your " +
+                (teacherTier != null ? teacherTier.name() : "FREE") + " plan.");
+        }
+
+        Task task = taskRepository.findById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task not found: " + taskId));
+
+        List<GroupStudent> sourceStudents = groupStudentRepository.findByGroupIdAndIsActiveTrue(sourceGroupId);
+        List<UUID> sourceStudentIds = sourceStudents.stream().map(gs -> gs.getStudent().getId()).toList();
+
+        LocalDateTime effectiveDueDate = request.getDueDate();
+        Integer effectiveMaxAttempts = request.getMaxAttempts();
+
+        if (!sourceStudentIds.isEmpty()) {
+            for (UUID sId : sourceStudentIds) {
+                Optional<TaskAssignment> existingOpt = taskAssignmentRepository.findByStudentIdAndTaskId(sId, taskId);
+                if (existingOpt.isPresent()) {
+                    TaskAssignment existing = existingOpt.get();
+                    if (effectiveDueDate == null) effectiveDueDate = existing.getDueDate();
+                    if (effectiveMaxAttempts == null) effectiveMaxAttempts = existing.getMaxAttempts();
+                    break;
+                }
+            }
+        }
+        if (effectiveMaxAttempts == null) effectiveMaxAttempts = 1;
+
+        List<GroupStudent> targetStudents = groupStudentRepository.findByGroupIdAndIsActiveTrue(request.getTargetGroupId());
+        for (GroupStudent gs : targetStudents) {
+            User student = gs.getStudent();
+            Optional<TaskAssignment> existingTargetAssignment = taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), taskId);
+            if (existingTargetAssignment.isEmpty()) {
+                TaskAssignment newAssignment = TaskAssignment.builder()
+                    .task(task)
+                    .student(student)
+                    .assignedBy(teacher)
+                    .dueDate(effectiveDueDate)
+                    .status(AssignmentStatus.PENDING)
+                    .maxAttempts(effectiveMaxAttempts)
+                    .attemptsUsed(0)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+                taskAssignmentRepository.save(newAssignment);
+
+                notificationService.send(student,
+                    "📝 Task transferred to your cohort: " + task.getType() + " (" + task.getCefrLevel() + ") by " + teacher.getFullName(),
+                    NotificationType.TASK);
+            }
+        }
+
+        if (!request.isKeepInSource() && !sourceStudentIds.isEmpty()) {
+            for (UUID sId : sourceStudentIds) {
+                Optional<TaskAssignment> existingOpt = taskAssignmentRepository.findByStudentIdAndTaskId(sId, taskId);
+                if (existingOpt.isPresent()) {
+                    TaskAssignment existing = existingOpt.get();
+                    if (existing.getStatus() == AssignmentStatus.PENDING && existing.getAttemptsUsed() == 0) {
+                        taskAssignmentRepository.delete(existing);
+                    }
+                }
             }
         }
     }

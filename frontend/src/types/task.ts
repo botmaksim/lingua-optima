@@ -122,6 +122,12 @@ export interface TaskParams {
   vocabularyFilePath?: string;
   /** @brief Optional Eco Mode toggle to skip verbose rule and vocabulary prompts and save tokens. */
   ecoMode?: boolean;
+  /** @brief Optional target cohort group IDs for direct assignment upon generation. */
+  groupIds?: string[];
+  /** @brief Optional submission due date when deploying directly to cohorts. */
+  dueDate?: string;
+  /** @brief Optional maximum allowed attempts when deploying directly to cohorts. */
+  maxAttempts?: number;
 }
 
 /**

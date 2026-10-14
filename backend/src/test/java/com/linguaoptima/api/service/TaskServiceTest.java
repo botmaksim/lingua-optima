@@ -16,9 +16,12 @@ import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
 import com.linguaoptima.api.dto.request.CustomQuestionRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
+import com.linguaoptima.api.dto.request.TransferTaskRequest;
+import com.linguaoptima.api.dto.response.GroupTaskResponse;
 import com.linguaoptima.api.dto.response.QuestionResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
+import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.*;
 import com.linguaoptima.api.service.ai.AIBrokerService;
@@ -1043,6 +1046,240 @@ class TaskServiceTest {
         assertEquals(TaskType.OPEN_BRACKETS, bracketsRes.getType());
         assertEquals(1, bracketsRes.getQuestions().size());
         assertEquals(0, bracketsRes.getQuestions().get(0).getOptions().size());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: educator generates a task directly with multiple cohort group assignments.
+     */
+    @Test
+    void testGenerateTaskMultiGroupAssignment() {
+        UUID group1Id = UUID.randomUUID();
+        UUID group2Id = UUID.randomUUID();
+        Group group1 = Group.builder().id(group1Id).name("Cohort A").teacher(teacherUser).build();
+        Group group2 = Group.builder().id(group2Id).name("Cohort B").teacher(teacherUser).build();
+
+        User student1 = User.builder().id(UUID.randomUUID()).email("s1@lingua.com").fullName("Student 1").role(Role.STUDENT).build();
+        User student2 = User.builder().id(UUID.randomUUID()).email("s2@lingua.com").fullName("Student 2").role(Role.STUDENT).build();
+
+        GroupStudent gs1 = GroupStudent.builder().group(group1).student(student1).isActive(true).build();
+        GroupStudent gs2 = GroupStudent.builder().group(group2).student(student2).isActive(true).build();
+
+        when(groupRepository.findByTeacher(teacherUser)).thenReturn(List.of(group1, group2));
+        when(groupRepository.findById(group1Id)).thenReturn(Optional.of(group1));
+        when(groupRepository.findById(group2Id)).thenReturn(Optional.of(group2));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group1Id)).thenReturn(List.of(gs1));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group2Id)).thenReturn(List.of(gs2));
+
+        PricingProperties.TierConfig tierConfig = new PricingProperties.TierConfig();
+        tierConfig.setMaxGroups(5);
+        when(pricingProperties.getTierConfig(any())).thenReturn(tierConfig);
+
+        String json = """
+            {
+              "content": "Exercise content",
+              "questions": [
+                {
+                  "text": "Question 1",
+                  "options": ["A", "B"],
+                  "correctAnswer": "A"
+                }
+              ],
+              "answerKey": []
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(json);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+        when(taskRepository.findById(any(UUID.class))).thenAnswer(inv -> {
+            UUID id = inv.getArgument(0);
+            return Optional.of(Task.builder().id(id).type(TaskType.MCQ).cefrLevel(CefrLevel.B1).build());
+        });
+
+        LocalDateTime due = LocalDateTime.now().plusDays(7);
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Conditionals")
+            .taskType(TaskType.MCQ)
+            .groupIds(List.of(group1Id, group2Id))
+            .dueDate(due)
+            .maxAttempts(2)
+            .build();
+
+        TaskResponse res = taskService.generateTask(req, teacherUser);
+        assertNotNull(res);
+        verify(taskAssignmentRepository, times(2)).save(any(TaskAssignment.class));
+        verify(notificationService, times(2)).send(any(User.class), anyString(), eq(NotificationType.TASK));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: retrieving tasks for a group with aggregated completion and scores.
+     */
+    @Test
+    void testGetTasksForGroupAllScenarios() {
+        UUID groupId = UUID.randomUUID();
+
+        // 1. Non-teacher role throws
+        assertThrows(ForbiddenException.class, () -> taskService.getTasksForGroup(groupId, studentUser));
+
+        // 2. Non-owner teacher throws
+        User otherTeacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        Group otherGroup = Group.builder().id(groupId).name("Other").teacher(otherTeacher).build();
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(otherGroup));
+        assertThrows(ForbiddenException.class, () -> taskService.getTasksForGroup(groupId, teacherUser));
+
+        // 3. Empty group returns empty list
+        Group group = Group.builder().id(groupId).name("Group 1").teacher(teacherUser).build();
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of());
+
+        List<GroupTaskResponse> emptyRes = taskService.getTasksForGroup(groupId, teacherUser);
+        assertTrue(emptyRes.isEmpty());
+
+        // 4. Group with students and assigned tasks
+        User student1 = User.builder().id(UUID.randomUUID()).fullName("Student 1").build();
+        GroupStudent gs1 = GroupStudent.builder().group(group).student(student1).isActive(true).build();
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of(gs1));
+
+        Task task = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.MCQ)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Passive Voice")
+            .domain("Science")
+            .totalPoints(100)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        TaskAssignment assign = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(student1)
+            .assignedBy(teacherUser)
+            .dueDate(LocalDateTime.now().plusDays(3))
+            .status(AssignmentStatus.GRADED)
+            .maxAttempts(1)
+            .build();
+
+        when(taskAssignmentRepository.findByStudentIdsWithTaskAndStudent(List.of(student1.getId())))
+            .thenReturn(List.of(assign));
+
+        com.linguaoptima.api.domain.Submission sub = com.linguaoptima.api.domain.Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(assign)
+            .student(student1)
+            .studentText("Answer")
+            .aiScore(88.0)
+            .build();
+
+        when(submissionRepository.findByAssignmentIdIn(List.of(assign.getId()))).thenReturn(List.of(sub));
+
+        List<GroupTaskResponse> res = taskService.getTasksForGroup(groupId, teacherUser);
+        assertEquals(1, res.size());
+        GroupTaskResponse gtr = res.get(0);
+        assertEquals(task.getId(), gtr.getTaskId());
+        assertEquals("Passive Voice", gtr.getGrammarTopic());
+        assertEquals(1, gtr.getAssignedStudentCount());
+        assertEquals(1, gtr.getCompletedStudentCount());
+        assertEquals(88.0, gtr.getAvgScore());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: transferring or copying tasks between cohorts.
+     */
+    @Test
+    void testTransferTaskAllScenarios() {
+        UUID sourceGroupId = UUID.randomUUID();
+        UUID targetGroupId = UUID.randomUUID();
+        UUID taskId = UUID.randomUUID();
+
+        TransferTaskRequest req = TransferTaskRequest.builder()
+            .targetGroupId(targetGroupId)
+            .keepInSource(false)
+            .build();
+
+        // 1. Non-teacher throws
+        assertThrows(ForbiddenException.class, () -> taskService.transferTask(sourceGroupId, taskId, req, studentUser));
+
+        // 2. Same source and target group throws
+        TransferTaskRequest sameReq = TransferTaskRequest.builder().targetGroupId(sourceGroupId).build();
+        assertThrows(IllegalArgumentException.class, () -> taskService.transferTask(sourceGroupId, taskId, sameReq, teacherUser));
+
+        // 3. Not owner of source group
+        User otherTeacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        Group sourceGroupOther = Group.builder().id(sourceGroupId).name("Source Other").teacher(otherTeacher).build();
+        when(groupRepository.findById(sourceGroupId)).thenReturn(Optional.of(sourceGroupOther));
+        assertThrows(ForbiddenException.class, () -> taskService.transferTask(sourceGroupId, taskId, req, teacherUser));
+
+        // 4. Not owner of target group
+        Group sourceGroup = Group.builder().id(sourceGroupId).name("Source").teacher(teacherUser).build();
+        Group targetGroupOther = Group.builder().id(targetGroupId).name("Target Other").teacher(otherTeacher).build();
+        when(groupRepository.findById(sourceGroupId)).thenReturn(Optional.of(sourceGroup));
+        when(groupRepository.findById(targetGroupId)).thenReturn(Optional.of(targetGroupOther));
+        assertThrows(ForbiddenException.class, () -> taskService.transferTask(sourceGroupId, taskId, req, teacherUser));
+
+        // 5. Target group tier limit exceeded
+        Group targetGroup = Group.builder().id(targetGroupId).name("Target").teacher(teacherUser).build();
+        when(groupRepository.findById(targetGroupId)).thenReturn(Optional.of(targetGroup));
+        when(groupRepository.findByTeacher(teacherUser)).thenReturn(List.of(sourceGroup, targetGroup));
+
+        PricingProperties.TierConfig tierConfig = new PricingProperties.TierConfig();
+        tierConfig.setMaxGroups(1); // Free plan with 1 active group limit
+        when(pricingProperties.getTierConfig(any())).thenReturn(tierConfig);
+
+        assertThrows(QuotaExceededException.class, () -> taskService.transferTask(sourceGroupId, taskId, req, teacherUser));
+
+        // 6. Successful MOVE transfer (keepInSource = false)
+        tierConfig.setMaxGroups(5);
+        Task task = Task.builder()
+            .id(taskId)
+            .type(TaskType.MCQ)
+            .cefrLevel(CefrLevel.B1)
+            .build();
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+
+        User studentSource = User.builder().id(UUID.randomUUID()).fullName("Student Source").build();
+        GroupStudent gsSource = GroupStudent.builder().group(sourceGroup).student(studentSource).isActive(true).build();
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(sourceGroupId)).thenReturn(List.of(gsSource));
+
+        User studentTarget = User.builder().id(UUID.randomUUID()).fullName("Student Target").build();
+        GroupStudent gsTarget = GroupStudent.builder().group(targetGroup).student(studentTarget).isActive(true).build();
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(targetGroupId)).thenReturn(List.of(gsTarget));
+
+        TaskAssignment sourceAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(studentSource)
+            .assignedBy(teacherUser)
+            .status(AssignmentStatus.PENDING)
+            .attemptsUsed(0)
+            .build();
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentSource.getId(), taskId))
+            .thenReturn(Optional.of(sourceAssignment));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentTarget.getId(), taskId))
+            .thenReturn(Optional.empty());
+
+        taskService.transferTask(sourceGroupId, taskId, req, teacherUser);
+
+        // Target student received assignment
+        verify(taskAssignmentRepository).save(any(TaskAssignment.class));
+        verify(notificationService).send(eq(studentTarget), anyString(), eq(NotificationType.TASK));
+        // Source student unstarted pending assignment deleted
+        verify(taskAssignmentRepository).delete(sourceAssignment);
+
+        // 7. Successful COPY transfer (keepInSource = true)
+        TransferTaskRequest copyReq = TransferTaskRequest.builder()
+            .targetGroupId(targetGroupId)
+            .keepInSource(true)
+            .build();
+        clearInvocations(taskAssignmentRepository);
+
+        taskService.transferTask(sourceGroupId, taskId, copyReq, teacherUser);
+        verify(taskAssignmentRepository).save(any(TaskAssignment.class));
+        verify(taskAssignmentRepository, never()).delete(any(TaskAssignment.class));
     }
 }
 

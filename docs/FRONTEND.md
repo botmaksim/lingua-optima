@@ -42,7 +42,7 @@ frontend/
 │   │   ├── sessionApi.ts      — startSession(), getNextQuestion(), submitAnswer(), completeSession(), getActiveSession()
 │   │   ├── submissionApi.ts   — submitText(), submitImage(), getSubmissions(), overrideScore()
 │   │   ├── progressApi.ts     — getMyProgress(), getStudentProgress(), getGroupProgress()
-│   │   ├── groupApi.ts        — getGroups(), createGroup(), addStudent(), removeStudent(), deleteGroup()
+│   │   ├── groupApi.ts        — getGroups(), createGroup(), addStudent(), removeStudent(), deleteGroup(), getGroupTasks(), transferTask()
 │   │   ├── notificationApi.ts — connectSSE(), markAsRead()
 │   │   ├── subscriptionApi.ts — getMyTier(), getUsage(), upgradeTier()
 │   │   ├── apiKeyApi.ts       — getKeys(), saveKey(provider, rawKey, modelName), deleteKey()
@@ -82,8 +82,8 @@ frontend/
 │   │   │
 │   │   ├── teacher/           — Teacher-only components
 │   │   │   ├── TeacherDashboard.tsx   — Educator Command Center: summary stats, Educator Toolkit & Modules grid (Cohorts, Configurator, Submissions, Reports), student groups list with quick actions
-│   │   │   ├── StudentGroups.tsx      — Group list (name, student count), student search, CEFR filters, hide/unhide toggles, pagination, and student alias renaming modal. Buttons: [+ New Group] [+ Add Student by Email] [Edit Student Name] [Remove Student] [Delete Group]
-│   │   │   ├── ConfigureTask.tsx      — AI Provider & Model selector, Eco Mode, curriculum catalog & custom topic selector, point budgeting (auto/manual question scores), interactive live preview editor (reorder, delete, edit questions & answer key). Buttons: [Preview] [Deploy to Students] [Save Template]
+│   │   │   ├── StudentGroups.tsx      — Dual-tab cohort management: Students & Roster (search, CEFR filters, hide/unhide, pagination, student alias renaming) and Assigned Tasks (completion metrics, avg score, due dates). Includes Transfer / Move / Copy Assignment modal between educator cohorts. Buttons: [+ New Group] [+ Add Student] [Transfer / Copy] [Assign Task]
+│   │   │   ├── ConfigureTask.tsx      — Multi-cohort simultaneous assignment generator & deployer (Select All / Clear, student count sum, URL ?groupId preselection), AI Provider & Model selector, Eco Mode, curriculum catalog & custom topic selector, point budgeting, interactive live preview editor. Buttons: [Preview] [Deploy to Students] [Save Template]
 │   │   │   ├── SubmissionsReview.tsx  — Educator review queue (`GET /api/submissions/teacher`) strictly isolated to taught student submissions. Search by student/group/task, status filter, hide/unhide toggles, pagination. Expandable question-by-question breakdown with answer options, inline AI feedback & advice editor, and manual grade override without clobbering.
 │   │   │   └── ExportReports.tsx      — Cohort performance report generator (PDF/CSV) featuring comprehensive breakdown across all assigned homeworks, student submission statuses, attempt counters, scores, and teacher commentary.
 │   │   │
@@ -110,7 +110,7 @@ frontend/
 │   │   ├── task.ts            — Task, TaskQuestion, TaskParams (with provider & modelName), TaskType
 │   │   ├── submission.ts      — Submission, SubmissionResult, EssayScore
 │   │   ├── session.ts         — SessionState, AnswerFeedback
-│   │   ├── group.ts           — Group, GroupStudent
+│   │   ├── group.ts           — Group, GroupStudent, GroupTask, TransferTaskRequest
 │   │   ├── subscription.ts    — SubscriptionTier, UsageCounter
 │   │   ├── notification.ts    — Notification, NotificationType
 │   │   └── progress.ts        — ProgressRecord, GroupProgress

@@ -462,6 +462,42 @@ describe('ConfigureTask component', () => {
     fireEvent.click(distributeBtn);
     expect(screen.getByText(/50 \/ 50 pts/i)).toBeInTheDocument();
   });
+
+  it('supports multi-cohort selection and displays cohort total count banner', async () => {
+    const { groupApi } = await import('../api/groupApi');
+    const { taskApi } = await import('../api/taskApi');
+    const { apiKeyApi } = await import('../api/apiKeyApi');
+    const { ConfigureTask } = await import('../components/teacher/ConfigureTask');
+
+    vi.spyOn(apiKeyApi, 'getKeys').mockResolvedValue([]);
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([
+      { id: 'g1', name: 'Cohort Alpha', studentCount: 10 },
+      { id: 'g2', name: 'Cohort Beta', studentCount: 15 },
+    ] as any);
+    vi.spyOn(taskApi, 'getTopicsCatalog').mockResolvedValue({
+      topicsByLevel: { B1: ['Past Simple'] },
+      mixedTopicsByLevel: {},
+      crossLevelTopics: [],
+      domains: ['Everyday Life'],
+    } as any);
+
+    render(
+      <MemoryRouter>
+        <ConfigureTask />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/Cohort Alpha/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cohort Beta/i)).toBeInTheDocument();
+
+    // Select second group
+    const betaBtn = screen.getByText(/Cohort Beta/i).closest('button')!;
+    fireEvent.click(betaBtn);
+
+    // Multi-cohort deployment banner
+    expect(await screen.findByText(/Deploying simultaneously to/i)).toBeInTheDocument();
+    expect(screen.getByText(/25 students total/i)).toBeInTheDocument();
+  });
 });
 
 describe('Student account renaming', () => {
@@ -736,6 +772,75 @@ describe('StudentGroups component', () => {
     const hiddenTabBtn = screen.getByRole('button', { name: /hidden 1/i });
     fireEvent.click(hiddenTabBtn);
     expect(screen.getByTitle(/unhide student/i)).toBeInTheDocument();
+  });
+
+  it('switches to Assigned Tasks tab and opens transfer task modal', async () => {
+    const { groupApi } = await import('../api/groupApi');
+    const { StudentGroups } = await import('../components/teacher/StudentGroups');
+
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([
+      { id: 'grp-1', name: 'Cohort One', studentCount: 5, createdAt: '2026-10-01T00:00:00Z' },
+      { id: 'grp-2', name: 'Cohort Two', studentCount: 8, createdAt: '2026-10-01T00:00:00Z' },
+    ] as any);
+
+    vi.spyOn(groupApi, 'getGroupDetails').mockResolvedValue({
+      id: 'grp-1',
+      name: 'Cohort One',
+      studentCount: 5,
+      createdAt: '2026-10-01T00:00:00Z',
+      students: [],
+      pendingStudents: [],
+    } as any);
+
+    vi.spyOn(groupApi, 'getGroupTasks').mockResolvedValue([
+      {
+        taskId: 't-101',
+        type: 'MCQ',
+        cefrLevel: 'B2',
+        grammarTopic: 'Reported Speech',
+        domain: 'Workplace',
+        totalPoints: 100,
+        assignedStudentCount: 5,
+        completedStudentCount: 3,
+        avgScore: 82,
+        createdAt: '2026-10-10T00:00:00Z',
+      },
+    ] as any);
+
+    const transferSpy = vi.spyOn(groupApi, 'transferTask').mockResolvedValue();
+
+    render(
+      <MemoryRouter>
+        <StudentGroups />
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Cohort One')).toBeInTheDocument();
+
+    // Click Assigned Tasks tab
+    const tasksTabBtn = screen.getByRole('button', { name: /assigned tasks/i });
+    fireEvent.click(tasksTabBtn);
+
+    expect(await screen.findByText('Reported Speech')).toBeInTheDocument();
+    expect(screen.getByText(/3 \/ 5/i)).toBeInTheDocument();
+
+    // Click Transfer / Copy button
+    const transferBtn = screen.getByRole('button', { name: /transfer \/ copy/i });
+    fireEvent.click(transferBtn);
+
+    expect(await screen.findByText('Transfer Assignment')).toBeInTheDocument();
+    expect(screen.getByText('Target Destination Cohort')).toBeInTheDocument();
+
+    // Submit transfer (Move mode default)
+    const submitTransferBtn = screen.getByRole('button', { name: /move to target cohort/i });
+    fireEvent.click(submitTransferBtn);
+
+    await waitFor(() => {
+      expect(transferSpy).toHaveBeenCalledWith('grp-1', 't-101', expect.objectContaining({
+        targetGroupId: 'grp-2',
+        keepInSource: false,
+      }));
+    });
   });
 });
 

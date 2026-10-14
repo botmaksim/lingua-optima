@@ -23,10 +23,12 @@ import {
   RotateCcw,
   FileText,
   Lock,
+  ArrowRightLeft,
+  BookOpen,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { userApi } from '../../api/userApi';
-import { Group } from '../../types/group';
+import { Group, GroupTask } from '../../types/group';
 import { User, CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -82,6 +84,19 @@ export const StudentGroups: React.FC = () => {
   const [studentPage, setStudentPage] = useState(1);
   const [studentPageSize, setStudentPageSize] = useState(10);
 
+  // Cohort primary tab (Roster vs Assigned Tasks)
+  const [cohortMainTab, setCohortMainTab] = useState<'roster' | 'tasks'>('roster');
+  const [groupTasks, setGroupTasks] = useState<GroupTask[]>([]);
+  const [isLoadingTasks, setIsLoadingTasks] = useState<boolean>(false);
+
+  // Transfer / Move task modal state
+  const [transferModalTask, setTransferModalTask] = useState<GroupTask | null>(null);
+  const [transferTargetGroupId, setTransferTargetGroupId] = useState<string>('');
+  const [transferKeepInSource, setTransferKeepInSource] = useState<boolean>(false);
+  const [transferDueDate, setTransferDueDate] = useState<string>('');
+  const [transferMaxAttempts, setTransferMaxAttempts] = useState<number>(1);
+  const [isTransferring, setIsTransferring] = useState<boolean>(false);
+
   // Confirm dialog state
   const [confirmConfig, setConfirmConfig] = useState<{
     isOpen: boolean;
@@ -96,6 +111,22 @@ export const StudentGroups: React.FC = () => {
     message: '',
     onConfirm: () => {},
   });
+
+  /**
+   * @brief Loads all tasks assigned to the selected cohort.
+   * @param id Cohort identifier.
+   */
+  const loadGroupTasks = async (id: string) => {
+    setIsLoadingTasks(true);
+    try {
+      const tasks = await groupApi.getGroupTasks(id);
+      setGroupTasks(tasks);
+    } catch (err) {
+      console.error('Failed to load group tasks:', err);
+    } finally {
+      setIsLoadingTasks(false);
+    }
+  };
 
   /**
    * @brief Loads all educator cohorts.
@@ -115,15 +146,71 @@ export const StudentGroups: React.FC = () => {
   };
 
   /**
-   * @brief Loads comprehensive details for a single cohort including rosters.
+   * @brief Loads comprehensive details for a single cohort including rosters and tasks.
    * @param id Cohort identifier.
    */
   const loadGroupDetails = async (id: string) => {
     try {
       const details = await groupApi.getGroupDetails(id);
       setSelectedGroup(details);
+      loadGroupTasks(id);
     } catch (err) {
       console.error('Failed to load group details:', err);
+    }
+  };
+
+  /**
+   * @brief Opens the transfer / copy modal for an assigned task.
+   * @param task Target assigned task.
+   */
+  const handleOpenTransferModal = (task: GroupTask) => {
+    setTransferModalTask(task);
+    const availableGroups = groups.filter((g) => g.id !== selectedGroup?.id);
+    setTransferTargetGroupId(availableGroups.length > 0 ? availableGroups[0].id : '');
+    setTransferKeepInSource(false);
+    setTransferDueDate(task.dueDate || '');
+    setTransferMaxAttempts(task.maxAttempts ?? 1);
+  };
+
+  /**
+   * @brief Dispatches the task transfer or copy request to backend.
+   * @param e Form submit event.
+   */
+  const handleExecuteTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedGroup || !transferModalTask || !transferTargetGroupId) return;
+    setIsTransferring(true);
+    try {
+      const targetGroup = groups.find((g) => g.id === transferTargetGroupId);
+      await groupApi.transferTask(selectedGroup.id, transferModalTask.taskId, {
+        targetGroupId: transferTargetGroupId,
+        keepInSource: transferKeepInSource,
+        dueDate: transferDueDate || undefined,
+        maxAttempts: transferMaxAttempts,
+      });
+      addToast({
+        type: 'success',
+        title: transferKeepInSource ? 'Task Copied' : 'Task Transferred',
+        message: transferKeepInSource
+          ? `Assignment "${transferModalTask.grammarTopic}" copied to group "${targetGroup?.name}".`
+          : `Assignment "${transferModalTask.grammarTopic}" moved to group "${targetGroup?.name}".`,
+      });
+      setTransferModalTask(null);
+      await loadGroupTasks(selectedGroup.id);
+      await loadGroups();
+    } catch (err: any) {
+      console.error('Failed to transfer task:', err);
+      const msg = err.response?.data?.message || 'Failed to transfer task.';
+      addToast({
+        type: 'error',
+        title: 'Transfer Failed',
+        message: msg,
+      });
+      if (err.response?.status === 402 || err.response?.status === 429) {
+        openUpgradeWall(msg);
+      }
+    } finally {
+      setIsTransferring(false);
     }
   };
 
@@ -578,7 +665,58 @@ export const StudentGroups: React.FC = () => {
                 </div>
               </div>
 
-              {/* Add Student by Email */}
+              {/* Primary Cohort View Tabs: Students & Roster vs Assigned Tasks */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setCohortMainTab('roster')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 ${
+                      cohortMainTab === 'roster'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <UserIcon className="w-4 h-4" />
+                    <span>Students & Roster</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      cohortMainTab === 'roster' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {selectedGroup.studentCount}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCohortMainTab('tasks')}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-2 ${
+                      cohortMainTab === 'tasks'
+                        ? 'bg-primary text-white shadow-sm'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Assigned Tasks</span>
+                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${
+                      cohortMainTab === 'tasks' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                    }`}>
+                      {groupTasks.length}
+                    </span>
+                  </button>
+                </div>
+
+                <Link
+                  to={`/teacher/configure?groupId=${selectedGroup.id}`}
+                  className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Assign / Generate Task</span>
+                </Link>
+              </div>
+
+              {cohortMainTab === 'roster' ? (
+                <>
+                  {/* Add Student by Email */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-3">
                 <div className="flex items-center space-x-2 text-xs font-bold text-slate-700">
                   <UserPlus className="w-4 h-4 text-primary" />
@@ -914,8 +1052,102 @@ export const StudentGroups: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </>
           ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Tasks Assigned to {selectedGroup.name} ({groupTasks.length})
+                </h3>
+              </div>
+
+              {isLoadingTasks ? (
+                <LoadingSpinner size="sm" message="Loading assigned tasks..." />
+              ) : groupTasks.length === 0 ? (
+                <div className="p-12 text-center text-slate-400 text-xs space-y-3 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                  <BookOpen className="w-8 h-8 mx-auto text-slate-300" />
+                  <p className="font-semibold text-slate-700 text-sm">No tasks assigned to this cohort yet</p>
+                  <p className="text-slate-500 max-w-sm mx-auto">
+                    Generate new AI assignments or assign curriculum practice tasks directly to this group.
+                  </p>
+                  <Link
+                    to={`/teacher/configure?groupId=${selectedGroup.id}`}
+                    className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Generate Task for {selectedGroup.name}</span>
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {groupTasks.map((t) => (
+                    <div
+                      key={t.taskId}
+                      className="p-4 rounded-2xl bg-white border border-slate-200/80 hover:border-slate-300 shadow-sm space-y-3 transition"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <CefrBadge level={t.cefrLevel as CefrLevel} size="sm" />
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700">
+                            {t.type}
+                          </span>
+                          <span className="text-xs font-bold text-slate-900">{t.grammarTopic}</span>
+                          <span className="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100">
+                            {t.domain}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center space-x-2 self-start sm:self-auto">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenTransferModal(t)}
+                            className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition shadow-sm"
+                            title="Move or copy this assignment to another cohort group"
+                          >
+                            <ArrowRightLeft className="w-3.5 h-3.5" />
+                            <span>Transfer / Copy</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Total Points</span>
+                          <span className="font-bold text-slate-800">{t.totalPoints} pts</span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Submissions</span>
+                          <span className="font-bold text-slate-800">
+                            {t.completedStudentCount} / {t.assignedStudentCount}
+                            <span className="text-slate-400 font-normal ml-1">
+                              ({t.assignedStudentCount > 0 ? Math.round((t.completedStudentCount / t.assignedStudentCount) * 100) : 0}%)
+                            </span>
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Average Score</span>
+                          <span className="font-bold text-slate-800">
+                            {t.avgScore != null ? `${t.avgScore}%` : 'No grades yet'}
+                          </span>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block mb-0.5">Due Date</span>
+                          <span className="font-medium text-slate-700 truncate block">
+                            {t.dueDate ? new Date(t.dueDate).toLocaleDateString() : 'No deadline'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
             <div className="bg-white rounded-3xl p-12 text-center text-slate-500 border border-slate-100">
               Select or create a cohort to view enrolled students.
             </div>
@@ -976,6 +1208,182 @@ export const StudentGroups: React.FC = () => {
                 {isSavingName ? 'Saving...' : 'Save Name'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Transfer / Copy Assignment Modal */}
+      {transferModalTask && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 border border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-primary flex items-center justify-center">
+                  <ArrowRightLeft className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Transfer Assignment</h3>
+                  <p className="text-xs text-slate-400">
+                    From cohort: <strong className="text-slate-700">{selectedGroup?.name}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTransferModalTask(null)}
+                className="p-1 rounded-xl text-slate-400 hover:bg-slate-100 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Task summary */}
+            <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+              <div className="flex items-center space-x-2.5">
+                <CefrBadge level={transferModalTask.cefrLevel as CefrLevel} size="sm" />
+                <div>
+                  <span className="text-xs font-bold text-slate-800 block">
+                    {transferModalTask.grammarTopic}
+                  </span>
+                  <span className="text-[11px] text-slate-500">
+                    {transferModalTask.type} · {transferModalTask.domain} · {transferModalTask.totalPoints} pts
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleExecuteTransfer} className="space-y-4">
+              {/* Target Group */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Target Destination Cohort
+                </label>
+                {groups.filter((g) => g.id !== selectedGroup?.id).length === 0 ? (
+                  <p className="text-xs text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    No other cohort groups available. Create another group first to transfer tasks.
+                  </p>
+                ) : (
+                  <select
+                    value={transferTargetGroupId}
+                    onChange={(e) => setTransferTargetGroupId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  >
+                    {groups
+                      .filter((g) => g.id !== selectedGroup?.id)
+                      .map((g) => (
+                        <option key={g.id} value={g.id}>
+                          {g.name} ({g.studentCount} students){g.isLocked ? ' [Read-Only]' : ''}
+                        </option>
+                      ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Mode: Move vs Copy */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Transfer Mode
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setTransferKeepInSource(false)}
+                    className={`p-3 rounded-2xl border text-left transition ${
+                      !transferKeepInSource
+                        ? 'border-primary bg-indigo-50/60 ring-2 ring-primary/20'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                        !transferKeepInSource ? 'border-primary bg-primary' : 'border-slate-300'
+                      }`}>
+                        {!transferKeepInSource && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800">Move (Default)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-normal pl-5">
+                      Transfers task to new cohort. Removes unstarted assignments from current cohort while preserving completed grades.
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTransferKeepInSource(true)}
+                    className={`p-3 rounded-2xl border text-left transition ${
+                      transferKeepInSource
+                        ? 'border-primary bg-indigo-50/60 ring-2 ring-primary/20'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
+                        transferKeepInSource ? 'border-primary bg-primary' : 'border-slate-300'
+                      }`}>
+                        {transferKeepInSource && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </span>
+                      <span className="text-xs font-bold text-slate-800">Copy</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-normal pl-5">
+                      Keeps assignment in current cohort and additionally assigns it to the target cohort.
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Due Date & Max Attempts */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
+                    Due Date (Optional)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={transferDueDate}
+                    onChange={(e) => setTransferDueDate(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
+                    Allowed Attempts
+                  </label>
+                  <select
+                    value={transferMaxAttempts}
+                    onChange={(e) => setTransferMaxAttempts(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  >
+                    <option value={1}>1 Attempt (Default)</option>
+                    <option value={0}>∞ Unlimited Attempts</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setTransferModalTask(null)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isTransferring || !transferTargetGroupId}
+                  className="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50 flex items-center space-x-1.5"
+                >
+                  <ArrowRightLeft className="w-4 h-4" />
+                  <span>
+                    {isTransferring
+                      ? 'Processing...'
+                      : transferKeepInSource
+                      ? 'Copy to Target Cohort'
+                      : 'Move to Target Cohort'}
+                  </span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

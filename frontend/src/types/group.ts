@@ -60,3 +60,32 @@ export interface CreateGroupRequest {
   /** @brief Property representing name in CreateGroupRequest. */
   name: string;
 }
+
+/**
+ * @brief Representation of an educational task assigned to a study cohort.
+ */
+export interface GroupTask {
+  taskId: string;
+  type: string;
+  cefrLevel: string;
+  grammarTopic: string;
+  domain: string;
+  totalPoints: number;
+  dueDate?: string;
+  maxAttempts?: number;
+  assignedStudentCount: number;
+  completedStudentCount: number;
+  avgScore?: number;
+  createdAt: string;
+}
+
+/**
+ * @brief Request payload for transferring or copying an assigned task between cohorts.
+ */
+export interface TransferTaskRequest {
+  targetGroupId: string;
+  keepInSource?: boolean;
+  dueDate?: string;
+  maxAttempts?: number;
+}
+

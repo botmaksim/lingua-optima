@@ -91,4 +91,28 @@ export const groupApi = {
   declineInvitation: async (groupId: string): Promise<void> => {
     await axiosInstance.post(`/groups/${groupId}/invitation/decline`);
   },
+
+  /**
+   * @brief Retrieves all educational tasks currently assigned to a group cohort.
+   * @param groupId Unique identifier of the group.
+   * @return Promise resolving to array of GroupTask objects.
+   */
+  getGroupTasks: async (groupId: string): Promise<import('../types/group').GroupTask[]> => {
+    const res = await axiosInstance.get<import('../types/group').GroupTask[]>(`/groups/${groupId}/tasks`);
+    return res.data;
+  },
+
+  /**
+   * @brief Transfers or copies an assigned task from one cohort to another.
+   * @param sourceGroupId Source group identifier.
+   * @param taskId Unique identifier of the task.
+   * @param request Transfer options including targetGroupId and keepInSource.
+   */
+  transferTask: async (
+    sourceGroupId: string,
+    taskId: string,
+    request: import('../types/group').TransferTaskRequest
+  ): Promise<void> => {
+    await axiosInstance.post(`/groups/${sourceGroupId}/tasks/${taskId}/transfer`, request);
+  },
 };

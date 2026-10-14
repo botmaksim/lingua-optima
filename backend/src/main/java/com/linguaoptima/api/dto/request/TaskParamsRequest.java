@@ -14,6 +14,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
 /**
  * @brief Request DTO specifying CEFR level, topic, domain, and type for AI task generation.
  */
@@ -69,4 +73,13 @@ public class TaskParamsRequest {
 
     /** @brief Optional Eco Mode flag to skip verbose rule and vocabulary context to conserve prompt tokens. */
     private Boolean ecoMode;
+
+    /** @brief Optional target cohort group IDs for direct multi-group assignment upon generation. */
+    private List<UUID> groupIds;
+
+    /** @brief Optional submission due date when assigning to cohorts upon generation. */
+    private LocalDateTime dueDate;
+
+    /** @brief Optional maximum allowed attempts when assigning to cohorts upon generation. */
+    private Integer maxAttempts;
 }

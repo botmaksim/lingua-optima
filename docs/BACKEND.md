@@ -77,8 +77,9 @@ backend/
 │   │   │   ├── RegisterRequest.java    — email, password, fullName, role
 │   │   │   ├── LoginRequest.java       — email, password
 │   │   │   ├── GoogleAuthRequest.java  — credential, role
-│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty
-│   │   │   ├── AssignTaskRequest.java  — groupIds[], dueDate
+│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty, groupIds[], dueDate, maxAttempts
+│   │   │   ├── AssignTaskRequest.java  — groupIds[], dueDate, maxAttempts
+│   │   │   ├── TransferTaskRequest.java — targetGroupId, keepInSource, dueDate, maxAttempts
 │   │   │   ├── TextSubmissionRequest.java — text, assignmentId, type (GRAMMAR/ESSAY)
 │   │   │   ├── OverrideRequest.java    — overrideScore, teacherComment
 │   │   │   ├── AnswerRequest.java      — questionId, answer
@@ -93,6 +94,7 @@ backend/
 │   │       ├── TokenResponse.java     — accessToken, user info
 │   │       ├── UserResponse.java      — id, email, fullName, role, cefrLevel, displayAlias, streakCount
 │   │       ├── TaskResponse.java      — id, type, cefrLevel, content, questions
+│   │       ├── GroupTaskResponse.java — taskId, type, cefrLevel, grammarTopic, domain, totalPoints, dueDate, maxAttempts, assignedStudentCount, completedStudentCount, avgScore, createdAt
 │   │       ├── QuestionResponse.java  — id, questionText, options (for MCQ), difficulty
 │   │       ├── AnswerFeedbackResponse.java — isCorrect, correctAnswer, explanation, newDifficulty
 │   │       ├── SubmissionResultResponse.java — originalText, items, corrections, score, feedback, rubric breakdown, aiAnalysis
@@ -274,10 +276,10 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **User** | DELETE | `/api/users/me` | Yes | ALL | — | 204 No Content | Delete account and cascade assignments/submissions (GDPR) |
 | **Task** | GET | `/api/tasks` | Yes | ALL | — | `List<TaskResponse>` | List accessible tasks (templates, self-created, assigned) |
 | **Task** | GET | `/api/tasks/{id}` | Yes | ALL | — | `TaskResponse` | Retrieve task details by ID |
-| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task (supports Eco Mode, topic catalog, custom topics) |
+| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task (supports multi-group direct deployment via `groupIds`, Eco Mode, topic catalog, custom topics) |
 | **Task** | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Preview an AI-generated task without persisting |
 | **Task** | POST | `/api/tasks/template` | Yes | TEACHER | `TaskParamsRequest` | `TaskResponse` | Save a task as a reusable template |
-| **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups with custom point budgets |
+| **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups with custom point budgets and attempt limits |
 | **Session** | POST | `/api/sessions/start` | Yes | STUDENT, TEACHER | `StartSessionRequest` (`assignmentId` or `taskId`) | `SessionStateResponse` | Start an adaptive test session (auto-creates assignment if needed) |
 | **Session** | GET | `/api/sessions/active` | Yes | STUDENT, TEACHER | — | `SessionStateResponse` | Retrieve the active unfinished session (resume) |
 | **Session** | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT, TEACHER | — | `QuestionResponse` | Fetch the next question via the CAT algorithm |
@@ -295,6 +297,8 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **Group** | POST | `/api/groups/{id}/students` | Yes | TEACHER | `AddStudentRequest` (`email`) | 200 OK | Enroll student into group (reactivates if previously removed) |
 | **Group** | DELETE | `/api/groups/{id}/students/{uid}` | Yes | TEACHER | — | 204 No Content | Remove a student from a group (soft delete, hides submissions) |
 | **Group** | DELETE | `/api/groups/{id}` | Yes | TEACHER | — | 204 No Content | Delete a group |
+| **Group** | GET | `/api/groups/{id}/tasks` | Yes | TEACHER | — | `List<GroupTaskResponse>` | List educational tasks assigned to this cohort group with completion stats and avg score |
+| **Group** | POST | `/api/groups/{id}/tasks/{taskId}/transfer` | Yes | TEACHER | `TransferTaskRequest` (`targetGroupId`, `keepInSource`, `dueDate`, `maxAttempts`) | 200 OK | Move or copy an assigned task to another cohort group owned by teacher |
 | **Progress** | GET | `/api/progress/me` | Yes | STUDENT | — | `List<ProgressResponse>` | Retrieve personal grammar mastery progress across A1–C2 |
 | **Progress** | GET | `/api/progress/student/{id}` | Yes | TEACHER | — | `List<ProgressResponse>` | Retrieve progress for a specific student |
 | **Progress** | GET | `/api/progress/group/{id}` | Yes | TEACHER | — | `List<ProgressResponse>` | Retrieve aggregated progress for a group |

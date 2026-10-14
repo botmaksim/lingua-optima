@@ -40,6 +40,13 @@ public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     List<Submission> findByAssignmentId(UUID assignmentId);
 
     /**
+     * @brief Queries repository via findByAssignmentIdIn.
+     * @param assignmentIds List of assignment IDs.
+     * @return Query result (List&lt;Submission&gt;).
+     */
+    List<Submission> findByAssignmentIdIn(List<UUID> assignmentIds);
+
+    /**
      * @brief Queries repository via findByStudentIdInOrderBySubmittedAtDesc.
      * @param studentIds Filter parameter studentIds.
      * @return Query result (List&lt;Submission&gt;).

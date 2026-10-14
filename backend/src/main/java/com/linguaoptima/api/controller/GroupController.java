@@ -7,9 +7,12 @@ package com.linguaoptima.api.controller;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.AddStudentRequest;
 import com.linguaoptima.api.dto.request.CreateGroupRequest;
+import com.linguaoptima.api.dto.request.TransferTaskRequest;
 import com.linguaoptima.api.dto.response.GroupInvitationResponse;
 import com.linguaoptima.api.dto.response.GroupResponse;
+import com.linguaoptima.api.dto.response.GroupTaskResponse;
 import com.linguaoptima.api.service.GroupService;
+import com.linguaoptima.api.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +34,9 @@ public class GroupController {
 
     /** @brief Field representing group service in GroupController. */
     private final GroupService groupService;
+
+    /** @brief Field representing task service in GroupController. */
+    private final TaskService taskService;
 
     /**
      * @brief Retrieves all cohort groups managed by the authenticated educator.
@@ -167,5 +173,40 @@ public class GroupController {
     ) {
         groupService.declineInvitation(groupId, student);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * @brief Retrieves all educational tasks currently assigned to students in a specific cohort.
+     *
+     * @param groupId Unique identifier of the cohort group.
+     * @param teacher Authenticated educator principal.
+     * @return HTTP 200 with list of GroupTaskResponse items.
+     */
+    @GetMapping("/{id}/tasks")
+    public ResponseEntity<List<GroupTaskResponse>> getGroupTasks(
+        @PathVariable("id") UUID groupId,
+        @AuthenticationPrincipal User teacher
+    ) {
+        return ResponseEntity.ok(taskService.getTasksForGroup(groupId, teacher));
+    }
+
+    /**
+     * @brief Transfers or copies an assigned task from one cohort to another.
+     *
+     * @param sourceGroupId Source cohort identifier.
+     * @param taskId Unique identifier of the task.
+     * @param request Transfer parameters including targetGroupId and keepInSource.
+     * @param teacher Authenticated educator principal.
+     * @return HTTP 200 OK.
+     */
+    @PostMapping("/{id}/tasks/{taskId}/transfer")
+    public ResponseEntity<Void> transferTask(
+        @PathVariable("id") UUID sourceGroupId,
+        @PathVariable("taskId") UUID taskId,
+        @Valid @RequestBody TransferTaskRequest request,
+        @AuthenticationPrincipal User teacher
+    ) {
+        taskService.transferTask(sourceGroupId, taskId, request, teacher);
+        return ResponseEntity.ok().build();
     }
 }

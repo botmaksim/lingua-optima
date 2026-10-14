@@ -34,6 +34,10 @@ class GroupControllerTest {
     @Mock
     private GroupService groupService;
 
+    /** @brief Test fixture or mock dependency for task service. */
+    @Mock
+    private com.linguaoptima.api.service.TaskService taskService;
+
     /** @brief Test fixture or mock dependency for group controller. */
     @InjectMocks
     private GroupController groupController;
@@ -141,5 +145,43 @@ class GroupControllerTest {
         ResponseEntity<Void> res = groupController.declineInvitation(groupId, teacher);
         assertEquals(HttpStatus.NO_CONTENT, res.getStatusCode());
         verify(groupService).declineInvitation(groupId, teacher);
+    }
+
+    /**
+     * @brief Verifies unit test scenario: get group tasks.
+     */
+    @Test
+    void testGetGroupTasks() {
+        com.linguaoptima.api.dto.response.GroupTaskResponse taskResp =
+            com.linguaoptima.api.dto.response.GroupTaskResponse.builder()
+                .taskId(UUID.randomUUID())
+                .grammarTopic("Reported Speech")
+                .build();
+
+        when(taskService.getTasksForGroup(groupId, teacher)).thenReturn(List.of(taskResp));
+
+        ResponseEntity<List<com.linguaoptima.api.dto.response.GroupTaskResponse>> res =
+            groupController.getGroupTasks(groupId, teacher);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(1, res.getBody().size());
+        assertEquals("Reported Speech", res.getBody().get(0).getGrammarTopic());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: transfer task between groups.
+     */
+    @Test
+    void testTransferTask() {
+        UUID taskId = UUID.randomUUID();
+        UUID targetId = UUID.randomUUID();
+        com.linguaoptima.api.dto.request.TransferTaskRequest req =
+            com.linguaoptima.api.dto.request.TransferTaskRequest.builder()
+                .targetGroupId(targetId)
+                .keepInSource(false)
+                .build();
+
+        ResponseEntity<Void> res = groupController.transferTask(groupId, taskId, req, teacher);
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        verify(taskService).transferTask(groupId, taskId, req, teacher);
     }
 }

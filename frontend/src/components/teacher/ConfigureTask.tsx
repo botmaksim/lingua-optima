@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Send,
   Bookmark,
@@ -121,12 +121,19 @@ export const ConfigureTask: React.FC = () => {
   const [isSavingRule, setIsSavingRule] = useState<boolean>(false);
   const [isSavingVocab, setIsSavingVocab] = useState<boolean>(false);
 
+  const [searchParams] = useSearchParams();
+  const urlGroupId = searchParams.get('groupId');
+
   useEffect(() => {
     groupApi
       .getGroups()
       .then((data) => {
         setGroups(data);
-        if (data.length > 0) setSelectedGroupIds([data[0].id]);
+        if (urlGroupId && data.some((g) => g.id === urlGroupId)) {
+          setSelectedGroupIds([urlGroupId]);
+        } else if (data.length > 0) {
+          setSelectedGroupIds([data[0].id]);
+        }
       })
       .catch((err) => console.error('Failed to load groups:', err));
 
@@ -335,6 +342,9 @@ export const ConfigureTask: React.FC = () => {
     ruleFilePath: uploadedRuleFile?.serverPath || undefined,
     vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
     ecoMode,
+    groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
+    dueDate: dueDate || undefined,
+    maxAttempts,
   });
 
   /**
@@ -637,8 +647,7 @@ export const ConfigureTask: React.FC = () => {
         };
         await taskApi.createCustomTask(customReq);
       } else {
-        const task = await taskApi.generateTask(buildTaskParams());
-        await taskApi.assignTask(task.id, selectedGroupIds, dueDate || undefined, maxAttempts);
+        await taskApi.generateTask(buildTaskParams());
       }
 
       addToast({
@@ -795,9 +804,44 @@ export const ConfigureTask: React.FC = () => {
 
           {/* Cohort Groups */}
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Target Cohort Groups (Multi-select)
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Target Cohort Groups (Multi-select)
+              </label>
+              {groups.length > 1 && (
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedGroupIds(groups.map((g) => g.id))}
+                    className="text-[11px] font-semibold text-primary hover:underline"
+                  >
+                    Select All
+                  </button>
+                  <span className="text-slate-300">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedGroupIds([])}
+                    className="text-[11px] font-semibold text-slate-500 hover:underline"
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {selectedGroupIds.length > 1 && (
+              <div className="mb-2.5 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-800 flex items-center space-x-2">
+                <CheckCircle2 className="w-4 h-4 text-sky-600 flex-shrink-0" />
+                <span>
+                  Deploying simultaneously to <strong>{selectedGroupIds.length}</strong> cohorts ({
+                    groups
+                      .filter((g) => selectedGroupIds.includes(g.id))
+                      .reduce((acc, g) => acc + (g.studentCount || 0), 0)
+                  } students total).
+                </span>
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
               {groups.map((g) => {
                 const isSelected = selectedGroupIds.includes(g.id);
@@ -806,13 +850,16 @@ export const ConfigureTask: React.FC = () => {
                     type="button"
                     key={g.id}
                     onClick={() => toggleGroup(g.id)}
-                    className={`py-2 px-3.5 rounded-xl border text-xs font-semibold transition ${
+                    className={`py-2 px-3.5 rounded-xl border text-xs font-semibold transition flex items-center space-x-1.5 ${
                       isSelected
-                        ? 'border-accent bg-sky-50 text-sky-800'
+                        ? 'border-accent bg-sky-50 text-sky-800 ring-2 ring-sky-200'
                         : 'border-slate-200 hover:border-slate-300 text-slate-600'
                     }`}
                   >
-                    {g.name} ({g.studentCount})
+                    <span>{isSelected ? '✓ ' : ''}{g.name}</span>
+                    <span className="text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
+                      {g.studentCount}
+                    </span>
                   </button>
                 );
               })}
