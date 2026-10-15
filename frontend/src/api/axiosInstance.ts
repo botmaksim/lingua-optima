@@ -166,6 +166,12 @@ axiosInstance.interceptors.response.use(
       }
     }
 
+    if (error.config?.headers?.['X-Request-Id']) {
+      const reqId = error.config.headers['X-Request-Id'];
+      const status = error.response?.status || 'NETWORK_ERR';
+      console.warn(`[API ${status}] req=${reqId} ${error.config.method?.toUpperCase()} ${error.config.url}`);
+    }
+
     return Promise.reject(error);
   }
 );

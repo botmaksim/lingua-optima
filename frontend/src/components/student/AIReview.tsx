@@ -165,7 +165,11 @@ export const AIReview: React.FC = () => {
         ...submission.aiAnalysis,
         weaknesses,
         strengths,
-        suggestedTopics: suggestedTopics.length > 0 ? suggestedTopics : (weaknesses.length > 0 ? weaknesses : [submission.grammarTopic || 'Grammar & Sentence Structure']),
+        suggestedTopics: suggestedTopics.length > 0
+          ? suggestedTopics
+          : (weaknesses.length > 0
+              ? weaknesses
+              : [`${submission.grammarTopic || 'Grammar'} (Advanced Practice)`]),
       };
     }
 

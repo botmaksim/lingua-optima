@@ -171,6 +171,8 @@ public class ActionAuditFilter extends OncePerRequestFilter {
         if (normalized.equals("/api/auth/google")) return "AUTH_GOOGLE_OAUTH";
 
         if (normalized.equals("/api/tasks/generate")) return "TASK_GENERATE";
+        if (normalized.equals("/api/tasks/generate-multi")) return "TASK_GENERATE_MULTI";
+        if (normalized.equals("/api/tasks/{id}/transfer")) return "TASK_TRANSFER_COHORT";
         if (normalized.equals("/api/tasks/takeover")) return "GENERATION_TAKEOVER";
         if (normalized.equals("/api/tasks/template")) return "TASK_CREATE_TEMPLATE";
         if (normalized.equals("/api/tasks/{id}/assign")) return "TASK_ASSIGN_COHORT";
@@ -179,6 +181,14 @@ public class ActionAuditFilter extends OncePerRequestFilter {
         if (normalized.equals("/api/submissions/text")) return "SUBMISSION_TEXT_EVAL";
         if (normalized.equals("/api/submissions/image")) return "SUBMISSION_IMAGE_EVAL";
         if (normalized.equals("/api/submissions/{id}/override")) return "SUBMISSION_TEACHER_OVERRIDE";
+
+        if (normalized.equals("/api/sessions/start")) return "CAT_SESSION_START";
+        if (normalized.equals("/api/sessions/{id}/answer")) return "CAT_SESSION_ANSWER";
+        if (normalized.equals("/api/sessions/{id}/complete")) return "CAT_SESSION_COMPLETE";
+
+        if (normalized.equals("/api/users/me") && "PUT".equalsIgnoreCase(method)) return "USER_PROFILE_UPDATE";
+        if (normalized.equals("/api/users/me") && "DELETE".equalsIgnoreCase(method)) return "USER_GDPR_ERASURE";
+        if (normalized.equals("/api/users/{id}/name") && "PUT".equalsIgnoreCase(method)) return "STUDENT_ALIAS_RENAME";
 
         if (normalized.equals("/api/groups") && "POST".equalsIgnoreCase(method)) return "GROUP_CREATE";
         if (normalized.equals("/api/groups/{id}/students") && "POST".equalsIgnoreCase(method)) return "GROUP_INVITE_STUDENT";

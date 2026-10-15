@@ -979,7 +979,8 @@ public class SubmissionService {
                 int idx = 1;
                 for (JsonNode node : root) {
                     int qNum = idx++;
-                    String qText = node.path("questionText").asText("Diagnostic adaptive question " + qNum);
+                    String rawQText = node.path("questionText").asText("");
+                    String qText = !rawQText.isBlank() ? rawQText : "Diagnostic adaptive question " + qNum;
                     String ans = node.path("answer").asText("");
                     if (ans.isBlank()) {
                         ans = node.path("givenAnswer").asText("");
@@ -987,7 +988,8 @@ public class SubmissionService {
                     String corr = node.path("correctAnswer").asText("");
                     boolean isSkipped = isSkippedAnswer(ans);
                     boolean isCorr = !isSkipped && (node.path("isCorrect").asBoolean(false) || isAnswerMatching(ans, corr));
-                    String rule = node.path("grammarRule").asText("Adaptive grammar assessment");
+                    String rawRule = node.path("grammarRule").asText("");
+                    String rule = !rawRule.isBlank() ? rawRule : "Adaptive grammar assessment";
                     int diff = node.path("difficulty").asInt(2);
 
                     String exp = isCorr
@@ -1001,6 +1003,8 @@ public class SubmissionService {
                         for (JsonNode opt : node.get("options")) {
                             options.add(opt.asText());
                         }
+                    } else if (node.has("optionsJson")) {
+                        options = parseOptions(node.get("optionsJson").asText());
                     }
 
                     items.add(SubmissionItemResponse.builder()

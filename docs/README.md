@@ -9,6 +9,7 @@
 | Documentation Section | Link | Description |
 |---|---|---|
 | **Main Overview (README)** | [README.md](./README.md) | Architecture, tech stack, database, REST API, and security |
+| **Action Audit & Tracing** | [AUDIT_LOGGING.md](./AUDIT_LOGGING.md) | Structured JSON action audit logging, SLF4J MDC correlation tracing, and security events |
 | **Backend Specification** | [BACKEND.md](./BACKEND.md) | All controllers, services, repositories, DTOs, migrations, and exceptions |
 | **Frontend Specification** | [FRONTEND.md](./FRONTEND.md) | React components, Zustand stores, hooks, routing, and design system |
 | **AI & OCR Integration** | [AI_INTEGRATION.md](./AI_INTEGRATION.md) | Fallback chain (Groq, Gemini, BYOK), prompts, Zero-Retention OCR, and CAT |

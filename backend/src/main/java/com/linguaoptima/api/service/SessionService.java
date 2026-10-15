@@ -53,6 +53,9 @@ public class SessionService {
     private final GamificationService gamificationService;
     /** @brief Field representing object mapper in SessionService. */
     private final ObjectMapper objectMapper;
+    /** @brief Optional reference to SubmissionService for rich diagnostic enrichment upon completion. */
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private SubmissionService submissionService;
 
     /**
      * @brief Initiates a new adaptive testing session for a student's task assignment or direct task.
@@ -174,13 +177,21 @@ public class SessionService {
         progressService.updateFromSubmission(student, question.getGrammarRule(), isCorrect);
 
         List<Map<String, Object>> answers = parseAnswers(session.getAnswersJson());
-        answers.add(Map.of(
-            "questionId", question.getId().toString(),
-            "givenAnswer", request.getAnswer(),
-            "correctAnswer", question.getCorrectAnswer(),
-            "isCorrect", isCorrect,
-            "difficulty", oldDiff
-        ));
+        Map<String, Object> ansMap = new HashMap<>();
+        ansMap.put("questionId", question.getId().toString());
+        ansMap.put("questionText", question.getQuestionText() != null ? question.getQuestionText() : "");
+        ansMap.put("givenAnswer", request.getAnswer());
+        ansMap.put("correctAnswer", question.getCorrectAnswer());
+        ansMap.put("isCorrect", isCorrect);
+        ansMap.put("difficulty", oldDiff);
+        String resolvedRule = (question.getGrammarRule() != null && !question.getGrammarRule().isBlank())
+            ? question.getGrammarRule()
+            : (question.getTask() != null && question.getTask().getGrammarTopic() != null ? question.getTask().getGrammarTopic() : "Adaptive grammar assessment");
+        ansMap.put("grammarRule", resolvedRule);
+        if (question.getOptionsJson() != null && !question.getOptionsJson().isBlank()) {
+            ansMap.put("optionsJson", question.getOptionsJson());
+        }
+        answers.add(ansMap);
         session.setAnswersJson(writeAnswers(answers));
 
         boolean completed = session.getCurrentQuestionIndex() >= 10;
@@ -234,7 +245,11 @@ public class SessionService {
                 .submittedAt(LocalDateTime.now())
                 .build()));
 
-        return SubmissionResultResponse.fromEntity(sub);
+        SubmissionResultResponse response = SubmissionResultResponse.fromEntity(sub);
+        if (submissionService != null) {
+            submissionService.enrichSubmissionResult(response, sub, null);
+        }
+        return response;
     }
 
     /**

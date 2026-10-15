@@ -1,105 +1,282 @@
 # 📚 Lingua Optima — Adaptive AI-Powered English Mastery Platform
 
-> **An interactive platform for mastering the English language (CEFR A1–C2)** featuring AI-driven task generation (Groq Qwen 3.8 27B, GPT-OSS 120B & Llama 4), essay evaluation aligned with IELTS/CEFR rubrics (Google Gemini 3.8 Flash & Extended Thinking), multi-provider & multi-model BYOK routing with live vendor model synchronization (DeepSeek V4.1 Flash / V4 Pro, Alibaba Qwen 3.8 Max, Moonshot Kimi K3, OpenAI GPT-6 Astra / 6.1 Sol, Anthropic Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5), handwritten homework recognition (Zero-Retention Tesseract OCR), and Computerized Adaptive Testing (CAT).
+<div align="center">
+
+[![Java](https://img.shields.io/badge/Java-21-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3.4-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Docker](https://img.shields.io/badge/Docker_Compose-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+[![JaCoCo Coverage](https://img.shields.io/badge/JaCoCo-98%25_Lines_%7C_97%25_Instr-brightgreen?style=for-the-badge&logo=codecov&logoColor=white)](./docs/BACKEND.md)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](./LICENSE)
+
+**An enterprise-grade, interactive learning and assessment platform for mastering the English language across the entire CEFR continuum (A1–C2).**  
+Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubrics, multi-provider BYOK model routing with Cloudflare Edge proxying, Computerized Adaptive Testing (CAT), handwritten homework recognition via Zero-Retention Tesseract OCR, educator cohort orchestration with cross-group assignment transfer, and a structured enterprise action audit logging subsystem with distributed request correlation tracing.
+
+</div>
 
 ---
 
-## 🎬 Interactive Presentation & Documentation
+## 🎬 Interactive Presentation & Documentation Navigator
 
-> 📊 **[Open the Interactive Project Presentation (`docs/presentation.html`)](./docs/presentation.html)**  
-> 📘 **[Open the Compiled Doxygen Documentation (`docs/generated/html/index.html`)](./docs/generated/html/index.html)**
+> 📊 **[Open Interactive Project Presentation (`docs/presentation.html`)](./docs/presentation.html)** — A dynamic slide presentation and architecture deck runnable in any browser.  
+> 📘 **[Open Compiled Doxygen Reference (`docs/generated/html/index.html`)](./docs/generated/html/index.html)** — Full code documentation generated from Javadoc and TypeScript docstrings.
 
-### 🗂 Complete Documentation Navigator
+### 🗂 Documentation Index
 
-| Document | Link | Description |
+| Document | Link | Core Focus |
 |---|---|---|
-| **Master Architecture Overview** | [`docs/README.md`](./docs/README.md) | Full system specification, database ERD, complete REST API reference table, security architecture, and Redis key spaces |
-| **Backend Specification** | [`docs/BACKEND.md`](./docs/BACKEND.md) | Java 21 / Spring Boot 3 architecture, all controllers, services, repositories, DTOs, database migrations, and error handling |
-| **Frontend Specification** | [`docs/FRONTEND.md`](./docs/FRONTEND.md) | React 18 + TypeScript + Vite PWA architecture, components, Zustand stores, custom hooks, and routing |
-| **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Provider & model selection, live vendor model sync (`/models/:provider`), Cloudflare Edge reverse-proxy, fallback chain, prompt leak sanitization, Zero-Retention RAM OCR pipeline, and CAT algorithm |
-| **Cloudflare Edge AI Proxy** | [`cloudflare-proxy/README.md`](./cloudflare-proxy/README.md) | Cloudflare Worker (`worker.js` / `ai-proxy.mybsu.online`) reverse-proxy architecture, live vendor docs model scraper, route mapping for all 7 AI providers, and deployment guide |
-| **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, multi-stage Dockerfiles, Nginx, Cloudflare Tunnel & Edge Worker topology, GitHub Actions CI/CD, and `.env` configuration |
-| **Interactive Presentation** | [`docs/presentation.html`](./docs/presentation.html) | Interactive Pitch Deck and visual architecture walkthrough (opens directly in any browser) |
-| **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Automatically generated Doxygen documentation covering all packages, classes, methods, and types |
+| **Master Architecture** | [`docs/README.md`](./docs/README.md) | Full system specification, database ERD, complete REST API table, and security design |
+| **Action Audit & Logging** | [`docs/AUDIT_LOGGING.md`](./docs/AUDIT_LOGGING.md) | Structured JSON action audit logging, SLF4J MDC request tracing, and security events |
+| **Backend Specification** | [`docs/BACKEND.md`](./docs/BACKEND.md) | Java 21 / Spring Boot 3 architecture, all controllers, services, repositories, and migrations |
+| **Frontend Specification** | [`docs/FRONTEND.md`](./docs/FRONTEND.md) | React 18 + TypeScript + Vite PWA architecture, components, Zustand stores, and routing |
+| **AI & OCR Integration** | [`docs/AI_INTEGRATION.md`](./docs/AI_INTEGRATION.md) | Model selection, live sync, Cloudflare Edge proxy, RAM OCR pipeline, and CAT algorithm |
+| **Cloudflare Edge AI Proxy** | [`cloudflare-proxy/README.md`](./cloudflare-proxy/README.md) | Cloudflare Worker (`worker.js`) reverse-proxy, live vendor model scraper, and routing |
+| **DevOps & Infrastructure** | [`docs/DEVOPS.md`](./docs/DEVOPS.md) | Docker Compose, Nginx, Cloudflare Tunnel, GitHub Actions CI/CD, and `.env` guide |
+| **Interactive Presentation** | [`docs/presentation.html`](./docs/presentation.html) | Interactive pitch deck, architecture flowcharts, and system walkthrough |
+| **Doxygen Reference (HTML)** | [`docs/generated/html/index.html`](./docs/generated/html/index.html) | Auto-generated Doxygen API reference covering all backend and frontend classes |
 
+---
+
+## 🏗 High-Level System Architecture
+
+```
+                          [ Web Browser / Mobile PWA ]
+                                       │
+                    HTTPS / TLS (X-Request-Id, X-Device-Id)
+                                       ▼
+                       ┌───────────────────────────────┐
+                       │       Nginx Reverse Proxy     │
+                       └───────────────┬───────────────┘
+                                       │
+                  ┌────────────────────┴────────────────────┐
+                  ▼                                         ▼
+   ┌─────────────────────────────┐           ┌─────────────────────────────┐
+   │    Frontend SPA (Vite)      │           │ Spring Boot API (Java 21)   │
+   │  React 18 + TypeScript      │           │ ActionAuditFilter (MDC)     │
+   │  Zustand, Tailwind, KaTeX   │           │ JwtAuthenticationFilter     │
+   └─────────────────────────────┘           └──────────────┬──────────────┘
+                                                            │
+               ┌───────────────────────┬────────────────────┼───────────────────────┐
+               ▼                       ▼                    ▼                       ▼
+      ┌─────────────────┐     ┌─────────────────┐  ┌─────────────────┐     ┌─────────────────┐
+      │  PostgreSQL 16  │     │     Redis 7     │  │ Zero-Retention  │     │ Cloudflare Edge │
+      │  Relational DB  │     │ Sessions, Cache │  │  Tesseract OCR  │     │   AI Proxy &    │
+      │  Flyway Schema  │     │ Rate Limiting   │  │ (RAM processing)│     │  BYOK Routing   │
+      └─────────────────┘     └─────────────────┘  └─────────────────┘     └────────┬────────┘
+                                                                                    │
+                                           ┌────────────────────────────────────────┴────────┐
+                                           ▼                                                 ▼
+                              [ Western AI Providers ]                              [ Chinese Providers ]
+                              Gemini 3.8 Flash / Thinking                           DeepSeek V4.1 / Pro
+                              Groq Qwen 27B / Llama 4                               Alibaba Qwen 3.8 Max
+                              OpenAI GPT-6 / Claude 5.1                             Moonshot Kimi K3
+```
 
 ---
 
 ## 🚀 Core Capabilities & Architectural Principles
 
-1. **6 Core Modules**:
-   - **Self-Service Task Generator** — AI generation of exercises (`MCQ`, `GAP_FILL`, `REWRITE`, `ESSAY`) across 38+ CEFR grammar topics spanning the complete 6-level ladder (**A1 Beginner**, **A2 Elementary**, **B1 Intermediate**, **B2 Upper-Intermediate**, **C1 Advanced**, **C2 Mastery**) with per-task **AI Provider & Model Selection** synced live from vendor websites (DeepSeek V4.1 Flash / V4 Pro, Qwen 3.8 Max / Flash, Kimi K3 / K2.7, Gemini 3.8 Flash / Extended Thinking, Groq Qwen 3.8 27B / GPT-OSS 120B / Llama 4, GPT-6 Astra / 6.1 Sol / Luna, Claude Fable 5.1 / Opus 5.5 / Sonnet 5.5).
-   - **Zero-Retention Homework OCR** — handwritten homework photo recognition processed strictly in RAM with immediate byte-array zeroing (`Arrays.fill(bytes, (byte) 0)`).
-   - **AI Essay Scoring** — automated essay grading across 4 rubric criteria (*Task Achievement*, *Coherence & Cohesion*, *Lexical Resource*, *Grammatical Range & Accuracy*).
-   - **Computerized Adaptive Testing (CAT)** — real-time question difficulty adjustment (scale 1–5) and difficulty-weighted mastery score calculation.
-   - **Progress & Gap Analytics** — topic mastery radar charts, weak-spot identification (`masteryScore < 60%`), baseline start at A1, and automated CEFR level-up recommendations (`>= 85%` mastery across `>= 80%` of syllabus topics).
-   - **Educator Portal & Cohort Management** — student group/cohort management (up to 200 students per group, join codes, email invitations), task deployment with AI model customization and Eco Mode, **Interactive Task Preview Editor** (custom question prompts, answer key configuration, question reordering/deletion), **Point Budgeting** (custom total points with auto-distribution and per-question score editing), **Submission Review & Feedback Editor** (question-by-question student answer inspection, inline editing of AI diagnostic feedback, teacher advice, and score overrides without clobbering), search, filtering, hide toggles, pagination, student alias renaming (`PUT /api/users/{id}/name`), and **comprehensive academic report exports (PDF / CSV)** detailing all assigned homeworks, completion statuses, attempt counters, and teacher feedback.
-   - **Legal, Privacy & Knowledge Base Center** — dedicated public pages for **Privacy Policy** (`/privacy`, highlighting Zero-Retention OCR RAM-only processing, secure TLS AI communication, and GDPR/CCPA data rights), **Terms of Service** (`/terms`, academic integrity, fair use quotas, educator authority), and **Help Center & FAQ** (`/help`, live keyword search and categorized interactive accordions).
-   - **Self-Service Role Switching** — instant switching between Student and Educator modes via Profile (`PUT /api/users/me`), allowing users to both learn and teach.
+### 1. Computerized Adaptive Testing (CAT) & Item Response Theory
+- Dynamic difficulty adjustment (scale 1–4) responding in real-time to student correctness.
+- Difficulty-weighted scoring: questions at higher difficulty contribute proportionally greater weight to the final score.
+- Rich question-level evaluation records containing exact question sentences, grammar rule diagnostics, and option breakdowns.
 
-2. **Security, Authentication & Privacy (Security by Design)**:
-   - **Dual Authentication (Email + Google OAuth2) with 2-Step Email Verification** — supports classic email and password registration with mandatory 2-step verification (`POST /api/auth/send-verification-code` dispatches a 6-digit confirmation code via Gmail SMTP with a 60-second rate-limiting cooldown and 10-minute expiry; `POST /api/auth/register` verifies the code) as well as seamless one-click sign-in via **Google OAuth2 (Google Identity Services)** (`POST /api/auth/google`) with automatic profile provisioning on first login.
-   - **In-Memory Access JWT (15 min)** + **HttpOnly Strict Refresh Cookie (30 days)** backed by SHA-256 session token hashes in Redis.
-   - **AES-256-GCM Encryption & Multi-Model BYOK** for user-supplied API keys (`provider` + `model_name`, 12-byte random IV + 128-bit authentication tag).
-   - **Cloudflare Edge AI Reverse-Proxy & Live Vendor Model Sync** (`cloudflare-proxy/worker.js` at `https://ai-proxy.mybsu.online`) — routes Western AI API traffic through Cloudflare Edge (`*_BASE_URL`) to bypass regional GeoIP restrictions, supports direct low-latency Chinese providers (`DEEPSEEK`, `QWEN`, `KIMI`), and dynamically scrapes official vendor documentation (`/models/:provider`) so the UI always displays the latest models.
-   - **Strict AI Prompt Sanitization** (`TaskService`, `ScoringService`, `textSanitizer.ts`) — prevents internal system instructions or rubric prompts from ever leaking into student-facing task content or feedback.
-   - **Private Group Leaderboard** — no global public leaderboard; rankings are computed strictly within a teacher's student group using anonymized aliases (`displayAlias`).
-   - **Soft Delete in Groups** (`is_active = false`, `removed_at`) — when a student is removed from a group, their past submissions are hidden from the teacher, and if re-added later, their historical submissions are seamlessly restored.
-   - **GDPR Right to Erasure** (`DELETE /api/users/me`) — complete erasure of PII and anonymization of historical submissions.
+### 2. Resilient Mastery Engine & Automated CEFR Progression
+- **6-Level CEFR Progression Ladder**: Complete calibration across **A1 Beginner**, **A2 Elementary**, **B1 Intermediate**, **B2 Upper-Intermediate**, **C1 Advanced**, and **C2 Mastery**.
+- **Topic Keyword Normalization**: The mastery calculation engine (`ProgressService.normalizeTopicKey`) uses sorted keyword stemming and stop-word filtering to reliably match curriculum syllabus topics across subtle orthographic variations (e.g. `Third & Mixed Conditionals` vs `Third Conditional & Mixed Conditionals`).
+- **Strict Mutual Exclusivity**: Diagnostic strengths (`masteryScore >= 85%`) and weaknesses are guaranteed disjoint—mastered rules are automatically excluded from deficiency lists and recommendations.
+- **Automated Level-Up Suggestion**: Achieved when a student demonstrates `>= 85%` mastery across `>= 80%` of syllabus topics for their current level.
 
----
+### 3. Educator Cohort Management & Multi-Group Deployment
+- **Multi-Cohort Task Generation (`POST /api/tasks/generate-multi`)**: Allows teachers to create a task once and distribute it simultaneously to multiple student groups with unique cohort-scoped assignments.
+- **Cohort-to-Cohort Task Transfer (`POST /api/tasks/{id}/transfer`)**: One-click transfer or copy of assigned tasks from one cohort to another, preserving point budgets and question keys.
+- **Grading & Feedback Editor**: Teachers can inspect itemized student submissions, provide granular feedback, and override AI-assigned scores without losing AI diagnostics.
+- **Intra-Group Leaderboard**: Student performance is ranked privately within their assigned cohort using anonymized aliases (`displayAlias`), upholding student privacy.
+- **Academic Report Exports**: Comprehensive PDF and CSV exports detailing homework completion statuses, attempt counters, point breakdowns, and teacher remarks.
 
-## ⚙️ Environment Variables Configuration (`.env`)
+### 4. Zero-Retention RAM-Only Homework OCR
+- **Privacy by Design**: Student photos of handwritten homework are decoded directly in volatile memory (RAM).
+- **Immediate Byte Zeroing**: Image byte buffers are scrubbed immediately after text extraction (`Arrays.fill(bytes, (byte) 0)`). No image binaries or biometric photos are ever written to disk or the database.
+- Multi-photo attachment support (up to 5 images, aggregate 25 MB limit).
 
-The repository root contains the template [`.env.example`](./.env.example) and the active `.env` file (excluded via `.gitignore`). All variables are automatically loaded by the **Backend** (`spring.config.import` in `application.yml`), the **Frontend** (`envDir: '..'` in `vite.config.ts`), and **Docker Compose**:
-
-- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
-- `SPRING_REDIS_HOST`, `SPRING_REDIS_PORT`, `REDIS_HOST`, `REDIS_PORT`
-- `SERVER_PORT`, `CORS_ORIGINS`, `VITE_API_URL`
-- `JWT_SECRET`, `ENCRYPTION_KEY`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `VITE_GOOGLE_CLIENT_ID` *(to enable Google OAuth2 login, set your OAuth 2.0 Client ID from the Google Cloud Console in `GOOGLE_CLIENT_ID` and `VITE_GOOGLE_CLIENT_ID`, and the secret in `GOOGLE_CLIENT_SECRET`)*
-- `GROQ_API_KEY`, `GROQ_BASE_URL`, `GEMINI_API_KEY`, `GEMINI_BASE_URL`
-- `OPENAI_BASE_URL`, `ANTHROPIC_BASE_URL`
-- `DEEPSEEK_API_KEY`, `DEEPSEEK_BASE_URL`, `QWEN_API_KEY`, `QWEN_BASE_URL`, `KIMI_API_KEY`, `KIMI_BASE_URL`
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` *(Gmail SMTP credentials for dispatching 6-digit registration confirmation emails)*
-- `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
-
+### 5. Multi-Provider BYOK & Cloudflare Edge AI Proxy
+- **Unified Routing**: Out-of-the-box support for 7 leading AI providers with live model catalog synchronization (`https://ai-proxy.mybsu.online`).
+- **AES-256-GCM BYOK Encryption**: User-supplied API keys are encrypted at rest with random 12-byte initialization vectors and 128-bit authentication tags.
+- **Automatic Fallback Chain**: System-level fallback gracefully reroutes failed inference requests to secondary providers before queuing.
 
 ---
 
-## 🛠 Quick Start & Build
+## 📊 Enterprise Action Audit & Distributed Tracing
 
-### 1. Run via Docker Compose
+Lingua Optima features a dedicated enterprise-grade **Action Audit Logging** subsystem designed for security observability, academic integrity compliance, and distributed request tracing.
+
+### Architectural Flow
+
+1. **Request Inception (`ActionAuditFilter`)**:
+   - Registered at `Ordered.HIGHEST_PRECEDENCE` ahead of security filters.
+   - Extracts or generates a distributed correlation identifier (`X-Request-Id`).
+   - Resolves the genuine client IP across multi-tier reverse proxies (`X-Forwarded-For`, `CF-Connecting-IP`, `X-Real-IP`).
+   - Populates SLF4J **Mapped Diagnostic Context (MDC)** with `requestId`, `clientIp`, `deviceId`, `method`, and `uri`.
+   - Propagates `X-Request-Id` in the HTTP response headers for end-to-end client-server correlation.
+
+2. **Security & Actor Identification (`JwtAuthenticationFilter`)**:
+   - Downstream authentication resolves JWT access tokens and authenticates user principals.
+   - Context is injected into SLF4J MDC (`userId`, `userEmail`, `role`).
+
+3. **Domain Action Taxonomy Classification**:
+   - Request URIs are normalized by stripping UUIDs and numeric IDs.
+   - Mapped to standardized semantic domain actions:
+     - `AUTH_LOGIN`, `AUTH_REGISTER`, `AUTH_SEND_CODE`, `AUTH_GOOGLE_OAUTH`
+     - `TASK_GENERATE`, `TASK_GENERATE_MULTI`, `TASK_TRANSFER_COHORT`, `TASK_ASSIGN_COHORT`
+     - `SUBMISSION_TEXT_EVAL`, `SUBMISSION_IMAGE_EVAL`, `SUBMISSION_TEACHER_OVERRIDE`
+     - `CAT_SESSION_START`, `CAT_SESSION_ANSWER`, `CAT_SESSION_COMPLETE`
+     - `USER_PROFILE_UPDATE`, `USER_GDPR_ERASURE`, `STUDENT_ALIAS_RENAME`
+     - `GROUP_CREATE`, `GROUP_INVITE_STUDENT`, `REPORT_EXPORT`
+
+4. **Structured JSON Audit Stream**:
+   - Emits a standalone JSON object for every completed request to `logs/audit.log` (logger `com.linguaoptima.audit`).
+   - Asynchronous GZIP rotation: 100 MB max file size, 60-day history retention, 2 GB total cap.
+
+### Audit Record Schema Example
+
+```json
+{
+  "timestamp": "2026-10-15T10:32:15.892Z",
+  "type": "ACTION_AUDIT",
+  "requestId": "550e8400-e29b-41d4-a716-446655440000",
+  "action": "TASK_GENERATE_MULTI",
+  "method": "POST",
+  "uri": "/api/tasks/generate-multi",
+  "status": 200,
+  "durationMs": 1845,
+  "userId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+  "userEmail": "educator@linguaoptima.com",
+  "role": "TEACHER",
+  "clientIp": "198.51.100.42",
+  "deviceId": "dev-9f82k1n8-0b2a",
+  "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/130.0.0.0"
+}
+```
+
+### Logback Appender Hierarchy
+
+```
++-------------------------------------------------------------------------------+
+|                            Spring Boot Logging Core                           |
++---------------------------------------┬---------------------------------------+
+                                        │
+        ┌───────────────────────────────┼───────────────────────────────┐
+        ▼                               ▼                               ▼
+ ┌───────────────┐              ┌───────────────┐              ┌───────────────┐
+ │ Console (TTY) │              │  App Rolling  │              │ Audit Rolling │
+ │   (Stdout)    │              │ lingua-optima │              │   audit.log   │
+ │ Colorized MDC │              │ 50MB, 30 days │              │ JSON, 60 days │
+ └───────────────┘              └───────────────┘              └───────────────┘
+```
+
+---
+
+## 🛠 Quick Start & Development
+
+### 1. Run with Docker Compose
 ```bash
 docker compose up --build -d
 ```
-- **Frontend (Nginx PWA)**: `http://localhost:5173`
-- **Backend API (Spring Boot)**: `http://localhost:8080/api`
-- **Adminer (DB UI)**: `http://localhost:8081`
+- **Frontend SPA**: `http://localhost:5173`
+- **Backend REST API**: `http://localhost:8080/api`
+- **Actuator Health**: `http://localhost:8080/actuator/health`
+- **Adminer DB Interface**: `http://localhost:8081`
 
-### 2. Local Development & Testing
+### 2. Local Backend Testing & JaCoCo Verification
 ```bash
-# Backend: run 222 unit tests and verify JaCoCo coverage (100.00% instructions, 100.00% branches, 100.00% lines, 100.00% methods, 100.00% classes)
-cd backend && ./gradlew test jacocoTestCoverageVerification
-
-# Frontend: run Vitest unit tests and production build
-cd frontend && npm install && npm test && npm run build
+cd backend
+# Runs 387 unit and slice tests, verifies >=97% instructions and >=98% line coverage
+./gradlew test jacocoTestCoverageVerification
 ```
 
-### 3. Documentation Compilation (Doxygen & Javadoc)
+### 3. Local Frontend Testing & Production Build
 ```bash
-# Generate full HTML documentation (Backend + Frontend + Markdown + Presentation)
+cd frontend
+# Runs 45 Vitest unit tests and builds optimized production bundles
+npm install
+npm test
+npm run build
+```
+
+### 4. Interactive Documentation Generation (Doxygen & Javadoc)
+```bash
+# Generate full project documentation (Backend + Frontend + Markdown)
 doxygen Doxyfile
 
-# Generate Javadoc for Backend
+# Generate Java API documentation
 cd backend && ./gradlew javadoc
 ```
-Compiled documentation is saved to `docs/generated/html/index.html` (the `docs/generated/` directory is listed in `.gitignore`).
+Output documentation is compiled to `docs/generated/html/index.html`.
+
+---
+
+## ⚙️ Environment Variables (`.env`)
+
+The system loads environment settings from `.env` in the repository root:
+
+| Variable | Description | Default / Example |
+|---|---|---|
+| `SERVER_PORT` | Spring Boot HTTP server port | `8080` |
+| `POSTGRES_DB` | PostgreSQL database name | `lingua_optima` |
+| `POSTGRES_USER` | PostgreSQL database user | `postgres` |
+| `POSTGRES_PASSWORD` | PostgreSQL database password | `secret` |
+| `SPRING_DATASOURCE_URL` | JDBC database connection URL | `jdbc:postgresql://db:5432/lingua_optima` |
+| `REDIS_HOST` | Redis cache and session host | `redis` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `JWT_SECRET` | 256-bit secret key for HMAC-SHA256 JWTs | *Base64 string* |
+| `ENCRYPTION_KEY` | 256-bit secret key for AES-256-GCM BYOK storage | *Base64 string* |
+| `GOOGLE_CLIENT_ID` | Google OAuth2 Client ID for authentication | *Google Cloud Console ID* |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth2 Client Secret | *Google Cloud Console Secret* |
+| `SMTP_HOST` | Gmail SMTP server for 6-digit confirmation codes | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP port | `587` |
+| `SMTP_USER` | Gmail address for sending verification emails | `mailer@linguaoptima.com` |
+| `SMTP_PASS` | Gmail App Password (16 characters) | `abcd efgh ijkl mnop` |
+| `GROQ_API_KEY` | System fallback Groq API key | *Groq Console Key* |
+| `GEMINI_API_KEY` | System fallback Google Gemini API key | *Google AI Studio Key* |
+
+---
+
+## 📂 Repository Structure
+
+```
+lingua_optima/
+├── .github/workflows/ci.yml       # Automated GitHub Actions CI pipeline
+├── cloudflare-proxy/              # Cloudflare Edge Worker AI proxy & scraper
+│   ├── worker.js                  # Edge routing & vendor model synchronization
+│   └── README.md                  # Proxy deployment guide
+├── backend/                       # Spring Boot 3 + Java 21 REST API
+│   ├── src/main/java/             # Controllers, Services, Repositories, Domain, Config
+│   ├── src/main/resources/        # application.yml, logback-spring.xml, Flyway migrations
+│   └── src/test/java/             # 387 unit & slice tests, 100% JaCoCo coverage
+├── frontend/                      # React 18 + TypeScript + Vite PWA
+│   ├── src/components/            # Student, Teacher, Auth, and Common UI components
+│   ├── src/pages/                 # Landing, Dashboards, Privacy Policy, Terms, Help Center
+│   ├── src/store/                 # Zustand state stores (auth, task, ui, notification)
+│   └── src/test/                  # 45 Vitest unit and component tests
+├── docs/                          # In-depth architectural specifications
+│   ├── presentation.html          # Interactive Project Presentation (Pitch Deck)
+│   ├── AUDIT_LOGGING.md           # Structured Action Audit & Distributed Tracing
+│   ├── BACKEND.md                 # Backend engineering specification
+│   ├── FRONTEND.md                # Frontend engineering specification
+│   ├── AI_INTEGRATION.md          # Multi-model routing & Zero-Retention OCR
+│   ├── DEVOPS.md                  # Infrastructure, Docker, Nginx, and deployment
+│   └── README.md                  # Master architecture and API reference table
+├── docker-compose.yml             # Full-stack container orchestration
+├── Doxyfile                       # Doxygen API documentation generator config
+└── README.md                      # Platform overview and quickstart guide
+```
 
 ---
 
 ## 📄 License
 
-This project is open-source and licensed under the **[MIT License](./LICENSE)**.
-See the [LICENSE](./LICENSE) file for complete terms and permissions.
+This project is open-source and licensed under the **[MIT License](./LICENSE)**.  
+See the [`LICENSE`](./LICENSE) file for complete terms and permissions.

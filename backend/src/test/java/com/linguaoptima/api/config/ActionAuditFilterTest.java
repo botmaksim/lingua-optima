@@ -69,12 +69,20 @@ class ActionAuditFilterTest {
     void testResolveActionName() {
         assertThat(filter.resolveActionName("POST", "/api/auth/login")).isEqualTo("AUTH_LOGIN");
         assertThat(filter.resolveActionName("POST", "/api/tasks/generate")).isEqualTo("TASK_GENERATE");
+        assertThat(filter.resolveActionName("POST", "/api/tasks/generate-multi")).isEqualTo("TASK_GENERATE_MULTI");
+        assertThat(filter.resolveActionName("POST", "/api/tasks/550e8400-e29b-41d4-a716-446655440000/transfer")).isEqualTo("TASK_TRANSFER_COHORT");
         assertThat(filter.resolveActionName("POST", "/api/tasks/550e8400-e29b-41d4-a716-446655440000/assign"))
             .isEqualTo("TASK_ASSIGN_COHORT");
         assertThat(filter.resolveActionName("POST", "/api/submissions/text")).isEqualTo("SUBMISSION_TEXT_EVAL");
         assertThat(filter.resolveActionName("GET", "/api/export/group/550e8400-e29b-41d4-a716-446655440000"))
             .isEqualTo("REPORT_EXPORT");
         assertThat(filter.resolveActionName("POST", "/api/groups")).isEqualTo("GROUP_CREATE");
+        assertThat(filter.resolveActionName("POST", "/api/sessions/start")).isEqualTo("CAT_SESSION_START");
+        assertThat(filter.resolveActionName("POST", "/api/sessions/550e8400-e29b-41d4-a716-446655440000/answer")).isEqualTo("CAT_SESSION_ANSWER");
+        assertThat(filter.resolveActionName("POST", "/api/sessions/550e8400-e29b-41d4-a716-446655440000/complete")).isEqualTo("CAT_SESSION_COMPLETE");
+        assertThat(filter.resolveActionName("PUT", "/api/users/me")).isEqualTo("USER_PROFILE_UPDATE");
+        assertThat(filter.resolveActionName("DELETE", "/api/users/me")).isEqualTo("USER_GDPR_ERASURE");
+        assertThat(filter.resolveActionName("PUT", "/api/users/550e8400-e29b-41d4-a716-446655440000/name")).isEqualTo("STUDENT_ALIAS_RENAME");
     }
 
     @Test

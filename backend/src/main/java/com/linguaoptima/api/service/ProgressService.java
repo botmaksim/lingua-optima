@@ -107,12 +107,37 @@ public class ProgressService {
         if (levelTopics.isEmpty()) return;
 
         List<ProgressRecord> records = progressRecordRepository.findByStudent(student);
-        Map<String, Double> topicMastery = records.stream()
-            .collect(Collectors.toMap(ProgressRecord::getGrammarTopic, ProgressRecord::getMasteryScore, (a, b) -> b));
+        Map<String, Double> topicMastery = new HashMap<>();
+        Map<String, Double> normalizedTopicMastery = new HashMap<>();
+        for (ProgressRecord pr : records) {
+            if (pr.getGrammarTopic() != null) {
+                topicMastery.put(pr.getGrammarTopic(), pr.getMasteryScore());
+                normalizedTopicMastery.put(normalizeTopicKey(pr.getGrammarTopic()), pr.getMasteryScore());
+            }
+        }
 
         int masteredCount = 0;
         for (String topic : levelTopics) {
             Double mastery = topicMastery.get(topic);
+            if (mastery == null) {
+                mastery = normalizedTopicMastery.get(normalizeTopicKey(topic));
+            }
+            if (mastery == null) {
+                String normTarget = normalizeTopicKey(topic);
+                String[] targetTokens = normTarget.split("\\s+");
+                for (Map.Entry<String, Double> entry : normalizedTopicMastery.entrySet()) {
+                    if (!entry.getKey().isBlank()) {
+                        String[] entryTokens = entry.getKey().split("\\s+");
+                        long matchCount = Arrays.stream(entryTokens)
+                            .filter(t -> Arrays.asList(targetTokens).contains(t))
+                            .count();
+                        if (matchCount >= Math.min(2, Math.min(targetTokens.length, entryTokens.length))) {
+                            mastery = entry.getValue();
+                            break;
+                        }
+                    }
+                }
+            }
             if (mastery != null && mastery >= 0.85) {
                 masteredCount++;
             }
@@ -212,5 +237,45 @@ public class ProgressService {
         });
 
         return result;
+    }
+
+    /**
+     * @brief Normalizes grammar topic names by extracting core content keywords for resilient matching.
+     * @param topic Raw topic title string.
+     * @return Normalized sorted keyword string.
+     */
+    public static String normalizeTopicKey(String topic) {
+        if (topic == null) return "";
+        String s = topic.toLowerCase()
+            .replace('&', ' ')
+            .replace('/', ' ')
+            .replace('-', ' ')
+            .replaceAll("[^a-z0-9]+", " ");
+        String[] tokens = s.split("\\s+");
+        List<String> keywords = new ArrayList<>();
+        for (String t : tokens) {
+            if (!t.isBlank() && !isTopicStopWord(t)) {
+                String stemmed = t.endsWith("s") && t.length() > 3 ? t.substring(0, t.length() - 1) : t;
+                if (!keywords.contains(stemmed)) {
+                    keywords.add(stemmed);
+                }
+            }
+        }
+        Collections.sort(keywords);
+        return String.join(" ", keywords);
+    }
+
+    /**
+     * @brief Determines whether a token is a generic linguistic stop word.
+     * @param word Lowercase token.
+     * @return True if word is a stop word.
+     */
+    private static boolean isTopicStopWord(String word) {
+        return switch (word) {
+            case "and", "or", "vs", "the", "of", "in", "at", "on", "for", "with", "to", "a", "an",
+                 "structure", "structures", "clause", "clauses", "rules", "rule", "basic", "advanced",
+                 "verb", "verbs", "tense", "tenses" -> true;
+            default -> false;
+        };
     }
 }

@@ -1250,4 +1250,37 @@ class SubmissionServiceTest {
         submissionService.enrichSubmissionResult(emptyResp, emptySub, null);
         assertNotNull(emptyResp.getAiAnalysis());
     }
+
+    /**
+     * @brief Verifies objective score calculates and persists when objective items are evaluated.
+     */
+    @Test
+    void testEnrichSubmissionResult_PersistsObjectiveScoreWhenAiScoreEvaluated() {
+        Task t = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Conditionals")
+            .questions(List.of(
+                TaskQuestion.builder().questionOrder(1).questionText("Q1").correctAnswer("apple").points(1).grammarRule("Conditionals").build(),
+                TaskQuestion.builder().questionOrder(2).questionText("Q2").correctAnswer("banana").points(1).grammarRule("Conditionals").build()
+            ))
+            .build();
+
+        Submission sub = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("1. apple\n2. orange")
+            .aiScore(90.0)
+            .build();
+
+        SubmissionResultResponse resp = SubmissionResultResponse.fromEntity(sub);
+        resp.setTaskId(t.getId());
+        when(taskRepository.findById(t.getId())).thenReturn(Optional.of(t));
+
+        submissionService.enrichSubmissionResult(resp, sub, null);
+
+        assertEquals(50.0, resp.getScore());
+        assertEquals(50.0, resp.getEffectiveScore());
+        assertEquals(50.0, sub.getAiScore());
+        verify(submissionRepository).save(sub);
+    }
 }

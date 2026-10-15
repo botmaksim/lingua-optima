@@ -257,5 +257,42 @@ class ProgressServiceTest {
         assertEquals(3, clampedUpper.getTotalAttempts());
         assertEquals(3, clampedUpper.getErrorCount());
     }
+
+    /**
+     * @brief Verifies unit test scenario: CEFR level up triggered with topic variations.
+     */
+    @Test
+    void testCefrLevelUpTriggeredWithNormalizedTopicVariants() {
+        student.setCefrLevel(CefrLevel.B2);
+        List<ProgressRecord> records = List.of(
+            ProgressRecord.builder().grammarTopic("Third & Mixed Conditionals").masteryScore(0.95).build(),
+            ProgressRecord.builder().grammarTopic("Passive Voice (Continuous & Perfect)").masteryScore(0.90).build(),
+            ProgressRecord.builder().grammarTopic("Reported Speech").masteryScore(0.90).build(),
+            ProgressRecord.builder().grammarTopic("Wish & If Only Structures").masteryScore(0.88).build(),
+            ProgressRecord.builder().grammarTopic("Modal Verbs of Deduction").masteryScore(0.92).build(),
+            ProgressRecord.builder().grammarTopic("Relative Clauses (non-defining)").masteryScore(0.90).build(),
+            ProgressRecord.builder().grammarTopic("Gerunds vs Infinitives").masteryScore(0.85).build()
+        );
+
+        when(progressRecordRepository.findByStudent(student)).thenReturn(records);
+
+        progressService.checkCefrLevelUp(student);
+
+        assertNotNull(student.getLevelUpSuggestedAt());
+        verify(userRepository).save(student);
+        verify(notificationService).send(eq(student), anyString(), any());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: normalizeTopicKey handles null and punctuation.
+     */
+    @Test
+    void testNormalizeTopicKey() {
+        assertEquals("", ProgressService.normalizeTopicKey(null));
+        assertEquals("conditional mixed third", ProgressService.normalizeTopicKey("Third & Mixed Conditionals"));
+        assertEquals("conditional mixed third", ProgressService.normalizeTopicKey("Third Conditional & Mixed Conditionals"));
+        assertEquals("used would", ProgressService.normalizeTopicKey("Used to / Would"));
+        assertEquals("used would", ProgressService.normalizeTopicKey("Used to & Would"));
+    }
 }
 
