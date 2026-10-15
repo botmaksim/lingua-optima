@@ -58,6 +58,9 @@ class SessionServiceTest {
     /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
+    /** @brief Test fixture or mock dependency for submission service. */
+    @Mock
+    private SubmissionService submissionService;
     /** @brief Test fixture or mock dependency for progress service. */
     @Mock
     private ProgressService progressService;
@@ -115,6 +118,8 @@ class SessionServiceTest {
             .status(SessionStatus.IN_PROGRESS)
             .startedAt(LocalDateTime.now())
             .build();
+
+        org.springframework.test.util.ReflectionTestUtils.setField(sessionService, "submissionService", submissionService);
     }
 
     /**
@@ -422,6 +427,66 @@ class SessionServiceTest {
         );
         assertTrue(fb.isCorrect());
         assertEquals("[]", sessionState.getAnswersJson());
+    }
+
+    /**
+     * @brief Verifies optionsJson inclusion, grammar rule fallbacks, and submission service enrichment.
+     */
+    @Test
+    void testSubmitAnswer_WithOptionsJson_AndGrammarFallbacks() {
+        Task taskWithTopic = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.MCQ)
+            .grammarTopic("Present Perfect")
+            .build();
+
+        TaskQuestion questionWithOptions = TaskQuestion.builder()
+            .id(UUID.randomUUID())
+            .task(taskWithTopic)
+            .questionText("Choose the correct option")
+            .optionsJson("[\"A\", \"B\", \"C\"]")
+            .correctAnswer("A")
+            .difficulty(2)
+            .grammarRule(null) // test fallback to task grammarTopic
+            .build();
+
+        when(taskQuestionRepository.findById(questionWithOptions.getId())).thenReturn(Optional.of(questionWithOptions));
+        when(sessionStateRepository.findById(sessionState.getId())).thenReturn(Optional.of(sessionState));
+
+        AnswerFeedbackResponse fb = sessionService.submitAnswer(
+            sessionState.getId(),
+            AnswerRequest.builder().questionId(questionWithOptions.getId()).answer("A").build(),
+            student
+        );
+        assertTrue(fb.isCorrect());
+        assertTrue(sessionState.getAnswersJson().contains("optionsJson"));
+        assertTrue(sessionState.getAnswersJson().contains("Present Perfect"));
+
+        // Now test fallback when question.getTask() is null or task grammarTopic is null
+        TaskQuestion questionNoTopic = TaskQuestion.builder()
+            .id(UUID.randomUUID())
+            .task(null)
+            .questionText("Fill in blank")
+            .correctAnswer("went")
+            .difficulty(1)
+            .grammarRule(null)
+            .build();
+        when(taskQuestionRepository.findById(questionNoTopic.getId())).thenReturn(Optional.of(questionNoTopic));
+
+        AnswerFeedbackResponse fb2 = sessionService.submitAnswer(
+            sessionState.getId(),
+            AnswerRequest.builder().questionId(questionNoTopic.getId()).answer("went").build(),
+            student
+        );
+        assertTrue(fb2.isCorrect());
+        assertTrue(sessionState.getAnswersJson().contains("Adaptive grammar assessment"));
+
+        // Verify completeSession triggers submissionService.enrichSubmissionResult
+        Submission sub = Submission.builder().id(UUID.randomUUID()).assignment(assignment).student(student).aiScore(90.0).build();
+        when(submissionRepository.findByAssignmentId(assignment.getId())).thenReturn(List.of(sub));
+        SubmissionResultResponse enriched = sessionService.completeSession(sessionState.getId(), student);
+        assertNotNull(enriched);
+        verify(submissionService, atLeastOnce()).enrichSubmissionResult(any(), any(), isNull());
     }
 }
 

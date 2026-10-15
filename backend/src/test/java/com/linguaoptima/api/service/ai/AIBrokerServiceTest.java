@@ -397,5 +397,25 @@ class AIBrokerServiceTest {
         assertThrows(AIServiceException.class, () -> aiBrokerService.generateTaskContent("fail", null));
         assertThrows(AIServiceException.class, () -> aiBrokerService.generateTaskContent("fail", unpersistedUser));
     }
+
+    /**
+     * @brief Verifies provider selection when primary provider isConfigured returns false.
+     */
+    @Test
+    void testUnconfiguredProviderFallbackBranching() throws Exception {
+        when(geminiProvider.isConfigured()).thenReturn(false);
+        when(groqProvider.isConfigured()).thenReturn(true);
+        when(groqProvider.complete(anyString())).thenReturn("{\"score\": 90}");
+
+        String essayRes = aiBrokerService.scoreEssay("Evaluate essay", user);
+        assertEquals("{\"score\": 90}", essayRes);
+
+        when(groqProvider.isConfigured()).thenReturn(false);
+        when(geminiProvider.isConfigured()).thenReturn(true);
+        when(geminiProvider.complete(anyString())).thenReturn("{\"grammar\": \"ok\"}");
+
+        String grammarRes = aiBrokerService.checkGrammar("Check grammar", user);
+        assertEquals("{\"grammar\": \"ok\"}", grammarRes);
+    }
 }
 

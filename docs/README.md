@@ -1,10 +1,10 @@
-# 📚 Lingua Optima — Complete Documentation
+# Lingua Optima — Complete Documentation
 
 > AI-powered platform for English language mastery. Task generation, essay evaluation, homework OCR, and computerized adaptive testing.  
-> 📊 **Interactive Project Presentation**: [Open Presentation (presentation.html)](presentation.html)
+> **Interactive Project Presentation**: [Open Presentation (presentation.html)](presentation.html)
 
 
-### 🗂 All Documentation Files
+### Documentation Files
 
 | Documentation Section | Link | Description |
 |---|---|---|
@@ -630,7 +630,7 @@ erDiagram
 ### Navigation & Real-Time Automated Translation
 
 - **Streamlined Navigation Bar**: Retains key primary links on the top bar while bundling secondary practice modes and educator actions into a clean `More ▾` dropdown menu to prevent visual clutter across screen sizes.
-- **Automated External Translation (`🌐 Translate ▾`)**: Rather than maintaining fragile, custom translation dictionaries, the platform provides a global translator dropdown directly in the Navbar integrating:
+- **Automated External Translation (` Translate ▾`)**: Rather than maintaining fragile, custom translation dictionaries, the platform provides a global translator dropdown directly in the Navbar integrating:
   1. **Google Translate**: In-page automated translation across Russian, Spanish, German, French, Chinese, Arabic, and Turkish.
   2. **Show Original (English)**: Single-click instant reversion restoring the default English interface.
 
@@ -702,7 +702,7 @@ flowchart TD
 | Homework OCR | Tesseract (tess4j, local in-memory) | Unlimited | `OcrException` → HTTP 422 |
 | User's Own Key (BYOK & Live Model Selector) | **7 Providers + Live Vendor Model Sync (`/models/:provider`)**:<br/>• Google Gemini (`gemini-3.8-flash`, `gemini-3.8-live-extended-thinking`, `gemini-3.7-flash`, `gemini-3.6-flash`)<br/>• OpenAI (`gpt-6-astra`, `gpt-6.1-sol`, `gpt-6-luna`, `gpt-5.6-sol`, `o4-mini`)<br/>• Anthropic (`claude-fable-5-1`, `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`)<br/>• DeepSeek (`deepseek-flash` V4.1, `deepseek-v4-pro` - no geo-block)<br/>• Alibaba Qwen (`qwen3.8-max`, `qwen3.8-flash`, `qwen3.8-27b` - no geo-block)<br/>• Moonshot Kimi (`kimi-k3`, `kimi-k2.7-code` - no geo-block)<br/>• Groq (`qwen/qwen3.8-27b`, `openai/gpt-oss-120b`, `llama-4-maverick`) | Per user's plan | Key failure → HTTP 402 |
 
-> 🌐 **Cloudflare Edge AI Proxy & Live Model Sync**: To bypass regional IP restrictions (e.g. Cloudflare GeoIP blocks affecting Groq or regional bans in RU/BY) and keep model lists up to date with official vendor documentation, all outgoing AI requests and model catalog lookups (`/models/:provider`) are routed through our Cloudflare Worker (`https://ai-proxy.mybsu.online`, `cloudflare-proxy/worker.js`). Chinese providers (DeepSeek, Qwen, Kimi) work directly without restrictions.
+> **Cloudflare Edge AI Proxy & Live Model Sync**: To bypass regional IP restrictions (e.g. Cloudflare GeoIP blocks affecting Groq or regional bans in RU/BY) and keep model lists up to date with official vendor documentation, all outgoing AI requests and model catalog lookups (`/models/:provider`) are routed through our Cloudflare Worker (`https://ai-proxy.mybsu.online`, `cloudflare-proxy/worker.js`). Chinese providers (DeepSeek, Qwen, Kimi) work directly without restrictions.
 
 ### Fallback Chain
 
@@ -710,7 +710,7 @@ flowchart TD
 flowchart TD
     REQ["AI Request"] --> OWN{"Own API Key?"}
     OWN -->|Yes| USER_PROV["User's Provider"]
-    USER_PROV -->|OK| DONE["✅ Result Returned"]
+    USER_PROV -->|OK| DONE["Result Returned"]
     USER_PROV -->|Error| ERR402["402: Check API Key"]
 
     OWN -->|No| P1["1. Groq"]
@@ -742,7 +742,7 @@ flowchart TD
 
 ### Payment Stub
 
-`PaymentService.processPayment()` **always** returns `{success: true, transactionId: "STUB-xxx"}`.
+`PaymentService.processPayment(Translate dropdown)` **always** returns `{success: true, transactionId: "STUB-xxx"}`.
 
 The error-handling infrastructure is fully implemented:
 
@@ -819,13 +819,13 @@ Lingua Optima maintains three automated Spring Boot CRON schedulers along with a
 
 1. **Streak Validation Worker (`StreakScheduler.java`)**:
    - **CRON**: `@Scheduled(cron = "0 0 1 * * *")` (Daily at 01:00 UTC).
-   - **Logic**: Inspects all active students via `GamificationService.applyDailyStreakCheck()`. If a student did not complete any learning task or test yesterday:
+   - **Logic**: Inspects all active students via `GamificationService.applyDailyStreakCheck(Translate dropdown)`. If a student did not complete any learning task or test yesterday:
      - Automatically spends one freeze token (`freezeTokens - 1`) to protect their study streak.
      - If no freeze tokens remain, resets their streak counter (`streakCount = 0`).
 
 2. **Weekly Quota Reset Worker (`UsageResetScheduler.java`)**:
    - **CRON**: `@Scheduled(cron = "0 0 0 * * MON")` (Weekly Mondays at 00:00 UTC).
-   - **Logic**: Calls `UsageService.resetWeeklyCounters()`. Resets all free-tier evaluation (`weekEvaluations`) and handwriting OCR (`weekOcrUploads`) counters to zero.
+   - **Logic**: Calls `UsageService.resetWeeklyCounters(Translate dropdown)`. Resets all free-tier evaluation (`weekEvaluations`) and handwriting OCR (`weekOcrUploads`) counters to zero.
 
 3. **Contextual Diagnostic Reminder Worker (`NotificationScheduler.java`)**:
    - **CRON**: `@Scheduled(cron = "0 0 9 * * *")` (Daily at 09:00 UTC).
@@ -891,7 +891,7 @@ Lingua Optima supports the complete 6-level Common European Framework of Referen
 
 ---
 
-## 📎 Project Documentation & Interactive Materials
+## Project Documentation and Materials
 
 | Document | Format | Description |
 |---|---|---|
@@ -905,7 +905,8 @@ Lingua Optima supports the complete 6-level Common European Framework of Referen
 
 ---
 
-## 📄 License
+## License and Copyright
 
-Lingua Optima is open-source software licensed under the **[MIT License](../LICENSE)**.
+Copyright (c) 2026 Maksim Manastyrski. All rights reserved.
+Licensed under the **[MIT License](../LICENSE)**.
 See the [LICENSE](../LICENSE) file in the project root for full terms and conditions.

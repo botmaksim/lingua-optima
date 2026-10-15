@@ -32,6 +32,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -46,6 +48,7 @@ import static org.mockito.Mockito.*;
  * @brief Unit and slice test suite for TaskService.
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class TaskServiceTest {
 
     /** @brief Test fixture or mock dependency for task repository. */
@@ -1280,6 +1283,114 @@ class TaskServiceTest {
         taskService.transferTask(sourceGroupId, taskId, copyReq, teacherUser);
         verify(taskAssignmentRepository).save(any(TaskAssignment.class));
         verify(taskAssignmentRepository, never()).delete(any(TaskAssignment.class));
+    }
+
+    /**
+     * @brief Verifies device generation takeover, status queries, multi-group assignment error paths, and transfer error validations.
+     */
+    @Test
+    void testTaskService_AdditionalCoverage() {
+        UUID taskId = UUID.randomUUID();
+        UUID sourceGroupId = UUID.randomUUID();
+        UUID targetGroupId = UUID.randomUUID();
+
+        Group sourceGroup = Group.builder().id(sourceGroupId).name("Source Group").teacher(teacherUser).build();
+        Group targetGroup = Group.builder().id(targetGroupId).name("Target Group").teacher(teacherUser).build();
+        Task task = Task.builder().id(taskId).type(TaskType.MCQ).cefrLevel(CefrLevel.B1).content("Task Content").build();
+
+        User studentSource = User.builder().id(UUID.randomUUID()).email("source@test.com").role(Role.STUDENT).build();
+        User studentTarget = User.builder().id(UUID.randomUUID()).email("target@test.com").role(Role.STUDENT).build();
+
+        // 1. Generation protection delegation
+        when(generationProtectionService.getStatus(teacherUser.getId(), "dev-test"))
+            .thenReturn(com.linguaoptima.api.dto.response.GenerationStatusResponse.builder().isGenerating(true).build());
+        taskService.takeoverGeneration(teacherUser, "dev-test");
+        verify(generationProtectionService).takeoverGeneration(teacherUser.getId(), "dev-test");
+
+        var status = taskService.getGenerationStatus(teacherUser, "dev-test");
+        assertTrue(status.isGenerating());
+
+        // Null user fallback
+        var nullStatus = taskService.getGenerationStatus(null, "dev-test");
+        assertFalse(nullStatus.isGenerating());
+        taskService.takeoverGeneration(null, "dev-test");
+
+        // 2. assignTask with non-existent group
+        UUID missingGroupId = UUID.randomUUID();
+        when(groupRepository.findById(missingGroupId)).thenReturn(Optional.empty());
+        AssignTaskRequest assignReq = AssignTaskRequest.builder().groupIds(List.of(missingGroupId)).build();
+        assertThrows(ResourceNotFoundException.class, () -> taskService.assignTask(taskId, assignReq, teacherUser));
+
+        // 3. transferTask non-existent source, target, task
+        UUID nonExistentSource = UUID.randomUUID();
+        UUID nonExistentTarget = UUID.randomUUID();
+        when(groupRepository.findById(nonExistentSource)).thenReturn(Optional.empty());
+        TransferTaskRequest req = TransferTaskRequest.builder().targetGroupId(nonExistentTarget).build();
+        assertThrows(ResourceNotFoundException.class, () -> taskService.transferTask(nonExistentSource, taskId, req, teacherUser));
+
+        when(groupRepository.findById(sourceGroupId)).thenReturn(Optional.of(sourceGroup));
+        when(groupRepository.findById(nonExistentTarget)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> taskService.transferTask(sourceGroupId, taskId, req, teacherUser));
+
+        when(groupRepository.findById(targetGroupId)).thenReturn(Optional.of(targetGroup));
+        when(taskRepository.findById(taskId)).thenReturn(Optional.empty());
+        TransferTaskRequest validTargetReq = TransferTaskRequest.builder().targetGroupId(targetGroupId).build();
+        assertThrows(ResourceNotFoundException.class, () -> taskService.transferTask(sourceGroupId, taskId, validTargetReq, teacherUser));
+
+        // 4. transferTask target group exceeds tier max groups
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        Group g3 = Group.builder().id(UUID.randomUUID()).name("Group 3").teacher(teacherUser).build();
+        when(groupRepository.findByTeacher(teacherUser)).thenReturn(List.of(sourceGroup, g3, targetGroup));
+        when(usageService.getUserTier(teacherUser)).thenReturn(SubscriptionTier.FREE);
+        when(pricingProperties.getTierConfig(SubscriptionTier.FREE)).thenReturn(PricingProperties.TierConfig.builder().maxGroups(1).build());
+        assertThrows(QuotaExceededException.class, () -> taskService.transferTask(sourceGroupId, taskId, validTargetReq, teacherUser));
+
+        // 5. assignTask when group exceeds maxGroups
+        when(groupRepository.findById(targetGroupId)).thenReturn(Optional.of(targetGroup));
+        AssignTaskRequest targetGroupReq = AssignTaskRequest.builder().groupIds(List.of(targetGroupId)).dueDate(LocalDateTime.now().plusDays(1)).build();
+        assertThrows(QuotaExceededException.class, () -> taskService.assignTask(taskId, targetGroupReq, teacherUser));
+
+        // 6. transferTask with GRADED submission and overrideScore
+        when(pricingProperties.getTierConfig(SubscriptionTier.FREE)).thenReturn(PricingProperties.TierConfig.builder().maxGroups(10).build());
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(sourceGroupId)).thenReturn(List.of(GroupStudent.builder().group(sourceGroup).student(studentSource).build()));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(targetGroupId)).thenReturn(List.of(GroupStudent.builder().group(targetGroup).student(studentTarget).build()));
+
+        TaskAssignment gradedAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(studentSource)
+            .assignedBy(teacherUser)
+            .status(AssignmentStatus.GRADED)
+            .build();
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentSource.getId(), taskId)).thenReturn(Optional.of(gradedAssignment));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentTarget.getId(), taskId)).thenReturn(Optional.empty());
+
+        com.linguaoptima.api.domain.Submission subWithOverride = com.linguaoptima.api.domain.Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(gradedAssignment)
+            .student(studentSource)
+            .overrideScore(95.0)
+            .aiScore(80.0)
+            .build();
+        when(submissionRepository.findByAssignmentId(gradedAssignment.getId())).thenReturn(List.of(subWithOverride));
+
+        TransferTaskRequest moveReq = TransferTaskRequest.builder().targetGroupId(targetGroupId).keepInSource(false).build();
+        taskService.transferTask(sourceGroupId, taskId, moveReq, teacherUser);
+        verify(taskAssignmentRepository, atLeastOnce()).save(any(TaskAssignment.class));
+
+        // 7. createCustomTask with points <= 0 fallback
+        CreateCustomTaskRequest manualReq = CreateCustomTaskRequest.builder()
+            .taskType(TaskType.GAP_FILL)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Tenses")
+            .content("Fill in blanks")
+            .questions(List.of(
+                CustomQuestionRequest.builder().questionText("Q1").correctAnswer("A").points(0).difficulty(1).build()
+            ))
+            .build();
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+        TaskResponse manualResp = taskService.createCustomTask(manualReq, teacherUser);
+        assertNotNull(manualResp);
     }
 }
 

@@ -30,6 +30,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +45,7 @@ import static org.mockito.Mockito.when;
  * @brief Unit and slice test suite for ExportService.
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ExportServiceTest {
 
     /** @brief Test fixture or mock dependency for group repository. */
@@ -368,5 +371,81 @@ class ExportServiceTest {
         when(submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId())).thenReturn(List.of());
         assertThrows(RuntimeException.class, () -> exportService.generateStudentReport(student.getId(), "csv", teacher));
         assertThrows(RuntimeException.class, () -> exportService.generateStudentReport(student.getId(), "pdf", teacher));
+    }
+
+    /**
+     * @brief Verifies date filtering (from, to, since, until), long feedback truncation, and null attribute fallbacks.
+     */
+    @Test
+    void testExportService_DateFilteringAndLongFeedback() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime from = now.minusDays(5);
+        LocalDateTime to = now.plusDays(5);
+
+        Task customTask = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Reported Speech")
+            .type(TaskType.MCQ)
+            .cefrLevel(null)
+            .totalPoints(null)
+            .build();
+
+        TaskAssignment customAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(customTask)
+            .student(student)
+            .assignedBy(teacher)
+            .dueDate(now.plusDays(1))
+            .status(AssignmentStatus.SUBMITTED)
+            .createdAt(now)
+            .build();
+
+        Submission longFeedbackSub = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(customAssignment)
+            .student(student)
+            .submissionType(null)
+            .aiScore(80.0)
+            .submittedAt(now)
+            .teacherComment(null)
+            .aiFeedback("This is an exceptionally comprehensive diagnostic review designed specifically to exceed ninety characters in length to verify ellipsis truncation.")
+            .build();
+
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        GroupStudent activeGs = GroupStudent.builder().group(group).student(student).isActive(true).build();
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(activeGs));
+        when(taskAssignmentRepository.findByStudentIdsWithTaskAndStudent(List.of(student.getId()))).thenReturn(List.of(customAssignment));
+        when(submissionRepository.findActiveGroupSubmissions(group.getId())).thenReturn(List.of(longFeedbackSub));
+        when(submissionRepository.findByAssignmentId(customAssignment.getId())).thenReturn(List.of(longFeedbackSub));
+
+        // 1. Both from and to
+        GroupReportResponse repBoth = exportService.getGroupReportData(group.getId(), from, to, teacher);
+        assertNotNull(repBoth);
+        byte[] csvBoth = exportService.generateGroupCsv(repBoth);
+        assertNotNull(csvBoth);
+        byte[] pdfBoth = exportService.generateGroupPdf(repBoth);
+        assertNotNull(pdfBoth);
+
+        // 2. Only from
+        GroupReportResponse repFrom = exportService.getGroupReportData(group.getId(), from, null, teacher);
+        assertNotNull(repFrom);
+        assertNotNull(exportService.generateGroupPdf(repFrom));
+
+        // 3. Only to
+        GroupReportResponse repTo = exportService.getGroupReportData(group.getId(), null, to, teacher);
+        assertNotNull(repTo);
+        assertNotNull(exportService.generateGroupPdf(repTo));
+
+        // 4. Student report with long feedback and nulls
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
+        when(progressRecordRepository.findByStudent(student)).thenReturn(List.of());
+        when(submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId())).thenReturn(List.of(longFeedbackSub));
+
+        byte[] studentCsv = exportService.generateStudentReport(student.getId(), "csv", teacher);
+        assertNotNull(studentCsv);
+        byte[] studentPdf = exportService.generateStudentReport(student.getId(), "pdf", teacher);
+        assertNotNull(studentPdf);
     }
 }

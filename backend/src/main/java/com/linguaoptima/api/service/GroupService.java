@@ -72,7 +72,7 @@ public class GroupService {
      * @brief Resolves subscription tier for an educator.
      */
     private SubscriptionTier getTeacherTier(User teacher) {
-        if (subscriptionRepository == null || teacher == null) return SubscriptionTier.FREE;
+        if (teacher == null) return SubscriptionTier.FREE;
         return subscriptionRepository.findByUser(teacher)
             .map(Subscription::getTier)
             .orElse(SubscriptionTier.FREE);
@@ -92,7 +92,7 @@ public class GroupService {
         List<Group> existing = groupRepository.findByTeacher(teacher);
         if (existing.size() >= tierConfig.getMaxGroups()) {
             throw new QuotaExceededException(
-                "Your subscription tier (" + (tier != null ? tier.name() : "FREE") +
+                "Your subscription tier (" + tier.name() +
                 ") allows a maximum of " + tierConfig.getMaxGroups() + " student group(s). Please upgrade to Educator Pro to create more cohorts."
             );
         }
@@ -152,7 +152,7 @@ public class GroupService {
         }
         if (index >= maxAllowed) {
             throw new QuotaExceededException("This group is in read-only mode because your " +
-                (tier != null ? tier.name() : "FREE") +
+                tier.name() +
                 " plan allows up to " + maxAllowed + " active group(s). Upgrade to Educator Pro to reactivate this cohort.");
         }
     }

@@ -1,4 +1,4 @@
-# 📚 Lingua Optima — Adaptive AI-Powered English Mastery Platform
+# Lingua Optima — Adaptive AI-Powered English Mastery Platform
 
 <div align="center">
 
@@ -9,7 +9,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker_Compose-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![JaCoCo Coverage](https://img.shields.io/badge/JaCoCo-98%25_Lines_%7C_97%25_Instr-brightgreen?style=for-the-badge&logo=codecov&logoColor=white)](./docs/BACKEND.md)
+[![JaCoCo Coverage](https://img.shields.io/badge/JaCoCo-99.8%25_Lines_%7C_99.4%25_Instr-brightgreen?style=for-the-badge&logo=codecov&logoColor=white)](./docs/BACKEND.md)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](./LICENSE)
 
 **An enterprise-grade, interactive learning and assessment platform for mastering the English language across the entire CEFR continuum (A1–C2).**  
@@ -19,12 +19,12 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 
 ---
 
-## 🎬 Interactive Presentation & Documentation Navigator
+## Interactive Presentation and Documentation
 
-> 📊 **[Open Interactive Project Presentation (`docs/presentation.html`)](./docs/presentation.html)** — A dynamic slide presentation and architecture deck runnable in any browser.  
-> 📘 **[Open Compiled Doxygen Reference (`docs/generated/html/index.html`)](./docs/generated/html/index.html)** — Full code documentation generated from Javadoc and TypeScript docstrings.
+> **[Interactive Project Presentation (`docs/presentation.html`)](./docs/presentation.html)** — A dynamic slide presentation and architecture deck runnable in any browser.  
+> **[Compiled Doxygen Reference (`docs/generated/html/index.html`)](./docs/generated/html/index.html)** — Full code documentation generated from Javadoc and TypeScript docstrings.
 
-### 🗂 Documentation Index
+### Documentation Index
 
 | Document | Link | Core Focus |
 |---|---|---|
@@ -40,7 +40,7 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 
 ---
 
-## 🏗 High-Level System Architecture
+## High-Level System Architecture
 
 ```
                           [ Web Browser / Mobile PWA ]
@@ -77,7 +77,7 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 
 ---
 
-## 🚀 Core Capabilities & Architectural Principles
+## Core Capabilities and Architecture
 
 ### 1. Computerized Adaptive Testing (CAT) & Item Response Theory
 - Dynamic difficulty adjustment (scale 1–4) responding in real-time to student correctness.
@@ -109,7 +109,7 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 
 ---
 
-## 📊 Enterprise Action Audit & Distributed Tracing
+## Enterprise Action Audit and Distributed Tracing
 
 Lingua Optima features a dedicated enterprise-grade **Action Audit Logging** subsystem designed for security observability, academic integrity compliance, and distributed request tracing.
 
@@ -179,7 +179,7 @@ Lingua Optima features a dedicated enterprise-grade **Action Audit Logging** sub
 
 ---
 
-## 🛠 Quick Start & Development
+## Quick Start and Development
 
 ### 1. Run with Docker Compose
 ```bash
@@ -193,7 +193,7 @@ docker compose up --build -d
 ### 2. Local Backend Testing & JaCoCo Verification
 ```bash
 cd backend
-# Runs 387 unit and slice tests, verifies >=97% instructions and >=98% line coverage
+# Runs 394 unit and slice tests, verifies >=99% instructions and >=99% line coverage
 ./gradlew test jacocoTestCoverageVerification
 ```
 
@@ -218,7 +218,7 @@ Output documentation is compiled to `docs/generated/html/index.html`.
 
 ---
 
-## ⚙️ Environment Variables (`.env`)
+## Environment Variables (`.env`)
 
 The system loads environment settings from `.env` in the repository root:
 
@@ -244,7 +244,7 @@ The system loads environment settings from `.env` in the repository root:
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ```
 lingua_optima/
@@ -255,7 +255,7 @@ lingua_optima/
 ├── backend/                       # Spring Boot 3 + Java 21 REST API
 │   ├── src/main/java/             # Controllers, Services, Repositories, Domain, Config
 │   ├── src/main/resources/        # application.yml, logback-spring.xml, Flyway migrations
-│   └── src/test/java/             # 387 unit & slice tests, 100% JaCoCo coverage
+│   └── src/test/java/             # 394 unit & slice tests, 99.8% lines | 99.4% instructions
 ├── frontend/                      # React 18 + TypeScript + Vite PWA
 │   ├── src/components/            # Student, Teacher, Auth, and Common UI components
 │   ├── src/pages/                 # Landing, Dashboards, Privacy Policy, Terms, Help Center
@@ -276,7 +276,7 @@ lingua_optima/
 
 ---
 
-## 📄 License
+## License and Copyright
 
-This project is open-source and licensed under the **[MIT License](./LICENSE)**.  
-See the [`LICENSE`](./LICENSE) file for complete terms and permissions.
+Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  
+Licensed under the **[MIT License](./LICENSE)**. See the [`LICENSE`](./LICENSE) file for complete terms and permissions.

@@ -38,7 +38,7 @@ public class CustomCurriculumService {
     private final SubscriptionRepository subscriptionRepository;
 
     private SubscriptionTier getUserTier(User user) {
-        if (subscriptionRepository == null || user == null) return SubscriptionTier.FREE;
+        if (user == null) return SubscriptionTier.FREE;
         return subscriptionRepository.findByUser(user)
             .map(Subscription::getTier)
             .orElse(SubscriptionTier.FREE);

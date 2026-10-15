@@ -47,7 +47,7 @@ export const Footer: React.FC = () => {
           </div>
 
           <div className="text-xs text-slate-400">
-            © {new Date().getFullYear()} Lingua Optima. All rights reserved.
+            © {new Date().getFullYear()} Maksim Manastyrski. All rights reserved.
           </div>
         </div>
       </div>

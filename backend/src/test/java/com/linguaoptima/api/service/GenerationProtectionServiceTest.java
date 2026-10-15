@@ -171,4 +171,27 @@ class GenerationProtectionServiceTest {
         GenerationStatusResponse status = service.getStatus(userId, "dev-1");
         assertFalse(status.isGenerating());
     }
+
+    @Test
+    void testNullAndBlankEdgeCases() {
+        assertDoesNotThrow(() -> service.takeoverGeneration(null, "dev-1"));
+        assertDoesNotThrow(() -> service.takeoverGeneration(userId, null));
+        assertDoesNotThrow(() -> service.takeoverGeneration(userId, "   "));
+
+        GenerationStatusResponse nullUserStatus = service.getStatus(null, "dev-1");
+        assertFalse(nullUserStatus.isGenerating());
+
+        service.acquireGenerationLock(userId, null);
+        GenerationStatusResponse statusBlankDevice = service.getStatus(userId, "   ");
+        assertTrue(statusBlankDevice.isGenerating());
+        assertTrue(statusBlankDevice.isCurrentDevice()); // both resolved to "default_device"
+
+        // Release with non-matching lease
+        assertDoesNotThrow(() -> service.releaseGenerationLock(userId, "non-matching-lease"));
+        assertTrue(service.getStatus(userId, null).isGenerating());
+
+        // Release with matching lease
+        service.releaseGenerationLock(userId);
+        assertFalse(service.getStatus(userId, null).isGenerating());
+    }
 }

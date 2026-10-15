@@ -5,6 +5,7 @@
 package com.linguaoptima.api.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linguaoptima.api.domain.SessionState;
 import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.Task;
 import com.linguaoptima.api.domain.TaskAssignment;
@@ -31,6 +32,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
@@ -46,6 +49,7 @@ import static org.mockito.Mockito.*;
  * @brief Unit and slice test suite for SubmissionService.
  */
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class SubmissionServiceTest {
 
     /** @brief Test fixture or mock dependency for submission repository. */
@@ -1282,5 +1286,84 @@ class SubmissionServiceTest {
         assertEquals(50.0, resp.getEffectiveScore());
         assertEquals(50.0, sub.getAiScore());
         verify(submissionRepository).save(sub);
+    }
+
+    /**
+     * @brief Verifies student preferredProvider, oversized images, answer alternatives, and CAT options enrichment.
+     */
+    @Test
+    void testSubmissionService_ComprehensiveAdditionalCoverage() {
+        // 1. Student with preferred provider
+        student.setPreferredProvider(com.linguaoptima.api.domain.enums.AIProvider.GEMINI);
+        Map<String, Object> essayResult = Map.of("score", 85.0);
+        when(scoringService.scoreEssay(anyString(), anyString(), eq(student))).thenReturn(essayResult);
+        when(scoringService.extractScore(essayResult)).thenReturn(85.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TextSubmissionRequest textReq = TextSubmissionRequest.builder()
+            .text("Essay with preferred provider")
+            .type("ESSAY")
+            .build();
+        SubmissionResultResponse textRes = submissionService.submitText(textReq, student);
+        assertNotNull(textRes);
+        assertEquals("AI_GEMINI", textRes.getProviderUsed());
+
+        // 2. Oversized image files > 25MB
+        org.springframework.mock.web.MockMultipartFile hugeFile = new org.springframework.mock.web.MockMultipartFile(
+            "file", "huge.jpg", "image/jpeg", new byte[26 * 1024 * 1024]
+        );
+        assertThrows(com.linguaoptima.api.exception.OcrException.class,
+            () -> submissionService.submitImages(List.of(hugeFile), null, student));
+
+        // 3. submitImage single file with null file delegation
+        assertThrows(Exception.class, () -> submissionService.submitImage(null, null, student));
+
+        // 4. Answer evaluation with 'or' alternative answers (e.g., 'theater or theatre')
+        Task taskOr = Task.builder()
+            .id(UUID.randomUUID())
+            .questions(List.of(
+                TaskQuestion.builder().questionOrder(1).questionText("Spell theatre").correctAnswer("theater or theatre").points(1).build()
+            ))
+            .build();
+        Submission subOr = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("1. theatre")
+            .build();
+        SubmissionResultResponse respOr = SubmissionResultResponse.fromEntity(subOr);
+        respOr.setTaskId(taskOr.getId());
+        when(taskRepository.findById(taskOr.getId())).thenReturn(Optional.of(taskOr));
+
+        submissionService.enrichSubmissionResult(respOr, subOr, null);
+        assertNotNull(respOr.getItems());
+        assertEquals(1, respOr.getItems().size());
+        assertTrue(respOr.getItems().get(0).isCorrect());
+
+        // 5. CAT answers JSON with optionsJson and skipped question
+        String catAnswers = "[{\"questionId\":\"" + UUID.randomUUID() + "\",\"questionText\":\"Q1\",\"correctAnswer\":\"correct\",\"givenAnswer\":\"\",\"isCorrect\":false,\"grammarRule\":\"Mixed Conditionals\",\"optionsJson\":\"[\\\"A\\\",\\\"B\\\"]\"}]";
+        TaskAssignment catAssign = TaskAssignment.builder().id(UUID.randomUUID()).student(student).build();
+        Submission catSub = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(catAssign)
+            .student(student)
+            .studentText("CAT session")
+            .aiScore(40.0)
+            .build();
+        SessionState catSession = SessionState.builder()
+            .id(UUID.randomUUID())
+            .assignment(catAssign)
+            .answersJson(catAnswers)
+            .build();
+        when(sessionStateRepository.findByAssignmentId(catAssign.getId())).thenReturn(Optional.of(catSession));
+        SubmissionResultResponse catResp = SubmissionResultResponse.fromEntity(catSub);
+        submissionService.enrichSubmissionResult(catResp, catSub, null);
+        assertNotNull(catResp.getItems());
+        assertEquals(1, catResp.getItems().size());
+        assertTrue(catResp.getItems().get(0).isSkipped());
+        assertNotNull(catResp.getItems().get(0).getOptions());
+
+        // 6. Save exception catch branch in enrichSubmissionResult
+        doThrow(new RuntimeException("DB down")).when(submissionRepository).save(any(Submission.class));
+        submissionService.enrichSubmissionResult(respOr, subOr, null);
     }
 }

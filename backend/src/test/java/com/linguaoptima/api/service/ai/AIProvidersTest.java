@@ -264,5 +264,41 @@ class AIProvidersTest {
         assertThrows(RuntimeException.class, () -> qwen.complete("prompt"));
         assertThrows(RuntimeException.class, () -> kimi.complete("prompt"));
     }
+
+    /**
+     * @brief Verifies isConfigured logic for GroqProvider, GeminiProvider, and AIProvider default.
+     */
+    @Test
+    void testProviders_isConfigured() {
+        AIProvider defaultProvider = new AIProvider() {
+            @Override
+            public String complete(String prompt) { return "ok"; }
+            @Override
+            public String getProviderName() { return "TEST"; }
+        };
+        assertTrue(defaultProvider.isConfigured());
+
+        GroqProvider validGroq = new GroqProvider("valid-key", restTemplate, objectMapper);
+        assertTrue(validGroq.isConfigured());
+        GroqProvider nullGroq = new GroqProvider(null, restTemplate, objectMapper);
+        assertFalse(nullGroq.isConfigured());
+        GroqProvider blankGroq = new GroqProvider("   ", restTemplate, objectMapper);
+        assertFalse(blankGroq.isConfigured());
+        GroqProvider mockGroq = new GroqProvider("some-mock-key", restTemplate, objectMapper);
+        assertFalse(mockGroq.isConfigured());
+        GroqProvider dummyGroq = new GroqProvider("dummy-key", restTemplate, objectMapper);
+        assertFalse(dummyGroq.isConfigured());
+
+        GeminiProvider validGemini = new GeminiProvider("valid-key", restTemplate, objectMapper);
+        assertTrue(validGemini.isConfigured());
+        GeminiProvider nullGemini = new GeminiProvider(null, restTemplate, objectMapper);
+        assertFalse(nullGemini.isConfigured());
+        GeminiProvider blankGemini = new GeminiProvider("   ", restTemplate, objectMapper);
+        assertFalse(blankGemini.isConfigured());
+        GeminiProvider mockGemini = new GeminiProvider("my-mock-key", restTemplate, objectMapper);
+        assertFalse(mockGemini.isConfigured());
+        GeminiProvider dummyGemini = new GeminiProvider("dummy-gemini", restTemplate, objectMapper);
+        assertFalse(dummyGemini.isConfigured());
+    }
 }
 
