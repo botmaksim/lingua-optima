@@ -46,6 +46,7 @@ import {
 } from '../../constants/aiModels';
 import { DEFAULT_CEFR_TOPICS, DOMAINS } from '../../constants/topics';
 import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from '../teacher/SpeakingConfigPanel';
+import { ReadingConfigPanel, ReadingConfig } from '../teacher/ReadingConfigPanel';
 
 /**
  * @brief Form component to configure and generate AI-driven practice tasks.
@@ -78,6 +79,22 @@ export const GenerateTask: React.FC = () => {
   const [speakingTitle, setSpeakingTitle] = useState<string>('');
   const [targetSounds, setTargetSounds] = useState<string>(TARGET_SOUND_PRESETS[0].value);
   const [speakingLength, setSpeakingLength] = useState<string>('MEDIUM');
+  const [customWordCount, setCustomWordCount] = useState<number>(60);
+  const [customInstructions, setCustomInstructions] = useState<string>('');
+
+  // Dedicated Reading task configuration state
+  const [readingConfig, setReadingConfig] = useState<ReadingConfig>({
+    readingTitle: '',
+    readingLength: 'Medium (250-400 words)',
+    readingParagraphs: '3 to 4 distinct paragraphs with clear narrative progression',
+    mcqQuestionsCount: 2,
+    mcqPoints: 10,
+    trueFalseQuestionsCount: 2,
+    trueFalsePoints: 10,
+    openQuestionsCount: 1,
+    openPoints: 10,
+    isRandomMode: true,
+  });
 
   // Curriculum context state
   const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
@@ -246,13 +263,29 @@ export const GenerateTask: React.FC = () => {
     setError(null);
 
     try {
+      const readingQuestionsCount =
+        (readingConfig.mcqQuestionsCount || 0) +
+        (readingConfig.trueFalseQuestionsCount || 0) +
+        (readingConfig.openQuestionsCount || 0);
+
+      const readingTotalPoints =
+        (readingConfig.mcqQuestionsCount || 0) * (readingConfig.mcqPoints || 0) +
+        (readingConfig.trueFalseQuestionsCount || 0) * (readingConfig.trueFalsePoints || 0) +
+        (readingConfig.openQuestionsCount || 0) * (readingConfig.openPoints || 0);
+
       const task = await taskApi.generateTask({
         cefrLevel,
         grammarTopic: grammarTopic.trim() || 'General Practice',
         domain,
         taskType,
         difficulty,
-        numberOfQuestions: taskType === 'SPEAKING' ? 1 : numberOfQuestions,
+        numberOfQuestions:
+          taskType === 'SPEAKING'
+            ? 1
+            : taskType === 'READING'
+            ? readingQuestionsCount
+            : numberOfQuestions,
+        totalPoints: taskType === 'READING' ? readingTotalPoints : undefined,
         provider,
         modelName,
         customRule: customRule.trim() || undefined,
@@ -260,11 +293,27 @@ export const GenerateTask: React.FC = () => {
         ruleFilePath: uploadedRuleFile?.serverPath || undefined,
         vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
         ecoMode,
+        ...(taskType === 'READING'
+          ? {
+              readingTitle: readingConfig.readingTitle.trim() || undefined,
+              readingLength: readingConfig.readingLength.trim() || undefined,
+              readingParagraphs: readingConfig.readingParagraphs.trim() || undefined,
+              mcqQuestionsCount: readingConfig.mcqQuestionsCount,
+              mcqPoints: readingConfig.mcqPoints,
+              trueFalseQuestionsCount: readingConfig.trueFalseQuestionsCount,
+              trueFalsePoints: readingConfig.trueFalsePoints,
+              openQuestionsCount: readingConfig.openQuestionsCount,
+              openPoints: readingConfig.openPoints,
+            }
+          : {}),
         ...(taskType === 'SPEAKING'
           ? {
               speakingTitle: speakingTitle.trim() || undefined,
               targetSounds: targetSounds.trim() || undefined,
-              speakingLength: speakingLength.trim() || undefined,
+              speakingLength:
+                speakingLength === 'CUSTOM'
+                  ? `Custom (${customWordCount} words${customInstructions ? `: ${customInstructions}` : ''})`
+                  : speakingLength.trim() || undefined,
             }
           : {}),
       });
@@ -321,6 +370,20 @@ export const GenerateTask: React.FC = () => {
     setSpeakingTitle('');
     setTargetSounds(TARGET_SOUND_PRESETS[0].value);
     setSpeakingLength('MEDIUM');
+    setCustomWordCount(60);
+    setCustomInstructions('');
+    setReadingConfig({
+      readingTitle: '',
+      readingLength: 'Medium (250-400 words)',
+      readingParagraphs: '3 to 4 distinct paragraphs with clear narrative progression',
+      mcqQuestionsCount: 2,
+      mcqPoints: 10,
+      trueFalseQuestionsCount: 2,
+      trueFalsePoints: 10,
+      openQuestionsCount: 1,
+      openPoints: 10,
+      isRandomMode: true,
+    });
     setCustomRule('');
     setCustomVocabulary('');
     setUploadedRuleFile(null);
@@ -515,13 +578,16 @@ export const GenerateTask: React.FC = () => {
           </div>
         </div>
 
-        {/* Topic Selection with Standard, Mixed Challenges, and Custom Topic */}
+        {/* Core Syllabus: Topic & Vocabulary Domain Selection */}
         <TopicSelector
           cefrLevel={cefrLevel}
           topic={grammarTopic}
           onTopicChange={setGrammarTopic}
+          domain={domain}
+          onDomainChange={setDomain}
           catalog={catalog}
-          showDomain={false}
+          showTopic={true}
+          showDomain={true}
           size="lg"
         />
 
@@ -585,7 +651,7 @@ export const GenerateTask: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Curriculum Rules & Vocabulary Context (Optional)
+                  Advanced Context: Inject Custom Rules, Specific Word Lists, or Textbook Files (Optional)
                 </h3>
                 <p className="text-[11px] text-slate-500">
                   {ecoMode ? (
@@ -599,7 +665,7 @@ export const GenerateTask: React.FC = () => {
                       <span>Custom rules or vocabulary active</span>
                     </span>
                   ) : (
-                    <span>Inject specific grammar rules, word lists, or upload files (.txt, .md, .json)</span>
+                    <span>By default, AI uses CEFR standards for the Topic & Domain selected above. Use this section only to inject specific textbook rules or words.</span>
                   )}
                 </p>
               </div>
@@ -746,18 +812,6 @@ export const GenerateTask: React.FC = () => {
           )}
         </div>
 
-        {/* Vocabulary Domain */}
-        <TopicSelector
-          cefrLevel={cefrLevel}
-          topic={grammarTopic}
-          onTopicChange={setGrammarTopic}
-          domain={domain}
-          onDomainChange={setDomain}
-          showTopic={false}
-          showDomain={true}
-          size="md"
-        />
-
         {/* Task Type */}
         <div>
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
@@ -803,13 +857,31 @@ export const GenerateTask: React.FC = () => {
                 totalPoints={100}
                 onTotalPointsChange={() => {}}
                 isStudent={true}
+                customWordCount={customWordCount}
+                onCustomWordCountChange={setCustomWordCount}
+                customInstructions={customInstructions}
+                onCustomInstructionsChange={setCustomInstructions}
+              />
+            </div>
+          )}
+
+          {/* Reading Comprehension Studio Panel */}
+          {taskType === 'READING' && (
+            <div className="mt-4 animate-in fade-in duration-200">
+              <ReadingConfigPanel
+                config={readingConfig}
+                onChange={(updated) => setReadingConfig((prev) => ({ ...prev, ...updated }))}
+                cefrLevel={cefrLevel}
+                customVocabulary={customVocabulary}
+                onCustomVocabularyChange={setCustomVocabulary}
+                isStudent={true}
               />
             </div>
           )}
         </div>
 
-        {/* Difficulty and Question Count */}
-        {taskType !== 'ESSAY' && taskType !== 'SPEAKING' && (
+        {/* Difficulty and Question Count - displayed only for standard single-question tasks */}
+        {taskType !== 'ESSAY' && taskType !== 'SPEAKING' && taskType !== 'READING' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">

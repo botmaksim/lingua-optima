@@ -5,7 +5,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Send, Clock, CheckCircle2, AlertTriangle, RotateCcw, BookOpen } from 'lucide-react';
+import {
+  ArrowLeft,
+  Save,
+  Send,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  RotateCcw,
+  BookOpen,
+  Maximize2,
+  Minimize2,
+} from 'lucide-react';
 import { taskApi } from '../../api/taskApi';
 import { submissionApi } from '../../api/submissionApi';
 import { Task, TaskQuestion } from '../../types/task';
@@ -32,6 +43,11 @@ export const TaskView: React.FC = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showUnansweredConfirm, setShowUnansweredConfirm] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Reading Comprehension view scaling preferences
+  const [readingWidthPreset, setReadingWidthPreset] = useState<'compact' | 'balanced' | 'wide' | 'expanded'>('balanced');
+  const [readingFontSize, setReadingFontSize] = useState<'sm' | 'base' | 'lg' | 'xl'>('base');
+  const [isFullHeight, setIsFullHeight] = useState<boolean>(false);
 
   useEffect(() => {
     if (!taskId) return;
@@ -202,8 +218,39 @@ export const TaskView: React.FC = () => {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const fontSizes: ('sm' | 'base' | 'lg' | 'xl')[] = ['sm', 'base', 'lg', 'xl'];
+  const decreaseFontSize = () => {
+    const idx = fontSizes.indexOf(readingFontSize);
+    if (idx > 0) setReadingFontSize(fontSizes[idx - 1]);
+  };
+  const increaseFontSize = () => {
+    const idx = fontSizes.indexOf(readingFontSize);
+    if (idx < fontSizes.length - 1) setReadingFontSize(fontSizes[idx + 1]);
+  };
+
+  const readingColSpans = {
+    compact: { passage: 'lg:col-span-4', questions: 'lg:col-span-8' },
+    balanced: { passage: 'lg:col-span-6', questions: 'lg:col-span-6' },
+    wide: { passage: 'lg:col-span-7', questions: 'lg:col-span-5' },
+    expanded: { passage: 'lg:col-span-8', questions: 'lg:col-span-4' },
+  }[readingWidthPreset];
+
+  const fontSizeClass = {
+    sm: 'text-xs leading-relaxed',
+    base: 'text-sm leading-relaxed',
+    lg: 'text-base leading-relaxed',
+    xl: 'text-lg leading-relaxed',
+  }[readingFontSize];
+
+  const containerMaxWidth =
+    task?.type === 'READING'
+      ? readingWidthPreset === 'expanded' || readingWidthPreset === 'wide'
+        ? 'max-w-7xl'
+        : 'max-w-6xl'
+      : 'max-w-3xl';
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className={`${containerMaxWidth} mx-auto space-y-6 transition-all duration-300`}>
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate(-1)}
@@ -360,27 +407,105 @@ export const TaskView: React.FC = () => {
         />
       ) : task.type === 'READING' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Sticky Reading Article */}
-          <div className="lg:col-span-5 lg:sticky lg:top-6 rounded-3xl bg-white p-6 border border-slate-200/90 shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          {/* Left Column: Sticky Reading Article with Window Scaling & Typography Controls */}
+          <div className={`${readingColSpans.passage} lg:sticky lg:top-6 rounded-3xl bg-white p-6 border border-slate-200/90 shadow-sm space-y-4 transition-all duration-200`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2">
                 <BookOpen className="w-4 h-4 text-primary" />
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                   Reading Passage
                 </h3>
+                <span className="text-[11px] font-semibold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                  {task.content?.split(/\s+/).filter(Boolean).length || 0} words
+                </span>
               </div>
-              <span className="text-[11px] font-semibold text-slate-400">
-                {task.content?.split(/\s+/).filter(Boolean).length || 0} words
-              </span>
+
+              {/* Interactive Window & Typography Scaling Controls */}
+              <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-auto">
+                {/* Font Size Adjuster */}
+                <div className="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={decreaseFontSize}
+                    disabled={readingFontSize === 'sm'}
+                    className="px-2 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 disabled:opacity-30 transition rounded-lg hover:bg-white"
+                    title="Decrease font size (A-)"
+                    aria-label="Decrease font size"
+                  >
+                    A-
+                  </button>
+                  <span className="px-1 text-[10px] font-mono font-semibold text-slate-400 uppercase">
+                    {readingFontSize}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={increaseFontSize}
+                    disabled={readingFontSize === 'xl'}
+                    className="px-2 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 disabled:opacity-30 transition rounded-lg hover:bg-white"
+                    title="Increase font size (A+)"
+                    aria-label="Increase font size"
+                  >
+                    A+
+                  </button>
+                </div>
+
+                {/* Split Width Presets */}
+                <div className="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200 text-[11px]">
+                  {(
+                    [
+                      { id: 'compact', label: '35%' },
+                      { id: 'balanced', label: '50%' },
+                      { id: 'wide', label: '58%' },
+                      { id: 'expanded', label: '67%' },
+                    ] as const
+                  ).map((preset) => {
+                    const isSelected = readingWidthPreset === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        onClick={() => setReadingWidthPreset(preset.id)}
+                        className={`px-2 py-1 rounded-lg font-bold transition ${
+                          isSelected
+                            ? 'bg-white text-primary shadow-xs'
+                            : 'text-slate-500 hover:text-slate-900'
+                        }`}
+                        title={`Resize reading passage column to ${preset.label}`}
+                      >
+                        {preset.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Height Expand Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsFullHeight(!isFullHeight)}
+                  className={`p-1.5 rounded-xl border text-xs font-semibold transition ${
+                    isFullHeight
+                      ? 'bg-indigo-50 border-indigo-200 text-primary'
+                      : 'bg-slate-100/90 border-slate-200 text-slate-500 hover:text-slate-800'
+                  }`}
+                  title={isFullHeight ? 'Switch to scrollable window' : 'Expand full reading text height'}
+                  aria-label="Toggle full height reading window"
+                >
+                  {isFullHeight ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                </button>
+              </div>
             </div>
 
-            <div className="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap font-serif select-text max-h-[70vh] overflow-y-auto pr-2 space-y-3">
+            <div
+              className={`text-slate-800 ${fontSizeClass} whitespace-pre-wrap font-serif select-text ${
+                isFullHeight ? 'max-h-none overflow-visible' : 'max-h-[72vh] overflow-y-auto pr-2'
+              } space-y-3 transition-all duration-200`}
+            >
               {task.content}
             </div>
           </div>
 
           {/* Right Column: Questions */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className={`${readingColSpans.questions} space-y-4 transition-all duration-200`}>
             {questions.length === 0 ? (
               <div className="bg-white p-6 rounded-2xl text-center text-slate-500 text-sm">
                 No comprehension questions loaded for this reading task.

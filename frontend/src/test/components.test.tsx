@@ -1607,6 +1607,123 @@ describe('SpeakingPracticeView component', () => {
   });
 });
 
+describe('TaskView Reading Window Scaling', () => {
+  it('renders reading passage toolbar and resizes column proportions, font size, and height toggle', async () => {
+    vi.spyOn(taskApi, 'getTaskById').mockResolvedValue({
+      id: 'reading-123',
+      type: 'READING',
+      grammarTopic: 'The Future of Renewable Energy',
+      cefrLevel: 'B2',
+      domain: 'Science & Technology',
+      content: 'Renewable energy systems have experienced exponential technological innovation in recent decades.',
+      totalPoints: 30,
+      questions: [
+        {
+          id: 'rq-1',
+          questionOrder: 1,
+          questionText: 'What has experienced exponential innovation?',
+          correctAnswer: 'Renewable energy systems',
+          options: ['Renewable energy systems', 'Fossil fuel extraction'],
+          difficulty: 2,
+          points: 15,
+        },
+      ],
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/student/task/reading-123']}>
+        <Routes>
+          <Route path="/student/task/:taskId" element={<TaskView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('The Future of Renewable Energy')).toBeInTheDocument();
+    expect(screen.getByText('Reading Passage')).toBeInTheDocument();
+
+    // Check width proportion buttons
+    const compactBtn = screen.getByRole('button', { name: /35%/i });
+    const wideBtn = screen.getByRole('button', { name: /58%/i });
+    const expandedBtn = screen.getByRole('button', { name: /67%/i });
+    expect(compactBtn).toBeInTheDocument();
+    expect(wideBtn).toBeInTheDocument();
+    expect(expandedBtn).toBeInTheDocument();
+
+    // Click 58% preset
+    fireEvent.click(wideBtn);
+    expect(wideBtn).toHaveClass('text-primary');
+
+    // Font size controls
+    const increaseFontBtn = screen.getByLabelText(/Increase font size/i);
+    const decreaseFontBtn = screen.getByLabelText(/Decrease font size/i);
+    fireEvent.click(increaseFontBtn);
+    expect(screen.getByText('lg')).toBeInTheDocument();
+    fireEvent.click(decreaseFontBtn);
+    expect(screen.getByText('base')).toBeInTheDocument();
+
+    // Height toggle button
+    const heightToggleBtn = screen.getByLabelText(/Toggle full height reading window/i);
+    fireEvent.click(heightToggleBtn);
+    expect(heightToggleBtn).toHaveClass('bg-indigo-50');
+  });
+});
+
+describe('SpeakingConfigPanel Custom Settings', () => {
+  it('reveals target word count and scenario instructions when Custom length preset is selected', () => {
+    const handleWordCountChange = vi.fn();
+    const handleInstructionsChange = vi.fn();
+    const handleLengthChange = vi.fn();
+
+    const { rerender } = render(
+      <SpeakingConfigPanel
+        speakingTitle="My Speech"
+        onTitleChange={vi.fn()}
+        targetSounds="/θ/ and /ð/"
+        onTargetSoundsChange={vi.fn()}
+        speakingLength="MEDIUM"
+        onSpeakingLengthChange={handleLengthChange}
+        totalPoints={100}
+        onTotalPointsChange={vi.fn()}
+        isStudent={true}
+        customWordCount={80}
+        onCustomWordCountChange={handleWordCountChange}
+        customInstructions="Roleplay an airport check-in dialogue"
+        onCustomInstructionsChange={handleInstructionsChange}
+      />
+    );
+
+    expect(screen.queryByText(/Target Word Count/i)).not.toBeInTheDocument();
+
+    // Switch to CUSTOM
+    rerender(
+      <SpeakingConfigPanel
+        speakingTitle="My Speech"
+        onTitleChange={vi.fn()}
+        targetSounds="/θ/ and /ð/"
+        onTargetSoundsChange={vi.fn()}
+        speakingLength="CUSTOM"
+        onSpeakingLengthChange={handleLengthChange}
+        totalPoints={100}
+        onTotalPointsChange={vi.fn()}
+        isStudent={true}
+        customWordCount={80}
+        onCustomWordCountChange={handleWordCountChange}
+        customInstructions="Roleplay an airport check-in dialogue"
+        onCustomInstructionsChange={handleInstructionsChange}
+      />
+    );
+
+    expect(screen.getByText(/Target Word Count/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/e.g. A job interview opening/i)).toBeInTheDocument();
+
+    // Modify instructions
+    const instructionsInput = screen.getByPlaceholderText(/e.g. A job interview opening/i);
+    fireEvent.change(instructionsInput, { target: { value: 'Customer service call' } });
+    expect(handleInstructionsChange).toHaveBeenCalledWith('Customer service call');
+  });
+});
+
+
 
 
 

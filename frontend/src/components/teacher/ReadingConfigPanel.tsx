@@ -1,12 +1,12 @@
 /**
  * @file ReadingConfigPanel.tsx
  * @brief Dedicated configuration interface for Reading Comprehension assignments.
- * Allows teachers to customize reading title, passage length, paragraph guidelines,
- * CEFR vocabulary keywords, and question breakdown (MCQ, True/False, Completion) with point allocations.
+ * Allows educators and students to customize reading title, passage length, paragraph guidelines,
+ * custom vocabulary keywords, question mode (Random Mix vs Custom Selection), and question breakdown with point allocations.
  */
 
-import React from 'react';
-import { BookOpen, Award, CheckSquare, AlignLeft, Hash } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, Award, CheckSquare, AlignLeft, Hash, Sparkles, Shuffle } from 'lucide-react';
 import { CefrLevel } from '../../types/user';
 
 export interface ReadingConfig {
@@ -19,6 +19,7 @@ export interface ReadingConfig {
   trueFalsePoints: number;
   openQuestionsCount: number;
   openPoints: number;
+  isRandomMode?: boolean;
 }
 
 interface ReadingConfigPanelProps {
@@ -27,12 +28,14 @@ interface ReadingConfigPanelProps {
   cefrLevel: CefrLevel;
   customVocabulary: string;
   onCustomVocabularyChange: (vocab: string) => void;
+  isStudent?: boolean;
 }
 
 const LENGTH_PRESETS = [
   { id: 'Short (150-250 words)', label: 'Short', words: '150–250 words' },
   { id: 'Medium (250-400 words)', label: 'Medium', words: '250–400 words' },
   { id: 'Long (400-600 words)', label: 'Long', words: '400–600 words' },
+  { id: 'Custom', label: 'Custom', words: 'Custom words' },
 ];
 
 export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
@@ -41,7 +44,12 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
   cefrLevel,
   customVocabulary,
   onCustomVocabularyChange,
+  isStudent = false,
 }) => {
+  const [customWordCount, setCustomWordCount] = useState<number>(300);
+
+  const isRandom = config.isRandomMode ?? false;
+
   const totalQuestions =
     (config.mcqQuestionsCount || 0) +
     (config.trueFalseQuestionsCount || 0) +
@@ -52,12 +60,41 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
     (config.trueFalseQuestionsCount || 0) * (config.trueFalsePoints || 0) +
     (config.openQuestionsCount || 0) * (config.openPoints || 0);
 
+  /**
+   * @brief Shuffles a randomized question mix across MCQ, True/False, and Open Questions.
+   */
+  const handleShuffleRandomMix = () => {
+    // Generate a random balanced distribution totaling 4-6 questions
+    const randomPool = [
+      { mcq: 2, tf: 2, open: 1 },
+      { mcq: 3, tf: 2, open: 1 },
+      { mcq: 2, tf: 1, open: 2 },
+      { mcq: 3, tf: 1, open: 1 },
+      { mcq: 1, tf: 2, open: 2 },
+    ];
+    const picked = randomPool[Math.floor(Math.random() * randomPool.length)];
+    onChange({
+      isRandomMode: true,
+      mcqQuestionsCount: picked.mcq,
+      trueFalseQuestionsCount: picked.tf,
+      openQuestionsCount: picked.open,
+    });
+  };
+
+  const handleToggleRandomMode = (enableRandom: boolean) => {
+    if (enableRandom) {
+      handleShuffleRandomMix();
+    } else {
+      onChange({ isRandomMode: false });
+    }
+  };
+
   return (
     <div className="rounded-3xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-white to-violet-50/30 p-6 space-y-6 shadow-xs">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-indigo-100">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200 flex-shrink-0">
             <BookOpen className="w-5 h-5" />
           </div>
           <div>
@@ -70,13 +107,15 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
               </span>
             </div>
             <p className="text-xs text-slate-500">
-              Configure reading passage parameters and question distribution
+              {isStudent
+                ? 'Generate a reading passage with your preferred question types or a surprise mix'
+                : 'Configure reading passage parameters, question distribution, and scoring weights'}
             </p>
           </div>
         </div>
 
-        {/* Live Points Badge */}
-        <div className="flex items-center space-x-3 px-3.5 py-1.5 rounded-2xl bg-white border border-indigo-100 shadow-xs">
+        {/* Live Points & Question Count Badge */}
+        <div className="flex items-center space-x-3 px-3.5 py-1.5 rounded-2xl bg-white border border-indigo-100 shadow-xs self-start sm:self-auto">
           <div className="flex items-center space-x-1 text-xs">
             <Hash className="w-3.5 h-3.5 text-primary" />
             <span className="text-slate-500 font-semibold">Questions:</span>
@@ -94,7 +133,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
       {/* Row 1: Assignment Title & Target Vocabulary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Reading Assignment Title (Optional)
           </label>
           <input
@@ -110,7 +149,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Target Vocabulary & Collocations (Optional)
           </label>
           <input
@@ -129,30 +168,62 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
       {/* Row 2: Passage Length & Paragraph Structure */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Passage Length / Volume
           </label>
-          <div className="grid grid-cols-3 gap-2">
-            {LENGTH_PRESETS.map((preset) => (
-              <button
-                type="button"
-                key={preset.id}
-                onClick={() => onChange({ readingLength: preset.id })}
-                className={`py-2 px-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
-                  config.readingLength === preset.id
-                    ? 'border-primary bg-indigo-50/80 text-primary shadow-xs'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                <span className="text-xs font-bold">{preset.label}</span>
-                <span className="text-[10px] text-slate-400">{preset.words}</span>
-              </button>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {LENGTH_PRESETS.map((preset) => {
+              const isSelected = config.readingLength === preset.id || (preset.id === 'Custom' && config.readingLength.startsWith('Custom'));
+              return (
+                <button
+                  type="button"
+                  key={preset.id}
+                  onClick={() => {
+                    if (preset.id === 'Custom') {
+                      onChange({ readingLength: `Custom (${customWordCount} words)` });
+                    } else {
+                      onChange({ readingLength: preset.id });
+                    }
+                  }}
+                  className={`py-2 px-2 rounded-xl border text-center transition flex flex-col items-center justify-center ${
+                    isSelected
+                      ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
+                      : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <span className="text-xs font-bold">{preset.label}</span>
+                  <span className="text-[10px] text-slate-400">{preset.words}</span>
+                </button>
+              );
+            })}
           </div>
+
+          {/* Custom Length Input if Custom is selected */}
+          {config.readingLength && config.readingLength.startsWith('Custom') && (
+            <div className="mt-2.5 p-3 rounded-xl bg-indigo-50/60 border border-indigo-200 flex items-center justify-between text-xs animate-in fade-in duration-200">
+              <span className="font-semibold text-slate-700">Target Word Count:</span>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  min="50"
+                  max="1000"
+                  step="25"
+                  value={customWordCount}
+                  onChange={(e) => {
+                    const val = Math.max(50, Math.min(1000, parseInt(e.target.value) || 300));
+                    setCustomWordCount(val);
+                    onChange({ readingLength: `Custom (${val} words)` });
+                  }}
+                  className="w-20 px-2 py-1 rounded-lg border border-slate-300 bg-white font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+                <span className="text-slate-500 font-medium">words</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Paragraph Structure & Narrative Focus
           </label>
           <input
@@ -168,18 +239,78 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
         </div>
       </div>
 
-      {/* Row 3: Questions Breakdown and Points Configuration */}
+      {/* Row 3: Question Mode Switcher (Random Mix vs Custom Selection) */}
       <div className="space-y-3 pt-2 border-t border-indigo-100">
-        <div className="flex items-center justify-between">
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Questions Configuration & Point Distribution
-          </label>
-          <span className="text-[11px] text-slate-500 font-medium">
-            Customize question types, counts, and point weights
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Question Types & Format
+            </label>
+            <p className="text-[11px] text-slate-500">
+              Choose specific questions or enable random surprise mix across formats
+            </p>
+          </div>
+
+          {/* Mode Switcher Buttons */}
+          <div className="flex items-center space-x-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200 self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => handleToggleRandomMode(true)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                isRandom
+                  ? 'bg-white text-primary shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
+              <span>Surprise Me (Random Mix)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleToggleRandomMode(false)}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                !isRandom
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <CheckSquare className="w-3.5 h-3.5 text-slate-500" />
+              <span>Custom Selection</span>
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* Random Mode Active Banner */}
+        {isRandom ? (
+          <div className="p-4 rounded-2xl border border-indigo-200/90 bg-indigo-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-200">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-xl bg-indigo-100 text-primary flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">
+                  Randomized Balanced Question Mix Active
+                </h4>
+                <p className="text-[11px] text-slate-500">
+                  Selected mix: {config.mcqQuestionsCount} Multiple Choice, {config.trueFalseQuestionsCount} True/False, {config.openQuestionsCount} Sentence Completion ({totalQuestions} questions total)
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleShuffleRandomMix}
+              className="flex items-center space-x-1.5 text-xs font-bold text-primary hover:text-primary-hover bg-white hover:bg-slate-50 px-3 py-1.5 rounded-xl border border-indigo-200 transition shadow-xs self-start sm:self-auto"
+            >
+              <Shuffle className="w-3.5 h-3.5" />
+              <span>Re-roll Random Mix</span>
+            </button>
+          </div>
+        ) : null}
+
+        {/* Question Type Cards (Always visible or in custom mode) */}
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-3 ${isRandom ? 'opacity-80' : ''}`}>
           {/* 1. Multiple Choice */}
           <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
             <div className="flex items-center justify-between">
@@ -194,7 +325,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className={`grid ${isStudent ? 'grid-cols-1' : 'grid-cols-2'} gap-2 text-xs`}>
               <div>
                 <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Questions:
@@ -205,26 +336,32 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                   max="10"
                   value={config.mcqQuestionsCount}
                   onChange={(e) =>
-                    onChange({ mcqQuestionsCount: Math.max(0, parseInt(e.target.value) || 0) })
+                    onChange({
+                      mcqQuestionsCount: Math.max(0, parseInt(e.target.value) || 0),
+                      isRandomMode: false,
+                    })
                   }
                   className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
-              <div>
-                <span className="block text-[11px] font-semibold text-slate-500 mb-1">
-                  Pts / Question:
-                </span>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={config.mcqPoints}
-                  onChange={(e) =>
-                    onChange({ mcqPoints: Math.max(1, parseInt(e.target.value) || 1) })
-                  }
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+
+              {!isStudent && (
+                <div>
+                  <span className="block text-[11px] font-semibold text-slate-500 mb-1">
+                    Pts / Question:
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={config.mcqPoints}
+                    onChange={(e) =>
+                      onChange({ mcqPoints: Math.max(1, parseInt(e.target.value) || 1) })
+                    }
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="text-[11px] text-slate-400 font-medium text-right">
@@ -246,7 +383,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className={`grid ${isStudent ? 'grid-cols-1' : 'grid-cols-2'} gap-2 text-xs`}>
               <div>
                 <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Questions:
@@ -259,26 +396,32 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                   onChange={(e) =>
                     onChange({
                       trueFalseQuestionsCount: Math.max(0, parseInt(e.target.value) || 0),
+                      isRandomMode: false,
                     })
                   }
                   className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
-              <div>
-                <span className="block text-[11px] font-semibold text-slate-500 mb-1">
-                  Pts / Question:
-                </span>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={config.trueFalsePoints}
-                  onChange={(e) =>
-                    onChange({ trueFalsePoints: Math.max(1, parseInt(e.target.value) || 1) })
-                  }
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+
+              {!isStudent && (
+                <div>
+                  <span className="block text-[11px] font-semibold text-slate-500 mb-1">
+                    Pts / Question:
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={config.trueFalsePoints}
+                    onChange={(e) =>
+                      onChange({
+                        trueFalsePoints: Math.max(1, parseInt(e.target.value) || 1),
+                      })
+                    }
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="text-[11px] text-slate-400 font-medium text-right">
@@ -286,21 +429,21 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
             </div>
           </div>
 
-          {/* 3. Sentence Completion / Open */}
+          {/* 3. Sentence Completion / Open Questions */}
           <div className="p-4 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="w-7 h-7 rounded-lg bg-violet-100 text-violet-700 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
                   <AlignLeft className="w-3.5 h-3.5" />
                 </div>
                 <span className="text-xs font-bold text-slate-800">Sentence Completion</span>
               </div>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
-                Open-ended
+                Open Input
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className={`grid ${isStudent ? 'grid-cols-1' : 'grid-cols-2'} gap-2 text-xs`}>
               <div>
                 <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                   Questions:
@@ -311,26 +454,32 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                   max="10"
                   value={config.openQuestionsCount}
                   onChange={(e) =>
-                    onChange({ openQuestionsCount: Math.max(0, parseInt(e.target.value) || 0) })
+                    onChange({
+                      openQuestionsCount: Math.max(0, parseInt(e.target.value) || 0),
+                      isRandomMode: false,
+                    })
                   }
                   className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
-              <div>
-                <span className="block text-[11px] font-semibold text-slate-500 mb-1">
-                  Pts / Question:
-                </span>
-                <input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={config.openPoints}
-                  onChange={(e) =>
-                    onChange({ openPoints: Math.max(1, parseInt(e.target.value) || 1) })
-                  }
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+
+              {!isStudent && (
+                <div>
+                  <span className="block text-[11px] font-semibold text-slate-500 mb-1">
+                    Pts / Question:
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={config.openPoints}
+                    onChange={(e) =>
+                      onChange({ openPoints: Math.max(1, parseInt(e.target.value) || 1) })
+                    }
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="text-[11px] text-slate-400 font-medium text-right">
