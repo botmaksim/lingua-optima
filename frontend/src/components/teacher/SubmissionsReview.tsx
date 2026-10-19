@@ -295,7 +295,11 @@ export const SubmissionsReview: React.FC = () => {
       return submissionItems[sub.id];
     }
     if (sub.items && sub.items.length > 0) {
-      return sub.items;
+      return sub.items.map((it: any) => ({
+        ...it,
+        isCorrect: it.isCorrect ?? it.correct ?? false,
+        isSkipped: it.isSkipped ?? it.skipped ?? false,
+      }));
     }
     return [];
   };

@@ -291,11 +291,17 @@ The application implements full Progressive Web App (PWA) support to ensure a re
 ### 4. Student Practice Workspace (`SpeakingPracticeView.tsx`)
 - Displays target phoneme focus badges, points, and passage word chips.
 - Click any individual word to hear native pronunciation and inspect its IPA transcription.
-- Real-time speech recognition recording with interim transcript feedback.
+- Real-time speech recognition recording with live duration timer (`00:15`) and interim transcript feedback.
+- **Speech Rate & Pacing Engine (`phonetics.ts`)**:
+  - Dynamically computes reading speed in Words Per Minute (WPM): `Math.round(spokenWordCount / elapsedMinutes)`.
+  - Calibrates pacing score with a calibrated Gaussian-style comfort curve: 100% optimal for 100–160 WPM, smoothly descending for rushed (>180 WPM) or halting (<80 WPM) cadence.
+  - Automatically generates actionable pacing tips in `generalFeedback`.
+- **Diagnostic Stats Quad**:
+  - Displays 4 key performance metrics: Pronunciation Accuracy (%), Speech Speed (WPM with gauge indicator), Mispronounced Words count, and Recording Duration (seconds).
 - Comprehensive evaluation breakdown with color-coded word highlights, word-by-word articulation popovers, and overall accuracy badges.
 
 ### 5. Educator Submission Diagnostics (`SubmissionsReview.tsx`)
-- Dedicated oral speaking diagnostic banner displaying accuracy score, spoken transcript, and reference text.
+- Dedicated oral speaking diagnostic banner displaying accuracy score, speech rate (WPM), recording duration, pacing analysis, spoken transcript, and reference text.
 - One-click native TTS audio playback of student's spoken words or model reference passage.
 - Score override and teacher comments editing.
 

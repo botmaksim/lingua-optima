@@ -443,6 +443,19 @@ Essay evaluation is modeled after official IELTS and Cambridge English assessmen
   - The client architecture isolates acoustic assessment behind a standard interface (`PronunciationResult`).
   - While the default zero-cost engine requires zero API credentials and zero infrastructure spending, it can be seamlessly upgraded to enterprise-grade cloud acoustic engines (e.g. Azure AI Speech Pronunciation Assessment, SpeechSuper, or Whisper API) by swapping the audio ingestion provider without modifying any teacher review views, grading workflows, or database schemas.
 
+### 10.3 Speech Rate (WPM) & Pacing Cadence Calibration
+- **Words Per Minute (WPM) Computation**:
+  Calculated in real-time from spoken word count and recording duration:
+  $$\text{WPM} = \text{round}\left(\frac{\text{Spoken Word Count}}{\max(0.01, \text{Elapsed Minutes})}\right)$$
+- **Pacing Score Calibration**:
+  - 100 to 160 WPM: 100% (Optimal natural conversational tempo).
+  - 80 to 99 WPM or 161 to 180 WPM: 90% (Acceptable, slightly deliberate or slightly rapid).
+  - 60 to 79 WPM or 181 to 200 WPM: 75% (Slow hesitation or rushed articulation).
+  - Under 60 WPM or over 200 WPM: 60% (Excessive pausing or hurried delivery).
+- **Composite Pedagogical Scoring**:
+  - Fluency Score = 0.60 * Pacing Score + 0.40 * Completeness Score
+  - Overall Score = 0.55 * Accuracy Score + 0.30 * Fluency Score + 0.15 * Completeness Score
+
 ---
 
 ## License and Copyright

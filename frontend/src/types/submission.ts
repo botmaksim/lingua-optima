@@ -22,6 +22,8 @@ export interface SubmissionItem {
   correctAnswer: string;
   /** @brief Flag indicating if the student answer was evaluated as correct. */
   isCorrect: boolean;
+  /** @brief Backward-compatible alias for isCorrect. */
+  correct?: boolean;
   /** @brief Pedagogical explanation of why the answer is correct or incorrect. */
   explanation: string;
   /** @brief Tested grammar rule or linguistic syllabus topic. */
@@ -32,6 +34,8 @@ export interface SubmissionItem {
   options?: string[];
   /** @brief True if this question was skipped or unattempted by the student. */
   isSkipped?: boolean;
+  /** @brief Backward-compatible alias for isSkipped. */
+  skipped?: boolean;
 }
 
 /**

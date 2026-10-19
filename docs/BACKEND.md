@@ -640,6 +640,18 @@ The PostgreSQL relational database is version-controlled using an enterprise bas
 - **Teacher Review & Editability**: In `ConfigureTask.tsx`, educators can review generated passages, edit sentences in a live textarea, test native pronunciation playback via TTS, and deploy to cohorts.
 - **Student Self-Service Generation**: In `GenerateTask.tsx`, students can autonomously configure target phonemes and generate custom speaking practice drills.
 
+### 12.2 Speaking Evaluation & Speed Rate Pacing Analysis
+- **ScoringService.scoreSpeakingTask**:
+  - Parses formatted oral practice submissions tagged with `[SPEAKING_PRACTICE]`.
+  - Extracts core articulation metrics: `Overall Score`, `Pronunciation Accuracy`, `Fluency Score`, `Completeness`, `Speech Rate (WPM)`, `Pacing Score`, `Pacing Diagnostics`, `Spoken Transcript`, and `Reference Passage`.
+  - Automatically synthesizes question items with the student's spoken transcript, reference key, and granular feedback summary.
+- **Speech Rate & Cadence Integration**:
+  - Normalizes speech speed (WPM) against natural conversational cadence benchmarks (100–160 WPM).
+  - Blends pronunciation accuracy (55%), fluency and pacing (30%), and completeness (15%) into a unified pedagogical score.
+- **SubmissionService Persistence**:
+  - Preserves objective oral speech scores and avoids overwriting speaking evaluation with discrete question weights.
+  - Automatically enriches question breakdown with the actual spoken transcript and teacher grade override support.
+
 ---
 
 ## License and Copyright

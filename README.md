@@ -116,8 +116,9 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 ### 7. Speaking & Pronunciation Practice Studio ($0-Budget Acoustic Architecture)
 - **AI Speech Generation**: Generation of oral reading passages calibrated to CEFR levels (A1–C2) with targeted phonetic patterns (dental fricatives `/θ/-/ð/`, liquids `/r/-/l/`, labiodentals `/v/-/w/`, vowel contrasts `/iː/-/ɪ/`, sibilants, silent letters, connected speech rhythm) and duration presets.
 - **Client-Side Phonetic Alignment & Zero-Cost Scoring**: Browser-native Web Speech API (`SpeechRecognition`) captures microphone audio without recurring cloud API fees; client-side dynamic Levenshtein alignment categorizes spoken words as correct, mispronounced, or omitted.
+- **Speech Rate & Pacing Cadence Scoring**: Real-time measurement of reading speed in Words Per Minute (WPM) calibrated against natural conversational tempo (100–160 WPM). Pacing directly influences fluency and composite overall scoring alongside pronunciation accuracy and completeness.
 - **IPA Transcription & Multimodal Articulation Guidance**: Integrated phonetics dictionary with suffix heuristics provides full IPA transcriptions and clickable articulatory placement guides for mispronounced tokens.
-- **Educator Studio & Student Self-Service**: Teachers can customize, preview, listen to text-to-speech synthesized audio, edit reading texts, and review student audio attempts with accuracy diagnostics. Students can autonomously configure target phonemes and generate custom drills.
+- **Educator Studio & Student Self-Service**: Teachers can customize, preview, listen to text-to-speech synthesized audio, edit reading texts, and review student audio attempts with accuracy diagnostics and WPM speed indicators. Students can autonomously configure target phonemes and generate custom drills.
 - **Enterprise Upgrade Readiness**: Cleanly decoupled engine contracts enable swapping client-side speech recognition with cloud acoustic models (e.g. Azure Pronunciation Assessment, Whisper) without database or UI refactoring.
 
 ---

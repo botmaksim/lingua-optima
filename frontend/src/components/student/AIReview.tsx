@@ -57,7 +57,11 @@ export const AIReview: React.FC = () => {
   const itemsToRender: SubmissionItem[] = React.useMemo(() => {
     if (!submission) return [];
     if (submission.items && submission.items.length > 0) {
-      return submission.items;
+      return submission.items.map((it: any) => ({
+        ...it,
+        isCorrect: it.isCorrect ?? it.correct ?? false,
+        isSkipped: it.isSkipped ?? it.skipped ?? false,
+      }));
     }
 
     // Fallback parser if older submission does not have structured items yet
@@ -99,10 +103,15 @@ export const AIReview: React.FC = () => {
     if (submission?.overrideScore != null) {
       return submission.overrideScore;
     }
+    const isSpeaking = submission?.taskType === 'SPEAKING'
+      || submission?.originalText?.startsWith('[SPEAKING_PRACTICE]');
+    if (isSpeaking && (submission?.effectiveScore != null || submission?.score != null)) {
+      return submission.effectiveScore ?? submission.score ?? 0;
+    }
     if (itemsToRender.length > 0) {
       const totalWeight = itemsToRender.reduce((sum, item) => sum + (item.points && item.points > 0 ? item.points : 1), 0);
       const earnedWeight = itemsToRender
-        .filter((item) => item.isCorrect)
+        .filter((item) => (item.isCorrect ?? (item as any).correct))
         .reduce((sum, item) => sum + (item.points && item.points > 0 ? item.points : 1), 0);
       return totalWeight > 0 ? Math.round((earnedWeight / totalWeight) * 100) : 0;
     }
@@ -432,7 +441,8 @@ export const AIReview: React.FC = () => {
               const cleanStudent = (item.studentAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
               const cleanCorrect = (item.correctAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
               const isSkipped = item.isSkipped || (!cleanStudent || cleanStudent === 'no answer' || cleanStudent === 'no_answer' || cleanStudent === 'skipped' || cleanStudent === 'unanswered' || cleanStudent === '-');
-              const isEffectivelyCorrect = !isSkipped && (item.isCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect));
+              const isItemCorrect = item.isCorrect ?? (item as any).correct;
+              const isEffectivelyCorrect = !isSkipped && (isItemCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect));
 
               return (
               <div

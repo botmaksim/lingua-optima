@@ -6,6 +6,19 @@
 import { axiosInstance } from './axiosInstance';
 import { SubmissionResult, OverrideRequest } from '../types/submission';
 
+const normalizeItem = (item: any) => ({
+  ...item,
+  isCorrect: item.isCorrect ?? item.correct ?? false,
+  isSkipped: item.isSkipped ?? item.skipped ?? false,
+});
+
+const normalizeSubmission = (data: SubmissionResult): SubmissionResult => {
+  if (data && Array.isArray(data.items)) {
+    data.items = data.items.map(normalizeItem);
+  }
+  return data;
+};
+
 /**
  * @brief Exported const for submission api.
  */
@@ -17,7 +30,7 @@ export const submissionApi = {
    */
   submitText: async (data: { assignmentId?: string; taskId?: string; text: string; type?: string }): Promise<SubmissionResult> => {
     const res = await axiosInstance.post<SubmissionResult>('/submissions/text', data);
-    return res.data;
+    return normalizeSubmission(res.data);
   },
 
   /**
@@ -43,7 +56,7 @@ export const submissionApi = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return res.data;
+    return normalizeSubmission(res.data);
   },
 
   /**
@@ -52,7 +65,7 @@ export const submissionApi = {
    */
   getMySubmissions: async (): Promise<SubmissionResult[]> => {
     const res = await axiosInstance.get<SubmissionResult[]>('/submissions/me');
-    return res.data;
+    return Array.isArray(res.data) ? res.data.map(normalizeSubmission) : [];
   },
 
   /**
@@ -62,7 +75,7 @@ export const submissionApi = {
    */
   getTeacherSubmissions: async (): Promise<SubmissionResult[]> => {
     const res = await axiosInstance.get<SubmissionResult[]>('/submissions/teacher');
-    return res.data;
+    return Array.isArray(res.data) ? res.data.map(normalizeSubmission) : [];
   },
 
   /**
@@ -72,7 +85,7 @@ export const submissionApi = {
    */
   getSubmissionById: async (id: string): Promise<SubmissionResult> => {
     const res = await axiosInstance.get<SubmissionResult>(`/submissions/${id}`);
-    return res.data;
+    return normalizeSubmission(res.data);
   },
 
   /**
@@ -83,6 +96,6 @@ export const submissionApi = {
    */
   overrideScore: async (id: string, req: OverrideRequest): Promise<SubmissionResult> => {
     const res = await axiosInstance.post<SubmissionResult>(`/submissions/${id}/override`, req);
-    return res.data;
+    return normalizeSubmission(res.data);
   },
 };

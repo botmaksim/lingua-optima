@@ -35,6 +35,7 @@ public class SubmissionItemResponse {
     private String correctAnswer;
 
     /** @brief True if student's answer was evaluated as correct. */
+    @JsonProperty("isCorrect")
     private boolean isCorrect;
 
     /** @brief True if this question was skipped or unattempted by the student. */
@@ -53,4 +54,29 @@ public class SubmissionItemResponse {
     /** @brief Multiple-choice options or answer choices, if applicable. */
     @Builder.Default
     private List<String> options = new ArrayList<>();
+
+    @JsonProperty("isCorrect")
+    public boolean isCorrect() {
+        return isCorrect;
+    }
+
+    @JsonProperty("isCorrect")
+    public void setCorrect(boolean isCorrect) {
+        this.isCorrect = isCorrect;
+    }
+
+    @JsonProperty("correct")
+    public boolean getCorrect() {
+        return isCorrect;
+    }
+
+    @JsonProperty("isSkipped")
+    public boolean isSkipped() {
+        return isSkipped;
+    }
+
+    @JsonProperty("isSkipped")
+    public void setSkipped(boolean isSkipped) {
+        this.isSkipped = isSkipped;
+    }
 }
