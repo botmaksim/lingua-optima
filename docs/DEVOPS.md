@@ -1,6 +1,6 @@
 # Lingua Optima: DevOps & Deployment Documentation
 
-> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
+> **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | **[Open Presentation (presentation.html)](./presentation.html)** | [Doxygen HTML](index.html)
 
 This document describes the deployment architecture, CI/CD pipelines, Docker container infrastructure, and security and monitoring policies for the Lingua Optima platform.
 
@@ -497,3 +497,10 @@ lingua_optima/
 ├── .env.example            — Comprehensive template with all AI endpoints and secrets
 └── .gitignore
 ```
+
+---
+
+## License and Copyright
+
+Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  
+Licensed under the **[MIT License](../LICENSE)**.

@@ -1,6 +1,6 @@
 # Lingua Optima: AI Integration Documentation
 
-> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
+> **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | **[Open Presentation (presentation.html)](./presentation.html)** | [Doxygen HTML](index.html)
 
 This document describes the artificial intelligence and OCR integration architecture for the Lingua Optima educational platform.
 
@@ -253,11 +253,32 @@ If an upstream AI model outputs exercise-like text for an essay assignment, Ling
 2. **Frontend Sanitization (`textSanitizer.sanitizeTaskContent`):** Detects internal prompt leak patterns and replaces malformed text with student-friendly fallbacks.
 3. **Route Auto-Redirection:** Opening `/student/task/:taskId` for an `ESSAY` task automatically redirects to `/student/essay/:taskId` (the full-featured Essay Studio with word count trackers and 4-pillar rubrics).
 
-### Essay Scoring (Cambridge / IELTS Rubric)
+### Reading Comprehension Assignment Generation (`TaskType.READING`)
+
+To support thematic reading exercises with multi-category questions, `PromptTemplates.buildReadingGenerationPrompt` constructs a structured contract specifying length presets, narrative guidelines, CEFR lexical levels, target keywords, and point allocations:
+
+```json
+{
+  "system": "You are an expert English teacher creating targeted exercises.",
+  "prompt": "Generate a cohesive English Reading Comprehension assignment based on the following parameters:\n- CEFR Level: {cefrLevel}\n- Topic/Theme: {topic}\n- Domain: {domain}\n- Passage Length Preset: {lengthPreset}\n- Paragraph Guidance: {paragraphGuidance}\n- Target Vocabulary: {targetVocab}\n- Desired Question Distribution:\n  * Multiple Choice (MCQ): {mcqCount} questions, {mcqPoints} points each\n  * True / False / Not Given: {tfCount} questions, {tfPoints} points each\n  * Sentence Completion / Open-Ended: {openCount} questions, {openPoints} points each\n\nReturn ONLY a valid JSON object matching this schema:\n{\n  \"passage\": \"Full readable thematic reading text passage...\",\n  \"content\": \"Full readable thematic reading text passage...\",\n  \"questions\": [\n    {\n      \"id\": 1,\n      \"type\": \"MCQ\",\n      \"text\": \"Question text?\",\n      \"options\": [\"Option A\", \"Option B\", \"Option C\", \"Option D\"],\n      \"correctAnswer\": \"Option B\",\n      \"points\": 2,\n      \"citation\": \"Quoted evidence sentence from passage...\",\n      \"explanation\": \"Pedagogical explanation...\"\n    },\n    {\n      \"id\": 2,\n      \"type\": \"TRUE_FALSE\",\n      \"text\": \"Statement to verify.\",\n      \"options\": [\"True\", \"False\", \"Not Given\"],\n      \"correctAnswer\": \"True\",\n      \"points\": 1,\n      \"citation\": \"Evidence from passage...\",\n      \"explanation\": \"Pedagogical explanation...\"\n    },\n    {\n      \"id\": 3,\n      \"type\": \"OPEN\",\n      \"text\": \"Open-ended sentence completion question?\",\n      \"options\": [],\n      \"correctAnswer\": \"Expected core fact / formulation\",\n      \"points\": 3,\n      \"citation\": \"Evidence sentence...\",\n      \"explanation\": \"Key points required for full credit...\"\n    }\n  ],\n  \"answerKey\": [\n    { \"questionNumber\": 1, \"correctAnswer\": \"Option B\" }\n  ]\n}"
+}
+```
+
+### Semantic AI Evaluation of Open-Ended Questions
+
+In reading comprehension and open question exercises, student formulations frequently differ in wording from the exact reference answer key while remaining semantically accurate.
+`SubmissionService` implements semantic evaluation:
+1. When evaluating open answers, the system does not enforce strict string equality.
+2. The student's submitted phrasing is compared against the core factual requirements and passage citations.
+3. If the meaning aligns with the reference answer, full points are awarded (`isCorrect: true`).
+4. Educators maintain complete diagnostic authority to review, toggle correctness, and refine explanations during submission review.
+
+### Essay Scoring with Granular Error Spans (Cambridge / IELTS Rubric)
+`PromptTemplates.buildEssayScoringPrompt` instructs the evaluation model to return character offsets and lengths for each detected error, enabling interactive inline `<mark>` highlighting in the frontend:
 ```json
 {
   "system": "You are a strict Cambridge/IELTS English examiner.",
-  "prompt": "Evaluate the following English essay for a student at the {cefrLevel} level.\n\nEssay:\n{essayText}\n\nEvaluate based on the standard rubric (0-10 scale). Return ONLY a valid JSON object with this structure:\n{\n  \"taskAchievement\": 8.0,\n  \"coherence\": 7.5,\n  \"lexicalResource\": 7.0,\n  \"grammarRange\": 8.5,\n  \"overallScore\": 7.75,\n  \"feedback\": \"Detailed general feedback here...\",\n  \"corrections\": [\n    { \"original\": \"bad sentence\", \"corrected\": \"good sentence\", \"explanation\": \"why it was wrong\" }\n  ]\n}"
+  "prompt": "Evaluate the following English essay for a student at the {cefrLevel} level.\n\nEssay:\n{essayText}\n\nEvaluate based on the standard rubric (0-10 scale). Return ONLY a valid JSON object with this structure:\n{\n  \"taskAchievement\": 8.0,\n  \"coherence\": 7.5,\n  \"lexicalResource\": 7.0,\n  \"grammarRange\": 8.5,\n  \"overallScore\": 7.75,\n  \"feedback\": \"Detailed general feedback here...\",\n  \"corrections\": [\n    {\n      \"original\": \"exact bad text span\",\n      \"corrected\": \"suggested revision\",\n      \"explanation\": \"pedagogical explanation of the error\",\n      \"grammarRule\": \"associated grammar rule\",\n      \"offset\": 42,\n      \"length\": 14\n    }\n  ]\n}"
 }
 ```
 
@@ -367,7 +388,7 @@ flowchart TD
 Lingua Optima implements the full 6-tier Common European Framework of Reference for Languages (CEFR) scale:
 
 ```
-[A1: Beginner] ➔ [A2: Elementary] ➔ [B1: Intermediate] ➔ [B2: Upper-Intermediate] ➔ [C1: Advanced] ➔ [C2: Mastery]
+[A1: Beginner] -> [A2: Elementary] -> [B1: Intermediate] -> [B2: Upper-Intermediate] -> [C1: Advanced] -> [C2: Mastery]
 ```
 
 ### Why Start at A1 vs B1?
@@ -382,7 +403,7 @@ Earlier iterations focused primarily on advanced Cambridge/IELTS test preparatio
 ### Progression Mechanism:
 - **Trigger:** Evaluated automatically after each completed submission via `ProgressService.checkCefrLevelUp(student)`.
 - **Condition:** Triggered when the student achieves `>= 85%` mastery score across at least `80%` of the canonical syllabus topics for their current level.
-- **Action:** Sends a contextual `"Ready to level up to [Next Level]?"` notification and displays the `LevelUpModal`. Upon confirmation, advances user's CEFR level (`A1→A2`, `A2→B1`, `B1→B2`, `B2→C1`, `C1→C2`).
+- **Action:** Sends a contextual `"Ready to level up to [Next Level]?"` notification and displays the `LevelUpModal`. Upon confirmation, advances user's CEFR level (`A1->A2`, `A2->B1`, `B1->B2`, `B2->C1`, `C1->C2`).
 - **Cooldown:** If dismissed, suppressed for 7 days.
 - **Manual Adjustment:** Students and teachers can also manually adjust their active CEFR level at any time in the Profile page.
 
@@ -397,3 +418,10 @@ Essay evaluation is modeled after official IELTS and Cambridge English assessmen
 - **Lexical Resource (0–10):** Breadth, precision, and register appropriateness of vocabulary relative to the target CEFR level.
 - **Grammatical Range & Accuracy (0–10):** Variety of complex syntactic structures and error-free sentence production.
 - **Overall Score:** Weighted average across all four rubric criteria.
+
+---
+
+## License and Copyright
+
+Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  
+Licensed under the **[MIT License](../LICENSE)**.

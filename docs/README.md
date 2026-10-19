@@ -329,7 +329,7 @@ lingua_optima/
         │   ├── exportApi.ts
         │   └── leaderboardApi.ts
         ├── components/
-        │   ├── common/                 — 10 shared UI components
+        │   ├── common/                 — 11 shared UI components
         │   │   ├── Navbar.tsx          — Logo, navigation, notifications, avatar, remaining evals
         │   │   ├── Footer.tsx          — Privacy, Terms, Help
         │   │   ├── ProtectedRoute.tsx
@@ -339,24 +339,26 @@ lingua_optima/
         │   │   ├── CefrBadge.tsx
         │   │   ├── LoadingSpinner.tsx
         │   │   ├── Toast.tsx
-        │   │   └── ConfirmDialog.tsx
+        │   │   ├── ConfirmDialog.tsx
+        │   │   └── AnnotatedTextReview.tsx — Inline error highlighting and teacher diagnostic review
         │   ├── student/                — 11 student components
         │   │   ├── Dashboard.tsx
         │   │   ├── GenerateTask.tsx    — Task generator with AI Provider & Model selector
-        │   │   ├── TaskView.tsx
+        │   │   ├── TaskView.tsx        — Split reading layout and standard question solving
         │   │   ├── AdaptiveSession.tsx — CAT session + interrupted session resume
         │   │   ├── OcrSubmit.tsx
         │   │   ├── EssayEditor.tsx
-        │   │   ├── AIReview.tsx
+        │   │   ├── AIReview.tsx        — Feedback breakdown and inline red mistake highlighting
         │   │   ├── MyUnits.tsx
         │   │   ├── Progress.tsx
         │   │   ├── GroupLeaderboard.tsx — Intra-group leaderboard only!
         │   │   └── LevelUpModal.tsx
-        │   ├── teacher/                — 5 educator components
+        │   ├── teacher/                — 6 educator components
         │   │   ├── TeacherDashboard.tsx
         │   │   ├── StudentGroups.tsx
-        │   │   ├── ConfigureTask.tsx   — Task designer with AI Provider & Model selector
-        │   │   ├── SubmissionsReview.tsx
+        │   │   ├── ConfigureTask.tsx   — Multi-cohort designer and reading comprehension studio
+        │   │   ├── ReadingConfigPanel.tsx — Dedicated reading menu and point weighting
+        │   │   ├── SubmissionsReview.tsx — Educator review with interactive diagnostic edits
         │   │   └── ExportReports.tsx
         │   └── auth/
         │       ├── LoginPage.tsx
@@ -380,7 +382,7 @@ erDiagram
         varchar password_hash
         varchar full_name
         varchar role "STUDENT|TEACHER|ADMIN"
-        varchar cefr_level "B1|B2|C1"
+        varchar cefr_level "A1|A2|B1|B2|C1|C2"
         varchar display_alias "nullable, auto: Linguist #ID"
         int streak_count
         date last_active_date
@@ -414,7 +416,7 @@ erDiagram
 
     TASKS {
         bigint id PK
-        varchar type "MCQ|GAP_FILL|ESSAY|REWRITE"
+        varchar type "MCQ|GAP_FILL|ESSAY|REWRITE|OPEN_BRACKETS|SHORT_ANSWER|READING"
         varchar cefr_level
         varchar grammar_topic
         varchar domain
@@ -546,8 +548,9 @@ erDiagram
 | PUT | `/api/users/{id}/name` | TEACHER | Update displayed roster name/alias for an enrolled student |
 | DELETE | `/api/users/me` | Any | Delete account and anonymize data (GDPR Right to Erasure) |
 | **Tasks** | | | |
-| POST | `/api/tasks/generate` | Any | Generate a new exercise via AI (supports Eco Mode, topic catalog, custom topics) |
-| POST | `/api/tasks/preview` | Any | Preview an AI-generated task without saving |
+| POST | `/api/tasks/generate` | Any | Generate a new exercise or reading comprehension task via AI (supports reading parameters, Eco Mode, topic catalog, custom topics) |
+| POST | `/api/tasks/generate-multi` | TEACHER | Generate a task once and batch-distribute individual scoped assignments simultaneously across multiple teacher cohorts |
+| POST | `/api/tasks/preview` | Any | Preview an AI-generated task or reading comprehension passage without saving |
 | GET | `/api/tasks` | Any | List accessible tasks and assignments |
 | GET | `/api/tasks/{id}` | Any | Retrieve a specific task by ID |
 | POST | `/api/tasks/{id}/assign` | TEACHER | Assign a task to one or more student groups with custom points |
@@ -559,12 +562,12 @@ erDiagram
 | POST | `/api/sessions/{id}/answer` | STUDENT | Submit an answer and adjust difficulty |
 | POST | `/api/sessions/{id}/complete` | STUDENT | Complete the adaptive test and compute mastery |
 | **Submissions** | | | |
-| POST | `/api/submissions/text` | STUDENT | Submit text or an essay for AI evaluation |
+| POST | `/api/submissions/text` | STUDENT | Submit text, reading open-ended answers, or an essay for AI evaluation |
 | POST | `/api/submissions/image` | STUDENT | Upload a handwritten homework photo for OCR + AI grading |
 | GET | `/api/submissions/my` | STUDENT | List the current student's submissions |
 | GET | `/api/submissions/teacher` | TEACHER | Review queue for educator's students (excludes self-practice) |
 | GET | `/api/submissions/{id}` | Any | Retrieve detailed grading results for a submission |
-| PUT | `/api/submissions/{id}/override` | TEACHER | Override AI score, edit feedback advice, and attach teacher comment without clobbering |
+| PUT | `/api/submissions/{id}/override` | TEACHER | Override AI score, persist adjusted error highlights/corrections and question item statuses, update diagnostic feedback, and attach teacher comment |
 | **Groups** | | | |
 | GET | `/api/groups` | TEACHER | List the teacher's student groups |
 | POST | `/api/groups` | TEACHER | Create a new student group |

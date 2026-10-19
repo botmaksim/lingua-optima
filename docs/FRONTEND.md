@@ -1,6 +1,6 @@
 # Lingua Optima: Frontend Documentation
 
-> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
+> **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | **[Open Presentation (presentation.html)](./presentation.html)** | [Doxygen HTML](index.html)
 
 Comprehensive documentation for the frontend application of **Lingua Optima** — an AI-powered English language mastery platform.
 
@@ -65,16 +65,17 @@ frontend/
 │   │   │   ├── LoadingSpinner.tsx
 │   │   │   ├── ErrorBoundary.tsx
 │   │   │   ├── Toast.tsx      — Notification toast component
-│   │   │   └── ConfirmDialog.tsx
+│   │   │   ├── ConfirmDialog.tsx
+│   │   │   └── AnnotatedTextReview.tsx — Modular inline mistake highlighting component rendering red error marks (<mark>), popovers with mistake description, suggested rewrites, and grammar rules. Supports teacher interactive editing mode (adjust explanations, delete false positives, select text to add new errors) and student review mode
 │   │   │
 │   │   ├── student/           — Student-only components
 │   │   │   ├── Dashboard.tsx          — Streak counter, CEFR progress bar, Learning Modules & Practice Modes grid (AI Generator, Essay Studio, Photo OCR, Adaptive CAT, My Units, Progress), active assignments with smart essay/grammar routing, grammar gaps
 │   │   │   ├── GenerateTask.tsx       — AI Provider & Model selector (7 providers + October 2026 models incl. Gemini Flash Lite), CEFR level selector (A1-C2), grammar topic select, domain select, task type (MCQ/Gap-fill/Rewrite/Essay), difficulty & question slider. In-flight animated generation status banner (5-20s latency notice) + AI High Demand / Queue banner with 1-click Retry, Lite switch, and BYOK settings.
-│   │   │   ├── TaskView.tsx           — Task title + CEFR badge, sanitized task instructions, automatic redirection for ESSAY tasks to Essay Studio, questions list (MCQ radio/inputs), live answered progress indicator (X of Y answered), pre-submit ConfirmDialog modal warning against uncompleted questions, in-flight grading status banner, and queue/retry error panel. Buttons: [Submit Answers] [Save Draft] [← Back]
+│   │   │   ├── TaskView.tsx           — Task title + CEFR badge, sanitized task instructions, automatic redirection for ESSAY tasks to Essay Studio, responsive two-column split layout for Reading Comprehension tasks (sticky left column with passage text and word count, right column with questions, category badges, points badges, and options/open inputs), live answered progress indicator (X of Y answered), pre-submit ConfirmDialog modal warning against uncompleted questions, in-flight grading status banner, and queue/retry error panel. Buttons: [Submit Answers] [Save Draft] [← Back]
 │   │   │   ├── AdaptiveSession.tsx    — Interactive CAT Diagnostic Hub (IRT calibration guide, task picker) + In-flight CAT test runner (single question, difficulty indicator, progress bar, answer feedback). Handles resume from GET /sessions/active
 │   │   │   ├── OcrSubmit.tsx          — Drag&drop zone / [Browse File] button, image preview, hint 'deleted after processing'. Buttons: [Analyse Photo] [Clear Photo]
 │   │   │   ├── EssayEditor.tsx        — Sanitized essay topic & scenario, guiding discussion points list, CEFR target badge, textarea (min 250 words), live word counter, auto-save to localStorage every 30s, in-flight IELTS/Cambridge evaluation progress banner (10-25s notice), and queue/retry error panel. Buttons: [Submit for Scoring] [Save Draft]
-│   │   │   ├── AIReview.tsx           — Sentence-by-sentence evaluation with tri-state status (Correct / Needs Revision / Skipped 0 pts), score banner with Attempt Accuracy breakdown, strict mutual exclusion between Mastered Concepts and Identified Weaknesses, essay rubric breakdown (TA/Coherence/LR/GR out of 10), and 1-click targeted practice CTA. Buttons: [Save to My Units] [Practice This Topic] [Share Result]
+│   │   │   ├── AIReview.tsx           — Sentence-by-sentence evaluation with tri-state status (Correct / Needs Revision / Skipped 0 pts), integrated AnnotatedTextReview for inline red mistake highlighting on submitted essays and texts, score banner with Attempt Accuracy breakdown, strict mutual exclusion between Mastered Concepts and Identified Weaknesses, essay rubric breakdown (TA/Coherence/LR/GR out of 10), and 1-click targeted practice CTA. Buttons: [Save to My Units] [Practice This Topic] [Share Result]
 │   │   │   ├── MyUnits.tsx            — Filters: CEFR/Topic/Domain/Date. Task cards with name/date/score/type. Buttons per card: [Retry Task] [Delete]
 │   │   │   ├── Progress.tsx           — Grammar mastery radar chart, timeline score graph, topic/errors/mastery table, AI recommendations. Button: [Generate Targeted Task]
 │   │   │   ├── GroupLeaderboard.tsx   — Group-only leaderboard with cohort selector. Shows rank, customizable display alias (defaults to full name), CEFR level, task completion progress (X/Y tasks, progress bar, %), average score, study streak, and weekly score. NO global leaderboard.
@@ -83,9 +84,10 @@ frontend/
 │   │   ├── teacher/           — Teacher-only components
 │   │   │   ├── TeacherDashboard.tsx   — Educator Command Center: summary stats, Educator Toolkit & Modules grid (Cohorts, Configurator, Submissions, Reports), student groups list with quick actions
 │   │   │   ├── StudentGroups.tsx      — Dual-tab cohort management: Students & Roster (search, CEFR filters, hide/unhide, pagination, student alias renaming) and Assigned Tasks (completion metrics, avg score, due dates). Includes Transfer / Move / Copy Assignment modal between educator cohorts. Buttons: [+ New Group] [+ Add Student] [Transfer / Copy] [Assign Task]
-│   │   │   ├── ConfigureTask.tsx      — Multi-cohort simultaneous assignment generator & deployer (Select All / Clear, student count sum, URL ?groupId preselection), AI Provider & Model selector, Eco Mode, curriculum catalog & custom topic selector, point budgeting, interactive live preview editor. Buttons: [Preview] [Deploy to Students] [Save Template]
-│   │   │   ├── SubmissionsReview.tsx  — Educator review queue (`GET /api/submissions/teacher`) strictly isolated to taught student submissions. Search by student/group/task, status filter, hide/unhide toggles, pagination. Expandable question-by-question breakdown with answer options, inline AI feedback & advice editor, and manual grade override without clobbering.
-│   │   │   └── ExportReports.tsx      — Cohort performance report generator (PDF/CSV) featuring comprehensive breakdown across all assigned homeworks, student submission statuses, attempt counters, scores, and teacher commentary.
+│   │   │   ├── ConfigureTask.tsx      — Multi-cohort simultaneous assignment generator & deployer. Features dedicated Reading Comprehension studio tab, reading passage textarea editor, question choice/open conversion, option and point adjustments, Eco Mode, curriculum catalog & custom topic selector, point budgeting, interactive live preview editor. Buttons: [Preview] [Deploy to Students] [Save Template]
+│   │   │   ├── ReadingConfigPanel.tsx — Dedicated reading comprehension configuration menu with custom assignment title, text length presets (Short/Medium/Long/Custom), paragraph narrative structure guidance, target vocabulary keywords, CEFR lexical level, question counters for MCQ, True/False, and Open-ended questions, and per-category point weight budgeting
+│   │   │   ├── SubmissionsReview.tsx  — Educator review queue (`GET /api/submissions/teacher`) strictly isolated to taught student submissions. Search by student/group/task, status filter, hide/unhide toggles, pagination. Integrated AnnotatedTextReview in editable mode (educator can click red highlights to edit explanations, delete error highlights, select text to highlight new errors), clickable question item correctness toggles, and persistent override saving via submissionApi.overrideScore without clobbering AI telemetry
+│   │   │   └── ExportReports.tsx      — Cohort performance report generator (PDF/CSV) featuring comprehensive breakdown across all assigned homeworks, student submission statuses, attempt counters, scores, and teacher commentary
 │   │   │
 │   │   └── auth/              — Auth pages
 │   │       ├── LoginPage.tsx          — Tab: Log In / Register. Log In (email/pass + Google OAuth). Register: 2-step flow (Step 1: details + code dispatch via Gmail SMTP; Step 2: 6-digit confirmation code input with 60s cooldown timer + submit) or 1-click Google OAuth
@@ -236,6 +238,36 @@ The application implements full Progressive Web App (PWA) support to ensure a re
 
 ---
 
-## 📄 License
+## Reading Comprehension Studio & Diagnostic Error Review
 
-Lingua Optima is open-source software licensed under the **[MIT License](../LICENSE)**.
+### 1. Reading Comprehension Studio
+- **ReadingConfigPanel (`frontend/src/components/teacher/ReadingConfigPanel.tsx`)**:
+  - Configures passage topic, length presets (`Short 150-250w`, `Medium 300-450w`, `Long 500-700w`, `Custom`), paragraph narrative guidelines, CEFR lexical level, and target vocabulary keywords.
+  - Multi-question breakdown selector: configure counts and points per category for Multiple Choice (`MCQ`), True/False/Not Given (`True / False`), and Sentence Completion / Open-Ended questions.
+  - Live aggregate points counter automatically sums category subtotals.
+- **Passage & Questions Editor (`ConfigureTask.tsx`)**:
+  - Live 9-line expandable passage textarea editor allows educators to tweak AI-generated text passages.
+  - Question conversion buttons: 1-click conversion between open-ended and choice-based questions.
+  - Granular option, answer, and point customization for each question.
+- **Student Split Solving Workspace (`TaskView.tsx`)**:
+  - Responsive two-column split layout: sticky left pane contains readable passage with live word counter; right pane displays questions with category badges, point values, radio choices, and open textareas.
+
+### 2. Diagnostic Mistake Annotation
+- **AnnotatedTextReview (`frontend/src/components/common/AnnotatedTextReview.tsx`)**:
+  - Displays submitted essay or text with inline red error marks (`<mark className="bg-rose-100 border-b-2 border-rose-500...">`).
+  - Interactive popovers: clicking or hovering displays the exact error, suggested revision, grammar rule, and pedagogical explanation.
+  - Educator editing controls:
+    - Edit explanation: clicking a highlight opens an inline editor to update explanations.
+    - Remove error: 1-click removal of false-positive highlights.
+    - Add error: selecting any text span in the review opens a prompt to create a new targeted correction.
+- **Teacher Review Integration (`SubmissionsReview.tsx`)**:
+  - Educator reviews student homework with full diagnostic tools.
+  - Clickable question item badges toggle item correctness between correct and incorrect.
+  - "Save Diagnostic Adjustments" button commits adjusted corrections, items, comments, and scores to backend via `submissionApi.overrideScore(...)`.
+
+---
+
+## License and Copyright
+
+Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  
+Licensed under the **[MIT License](../LICENSE)**.

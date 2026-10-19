@@ -1,6 +1,6 @@
 # Lingua Optima: Backend Documentation
 
-> 📚 **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | 📊 **[Open Presentation (presentation.html)](./presentation.html)** | 📘 [Doxygen HTML](index.html)
+> **Documentation Navigation**: [Main Overview (README.md)](./README.md) | [Backend (BACKEND.md)](./BACKEND.md) | [Frontend (FRONTEND.md)](./FRONTEND.md) | [AI & OCR (AI_INTEGRATION.md)](./AI_INTEGRATION.md) | [DevOps (DEVOPS.md)](./DEVOPS.md) | **[Open Presentation (presentation.html)](./presentation.html)** | [Doxygen HTML](index.html)
 
 This is a comprehensive guide to the server-side (Backend) architecture of the Lingua Optima platform — an AI-powered English language mastery service.
 
@@ -77,11 +77,11 @@ backend/
 │   │   │   ├── RegisterRequest.java    — email, password, fullName, role
 │   │   │   ├── LoginRequest.java       — email, password
 │   │   │   ├── GoogleAuthRequest.java  — credential, role
-│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty, groupIds[], dueDate, maxAttempts
+│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty, groupIds[], dueDate, maxAttempts, readingTitle, readingLength, readingParagraphs, mcqQuestionsCount, mcqPoints, trueFalseQuestionsCount, trueFalsePoints, openQuestionsCount, openPoints
 │   │   │   ├── AssignTaskRequest.java  — groupIds[], dueDate, maxAttempts
 │   │   │   ├── TransferTaskRequest.java — targetGroupId, keepInSource, dueDate, maxAttempts
 │   │   │   ├── TextSubmissionRequest.java — text, assignmentId, type (GRAMMAR/ESSAY)
-│   │   │   ├── OverrideRequest.java    — overrideScore, teacherComment
+│   │   │   ├── OverrideRequest.java    — overrideScore, teacherComment, feedback, corrections[], items[]
 │   │   │   ├── AnswerRequest.java      — questionId, answer
 │   │   │   ├── CreateGroupRequest.java — name
 │   │   │   ├── AddStudentRequest.java  — email
@@ -127,7 +127,7 @@ backend/
 │   │   └── enums/
 │   │       ├── Role.java              — STUDENT, TEACHER, ADMIN
 │   │       ├── CefrLevel.java         — A1, A2, B1, B2, C1, C2 (Complete 6-level CEFR scale)
-│   │       ├── TaskType.java          — MCQ, GAP_FILL, ESSAY, REWRITE, SHORT_ANSWER
+│   │       ├── TaskType.java          — MCQ, GAP_FILL, ESSAY, REWRITE, OPEN_BRACKETS, SHORT_ANSWER, READING
 │   │       ├── DifficultyLevel.java   — EASY, MEDIUM, HARD, EXPERT
 │   │       ├── SubmissionType.java    — TEXT, IMAGE
 │   │       ├── AssignmentStatus.java  — PENDING, IN_PROGRESS, SUBMITTED, GRADED
@@ -276,8 +276,9 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **User** | DELETE | `/api/users/me` | Yes | ALL | — | 204 No Content | Delete account and cascade assignments/submissions (GDPR) |
 | **Task** | GET | `/api/tasks` | Yes | ALL | — | `List<TaskResponse>` | List accessible tasks (templates, self-created, assigned) |
 | **Task** | GET | `/api/tasks/{id}` | Yes | ALL | — | `TaskResponse` | Retrieve task details by ID |
-| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task (supports multi-group direct deployment via `groupIds`, Eco Mode, topic catalog, custom topics) |
-| **Task** | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Preview an AI-generated task without persisting |
+| **Task** | POST | `/api/tasks/generate` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Generate and persist a new AI task (supports reading comprehension via `readingTitle`, `readingLength`, `readingParagraphs`, `mcqQuestionsCount`, `mcqPoints`, `trueFalseQuestionsCount`, `trueFalsePoints`, `openQuestionsCount`, `openPoints`, multi-group direct deployment via `groupIds`, Eco Mode, topic catalog, custom topics) |
+| **Task** | POST | `/api/tasks/generate-multi` | Yes | TEACHER | `TaskParamsRequest` | `List<TaskAssignmentResponse>` | Generate a task once and batch-distribute individual scoped assignments simultaneously across multiple teacher cohorts |
+| **Task** | POST | `/api/tasks/preview` | Yes | ALL | `TaskParamsRequest` | `TaskResponse` | Preview an AI-generated task without persisting (including reading comprehension passages and questions) |
 | **Task** | POST | `/api/tasks/template` | Yes | TEACHER | `TaskParamsRequest` | `TaskResponse` | Save a task as a reusable template |
 | **Task** | POST | `/api/tasks/{id}/assign` | Yes | TEACHER | `AssignTaskRequest` | 200 OK | Assign a task to student groups with custom point budgets and attempt limits |
 | **Session** | POST | `/api/sessions/start` | Yes | STUDENT, TEACHER | `StartSessionRequest` (`assignmentId` or `taskId`) | `SessionStateResponse` | Start an adaptive test session (auto-creates assignment if needed) |
@@ -285,12 +286,12 @@ Reference table of all backend endpoints, required roles, request payloads, and 
 | **Session** | GET | `/api/sessions/{id}/next-question` | Yes | STUDENT, TEACHER | — | `QuestionResponse` | Fetch the next question via the CAT algorithm |
 | **Session** | POST | `/api/sessions/{id}/answer` | Yes | STUDENT, TEACHER | `AnswerRequest` | `AnswerFeedbackResponse` | Submit an answer to the current question |
 | **Session** | POST | `/api/sessions/{id}/complete` | Yes | STUDENT, TEACHER | — | `SubmissionResultResponse` | Complete the adaptive session (idempotent, streak +1) |
-| **Submissions** | POST | `/api/submissions/text` | Yes | STUDENT, TEACHER | `TextSubmissionRequest` (`text`, `taskId`?) | `SubmissionResultResponse` | Submit text or essay for AI grading (links or creates assignment) |
+| **Submissions** | POST | `/api/submissions/text` | Yes | STUDENT, TEACHER | `TextSubmissionRequest` (`text`, `taskId`?) | `SubmissionResultResponse` | Submit text, reading open-ended answers, or essay for AI grading (links or creates assignment) |
 | **Submissions** | POST | `/api/submissions/image` | Yes | STUDENT, TEACHER | `MultipartFile` | `SubmissionResultResponse` | Upload a handwritten response image (Zero-Retention OCR) |
 | **Submissions** | GET | `/api/submissions/{id}` | Yes | ALL | — | `SubmissionResultResponse` | Retrieve submission evaluation details |
 | **Submissions** | GET | `/api/submissions/my`, `/me` | Yes | ALL | — | `List<SubmissionResultResponse>` | List current user's personal student practice submissions |
 | **Submissions** | GET | `/api/submissions/teacher` | Yes | TEACHER | — | `List<SubmissionResultResponse>` | Educator review queue: returns submissions of taught students (strictly excludes teacher's own practice) |
-| **Submissions** | POST/PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` (`overrideScore`, `comment`, `feedback`) | `SubmissionResultResponse` | Override AI score, update diagnostic feedback, and attach teacher comment |
+| **Submissions** | POST/PUT | `/api/submissions/{id}/override` | Yes | TEACHER | `OverrideRequest` (`overrideScore`, `comment`, `feedback`, `corrections`, `items`) | `SubmissionResultResponse` | Override AI score, persist adjusted error highlights/corrections and question item statuses, update diagnostic feedback, and attach teacher comment |
 | **Group** | GET | `/api/groups` | Yes | TEACHER | — | `List<GroupResponse>` | List the teacher's student cohorts |
 | **Group** | GET | `/api/groups/{id}` | Yes | TEACHER | — | `GroupResponse` | Retrieve group details and student roster |
 | **Group** | POST | `/api/groups` | Yes | TEACHER | `CreateGroupRequest` (`name`) | `GroupResponse` | Create a new student cohort |
@@ -596,6 +597,51 @@ For every item evaluated (from CAT session, task questions, or synthesized answe
 
 ---
 
-## 📄 License
+## 10. Database Schema Migrations (Flyway)
 
-Lingua Optima is open-source software licensed under the **[MIT License](../LICENSE)**.
+The PostgreSQL relational database is version-controlled using ordered Flyway migrations (`backend/src/main/resources/db/migration/`):
+
+| Version | File | Description |
+|---|---|---|
+| `V1` | `V1__create_users.sql` | Core `users` table, roles (`STUDENT`, `TEACHER`, `ADMIN`), CEFR levels, and initial indices |
+| `V2` | `V2__create_user_api_keys.sql` | `api_keys` table for BYOK encrypted keys |
+| `V3` | `V3__create_materials.sql` | Pedagogical reference materials and CEFR syllabus |
+| `V4` | `V4__create_exercises.sql` | `tasks`, `task_questions`, and `task_assignments` relational schema |
+| `V5` | `V5__create_user_progress.sql` | `progress_records`, `session_states`, and `submissions` schema |
+| `V6` | `V6__create_vocabulary.sql` | Lexical items and vocabulary registry |
+| `V7` | `V7__expand_cefr_levels.sql` | Calibration across the 6-level CEFR spectrum (A1, A2, B1, B2, C1, C2) |
+| `V8` | `V8__add_assignment_attempts.sql` | Homework attempt counters and max attempts limits |
+| `V9` | `V9__add_open_brackets_task_type.sql` | Adds `OPEN_BRACKETS` (раскрытие скобок) task format |
+| `V10` | `V10__add_group_enrollment_status_and_notification_reference.sql` | Cohort soft deletion (`is_active`, `removed_at`) and notification foreign references |
+| `V11` | `V11__add_task_points_and_question_points.sql` | Granular per-task and per-question point budget weighting |
+| `V12` | `V12__add_token_tracking_to_usage_counters.sql` | Weekly usage counter token and OCR quota tracking |
+| `V13` | `V13__create_custom_curriculum_entries.sql` | Teacher custom grammar formulas, rules, and target vocabulary storage |
+| `V14` | `V14__add_reading_task_type.sql` | Adds `READING` comprehension task format to `tasks_type_check` constraint |
+
+---
+
+## 11. Reading Comprehension & Diagnostic Override Engine
+
+### 11.1 Reading Task Architecture
+- **TaskType.READING**: Combines a coherent passage with a heterogeneous question set: Multiple Choice (`MCQ`), True/False/Not Given (`True / False`), and Open-Ended / Sentence Completion questions.
+- **Passage Generation**: Governed by `PromptTemplates.buildReadingGenerationPrompt(...)` supporting parameters `readingTitle`, `readingLength` (Short: 150-250w, Medium: 300-450w, Long: 500-700w, Custom), `readingParagraphs`, and CEFR lexical constraints.
+- **Point Budgets**: Independent point weighting per category (`mcqPoints`, `trueFalsePoints`, `openPoints`). Aggregate total points are computed automatically during task generation.
+
+### 11.2 Semantic AI Evaluation of Open Questions
+- In `SubmissionService.enrichFromTaskQuestions`, open-ended reading answers are not scored via brittle verbatim string matching.
+- Instead, answers are semantically parsed: if an open answer captures the required facts and meaning indicated by the answer key and passage citations, the student is awarded full question points.
+
+### 11.3 Granular Teacher Diagnostic Overrides
+- `POST/PUT /api/submissions/{id}/override`: Accepts `OverrideRequest` containing:
+  - `overrideScore`: Adjusted overall score.
+  - `teacherComment`: Feedback note displayed to the student.
+  - `corrections`: List of `SentenceCorrectionResponse` objects (teachers can edit explanations, delete unnecessary error highlights, or add new highlighted errors).
+  - `items`: List of `SubmissionItemResponse` objects with toggled `isCorrect` status and adjusted point awards.
+- Serialized into `ai_feedback` JSON without destroying original AI telemetry.
+
+---
+
+## License and Copyright
+
+Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  
+Licensed under the **[MIT License](../LICENSE)**.
