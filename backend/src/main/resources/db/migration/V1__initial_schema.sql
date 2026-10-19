@@ -210,17 +210,14 @@ CREATE TABLE IF NOT EXISTS submissions (
     id UUID PRIMARY KEY,
     assignment_id UUID REFERENCES task_assignments(id) ON DELETE SET NULL,
     student_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    submission_type VARCHAR(50) NOT NULL,
-    student_text TEXT,
+    submission_type VARCHAR(50) NOT NULL CHECK (submission_type IN ('TEXT', 'IMAGE')),
+    student_text TEXT NOT NULL,
     ai_score DOUBLE PRECISION,
     ai_feedback TEXT,
     override_score DOUBLE PRECISION,
     teacher_comment TEXT,
-    item_evaluations_json TEXT,
-    grammar_diagnostics_json TEXT,
-    vocabulary_diagnostics_json TEXT,
-    evaluated_at TIMESTAMP,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    provider_used VARCHAR(255),
+    submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX IF NOT EXISTS idx_submissions_student ON submissions(student_id);

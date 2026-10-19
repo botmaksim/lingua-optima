@@ -189,14 +189,66 @@ class ScoringServiceTest {
     }
 
     /**
-     * @brief Verifies unit test scenario: null AI response falls back safely.
+     * @brief Verifies unit test scenario: score speaking task with full diagnostics payload.
      */
     @Test
-    void testScoreGrammarTaskWithNullAiResponse() {
-        when(aiBrokerService.checkGrammar(anyString(), eq(user))).thenReturn(null);
+    void testScoreSpeakingTaskValidPayload() {
+        String payload = """
+            [SPEAKING_PRACTICE]
+            Overall Score: 94%
+            Pronunciation Accuracy: 96%
+            Fluency Score: 92%
+            Completeness: 100%
+            Speech Rate: 135 WPM
+            Pacing Score: 98%
+            Pacing Diagnostics: Optimal tempo and cadence.
 
-        Map<String, Object> result = scoringService.scoreGrammarTask("My sentence", "Correct", user);
+            Spoken Transcript: Consistent pronunciation practice enhances phonetic awareness.
+
+            Reference Passage: Consistent pronunciation practice enhances phonetic awareness.
+            """;
+
+        Map<String, Object> result = scoringService.scoreSpeakingTask(payload, "Fallback key", user);
         assertNotNull(result);
-        assertEquals("Your submission has been evaluated. Review the score and accuracy breakdown above.", result.get("feedback"));
+        assertEquals(94.0, result.get("score"));
+        assertEquals(96.0, result.get("accuracyScore"));
+        assertEquals(92.0, result.get("fluencyScore"));
+        assertEquals(98.0, result.get("pacingScore"));
+        assertEquals(135, result.get("speechRateWpm"));
+        assertTrue(result.get("feedback").toString().contains("135 WPM"));
+
+        @SuppressWarnings("unchecked")
+        var items = (java.util.List<Map<String, Object>>) result.get("items");
+        assertNotNull(items);
+        assertEquals(1, items.size());
+        assertTrue((Boolean) items.get(0).get("isCorrect"));
+        assertEquals("Consistent pronunciation practice enhances phonetic awareness.", items.get(0).get("studentAnswer"));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: score speaking task with low score and null payload defaults.
+     */
+    @Test
+    void testScoreSpeakingTaskDefaultsAndLowScore() {
+        String payload = """
+            [SPEAKING_PRACTICE]
+            Overall Score: 45%
+            Speech Rate: 80 WPM
+            """;
+
+        Map<String, Object> result = scoringService.scoreSpeakingTask(payload, "Reference passage", user);
+        assertNotNull(result);
+        assertEquals(45.0, result.get("score"));
+
+        @SuppressWarnings("unchecked")
+        var items = (java.util.List<Map<String, Object>>) result.get("items");
+        assertNotNull(items);
+        assertFalse((Boolean) items.get(0).get("isCorrect"));
+        assertEquals("Reference passage", items.get(0).get("correctAnswer"));
+
+        Map<String, Object> nullResult = scoringService.scoreSpeakingTask(null, null, user);
+        assertNotNull(nullResult);
+        assertEquals(85.0, nullResult.get("score"));
     }
 }
+

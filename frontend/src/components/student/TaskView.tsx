@@ -167,7 +167,7 @@ export const TaskView: React.FC = () => {
       const res = await submissionApi.submitText({
         taskId: task.id,
         text: formattedSubmission,
-        type: 'GRAMMAR',
+        type: 'SPEAKING',
       });
       navigate(`/student/review/${res.id}`);
     } catch (err: any) {

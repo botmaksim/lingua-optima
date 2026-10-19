@@ -133,8 +133,14 @@ public class SubmissionService {
         String provider = student.getPreferredProvider() != null
             ? "AI_" + student.getPreferredProvider().name()
             : "AI_GEMINI";
+        boolean isSpeaking = "SPEAKING".equalsIgnoreCase(request.getType())
+                || (assignment != null && assignment.getTask() != null && assignment.getTask().getType() == TaskType.SPEAKING)
+                || (request.getText() != null && request.getText().startsWith("[SPEAKING_PRACTICE]"));
+
         if ("ESSAY".equalsIgnoreCase(request.getType())) {
             scoring = scoringService.scoreEssay(request.getText(), student.getCefrLevel().name(), student);
+        } else if (isSpeaking) {
+            scoring = scoringService.scoreSpeakingTask(request.getText(), answerKey, student);
         } else {
             scoring = scoringService.scoreGrammarTask(request.getText(), answerKey, student);
         }
