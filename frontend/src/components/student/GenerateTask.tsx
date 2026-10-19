@@ -6,7 +6,7 @@
  * with modular panels for Grammar, Reading, Speaking, and Essay practice.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles,
@@ -31,15 +31,10 @@ import { CefrLevel } from '../../types/user';
 import { TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { CefrBadge } from '../common/CefrBadge';
-import { CustomSelect } from '../common/CustomSelect';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import {
-  AI_PROVIDER_CATALOG,
   AIProviderType,
   getDefaultModelForProvider,
-  useProviderModels,
-  buildProviderOptionGroups,
-  isSystemFreeProvider,
 } from '../../constants/aiModels';
 import { DEFAULT_CEFR_TOPICS, DOMAINS } from '../../constants/topics';
 import { GrammarConfigPanel, UploadedCurriculumFile } from '../teacher/GrammarConfigPanel';
@@ -56,6 +51,9 @@ export const GenerateTask: React.FC = () => {
   // Mode switcher: Quick Practice (1-click) vs Detailed Studio
   const [generationMode, setGenerationMode] = useState<'QUICK' | 'DETAILED'>('QUICK');
 
+  // AI Engine mode: Platform default (Gemini) vs User custom BYOK key
+  const [aiEngineMode, setAiEngineMode] = useState<'PLATFORM' | 'BYOK'>('PLATFORM');
+
   const [catalog, setCatalog] = useState<TopicsCatalogResponse | null>(null);
   const [cefrLevel, setCefrLevel] = useState<CefrLevel>(user?.cefrLevel || 'B1');
   const [grammarTopic, setGrammarTopic] = useState<string>(
@@ -67,7 +65,6 @@ export const GenerateTask: React.FC = () => {
   const [numberOfQuestions, setNumberOfQuestions] = useState<number>(5);
   const [provider, setProvider] = useState<AIProviderType>('GEMINI');
   const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
-  const { models: providerModels, isLiveSynced } = useProviderModels(provider);
   const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -139,16 +136,6 @@ export const GenerateTask: React.FC = () => {
       })
       .catch(() => {});
   }, []);
-
-  const userConfiguredProviders = useMemo(() => savedKeys.map((k) => k.provider), [savedKeys]);
-  const providerGroups = useMemo(() => buildProviderOptionGroups(userConfiguredProviders), [userConfiguredProviders]);
-  const isSelectedProviderConfigured = isSystemFreeProvider(provider) || userConfiguredProviders.includes(provider);
-
-  const handleProviderChange = (nextProvider: AIProviderType) => {
-    setProvider(nextProvider);
-    const matchingKey = savedKeys.find((k) => k.provider === nextProvider);
-    setModelName(matchingKey?.modelName || getDefaultModelForProvider(nextProvider));
-  };
 
   const handleCefrChange = (newLevel: CefrLevel) => {
     setCefrLevel(newLevel);
@@ -486,67 +473,99 @@ export const GenerateTask: React.FC = () => {
         <form onSubmit={handleGenerate} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
           {/* AI Engine Selection */}
           <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center space-x-2">
                 <Cpu className="w-4 h-4 text-primary" />
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Model Selection
+                  AI Engine
                 </span>
               </div>
-              <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                {provider} · {modelName}
-              </span>
+              <div className="flex items-center p-1 rounded-xl bg-slate-200/80 border border-slate-300/60 text-xs font-bold self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiEngineMode('PLATFORM');
+                    setProvider('GEMINI');
+                    setModelName('gemini-2.5-flash');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition ${
+                    aiEngineMode === 'PLATFORM'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  ⚡ Platform AI (Gemini)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAiEngineMode('BYOK');
+                    if (savedKeys.length > 0) {
+                      setProvider(savedKeys[0].provider);
+                      setModelName(savedKeys[0].modelName || getDefaultModelForProvider(savedKeys[0].provider));
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition ${
+                    aiEngineMode === 'BYOK'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  🔑 Custom Key (BYOK)
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  AI Provider
-                </label>
-                <CustomSelect
-                  value={provider}
-                  onChange={(val) => handleProviderChange(val as AIProviderType)}
-                  groups={providerGroups}
-                  ariaLabel="AI Provider"
-                />
+            {aiEngineMode === 'PLATFORM' ? (
+              <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-50 text-primary flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800">Google Gemini 2.5 Flash</span>
+                    <span className="text-[11px] text-slate-500 block">Fast, balanced platform model included in your tier</span>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2.5 py-1 rounded-full">
+                  Active
+                </span>
               </div>
-
-              <div>
-                <label className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  <span>AI Model</span>
-                  {isLiveSynced && (
-                    <span className="text-[10px] font-semibold text-emerald-600 lowercase">
-                      ● live vendor sync
+            ) : savedKeys.length > 0 ? (
+              <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                    <Key className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-slate-800">
+                      {savedKeys[0].provider} · {savedKeys[0].modelName || 'Default Model'}
                     </span>
-                  )}
-                </label>
-                <CustomSelect
-                  value={modelName}
-                  onChange={(val) => setModelName(val)}
-                  options={providerModels.map((m) => ({
-                    value: m.id,
-                    label: m.label,
-                    badge: m.badge,
-                  }))}
-                  ariaLabel="AI Model"
-                />
+                    <span className="text-[11px] text-slate-500 block">Using your personal API key</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="text-xs font-bold text-primary hover:underline whitespace-nowrap"
+                >
+                  Change in Profile →
+                </button>
               </div>
-            </div>
-
-            {!isSelectedProviderConfigured && (
-              <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-2">
-                <div className="flex items-center space-x-2">
-                  <Key className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            ) : (
+              <div className="p-4 bg-amber-50 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-3">
+                <div className="flex items-center space-x-2.5">
+                  <Key className="w-5 h-5 text-amber-600 flex-shrink-0" />
                   <span>
-                    <strong>{AI_PROVIDER_CATALOG.find((p) => p.id === provider)?.name}</strong> requires your own API key. You can add one in Profile &rarr; AI API Keys.
+                    No custom API keys configured. You can add your OpenAI, Anthropic, DeepSeek, or Groq key in Profile.
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => navigate('/profile')}
-                  className="self-end sm:self-auto px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold whitespace-nowrap text-[11px] shadow-xs transition"
+                  className="self-end sm:self-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold whitespace-nowrap text-xs shadow-xs transition"
                 >
-                  Add Key
+                  Configure Key
                 </button>
               </div>
             )}

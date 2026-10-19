@@ -373,6 +373,24 @@ public class SubmissionService {
         Submission submission = submissionRepository.findById(submissionId)
             .orElseThrow(() -> new ResourceNotFoundException("Submission not found: " + submissionId));
 
+        Task currentTask = (submission.getAssignment() != null) ? submission.getAssignment().getTask() : null;
+        int taskAttempts = (currentTask != null && currentTask.getQuestions() != null && !currentTask.getQuestions().isEmpty())
+            ? currentTask.getQuestions().size()
+            : 5;
+
+        // Determine prior error count before applying educator adjustments
+        SubmissionResultResponse preOverrideResponse = SubmissionResultResponse.fromEntity(submission);
+        enrichSubmissionResult(preOverrideResponse, submission, null);
+        int oldErrors;
+        if (preOverrideResponse.getItems() != null && !preOverrideResponse.getItems().isEmpty()) {
+            oldErrors = (int) preOverrideResponse.getItems().stream().filter(it -> !it.isCorrect()).count();
+        } else if (submission.getEffectiveScore() != null) {
+            double norm = Math.max(0.0, Math.min(100.0, submission.getEffectiveScore()));
+            oldErrors = (int) Math.round(taskAttempts * (1.0 - (norm / 100.0)));
+        } else {
+            oldErrors = 0;
+        }
+
         submission.setOverrideScore(request.getOverrideScore());
         if (request.getTeacherComment() != null) {
             submission.setTeacherComment(request.getTeacherComment());
@@ -420,9 +438,19 @@ public class SubmissionService {
         SubmissionResultResponse response = SubmissionResultResponse.fromEntity(saved);
         enrichSubmissionResult(response, saved, null);
 
-        Task currentTask = (saved.getAssignment() != null) ? saved.getAssignment().getTask() : null;
+        // Determine updated error count after educator adjustments
+        int newErrors;
+        if (response.getItems() != null && !response.getItems().isEmpty()) {
+            newErrors = (int) response.getItems().stream().filter(it -> !it.isCorrect()).count();
+        } else if (response.getEffectiveScore() != null) {
+            double norm = Math.max(0.0, Math.min(100.0, response.getEffectiveScore()));
+            newErrors = (int) Math.round(taskAttempts * (1.0 - (norm / 100.0)));
+        } else {
+            newErrors = 0;
+        }
+
         String grammarTopic = currentTask != null ? currentTask.getGrammarTopic() : "General";
-        recordSubmissionProgress(saved.getStudent(), grammarTopic, request.getOverrideScore(), response, currentTask);
+        progressService.adjustFromOverride(saved.getStudent(), grammarTopic, oldErrors, newErrors);
 
         return response;
     }

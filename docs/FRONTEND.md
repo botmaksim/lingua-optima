@@ -16,6 +16,11 @@ Comprehensive documentation for the frontend application of **Lingua Optima** �
 8. **External Automated Translation Widget:** To avoid bloated or incomplete hardcoded translation dictionaries, a global `TranslatorDropdown` component in the Navbar enables on-page translation via official Google Translate widget (with full language picker, RU/ES/DE/FR/ZH/AR/TR support, and 1-click reversion back to original English).
 9. **Mobile-First Navigation & UX:** Features a persistent `MobileBottomNav` on mobile viewports (<768px) providing one-thumb access to core workspaces, optimized touch interaction (`touch-action: manipulation`), responsive card layouts for tables, and accessible touch target sizes.
 10. **Printable Academic Reports & Date-Range Filtering:** Educator reporting module (`ExportReports.tsx`) supports date-range presets (All Time, Last 7 Days, Last 30 Days, This Month, Custom Range) and clean paper/PDF print preview via dedicated `@media print` CSS styles.
+11. **Card Focus Mode (Step-by-Step) with Instant Feedback:** `TaskView.tsx` supports three distinct presentation modes: Classic List, Card Focus Mode (single question at a time with keyboard hotkeys `1-4`, `ArrowLeft`/`ArrowRight`, and `Enter`), and Classroom Presentation Mode. Card Focus features optional Instant Feedback (`Мгновенная проверка`) highlighting answers immediately with checkmark/cross badges and embedded grammar explanations.
+12. **Classroom Live Presentation Mode:** Designed for smartboards and projectors with extra-large typography, fullscreen mode, and interactive `[ 👁️ Показать ответ ]` / `[ 🙈 Скрыть ответ ]` toggle per question.
+13. **Sentence AI Explainer Engine:** Allows students to highlight any sentence in reading passages or click `[ 💡 Пояснить ]` on any exercise item to view contextual Russian translation, grammatical breakdown, and key vocabulary via `POST /api/tasks/explain-sentence`.
+14. **Smart Recommended Practice:** `QuickModePanel.tsx` features an intelligent `Recommended` format that queries `progressApi.getGaps()` to automatically target the student's weakest grammar topic or foundational CEFR unit.
+15. **Zero-Dependency Confetti Celebration:** `src/utils/confetti.ts` renders dynamic particle confetti using HTML5 Canvas upon achieving scores $\ge 90\%$.
 
 ## Complete File Structure
 

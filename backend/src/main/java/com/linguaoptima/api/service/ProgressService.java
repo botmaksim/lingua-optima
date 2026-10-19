@@ -77,6 +77,46 @@ public class ProgressService {
     }
 
     /**
+     * @brief Adjusts student topic progress upon educator grade/item override without inflating attempt counts.
+     * @param student The student whose submission was reviewed.
+     * @param grammarTopic Grammar topic or skill category.
+     * @param oldErrorsCount Previous error count from initial AI grading.
+     * @param newErrorsCount Updated error count after educator review.
+     * @return Updated ProgressRecord entity.
+     */
+    @Transactional
+    public ProgressRecord adjustFromOverride(User student, String grammarTopic, int oldErrorsCount, int newErrorsCount) {
+        final String topic = (grammarTopic == null || grammarTopic.isBlank()) ? "General Grammar" : grammarTopic;
+        final int safeOldErrors = Math.max(0, oldErrorsCount);
+        final int safeNewErrors = Math.max(0, newErrorsCount);
+
+        ProgressRecord record = progressRecordRepository.findByStudentAndGrammarTopic(student, topic)
+            .orElseGet(() -> ProgressRecord.builder()
+                .student(student)
+                .grammarTopic(topic)
+                .totalAttempts(Math.max(1, safeNewErrors))
+                .errorCount(safeNewErrors)
+                .masteryScore(0.0)
+                .updatedAt(LocalDateTime.now())
+                .build());
+
+        int adjustedErrors = Math.max(0, record.getErrorCount() - safeOldErrors + safeNewErrors);
+        if (record.getTotalAttempts() < adjustedErrors) {
+            record.setTotalAttempts(adjustedErrors);
+        }
+        record.setErrorCount(adjustedErrors);
+
+        int total = Math.max(1, record.getTotalAttempts());
+        double mastery = (double) (total - record.getErrorCount()) / total;
+        record.setMasteryScore(Math.max(0.0, Math.min(1.0, Math.round(mastery * 100.0) / 100.0)));
+        record.setUpdatedAt(LocalDateTime.now());
+
+        ProgressRecord saved = progressRecordRepository.save(record);
+        checkCefrLevelUp(student);
+        return saved;
+    }
+
+    /**
      * @brief Updates topic mastery record based on a student submission answer and evaluates level-up readiness.
      * @param student The student completing the exercise.
      * @param grammarTopic Grammar topic or skill category.

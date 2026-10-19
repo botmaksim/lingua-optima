@@ -7,7 +7,9 @@ package com.linguaoptima.api.controller;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
+import com.linguaoptima.api.dto.request.ExplainSentenceRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
+import com.linguaoptima.api.dto.response.ExplainSentenceResponse;
 import com.linguaoptima.api.dto.response.GenerationStatusResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
@@ -184,5 +186,20 @@ public class TaskController {
         @AuthenticationPrincipal User user
     ) {
         return ResponseEntity.ok(taskService.getGenerationStatus(user, deviceId));
+    }
+
+    /**
+     * @brief Explains grammatical structures, vocabulary, and provides context translation for an English sentence.
+     *
+     * @param request Payload containing the target sentence, optional context, and CEFR level.
+     * @param user Authenticated user principal.
+     * @return HTTP 200 with ExplainSentenceResponse.
+     */
+    @PostMapping("/explain-sentence")
+    public ResponseEntity<ExplainSentenceResponse> explainSentence(
+        @Valid @RequestBody ExplainSentenceRequest request,
+        @AuthenticationPrincipal User user
+    ) {
+        return ResponseEntity.ok(taskService.explainSentence(request, user));
     }
 }

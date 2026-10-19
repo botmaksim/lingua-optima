@@ -1672,5 +1672,37 @@ class TaskServiceTest {
         assertTrue(prompt.contains("ECO MODE ACTIVE"));
         assertFalse(prompt.contains("TARGET PHONETICS PACK"));
     }
+
+    /**
+     * @brief Verifies unit test scenario: explainSentence parses AI JSON and returns structured explanation.
+     */
+    @Test
+    void testExplainSentenceSuccess() {
+        String aiJson = """
+            {
+              "originalSentence": "If I had known, I would have told you.",
+              "translation": "Если бы я знал, я бы сказал тебе.",
+              "grammarBreakdown": "Third Conditional (If + Past Perfect, would + have + V3)",
+              "keyVocabulary": ["known — узнал", "told — рассказал"],
+              "explanation": "Нереальное условие в прошлом."
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(aiJson);
+
+        com.linguaoptima.api.dto.request.ExplainSentenceRequest req = com.linguaoptima.api.dto.request.ExplainSentenceRequest.builder()
+            .sentence("If I had known, I would have told you.")
+            .cefrLevel(CefrLevel.B2)
+            .build();
+
+        com.linguaoptima.api.dto.response.ExplainSentenceResponse res = taskService.explainSentence(req, studentUser);
+
+        assertNotNull(res);
+        assertEquals("If I had known, I would have told you.", res.getOriginalSentence());
+        assertEquals("Если бы я знал, я бы сказал тебе.", res.getTranslation());
+        assertTrue(res.getGrammarBreakdown().contains("Third Conditional"));
+        assertEquals(2, res.getKeyVocabulary().size());
+        assertEquals("Нереальное условие в прошлом.", res.getExplanation());
+    }
 }
 

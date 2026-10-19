@@ -17,13 +17,16 @@ import {
   ArrowRight,
   Shuffle,
   Check,
+  Target,
 } from 'lucide-react';
 import { DifficultyLevel, TaskType } from '../../types/task';
 import { CefrLevel } from '../../types/user';
+import { ProgressRecord } from '../../types/progress';
+import { progressApi } from '../../api/progressApi';
 import { CefrBadge } from './CefrBadge';
 import { DEFAULT_CEFR_TOPICS, DEFAULT_MIXED_TOPICS, DOMAINS } from '../../constants/topics';
 
-export type QuickPracticeFormat = 'SURPRISE' | 'GRAMMAR' | 'READING' | 'SPEAKING';
+export type QuickPracticeFormat = 'RECOMMENDED' | 'SURPRISE' | 'GRAMMAR' | 'READING' | 'SPEAKING';
 
 export interface QuickGenerateParams {
   taskType: TaskType;
@@ -66,15 +69,42 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
   isLoading,
   isStudent = false,
 }) => {
-  const [format, setFormat] = useState<QuickPracticeFormat>('SURPRISE');
+  const [format, setFormat] = useState<QuickPracticeFormat>('RECOMMENDED');
   const [topic, setTopic] = useState<string>('');
   const [isCustomTopic, setIsCustomTopic] = useState<boolean>(false);
   const [customTopicInput, setCustomTopicInput] = useState<string>('');
+  const [studentGaps, setStudentGaps] = useState<ProgressRecord[]>([]);
 
-  // Pick a fresh random topic whenever CEFR level changes
+  // Load student learning gaps for smart recommendation
   useEffect(() => {
-    shuffleTopic();
-  }, [cefrLevel]);
+    progressApi
+      .getGaps()
+      .then((gaps) => {
+        setStudentGaps(gaps || []);
+      })
+      .catch(() => {});
+  }, []);
+
+  const weakestGap = React.useMemo(() => {
+    if (!studentGaps || studentGaps.length === 0) return null;
+    return [...studentGaps].sort((a, b) => a.masteryScore - b.masteryScore)[0];
+  }, [studentGaps]);
+
+  // Pick or recommend topic whenever CEFR level or format changes
+  useEffect(() => {
+    if (format === 'RECOMMENDED') {
+      if (weakestGap) {
+        setTopic(weakestGap.grammarTopic);
+      } else {
+        const foundation = DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'Grammar Fundamentals';
+        setTopic(foundation);
+      }
+      setIsCustomTopic(false);
+      setCustomTopicInput('');
+    } else {
+      shuffleTopic();
+    }
+  }, [cefrLevel, format, weakestGap]);
 
   const shuffleTopic = () => {
     const list = [
@@ -91,6 +121,14 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
 
   const handleFormatChange = (selectedFormat: QuickPracticeFormat) => {
     setFormat(selectedFormat);
+    if (selectedFormat === 'RECOMMENDED') {
+      if (weakestGap) {
+        setTopic(weakestGap.grammarTopic);
+      } else {
+        setTopic(DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'Grammar Fundamentals');
+      }
+      setIsCustomTopic(false);
+    }
   };
 
   const handleStartPractice = () => {
@@ -103,7 +141,11 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
 
     // Determine final task type
     let chosenTaskType: TaskType;
-    if (format === 'SURPRISE') {
+    if (format === 'RECOMMENDED') {
+      // For gaps, focused grammar quiz (MCQ or GAP_FILL) gives highest retention
+      const gapTypes: TaskType[] = ['MCQ', 'GAP_FILL'];
+      chosenTaskType = gapTypes[Math.floor(Math.random() * gapTypes.length)];
+    } else if (format === 'SURPRISE') {
       const candidates: TaskType[] = ['MCQ', 'GAP_FILL', 'REWRITE', 'READING', 'SPEAKING'];
       chosenTaskType = candidates[Math.floor(Math.random() * candidates.length)];
     } else if (format === 'GRAMMAR') {
@@ -121,7 +163,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
       domain: randomDomain,
       difficulty: 'MEDIUM',
       numberOfQuestions: chosenTaskType === 'SPEAKING' ? 1 : 5,
-      ecoMode: true, // Quick mode prioritizes rapid generation and low latency
+      ecoMode: true,
       ...(chosenTaskType === 'READING'
         ? {
             readingConfig: {
@@ -215,7 +257,28 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           2. Practice Skill / Format
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+          <button
+            type="button"
+            onClick={() => handleFormatChange('RECOMMENDED')}
+            className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between col-span-2 sm:col-span-1 ${
+              format === 'RECOMMENDED'
+                ? 'border-amber-600 bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm'
+                : 'border-amber-200/80 bg-amber-50/50 text-slate-800 hover:border-amber-300'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-black flex items-center space-x-1.5">
+                <Target className="w-3.5 h-3.5" />
+                <span>Recommended</span>
+              </span>
+              {format === 'RECOMMENDED' && <Check className="w-3.5 h-3.5" />}
+            </div>
+            <span className={`text-[11px] ${format === 'RECOMMENDED' ? 'text-amber-100' : 'text-slate-500'}`}>
+              {weakestGap ? 'Target weak gaps' : 'CEFR core syllabus'}
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={() => handleFormatChange('SURPRISE')}
@@ -319,15 +382,24 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         {/* Selected Topic Display Banner */}
         <div className="p-3.5 rounded-2xl bg-white border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
           <div className="flex items-center space-x-2.5 truncate">
-            <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
-              <Shuffle className="w-3.5 h-3.5" />
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              format === 'RECOMMENDED' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'
+            }`}>
+              {format === 'RECOMMENDED' ? <Target className="w-3.5 h-3.5" /> : <Shuffle className="w-3.5 h-3.5" />}
             </div>
             <div className="truncate">
               <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                Active Topic
+                {format === 'RECOMMENDED'
+                  ? (weakestGap ? 'Recommended Topic (Knowledge Gap)' : 'CEFR Foundation Topic')
+                  : 'Active Topic'}
               </span>
               <span className="text-xs font-bold text-slate-900 truncate">
                 {isCustomTopic && customTopicInput.trim() ? customTopicInput : topic}
+                {format === 'RECOMMENDED' && weakestGap && topic === weakestGap.grammarTopic && (
+                  <span className="ml-2 px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold">
+                    {Math.round(weakestGap.masteryScore * 100)}% mastery
+                  </span>
+                )}
               </span>
             </div>
           </div>

@@ -25,6 +25,7 @@ import { SubmissionResult, SubmissionItem, SentenceCorrection } from '../../type
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { sanitizeFeedback } from '../../utils/textSanitizer';
 import { AnnotatedTextReview } from '../common/AnnotatedTextReview';
+import { triggerConfetti } from '../../utils/confetti';
 
 /**
  * @brief Renders the AI evaluation report, sentence-by-sentence breakdown, explanations, and AI gap analysis.
@@ -44,7 +45,13 @@ export const AIReview: React.FC = () => {
 
     submissionApi
       .getSubmissionById(submissionId)
-      .then((data) => setSubmission(data))
+      .then((data) => {
+        setSubmission(data);
+        const score = data?.overrideScore ?? data?.effectiveScore ?? data?.score ?? 0;
+        if (score >= 90) {
+          triggerConfetti(80);
+        }
+      })
       .catch((err) => console.error('Failed to load submission review:', err))
       .finally(() => setIsLoading(false));
   }, [submissionId]);

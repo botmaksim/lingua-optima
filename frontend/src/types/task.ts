@@ -277,3 +277,23 @@ export interface CreateCustomTaskRequest {
   dueDate?: string;
   maxAttempts?: number;
 }
+
+/**
+ * @brief Request payload to explain a sentence or phrase with AI.
+ */
+export interface ExplainSentenceRequest {
+  sentence: string;
+  context?: string;
+  cefrLevel?: CefrLevel;
+}
+
+/**
+ * @brief Structured response containing pedagogical sentence breakdown and translation.
+ */
+export interface ExplainSentenceResponse {
+  originalSentence: string;
+  translation: string;
+  grammarBreakdown: string;
+  keyVocabulary: string[];
+  explanation: string;
+}

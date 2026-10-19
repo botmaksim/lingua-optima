@@ -145,6 +145,31 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 - **Teacher-to-Student Synchronization**: Custom grammar rules and vocabulary sets saved by educators are automatically inherited by their enrolled students via cohort group relationships.
 - **Unified Library**: Students see both their personal custom rules and their teachers' verified curriculum entries clearly labeled with teacher attribution in task generation and homework execution interfaces.
 
+### 12. The 4 Pedagogical Task Pillars
+Lingua Optima structures all learning and assessment around four foundational pillars:
+- **Grammar & Mechanics**: Multiple choice, gap fills, bracket transformations, and sentence rewrites with instant feedback and exact rule attribution.
+- **Reading Comprehension**: Rich thematic passages with calibrated word counts, responsive split viewports, and semantic AI grading of open-ended answers.
+- **Speaking & Pronunciation**: Browser-native Web Speech API phonetic alignment, 36 CEFR pronunciation packs, minimal pairs, and cadence/WPM diagnostics.
+- **Writing & Essay**: Authentic IELTS/Cambridge 4-criteria rubric evaluation (Task Achievement, Coherence & Cohesion, Lexical Resource, Grammatical Range) with autosaved drafts.
+
+### 13. Card Focus Mode & Hotkey Navigation
+- **Distraction-Free Step-by-Step Solving**: Switch seamlessly between Classic List, Card Focus Mode, and Presentation Mode in `TaskView.tsx`.
+- **Keyboard Hotkeys**: Select options instantly with keys `1`–`4`, navigate cards with `ArrowLeft` and `ArrowRight`, and advance via `Enter`.
+- **Instant Feedback (`Мгновенная проверка`)**: Optional self-practice mode immediately validates selections with emerald/rose borders, checkmark/cross status icons, and underlying grammar rule insights.
+
+### 14. Sentence AI Explainer Engine (`POST /api/tasks/explain-sentence`)
+- **Real-Time Contextual Breakdown**: Highlight text or click `💡 Пояснить` on any reading sentence or exercise item to open an AI analysis drawer.
+- **Granular Linguistic Insights**: Delivers natural Russian translation, syntactic tense/pattern breakdown, and key vocabulary items without robotic AI filler.
+
+### 15. Classroom Live & Presentation Mode
+- **Smartboard & Projector Ready**: Fullscreen viewport with high-contrast, scalable typography (`text-2xl` to `text-3xl`).
+- **Interactive Answer Revelation**: Educators can toggle `[ 👁️ Показать правильный ответ ]` / `[ 🙈 Скрыть ответ ]` per question during lectures or group reviews.
+
+### 16. Smart Recommendations, Confetti & Mastery Integrity
+- **1-Click Gap Targeting**: "Recommended" practice mode automatically queries student mastery records (`/progress/gaps`) and directs learners toward their weakest CEFR grammar gaps.
+- **Non-Inflating Score Overrides**: Teacher grading overrides adjust error counters via mathematical deltas (`adjustFromOverride`) rather than creating duplicate attempt records.
+- **Celebration Confetti**: Zero-dependency HTML5 Canvas confetti engine triggers bursts on $\ge 90\%$ achievement scores.
+
 ---
 
 ## Enterprise Action Audit and Distributed Tracing

@@ -294,5 +294,33 @@ class ProgressServiceTest {
         assertEquals("used would", ProgressService.normalizeTopicKey("Used to / Would"));
         assertEquals("used would", ProgressService.normalizeTopicKey("Used to & Would"));
     }
+
+    /**
+     * @brief Verifies unit test scenario: adjustFromOverride updates error delta without inflating total attempts.
+     */
+    @Test
+    void testAdjustFromOverride() {
+        ProgressRecord existing = ProgressRecord.builder()
+            .student(student)
+            .grammarTopic("Passive Voice")
+            .totalAttempts(5)
+            .errorCount(2)
+            .masteryScore(0.60)
+            .build();
+
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "Passive Voice"))
+            .thenReturn(Optional.of(existing));
+        when(progressRecordRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        // Teacher overrides: old errors was 2, teacher marks 1 as correct, so new errors is 1
+        ProgressRecord updated = progressService.adjustFromOverride(student, "Passive Voice", 2, 1);
+
+        // Total attempts must remain 5 (no duplicate attempt inflation)
+        assertEquals(5, updated.getTotalAttempts());
+        // Errors adjusted by delta: 2 - 2 + 1 = 1
+        assertEquals(1, updated.getErrorCount());
+        // Mastery score updated: (5 - 1) / 5 = 0.80
+        assertEquals(0.80, updated.getMasteryScore());
+    }
 }
 

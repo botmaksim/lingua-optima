@@ -647,4 +647,37 @@ public final class PromptTemplates {
             }
             """.formatted(studentText, answerKey);
     }
+
+    /**
+     * @brief Constructs prompt for explaining an English sentence or phrase.
+     * @param sentence Target sentence to explain.
+     * @param context Optional surrounding context.
+     * @param cefrLevel Student CEFR proficiency level string.
+     * @return Formatted AI explanation prompt string.
+     */
+    public static String buildSentenceExplanationPrompt(String sentence, String context, String cefrLevel) {
+        String level = (cefrLevel != null && !cefrLevel.isBlank()) ? cefrLevel : "B1";
+        String ctxStr = (context != null && !context.isBlank()) ? "\nContext / Passage: " + context : "";
+        String safeSentence = sentence != null ? sentence.replace("\"", "\\\"") : "";
+
+        return """
+            Explain the following English sentence for a language learner at CEFR level %s:
+            Sentence: "%s"%s
+
+            Provide:
+            1. A natural Russian translation of the sentence in this context.
+            2. Grammatical structure breakdown (tense, voice, clauses, syntax).
+            3. Key vocabulary or idioms with concise definitions.
+            4. Clear pedagogical explanation and practical usage tip.
+
+            Return ONLY a valid JSON object with the following structure:
+            {
+              "originalSentence": "%s",
+              "translation": "Естественный перевод предложения на русский язык",
+              "grammarBreakdown": "Краткий разбор грамматических конструкций (время, залог, структуры)",
+              "keyVocabulary": ["слово / идиома — значение и контекст"],
+              "explanation": "Понятное методическое объяснение смысла и правил употребления"
+            }
+            """.formatted(level, safeSentence, ctxStr, safeSentence);
+    }
 }

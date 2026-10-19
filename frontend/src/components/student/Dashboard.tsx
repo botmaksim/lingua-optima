@@ -226,7 +226,7 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-indigo-600 to-sky-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
           <div className="flex items-center space-x-3 mb-2">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -237,22 +237,29 @@ export const Dashboard: React.FC = () => {
           <p className="text-indigo-100 text-sm max-w-xl">
             Continue your adaptive learning journey across the full CEFR A1-C2 ladder. Practice targeted exercises or upload handwritten homework for instant AI feedback.
           </p>
+          {gaps.length > 0 && (
+            <div className="mt-3 inline-flex items-center space-x-2 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs text-white border border-white/20">
+              <span className="font-bold text-amber-300">Рекомендация:</span>
+              <span className="font-semibold">{[...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].grammarTopic}</span>
+              <span className="text-white/75">{Math.round([...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].masteryScore * 100)}% освоено</span>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => navigate('/student/generate')}
-            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl bg-white text-primary font-bold hover:bg-indigo-50 transition shadow-md"
+            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black transition shadow-lg shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Generate New Task</span>
+            <Sparkles className="w-4 h-4 fill-slate-950" />
+            <span>Сгенерировать задание</span>
           </button>
           <button
             onClick={() => navigate('/student/ocr')}
-            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium transition backdrop-blur-sm"
+            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition backdrop-blur-sm"
           >
             <Camera className="w-4 h-4" />
-            <span>Submit Homework Photo</span>
+            <span>Фото тетради</span>
           </button>
         </div>
       </div>

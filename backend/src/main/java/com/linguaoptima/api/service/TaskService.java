@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.domain.*;
 import com.linguaoptima.api.domain.enums.AssignmentStatus;
+import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.DifficultyLevel;
 import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
@@ -17,8 +18,10 @@ import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.CreateCustomTaskRequest;
 import com.linguaoptima.api.dto.request.CustomQuestionRequest;
+import com.linguaoptima.api.dto.request.ExplainSentenceRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.request.TransferTaskRequest;
+import com.linguaoptima.api.dto.response.ExplainSentenceResponse;
 import com.linguaoptima.api.dto.response.GenerationStatusResponse;
 import com.linguaoptima.api.dto.response.GroupTaskResponse;
 import com.linguaoptima.api.dto.response.PronunciationPackResponse;
@@ -969,5 +972,57 @@ public class TaskService {
             return generationProtectionService.getStatus(user.getId(), deviceId);
         }
         return GenerationStatusResponse.builder().isGenerating(false).isCurrentDevice(true).build();
+    }
+
+    /**
+     * @brief Generates pedagogical breakdown, translation, and grammar explanation for an English sentence.
+     * @param request Target sentence and context payload.
+     * @param user Authenticated user requesting the explanation.
+     * @return ExplainSentenceResponse containing structured translation and commentary.
+     */
+    public ExplainSentenceResponse explainSentence(ExplainSentenceRequest request, User user) {
+        if (request == null || request.getSentence() == null || request.getSentence().isBlank()) {
+            throw new IllegalArgumentException("Target sentence must not be blank.");
+        }
+
+        CefrLevel level = request.getCefrLevel() != null
+            ? request.getCefrLevel()
+            : (user != null && user.getCefrLevel() != null ? user.getCefrLevel() : CefrLevel.B1);
+
+        String prompt = PromptTemplates.buildSentenceExplanationPrompt(
+            request.getSentence(),
+            request.getContext(),
+            level.name()
+        );
+
+        String rawJson = aiBrokerService.generateTaskContent(prompt, user);
+        try {
+            JsonNode root = objectMapper.readTree(rawJson);
+            String orig = root.path("originalSentence").asText(request.getSentence());
+            String translation = root.path("translation").asText("Перевод недоступен");
+            String grammar = root.path("grammarBreakdown").asText("Базовая грамматическая структура");
+            String explanation = root.path("explanation").asText("Пояснение к предложению");
+            List<String> vocab = new ArrayList<>();
+            if (root.path("keyVocabulary").isArray()) {
+                root.path("keyVocabulary").forEach(v -> vocab.add(v.asText()));
+            }
+
+            return ExplainSentenceResponse.builder()
+                .originalSentence(orig)
+                .translation(translation)
+                .grammarBreakdown(grammar)
+                .keyVocabulary(vocab)
+                .explanation(explanation)
+                .build();
+        } catch (Exception e) {
+            log.warn("Failed to parse sentence explanation AI JSON: {}. Using fallback.", e.getMessage());
+            return ExplainSentenceResponse.builder()
+                .originalSentence(request.getSentence())
+                .translation("Перевод в контексте предложения")
+                .grammarBreakdown("Грамматический строй предложения")
+                .keyVocabulary(Collections.emptyList())
+                .explanation("Обратите внимание на структуру и взаимосвязь членов предложения.")
+                .build();
+        }
     }
 }

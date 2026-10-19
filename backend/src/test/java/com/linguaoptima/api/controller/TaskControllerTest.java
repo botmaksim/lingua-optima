@@ -5,6 +5,7 @@
 package com.linguaoptima.api.controller;
 
 import com.linguaoptima.api.domain.User;
+import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.dto.request.AssignTaskRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.response.TaskResponse;
@@ -149,5 +150,34 @@ class TaskControllerTest {
             taskController.getGenerationStatus("device-123", user);
         assertEquals(HttpStatus.OK, res.getStatusCode());
         assertEquals(statusResp, res.getBody());
+    }
+
+    /**
+     * @brief Verifies unit test scenario: explain sentence.
+     */
+    @Test
+    void testExplainSentence() {
+        com.linguaoptima.api.dto.request.ExplainSentenceRequest req =
+            com.linguaoptima.api.dto.request.ExplainSentenceRequest.builder()
+                .sentence("The passive voice was used.")
+                .cefrLevel(CefrLevel.B1)
+                .build();
+
+        com.linguaoptima.api.dto.response.ExplainSentenceResponse resp =
+            com.linguaoptima.api.dto.response.ExplainSentenceResponse.builder()
+                .originalSentence("The passive voice was used.")
+                .translation("Пассивный залог был использован.")
+                .grammarBreakdown("Past Simple Passive")
+                .keyVocabulary(List.of("used — использованный"))
+                .explanation("Страдательный залог.")
+                .build();
+
+        when(taskService.explainSentence(req, user)).thenReturn(resp);
+
+        ResponseEntity<com.linguaoptima.api.dto.response.ExplainSentenceResponse> res =
+            taskController.explainSentence(req, user);
+
+        assertEquals(HttpStatus.OK, res.getStatusCode());
+        assertEquals(resp, res.getBody());
     }
 }

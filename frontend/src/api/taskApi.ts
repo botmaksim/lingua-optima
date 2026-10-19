@@ -176,4 +176,19 @@ export const taskApi = {
     );
     return res.data;
   },
+
+  /**
+   * @brief Requests pedagogical breakdown, translation, and grammar explanation for an English sentence.
+   * @param req Request payload containing sentence, optional context, and CEFR level.
+   * @return Promise resolving to ExplainSentenceResponse.
+   */
+  explainSentence: async (
+    req: import('../types/task').ExplainSentenceRequest
+  ): Promise<import('../types/task').ExplainSentenceResponse> => {
+    const res = await axiosInstance.post<import('../types/task').ExplainSentenceResponse>(
+      '/tasks/explain-sentence',
+      req
+    );
+    return res.data;
+  },
 };
