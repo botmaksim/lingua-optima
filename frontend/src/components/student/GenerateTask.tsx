@@ -413,10 +413,10 @@ export const GenerateTask: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900">
-                Generating Custom CEFR {cefrLevel} Practice...
+                Creating your {cefrLevel} practice task...
               </h3>
               <p className="text-xs text-indigo-700 font-medium">
-                Engine: <span className="font-mono font-semibold">{provider} ({modelName})</span> · Topic: <span className="font-semibold">{grammarTopic}</span>
+                Model: <span className="font-mono font-semibold">{provider} · {modelName}</span> · Topic: <span className="font-semibold">{grammarTopic}</span>
               </p>
             </div>
           </div>
@@ -424,13 +424,13 @@ export const GenerateTask: React.FC = () => {
             <p className="flex items-center space-x-1.5">
               <Clock className="w-3.5 h-3.5 text-primary flex-shrink-0" />
               <span>
-                Applying CEFR {cefrLevel} pedagogical constraints and domain vocabulary...
+                Preparing exercises for level {cefrLevel}...
               </span>
             </p>
             {(customRule || customVocabulary) && (
               <p className="flex items-center space-x-1.5 text-emerald-700 font-medium">
                 <FileCheck className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                <span>Injecting custom pedagogical rule and target vocabulary context...</span>
+                <span>Applying custom rules and vocabulary...</span>
               </p>
             )}
           </div>
@@ -490,7 +490,7 @@ export const GenerateTask: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Cpu className="w-4 h-4 text-primary" />
               <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                AI Engine & Model Selection
+                Model Selection
               </span>
             </div>
             <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
@@ -606,7 +606,7 @@ export const GenerateTask: React.FC = () => {
             <div>
               <div className="flex items-center space-x-2">
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Eco Mode (Token Saver)
+                  Eco Mode
                 </h4>
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                   ecoMode ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-600'
@@ -616,8 +616,8 @@ export const GenerateTask: React.FC = () => {
               </div>
               <p className="text-[11px] text-slate-500 mt-0.5">
                 {ecoMode
-                  ? 'Omit verbose grammar rules & vocabulary lists from the AI prompt to accelerate generation and save quota.'
-                  : 'Inject detailed curriculum rules and target vocabulary into the AI generation prompt.'}
+                  ? 'Skip curriculum notes for faster generation and lower token usage.'
+                  : 'Include curriculum rules and target vocabulary in generation.'}
               </p>
             </div>
           </div>
@@ -651,13 +651,13 @@ export const GenerateTask: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Advanced Context: Inject Custom Rules, Specific Word Lists, or Textbook Files (Optional)
+                  Custom Rules & Reference Files
                 </h3>
                 <p className="text-[11px] text-slate-500">
                   {ecoMode ? (
                     <span className="flex items-center gap-1 text-emerald-600 font-semibold">
                       <Leaf className="w-3.5 h-3.5" />
-                      <span>Eco Mode is active: curriculum context will be skipped during generation</span>
+                      <span>Eco Mode active: reference materials will be skipped during generation</span>
                     </span>
                   ) : uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary ? (
                     <span className="flex items-center gap-1 text-indigo-600 font-semibold">
@@ -665,7 +665,7 @@ export const GenerateTask: React.FC = () => {
                       <span>Custom rules or vocabulary active</span>
                     </span>
                   ) : (
-                    <span>By default, AI uses CEFR standards for the Topic & Domain selected above. Use this section only to inject specific textbook rules or words.</span>
+                    <span>The system uses standard CEFR guidelines for the selected topic. Use this section to add specific textbook rules or words.</span>
                   )}
                 </p>
               </div>
@@ -679,7 +679,7 @@ export const GenerateTask: React.FC = () => {
             <div className="p-4 sm:p-5 border-t border-slate-200/80 bg-white space-y-4 animate-in fade-in duration-200">
               <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
                 <span className="text-xs text-slate-600 font-medium">
-                  Provide exact target rules and vocabulary for the AI engine:
+                  Provide specific target rules and vocabulary:
                 </span>
                 <button
                   type="button"
@@ -688,7 +688,7 @@ export const GenerateTask: React.FC = () => {
                   className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-50"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>{isLoadingRef ? 'Loading Reference...' : 'Auto-Fill Canonical Reference'}</span>
+                  <span>{isLoadingRef ? 'Loading Reference...' : 'Load Standard Reference'}</span>
                 </button>
               </div>
 

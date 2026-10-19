@@ -153,7 +153,7 @@ export const ProfilePage: React.FC = () => {
       const updated = await authApi.updateProfile({ cefrLevel: level });
       setUser(updated);
       setProfileMessage({
-        text: `Proficiency level successfully updated to ${level} (${CEFR_LEVEL_METADATA[level].title}).`,
+        text: `Proficiency level successfully updated to ${level} · ${CEFR_LEVEL_METADATA[level].title}.`,
         type: 'success',
       });
       setTimeout(() => setProfileMessage(null), 3500);
@@ -494,7 +494,7 @@ export const ProfilePage: React.FC = () => {
               • <strong>Role Switching:</strong> Any user can toggle between Student and Educator mode with a single click using the switch above.
             </p>
             <p className="leading-relaxed">
-              • <strong>Creating Cohorts:</strong> Navigate to <a href="/groups" className="text-primary font-bold hover:underline">Cohorts (/groups)</a>, click "Create Cohort", and enter a class name (e.g. "IELTS 2026 Group A").
+              • <strong>Creating Cohorts:</strong> Navigate to <a href="/groups" className="text-primary font-bold hover:underline">Cohorts</a>, click "Create Cohort", and enter a class name (e.g. "IELTS 2026 Group A").
             </p>
             <p className="leading-relaxed">
               • <strong>Deploying Tasks:</strong> In the Task Configurator, select your target cohort and click "Deploy Task". All enrolled students will receive the assignment with deadline tracking.
@@ -523,7 +523,7 @@ export const ProfilePage: React.FC = () => {
         <div>
           <div className="flex items-center space-x-2">
             <Key className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold text-slate-900">Custom AI Provider & Model Keys (BYOK)</h2>
+            <h2 className="text-lg font-bold text-slate-900">Custom Provider & Model Keys · BYOK</h2>
           </div>
           <p className="text-xs text-slate-500 mt-1">
             Provide your personal API keys and choose your preferred model to bypass default daily limits. Stored safely with AES-256-GCM encryption.

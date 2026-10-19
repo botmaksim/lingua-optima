@@ -469,7 +469,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div className="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg">
               <div className="text-lg font-bold text-emerald-400">{evaluationResult.accuracyScore}%</div>
-              <div className="text-[11px] text-emerald-300/80">Accuracy ({evaluationResult.correctCount}/{evaluationResult.totalWords})</div>
+              <div className="text-[11px] text-emerald-300/80">Accuracy · {evaluationResult.correctCount}/{evaluationResult.totalWords}</div>
             </div>
             <div className="bg-indigo-500/10 border border-indigo-500/20 p-2.5 rounded-lg">
               <div className="flex items-center justify-center gap-1 text-lg font-bold text-indigo-400">
@@ -477,7 +477,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                 <span>{evaluationResult.wpm}</span>
                 <span className="text-xs font-normal text-indigo-300">WPM</span>
               </div>
-              <div className="text-[11px] text-indigo-300/80">Pacing ({evaluationResult.pacingScore}%)</div>
+              <div className="text-[11px] text-indigo-300/80">Pacing Score · {evaluationResult.pacingScore}%</div>
             </div>
             <div className="bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg">
               <div className="text-lg font-bold text-rose-400">{evaluationResult.mispronouncedCount}</div>

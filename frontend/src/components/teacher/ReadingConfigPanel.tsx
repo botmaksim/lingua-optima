@@ -100,7 +100,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="text-sm font-black text-slate-900 tracking-tight">
-                Reading Comprehension Studio
+                Reading Practice
               </h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
                 CEFR {cefrLevel}
@@ -108,8 +108,8 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
             </div>
             <p className="text-xs text-slate-500">
               {isStudent
-                ? 'Generate a reading passage with your preferred question types or a surprise mix'
-                : 'Configure reading passage parameters, question distribution, and scoring weights'}
+                ? 'Choose your preferred question formats or use a random mix'
+                : 'Set passage parameters, question types, and scoring weights'}
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Reading Assignment Title (Optional)
+            Assignment Title
           </label>
           <input
             type="text"
@@ -144,13 +144,13 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
           />
           <p className="text-[11px] text-slate-400 mt-1">
-            Leave blank to automatically derive from the grammar/thematic topic.
+            Leave blank to use the selected topic name.
           </p>
         </div>
 
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Target Vocabulary & Collocations (Optional)
+            Target Vocabulary
           </label>
           <input
             type="text"
@@ -160,7 +160,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
           />
           <p className="text-[11px] text-slate-400 mt-1">
-            Comma-separated words that the neural network will weave into the passage.
+            Words to include in the passage, separated by commas.
           </p>
         </div>
       </div>
@@ -169,7 +169,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Passage Length / Volume
+            Passage Length
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {LENGTH_PRESETS.map((preset) => {
@@ -224,7 +224,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
 
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Paragraph Structure & Narrative Focus
+            Paragraph Structure
           </label>
           <input
             type="text"
@@ -234,7 +234,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
           />
           <p className="text-[11px] text-slate-400 mt-1">
-            Guides the structure and flow of the generated text paragraphs.
+            Guides the structure and flow of the text.
           </p>
         </div>
       </div>
@@ -263,7 +263,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-primary" />
-              <span>Surprise Me (Random Mix)</span>
+              <span>Random Mix</span>
             </button>
 
             <button
@@ -290,10 +290,10 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900">
-                  Randomized Balanced Question Mix Active
+                  Random Question Mix
                 </h4>
                 <p className="text-[11px] text-slate-500">
-                  Selected mix: {config.mcqQuestionsCount} Multiple Choice, {config.trueFalseQuestionsCount} True/False, {config.openQuestionsCount} Sentence Completion ({totalQuestions} questions total)
+                  Mix: {config.mcqQuestionsCount} Multiple Choice, {config.trueFalseQuestionsCount} True/False, {config.openQuestionsCount} Sentence Completion · {totalQuestions} questions
                 </p>
               </div>
             </div>
@@ -304,7 +304,7 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
               className="flex items-center space-x-1.5 text-xs font-bold text-primary hover:text-primary-hover bg-white hover:bg-slate-50 px-3 py-1.5 rounded-xl border border-indigo-200 transition shadow-xs self-start sm:self-auto"
             >
               <Shuffle className="w-3.5 h-3.5" />
-              <span>Re-roll Random Mix</span>
+              <span>Shuffle Mix</span>
             </button>
           </div>
         ) : null}

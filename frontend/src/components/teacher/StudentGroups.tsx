@@ -720,7 +720,7 @@ export const StudentGroups: React.FC = () => {
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-3">
                 <div className="flex items-center space-x-2 text-xs font-bold text-slate-700">
                   <UserPlus className="w-4 h-4 text-primary" />
-                  <span>Add Student by Email (Re-activation restores progress)</span>
+                  <span>Add Student by Email</span>
                 </div>
                 <form onSubmit={handleAddStudent} className="flex gap-2">
                   <div className="relative flex-1">
@@ -753,7 +753,7 @@ export const StudentGroups: React.FC = () => {
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-amber-900 uppercase tracking-wider flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Pending Invitations ({selectedGroup.pendingStudents.length})</span>
+                      <span>Pending Invitations · {selectedGroup.pendingStudents.length}</span>
                     </h3>
                   </div>
 
@@ -879,8 +879,8 @@ export const StudentGroups: React.FC = () => {
                         onChange={(e) => setStudentSortBy(e.target.value as any)}
                         className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                       >
-                        <option value="name_asc">Sort: Name (A-Z)</option>
-                        <option value="name_desc">Sort: Name (Z-A)</option>
+                        <option value="name_asc">Sort: Name A–Z</option>
+                        <option value="name_desc">Sort: Name Z–A</option>
                         <option value="level">Sort: Highest CEFR</option>
                       </select>
                     </div>
@@ -1300,7 +1300,7 @@ export const StudentGroups: React.FC = () => {
                       }`}>
                         {!transferKeepInSource && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
                       </span>
-                      <span className="text-xs font-bold text-slate-800">Move (Default)</span>
+                      <span className="text-xs font-bold text-slate-800">Move</span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1 leading-normal pl-5">
                       Transfers task to new cohort. Removes unstarted assignments from current cohort while preserving completed grades.
@@ -1335,7 +1335,7 @@ export const StudentGroups: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">
-                    Due Date (Optional)
+                    Due Date
                   </label>
                   <input
                     type="datetime-local"
@@ -1354,7 +1354,7 @@ export const StudentGroups: React.FC = () => {
                     onChange={(e) => setTransferMaxAttempts(Number(e.target.value))}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                   >
-                    <option value={1}>1 Attempt (Default)</option>
+                    <option value={1}>1 Attempt</option>
                     <option value={0}>∞ Unlimited Attempts</option>
                   </select>
                 </div>

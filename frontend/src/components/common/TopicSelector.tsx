@@ -215,7 +215,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
   // Build grouped options for CustomSelect
   const topicGroups: SelectOptionGroup[] = [
     {
-      label: `Core Syllabus (CEFR ${cefrLevel})`,
+      label: `Core Syllabus · ${cefrLevel}`,
       options: currentLevelTopics.map((t) => ({
         value: t,
         label: t,
@@ -225,7 +225,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
     ...(currentLevelMixedTopics.length > 0
       ? [
           {
-            label: `Mixed Challenges (CEFR ${cefrLevel})`,
+            label: `Mixed Challenges · ${cefrLevel}`,
             options: currentLevelMixedTopics.map((t) => ({
               value: t,
               label: t,

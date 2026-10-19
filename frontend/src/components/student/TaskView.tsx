@@ -277,17 +277,17 @@ export const TaskView: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900">
-                Evaluating Answers with Pedagogical AI...
+                Checking your answers...
               </h3>
               <p className="text-xs text-indigo-700 font-medium">
-                Verifying grammatical accuracy, rule compliance, and formulating corrections.
+                Reviewing grammatical accuracy and preparing detailed explanations.
               </p>
             </div>
           </div>
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-3 border border-indigo-100 text-xs text-slate-600 space-y-1.5 leading-relaxed">
             <p className="flex items-center space-x-1.5">
               <Clock className="w-3.5 h-3.5 text-primary flex-shrink-0" />
-              <span>Checking grammar typically takes <strong>5–15 seconds</strong>. Please do not close this page.</span>
+              <span>Reviewing typically takes <strong>5–15 seconds</strong>. Please keep this tab open.</span>
             </p>
           </div>
         </div>
@@ -302,7 +302,7 @@ export const TaskView: React.FC = () => {
             <div className="space-y-1.5 flex-1">
               <h3 className="text-sm font-bold text-slate-900">
                 {submitError.toLowerCase().includes('queue') || submitError.toLowerCase().includes('temporarily')
-                  ? 'AI Service Queue · High Demand'
+                  ? 'Service Temporarily Busy'
                   : 'Submission Error'}
               </h3>
               <p className="text-xs text-slate-600 leading-relaxed">
@@ -315,7 +315,7 @@ export const TaskView: React.FC = () => {
                   className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Retry Evaluation</span>
+                  <span>Retry</span>
                 </button>
                 <button
                   type="button"
@@ -429,7 +429,7 @@ export const TaskView: React.FC = () => {
                     onClick={decreaseFontSize}
                     disabled={readingFontSize === 'sm'}
                     className="px-2 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 disabled:opacity-30 transition rounded-lg hover:bg-white"
-                    title="Decrease font size (A-)"
+                    title="Decrease font size"
                     aria-label="Decrease font size"
                   >
                     A-
@@ -442,7 +442,7 @@ export const TaskView: React.FC = () => {
                     onClick={increaseFontSize}
                     disabled={readingFontSize === 'xl'}
                     className="px-2 py-1 text-xs font-bold text-slate-600 hover:text-slate-900 disabled:opacity-30 transition rounded-lg hover:bg-white"
-                    title="Increase font size (A+)"
+                    title="Increase font size"
                     aria-label="Increase font size"
                   >
                     A+

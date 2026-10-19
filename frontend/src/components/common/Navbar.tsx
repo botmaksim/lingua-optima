@@ -170,7 +170,7 @@ export const Navbar: React.FC = () => {
   ];
 
   const studentMoreLinks = [
-    { to: '/student/essay', label: 'Essay Studio', icon: FileText, description: 'AI writing & feedback' },
+    { to: '/student/essay', label: 'Essay Writing', icon: FileText, description: 'Writing practice & feedback' },
     { to: '/student/ocr', label: 'Photo OCR', icon: Camera, description: 'Scan handwritten tasks' },
     { to: '/student/session', label: 'Adaptive CAT', icon: Zap, description: 'Personalized testing' },
     { to: '/student/my-units', label: 'My Units', icon: BookOpen, description: 'Curriculum & vocabulary' },

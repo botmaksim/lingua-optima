@@ -281,7 +281,7 @@ export const ConfigureTask: React.FC = () => {
       setRefNotice(
         ref.source === 'CANONICAL'
           ? 'Loaded canonical curriculum rules & vocabulary from server repository!'
-          : 'Synthesized reference curriculum aligned with CEFR standards.'
+          : 'Standard reference curriculum aligned with CEFR standards.'
       );
       setShowCurriculumPanel(true);
     } catch (err: any) {
@@ -794,7 +794,7 @@ export const ConfigureTask: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <Cpu className="w-4 h-4 text-primary" />
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  AI Engine & Model
+                  Model Selection
                 </span>
               </div>
               <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
@@ -978,7 +978,7 @@ export const ConfigureTask: React.FC = () => {
               <div>
                 <div className="flex items-center space-x-2">
                   <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    Eco Mode (Token Saver)
+                    Eco Mode
                   </h4>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                     ecoMode ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-600'
@@ -988,8 +988,8 @@ export const ConfigureTask: React.FC = () => {
                 </div>
                 <p className="text-[11px] text-slate-500 mt-0.5">
                   {ecoMode
-                    ? 'Omit verbose grammar rules & vocabulary lists from prompt to accelerate generation and conserve quota.'
-                    : 'Inject detailed curriculum rules and target vocabulary into the assignment generation prompt.'}
+                    ? 'Skip curriculum notes for faster generation and lower token usage.'
+                    : 'Include curriculum rules and target vocabulary in generation.'}
                 </p>
               </div>
             </div>
@@ -1023,13 +1023,13 @@ export const ConfigureTask: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    Curriculum Rules & Vocabulary Context (Optional)
+                    Curriculum Rules & Target Vocabulary
                   </h3>
                   <p className="text-[11px] text-slate-500">
                     {ecoMode ? (
                       <span className="flex items-center gap-1 text-emerald-600 font-semibold">
                         <Leaf className="w-3.5 h-3.5" />
-                        <span>Eco Mode is active: curriculum context will be skipped during generation</span>
+                        <span>Eco Mode active: reference materials will be skipped during generation</span>
                       </span>
                     ) : uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary ? (
                       <span className="flex items-center gap-1 text-indigo-600 font-semibold">
@@ -1037,7 +1037,7 @@ export const ConfigureTask: React.FC = () => {
                         <span>Custom rules or vocabulary active</span>
                       </span>
                     ) : (
-                      <span>Attach lesson rules, target vocabulary, or upload reference files (.txt, .md, .json)</span>
+                      <span>Attach lesson rules, target vocabulary, or upload reference files</span>
                     )}
                   </p>
                 </div>
@@ -1307,7 +1307,7 @@ export const ConfigureTask: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Submission Due Date (Optional)
+                Submission Due Date
               </label>
               <input
                 type="datetime-local"
@@ -1548,7 +1548,7 @@ export const ConfigureTask: React.FC = () => {
                     {previewTask.type === 'SPEAKING'
                       ? 'Oral Reading Passage (Editable by Teacher)'
                       : previewTask.type === 'READING'
-                      ? 'Reading Comprehension Passage (Editable by Teacher)'
+                      ? 'Reading Passage (Editable)'
                       : 'Exercise Instructions / Reading Passage'}
                   </label>
                   <div className="flex items-center space-x-2">
@@ -1557,10 +1557,10 @@ export const ConfigureTask: React.FC = () => {
                         type="button"
                         onClick={() => speakText(previewTask.content)}
                         className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition"
-                        title="Listen to synthesized pronunciation of passage"
+                        title="Listen to pronunciation of passage"
                       >
                         <Volume2 className="w-3.5 h-3.5" />
-                        <span>Listen Passage</span>
+                        <span>Listen</span>
                       </button>
                     )}
                     {(previewTask.type === 'READING' || previewTask.type === 'SPEAKING') && (

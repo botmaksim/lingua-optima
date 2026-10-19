@@ -262,7 +262,7 @@ describe('AIReview component', () => {
     expect(await screen.findByText('Submission Results')).toBeInTheDocument();
     expect(screen.getByText('50% Attempt Accuracy')).toBeInTheDocument();
     expect(screen.getByText('1/2 answered · 1 skipped')).toBeInTheDocument();
-    expect(screen.getByText('Skipped (0 pts)')).toBeInTheDocument();
+    expect(screen.getByText('Skipped · 0 pts')).toBeInTheDocument();
     expect(screen.getByText('No answer submitted')).toBeInTheDocument();
 
     // Check mutual exclusivity: Conditional 1 in weaknesses and recommendation, Conditional 0 in strengths
@@ -966,13 +966,13 @@ describe('ExportReports component', () => {
     expect(screen.getByText('Pending')).toBeInTheDocument();
 
     // Switch to Student Roster tab
-    const rosterTabBtn = screen.getByRole('button', { name: /student roster overview/i });
+    const rosterTabBtn = screen.getByRole('button', { name: /student roster/i });
     fireEvent.click(rosterTabBtn);
     expect(await screen.findByText('alice@example.com')).toBeInTheDocument();
     expect(screen.getByText('bob@example.com')).toBeInTheDocument();
 
     // Trigger download
-    const downloadBtn = screen.getByRole('button', { name: /download report \(pdf\)/i });
+    const downloadBtn = screen.getByRole('button', { name: /download report/i });
     fireEvent.click(downloadBtn);
 
     await waitFor(() => {
@@ -1186,7 +1186,7 @@ describe('ReadingConfigPanel component', () => {
       />
     );
 
-    expect(screen.getByText(/Reading Comprehension Studio/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reading Practice/i)).toBeInTheDocument();
     expect(screen.getByDisplayValue('Renewable Power Evolution')).toBeInTheDocument();
     expect(screen.getByDisplayValue('grid, solar, turbine')).toBeInTheDocument();
 
@@ -1463,7 +1463,7 @@ describe('SpeakingConfigPanel component', () => {
     );
 
     // Educator header is visible
-    expect(screen.getByText('Speaking Practice Studio')).toBeInTheDocument();
+    expect(screen.getByText('Speaking Practice')).toBeInTheDocument();
     expect(screen.getByText('Total Points for Pronunciation')).toBeInTheDocument();
 
     // Change title
@@ -1472,12 +1472,12 @@ describe('SpeakingConfigPanel component', () => {
     expect(handleTitleChange).toHaveBeenCalledWith('New Speaking Exercise');
 
     // Click another target sound preset (Liquids)
-    const liquidPresetBtn = screen.getByText('Liquids (/r/ vs /l/)');
+    const liquidPresetBtn = screen.getByText('Liquids: /r/ vs /l/');
     fireEvent.click(liquidPresetBtn);
     expect(handleSoundsChange).toHaveBeenCalledWith(TARGET_SOUND_PRESETS[1].value);
 
     // Change length preset
-    const shortLengthBtn = screen.getByText('Short Drill (30–50 words)');
+    const shortLengthBtn = screen.getByText('Short Drill');
     fireEvent.click(shortLengthBtn);
     expect(handleLengthChange).toHaveBeenCalledWith('SHORT');
 
@@ -1507,7 +1507,7 @@ describe('SpeakingConfigPanel component', () => {
       />
     );
 
-    expect(screen.getByText('Speaking & Pronunciation Studio')).toBeInTheDocument();
+    expect(screen.getByText('Speaking Practice')).toBeInTheDocument();
     expect(screen.queryByText('Assignment Points (Max Score)')).not.toBeInTheDocument();
   });
 });

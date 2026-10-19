@@ -194,7 +194,7 @@ export const AdaptiveSession: React.FC = () => {
             className="flex-1 sm:flex-initial py-3 px-5 rounded-2xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition flex items-center justify-center space-x-2"
           >
             <FileText className="w-4 h-4" />
-            <span>Essay Studio</span>
+            <span>Essay Practice</span>
           </button>
           <button
             onClick={() => navigate('/student')}

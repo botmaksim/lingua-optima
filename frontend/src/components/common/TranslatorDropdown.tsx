@@ -326,7 +326,7 @@ export const TranslatorDropdown: React.FC = () => {
                 className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center justify-center space-x-1.5 shadow-sm"
               >
                 <RotateCcw className="w-3.5 h-3.5 text-slate-200" />
-                <span>Show Original (English)</span>
+                <span>Show Original English</span>
               </button>
             )}
           </div>

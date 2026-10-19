@@ -133,8 +133,8 @@ export const Dashboard: React.FC = () => {
       action: () => navigate('/student/generate'),
     },
     {
-      title: 'Essay Studio',
-      description: 'Write academic essays evaluated by IELTS rubrics (Task, Coherence, Lexicon, Grammar).',
+      title: 'Essay Practice',
+      description: 'Write academic essays with instant rubric scoring and detailed feedback.',
       badge: 'IELTS Rubric',
       icon: FileText,
       color: 'from-sky-500 to-indigo-600 text-sky-600',
@@ -292,7 +292,7 @@ export const Dashboard: React.FC = () => {
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900">{gaps.length} Topics</div>
-            <p className="text-xs text-slate-500 font-medium">Areas Needing Attention (&lt;60%)</p>
+            <p className="text-xs text-slate-500 font-medium">Areas for Review · &lt;60%</p>
           </div>
         </div>
       </div>

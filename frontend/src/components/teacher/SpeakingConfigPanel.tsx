@@ -14,11 +14,11 @@ import { speakWord } from '../../utils/phonetics';
  * @brief Predefined target phoneme focus options for speaking exercises.
  */
 export const TARGET_SOUND_PRESETS = [
-  { label: 'Dental Fricatives (/θ/, /ð/)', value: '/θ/ and /ð/ (think, this, thought, breathe)', title: 'Th-Sounds (/θ/ and /ð/)', example: 'think, this, thought, breathe' },
-  { label: 'Liquids (/r/ vs /l/)', value: '/r/ vs /l/ (right, light, red, led, raw, law)', title: 'R & L Contrast (/r/ vs /l/)', example: 'right, light, red, led, raw, law' },
-  { label: 'Labials (/v/ vs /w/)', value: '/v/ vs /w/ (very, wary, vine, wine, vest, west)', title: 'V & W Contrast (/v/ vs /w/)', example: 'very, wary, vine, wine, vest, west' },
-  { label: 'Vowel Length (/iː/ vs /ɪ/)', value: '/iː/ vs /ɪ/ (sheep, ship, seat, sit, beat, bit)', title: 'Long vs Short Vowels (/iː/ vs /ɪ/)', example: 'sheep vs ship, seat vs sit' },
-  { label: 'Sibilants & Affricates (/s/, /ʃ/, /tʃ/)', value: '/s/, /ʃ/, /tʃ/ (sea, she, chip, cheap, wash, watch)', title: 'S, Sh & Ch (/s/, /ʃ/, /tʃ/)', example: 'sea, she, chip, cheap, watch' },
+  { label: 'Dental Fricatives: /θ/, /ð/', value: '/θ/ and /ð/ (think, this, thought, breathe)', title: 'Th-Sounds (/θ/ and /ð/)', example: 'think, this, thought, breathe' },
+  { label: 'Liquids: /r/ vs /l/', value: '/r/ vs /l/ (right, light, red, led, raw, law)', title: 'R & L Contrast (/r/ vs /l/)', example: 'right, light, red, led, raw, law' },
+  { label: 'Labials: /v/ vs /w/', value: '/v/ vs /w/ (very, wary, vine, wine, vest, west)', title: 'V & W Contrast (/v/ vs /w/)', example: 'very, wary, vine, wine, vest, west' },
+  { label: 'Vowel Length: /iː/ vs /ɪ/', value: '/iː/ vs /ɪ/ (sheep, ship, seat, sit, beat, bit)', title: 'Long vs Short Vowels (/iː/ vs /ɪ/)', example: 'sheep vs ship, seat vs sit' },
+  { label: 'Sibilants & Affricates: /s/, /ʃ/, /tʃ/', value: '/s/, /ʃ/, /tʃ/ (sea, she, chip, cheap, wash, watch)', title: 'S, Sh & Ch (/s/, /ʃ/, /tʃ/)', example: 'sea, she, chip, cheap, watch' },
   { label: 'Silent Letters & Irregular Words', value: 'Silent consonants (comfortable, island, subtle, receipt, doubt, listen)', title: 'Silent Letters & Reductions', example: 'comfortable, island, subtle, receipt' },
   { label: 'General Fluency & Rhythm', value: 'Natural Connected Speech, Linking & Sentence Stress', title: 'Connected Speech & Natural Rhythm', example: 'linking sounds, weak forms, sentence stress' },
 ] as const;
@@ -27,10 +27,10 @@ export const TARGET_SOUND_PRESETS = [
  * @brief Length presets for speaking exercises.
  */
 export const SPEAKING_LENGTH_PRESETS = [
-  { label: 'Short Drill (30–50 words)', value: 'SHORT', words: '30–50 words', desc: '2–3 focused sentences. Ideal for sound drills and quick testing.' },
-  { label: 'Medium Passage (60–90 words)', value: 'MEDIUM', words: '60–90 words', desc: '1 rich paragraph. Balanced fluency, rhythm, and natural discourse.' },
-  { label: 'Long Speech (120–180 words)', value: 'LONG', words: '120–180 words', desc: '2–3 paragraphs. Continuous discourse and complex prosody.' },
-  { label: 'Custom', value: 'CUSTOM', words: 'Custom length', desc: 'Specify custom word count, scenario, or exact sentences to drill.' },
+  { label: 'Short Drill', value: 'SHORT', words: '30–50 words', desc: '2–3 focused sentences for sound drills.' },
+  { label: 'Medium Passage', value: 'MEDIUM', words: '60–90 words', desc: '1 rich paragraph for fluency and natural rhythm.' },
+  { label: 'Long Speech', value: 'LONG', words: '120–180 words', desc: '2–3 paragraphs for sustained discourse.' },
+  { label: 'Custom', value: 'CUSTOM', words: 'Custom length', desc: 'Specify custom word count and topic guidelines.' },
 ] as const;
 
 interface SpeakingConfigPanelProps {
@@ -99,16 +99,16 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <h3 className="text-sm font-black text-slate-900 tracking-tight">
-                {isStudent ? 'Speaking & Pronunciation Studio' : 'Speaking Practice Studio'}
+                Speaking Practice
               </h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
-                Acoustic WPM & Fluency
+                Pronunciation & Pace
               </span>
             </div>
             <p className="text-xs text-slate-500">
               {isStudent
-                ? 'Generate an authentic speech passage to read aloud into your microphone'
-                : 'Configure AI speech generation parameters, sound contrasts, and grading weights'}
+                ? 'Read the passage aloud into your microphone to practice pronunciation and pace'
+                : 'Configure speech topics, target sounds, and grading'}
             </p>
           </div>
         </div>
@@ -131,7 +131,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
       {/* Assignment Title */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-          Assignment Title (Optional)
+          Assignment Title
         </label>
         <input
           type="text"
@@ -141,7 +141,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
         />
         <p className="text-[11px] text-slate-400 mt-1">
-          Leave blank to automatically derive from the selected phonetic focus.
+          Leave blank to use the target sound focus as the title.
         </p>
       </div>
 
@@ -149,7 +149,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
-            <span>Target Sounds & Phonetic Focus</span>
+            <span>Target Sounds</span>
             <span title="Select specific sound contrasts or enter custom phonemes">
               <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
             </span>
@@ -186,7 +186,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-600 flex items-center space-x-1">
               <Edit3 className="w-3 h-3 text-primary" />
-              <span>Selected Sound Focus & Drill Words (Freely Editable):</span>
+              <span>Target Sounds and Words:</span>
             </span>
           </div>
           <input
@@ -202,7 +202,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
       {/* Passage Length Presets */}
       <div className="space-y-3">
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-          Passage Length & Drill Scope
+          Passage Length
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {SPEAKING_LENGTH_PRESETS.map((preset) => {
@@ -236,9 +236,9 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span>Custom Passage Length & Specific Instructions</span>
+                <span>Custom Length & Instructions</span>
               </label>
-              <span className="text-[11px] text-slate-500 font-medium">15 to 300 words</span>
+              <span className="text-[11px] text-slate-500 font-medium">15–300 words</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

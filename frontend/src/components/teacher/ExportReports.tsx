@@ -313,7 +313,7 @@ export const ExportReports: React.FC = () => {
             ) : (
               <>
                 <Download className="w-4 h-4" />
-                <span>Download Report ({format.toUpperCase()})</span>
+                <span>Download Report · {format.toUpperCase()}</span>
               </>
             )}
           </button>
@@ -447,7 +447,7 @@ export const ExportReports: React.FC = () => {
                 }`}
               >
                 <BookOpen className="w-4 h-4" />
-                <span>Homework Assignments Breakdown ({previewData.homeworkReports.length})</span>
+                <span>Homework Assignments · {previewData.homeworkReports.length}</span>
               </button>
 
               <button
@@ -460,7 +460,7 @@ export const ExportReports: React.FC = () => {
                 }`}
               >
                 <Users className="w-4 h-4" />
-                <span>Student Roster Overview ({previewData.studentSummaries.length})</span>
+                <span>Student Roster · {previewData.studentSummaries.length}</span>
               </button>
             </div>
 

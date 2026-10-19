@@ -96,7 +96,7 @@ export const UpgradeWall: React.FC = () => {
           >
             <div className="flex items-center gap-2.5">
               <Key className="w-4 h-4 text-slate-500" />
-              <span className="text-xs sm:text-sm">Bring Your Own API Key (BYOK)</span>
+              <span className="text-xs sm:text-sm">Custom API Key · BYOK</span>
             </div>
             <span className="text-[10px] uppercase font-bold text-slate-400 bg-slate-200/70 px-2 py-0.5 rounded-md">Free</span>
           </button>

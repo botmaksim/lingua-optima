@@ -79,7 +79,7 @@ export const Progress: React.FC = () => {
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900">{masteredTopics.length} Topics</div>
-            <p className="text-xs text-slate-500 font-medium">Mastered (&ge;85%)</p>
+            <p className="text-xs text-slate-500 font-medium">Mastered · &ge;85%</p>
           </div>
         </div>
 
@@ -89,7 +89,7 @@ export const Progress: React.FC = () => {
           </div>
           <div>
             <div className="text-2xl font-black text-slate-900">{weakTopics.length} Topics</div>
-            <p className="text-xs text-slate-500 font-medium">Needing Revision (&lt;60%)</p>
+            <p className="text-xs text-slate-500 font-medium">Needs Practice · &lt;60%</p>
           </div>
         </div>
       </div>

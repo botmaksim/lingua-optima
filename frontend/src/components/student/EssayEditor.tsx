@@ -84,7 +84,7 @@ export const EssayEditor: React.FC = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Essay Studio</h1>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Essay Practice</h1>
           <p className="text-sm text-slate-500 mt-1">
             Write your essay. Evaluated on Task Achievement, Coherence, Lexical Resource, and Grammatical Range.
           </p>
@@ -137,7 +137,7 @@ export const EssayEditor: React.FC = () => {
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-900">
-                Evaluating Essay with IELTS/Cambridge Rubric...
+                Reviewing essay against scoring criteria...
               </h3>
               <p className="text-xs text-indigo-700 font-medium">
                 Scoring Task Achievement, Coherence, Lexical Resource, and Grammatical Range.
