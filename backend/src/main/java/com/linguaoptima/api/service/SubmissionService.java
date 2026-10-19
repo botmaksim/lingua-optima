@@ -537,16 +537,14 @@ public class SubmissionService {
         }
 
         // 2. Check Task Questions (MCQ, GAP_FILL, REWRITE, READING, etc.)
-        if (items.isEmpty()) {
-            Task task = null;
-            if (submission.getAssignment() != null && submission.getAssignment().getTask() != null) {
-                task = submission.getAssignment().getTask();
-            } else if (response.getTaskId() != null) {
-                task = taskRepository.findById(response.getTaskId()).orElse(null);
-            }
-            if (task != null) {
-                enrichFromTaskQuestions(task, submission.getStudentText(), items, rawWeaknesses, rawStrengths, aiItemsMap);
-            }
+        Task task = null;
+        if (submission.getAssignment() != null && submission.getAssignment().getTask() != null) {
+            task = submission.getAssignment().getTask();
+        } else if (response.getTaskId() != null) {
+            task = taskRepository.findById(response.getTaskId()).orElse(null);
+        }
+        if (items.isEmpty() && task != null) {
+            enrichFromTaskQuestions(task, submission.getStudentText(), items, rawWeaknesses, rawStrengths, aiItemsMap);
         }
 
         // 3. Extract from Rubric
@@ -569,7 +567,13 @@ public class SubmissionService {
                 ? Math.round(((double) earnedWeight / totalWeight) * 1000.0) / 10.0
                 : 0.0;
 
-            if (submission.getOverrideScore() == null) {
+            boolean isSpeaking = (task != null && task.getType() == TaskType.SPEAKING)
+                    || (submission.getStudentText() != null && submission.getStudentText().startsWith("[SPEAKING_PRACTICE]"));
+
+            if (isSpeaking && submission.getAiScore() != null) {
+                response.setScore(submission.getAiScore());
+                response.setEffectiveScore(submission.getOverrideScore() != null ? submission.getOverrideScore() : submission.getAiScore());
+            } else if (submission.getOverrideScore() == null) {
                 if (submission.getAiScore() != null) {
                     submission.setAiScore(objectiveScore);
                     try {
@@ -732,6 +736,20 @@ public class SubmissionService {
     }
 
     /**
+     * @brief Extracts spoken transcript text from formatted speaking practice submissions.
+     * @param text Raw student submission text.
+     * @return Extracted transcript or empty string if not found.
+     */
+    private String extractTranscript(String text) {
+        if (text == null) return "";
+        int idx = text.indexOf("Spoken Transcript:");
+        if (idx == -1) return "";
+        String rest = text.substring(idx + "Spoken Transcript:".length()).trim();
+        int end = rest.indexOf("\n\n");
+        return end != -1 ? rest.substring(0, end).trim() : rest.trim();
+    }
+
+    /**
      * @brief Checks if student text contains explicit question number indicators (e.g. Q1:, Question 1:, Q2.).
      * @param text Student text.
      * @return True if question indicators are detected.
@@ -821,15 +839,6 @@ public class SubmissionService {
                 || task.getType() == TaskType.OPEN_BRACKETS || task.getType() == TaskType.SHORT_ANSWER
                 || task.getType() == TaskType.READING;
 
-            boolean isCorrect;
-            if (isMatch) {
-                isCorrect = true;
-            } else if (!isSkipped && isOpenEnded && aiItem != null && aiItem.isCorrect()) {
-                isCorrect = true;
-            } else {
-                isCorrect = false;
-            }
-
             String rule = q.getGrammarRule() != null && !q.getGrammarRule().isBlank()
                 ? q.getGrammarRule()
                 : (task.getGrammarTopic() != null ? task.getGrammarTopic() : "Grammar");
@@ -840,7 +849,25 @@ public class SubmissionService {
             String explanation = explanations.get(qOrder);
             if (aiItem != null && aiItem.getExplanation() != null && !aiItem.getExplanation().isBlank()) {
                 explanation = aiItem.getExplanation();
-            } else if (explanation == null || explanation.isBlank()) {
+            }
+
+            boolean isSpeaking = task.getType() == TaskType.SPEAKING
+                    || (studentText != null && studentText.startsWith("[SPEAKING_PRACTICE]"));
+
+            boolean isCorrect;
+            if (isSpeaking) {
+                String transcript = extractTranscript(studentText);
+                studentAns = !transcript.isBlank() ? transcript : (aiItem != null && aiItem.getStudentAnswer() != null ? aiItem.getStudentAnswer() : studentAns);
+                isCorrect = aiItem != null ? aiItem.isCorrect() : true;
+            } else if (isMatch) {
+                isCorrect = true;
+            } else if (!isSkipped && isOpenEnded && aiItem != null && aiItem.isCorrect()) {
+                isCorrect = true;
+            } else {
+                isCorrect = false;
+            }
+
+            if (explanation == null || explanation.isBlank()) {
                 if (isCorrect) {
                     explanation = "Correct! Accurately applies the rule: " + rule + ".";
                 } else if (isSkipped) {

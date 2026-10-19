@@ -113,12 +113,14 @@ public class ScoringService {
             (int) overallScore, wpm, pacing, pacingFeedback));
 
         Map<String, Object> item = new HashMap<>();
+        item.put("questionNumber", 1);
         item.put("question", "Oral reading and pronunciation of target passage");
         item.put("studentAnswer", !spokenTranscript.isBlank() ? spokenTranscript : studentText);
-        item.put("correctAnswer", !referencePassage.isBlank() ? referencePassage : answerKey);
+        item.put("correctAnswer", !referencePassage.isBlank() ? referencePassage : (answerKey != null ? answerKey : ""));
         item.put("isCorrect", overallScore >= 70.0);
         item.put("explanation", String.format("Pronunciation Accuracy: %.0f%% | Speech Rate: %d WPM | Pacing: %.0f%% (%s)",
             accuracy, wpm, pacing, pacingFeedback));
+        item.put("grammarRule", "Oral Speech Cadence & Phonetic Articulation");
         item.put("rule", "Oral Speech Cadence & Phonetic Articulation");
 
         result.put("items", List.of(item));

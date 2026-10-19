@@ -1535,4 +1535,142 @@ class SubmissionServiceTest {
         assertTrue(respFromJson.getItems().get(0).isCorrect());
         assertTrue(respFromJson.getItems().get(0).getExplanation().contains("Semantically correct from stored feedback"));
     }
+
+    /**
+     * @brief Verifies unit test scenario: submit speaking practice task routes to scoreSpeakingTask.
+     */
+    @Test
+    void testSubmitSpeakingPracticeTask() {
+        Task speakingTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.SPEAKING)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Pronunciation & Fluency")
+            .content("Consistent pronunciation practice enhances phonetic awareness.")
+            .answerKey("Consistent pronunciation practice enhances phonetic awareness.")
+            .build();
+
+        when(taskRepository.findById(speakingTask.getId())).thenReturn(Optional.of(speakingTask));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(eq(student.getId()), eq(speakingTask.getId()))).thenReturn(Optional.empty());
+        when(taskAssignmentRepository.save(any(TaskAssignment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Map<String, Object> speakingRubric = Map.of(
+            "score", 94.0,
+            "overallScore", 94.0,
+            "accuracyScore", 96.0,
+            "fluencyScore", 92.0,
+            "speechRateWpm", 130,
+            "pacingScore", 98.0,
+            "feedback", "Speaking evaluation completed: 94% overall score.",
+            "items", List.of(
+                Map.of(
+                    "questionNumber", 1,
+                    "isCorrect", true,
+                    "explanation", "Pronunciation Accuracy: 96% | Speech Rate: 130 WPM | Pacing: 98%",
+                    "grammarRule", "Oral Speech Cadence & Phonetic Articulation"
+                )
+            )
+        );
+        when(scoringService.scoreSpeakingTask(anyString(), anyString(), eq(student))).thenReturn(speakingRubric);
+        when(scoringService.extractScore(speakingRubric)).thenReturn(94.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
+            Submission s = inv.getArgument(0);
+            s.setId(UUID.randomUUID());
+            return s;
+        });
+
+        String payload = """
+            [SPEAKING_PRACTICE]
+            Overall Score: 94%
+            Pronunciation Accuracy: 96%
+            Speech Rate: 130 WPM
+
+            Spoken Transcript: Consistent pronunciation practice enhances phonetic awareness.
+
+            Reference Passage: Consistent pronunciation practice enhances phonetic awareness.
+            """;
+
+        TextSubmissionRequest req = TextSubmissionRequest.builder()
+            .taskId(speakingTask.getId())
+            .text(payload)
+            .type("SPEAKING")
+            .build();
+
+        SubmissionResultResponse resp = submissionService.submitText(req, student);
+        assertNotNull(resp);
+        assertEquals(94.0, resp.getScore());
+        verify(scoringService).scoreSpeakingTask(anyString(), anyString(), eq(student));
+    }
+
+    /**
+     * @brief Verifies unit test scenario: enrich speaking task submission preserves score and extracts transcript.
+     */
+    @Test
+    void testEnrichSubmissionResultSpeakingTask() {
+        Task speakingTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.SPEAKING)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Pronunciation & Fluency")
+            .questions(List.of(
+                TaskQuestion.builder()
+                    .id(UUID.randomUUID())
+                    .questionOrder(1)
+                    .questionText("Read aloud")
+                    .correctAnswer("Target passage")
+                    .points(20)
+                    .build()
+            ))
+            .build();
+
+        String payload = """
+            [SPEAKING_PRACTICE]
+            Overall Score: 95%
+            Speech Rate: 125 WPM
+
+            Spoken Transcript: Target passage spoken clearly.
+
+            Reference Passage: Target passage
+            """;
+
+        Submission sub = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .submissionType(SubmissionType.TEXT)
+            .studentText(payload)
+            .aiScore(95.0)
+            .aiFeedback("""
+                {
+                  "items": [
+                    {
+                      "questionNumber": 1,
+                      "isCorrect": true,
+                      "explanation": "Pronunciation Accuracy: 96% | Speech Rate: 125 WPM",
+                      "grammarRule": "Oral Articulation"
+                    }
+                  ]
+                }
+                """)
+            .build();
+
+        SubmissionResultResponse resp = SubmissionResultResponse.fromEntity(sub);
+        resp.setTaskId(speakingTask.getId());
+        when(taskRepository.findById(speakingTask.getId())).thenReturn(Optional.of(speakingTask));
+
+        submissionService.enrichSubmissionResult(resp, sub, null);
+        assertNotNull(resp.getItems());
+        assertEquals(1, resp.getItems().size());
+        assertEquals("Target passage spoken clearly.", resp.getItems().get(0).getStudentAnswer());
+        assertEquals(95.0, resp.getScore());
+        assertEquals(95.0, resp.getEffectiveScore());
+
+        // Test with teacher override score present
+        sub.setOverrideScore(99.0);
+        SubmissionResultResponse respOverride = SubmissionResultResponse.fromEntity(sub);
+        respOverride.setTaskId(speakingTask.getId());
+        submissionService.enrichSubmissionResult(respOverride, sub, null);
+        assertEquals(95.0, respOverride.getScore());
+        assertEquals(99.0, respOverride.getEffectiveScore());
+    }
 }
+
