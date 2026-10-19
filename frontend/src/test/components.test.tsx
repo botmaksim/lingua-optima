@@ -27,6 +27,8 @@ import { AnnotatedTextReview } from '../components/common/AnnotatedTextReview';
 import { SentenceCorrection } from '../types/submission';
 import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from '../components/teacher/SpeakingConfigPanel';
 import { SpeakingPracticeView } from '../components/common/SpeakingPracticeView';
+import { GrammarConfigPanel } from '../components/teacher/GrammarConfigPanel';
+import { QuickModePanel } from '../components/common/QuickModePanel';
 import { getIpaTranscription, alignSpokenWords, speakWord, speakText, stopSpeech } from '../utils/phonetics';
 
 describe('CefrBadge component', () => {
@@ -1722,6 +1724,176 @@ describe('SpeakingConfigPanel Custom Settings', () => {
     expect(handleInstructionsChange).toHaveBeenCalledWith('Customer service call');
   });
 });
+
+describe('QuickModePanel component', () => {
+  it('renders skill format pills and triggers quick generation with randomized defaults', () => {
+    const handleQuickGenerate = vi.fn();
+    const handleCefrChange = vi.fn();
+
+    render(
+      <QuickModePanel
+        cefrLevel="B2"
+        onCefrLevelChange={handleCefrChange}
+        onQuickGenerate={handleQuickGenerate}
+        isLoading={false}
+        isStudent={true}
+      />
+    );
+
+    // Verify format options
+    expect(screen.getByText(/Surprise Mix/i)).toBeInTheDocument();
+    expect(screen.getByText(/Grammar Quiz/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reading Article/i)).toBeInTheDocument();
+    expect(screen.getByText(/Speaking Drill/i)).toBeInTheDocument();
+
+    // Select Reading Article format
+    const readingPill = screen.getByText(/Reading Article/i);
+    fireEvent.click(readingPill);
+
+    // Click Start Quick Practice button
+    const startBtn = screen.getByRole('button', { name: /Start Quick Practice/i });
+    fireEvent.click(startBtn);
+
+    expect(handleQuickGenerate).toHaveBeenCalledTimes(1);
+    const calledParams = handleQuickGenerate.mock.calls[0][0];
+    expect(calledParams.taskType).toBe('READING');
+    expect(calledParams.ecoMode).toBe(true);
+    expect(calledParams.readingConfig).toBeDefined();
+    expect(calledParams.readingConfig.readingLength).toBe('Medium (250-400 words)');
+  });
+
+  it('supports shuffling topic and custom topic input', () => {
+    const handleQuickGenerate = vi.fn();
+
+    render(
+      <QuickModePanel
+        cefrLevel="B1"
+        onCefrLevelChange={vi.fn()}
+        onQuickGenerate={handleQuickGenerate}
+        isLoading={false}
+        isStudent={false}
+      />
+    );
+
+    // Click custom topic toggle
+    const customToggleBtn = screen.getByRole('button', { name: /Type custom topic/i });
+    fireEvent.click(customToggleBtn);
+
+    const customInput = screen.getByPlaceholderText(/e\.g\. Mixed Conditionals, Job Interview/i);
+    fireEvent.change(customInput, { target: { value: 'Third Conditional in Job Interviews' } });
+
+    // Click Generate & Preview Quick Task
+    const generateBtn = screen.getByRole('button', { name: /Start Quick Practice/i });
+    fireEvent.click(generateBtn);
+
+    expect(handleQuickGenerate).toHaveBeenCalledTimes(1);
+    expect(handleQuickGenerate.mock.calls[0][0].grammarTopic).toBe('Third Conditional in Job Interviews');
+  });
+});
+
+describe('GrammarConfigPanel component', () => {
+  it('renders unified topic selector, difficulty, question count, and eco mode', () => {
+    const handleTopicChange = vi.fn();
+    const handleDifficultyChange = vi.fn();
+    const handleCountChange = vi.fn();
+    const handleEcoChange = vi.fn();
+
+    render(
+      <GrammarConfigPanel
+        cefrLevel="B1"
+        grammarTopic="Present Perfect vs Past Simple"
+        onGrammarTopicChange={handleTopicChange}
+        domain="Academic"
+        onDomainChange={vi.fn()}
+        difficulty="MEDIUM"
+        onDifficultyChange={handleDifficultyChange}
+        numberOfQuestions={7}
+        onNumberOfQuestionsChange={handleCountChange}
+        ecoMode={false}
+        onEcoModeChange={handleEcoChange}
+        customRule=""
+        onCustomRuleChange={vi.fn()}
+        customVocabulary=""
+        onCustomVocabularyChange={vi.fn()}
+        uploadedRuleFile={null}
+        onUploadedRuleFileChange={vi.fn()}
+        uploadedVocabFile={null}
+        onUploadedVocabFileChange={vi.fn()}
+        catalog={null}
+        isStudent={false}
+      />
+    );
+
+    expect(screen.getByText('Grammar Practice')).toBeInTheDocument();
+    expect(screen.getByText('CEFR B1')).toBeInTheDocument();
+    expect(screen.getByText(/Difficulty Tier/i)).toBeInTheDocument();
+    expect(screen.getByText(/Number of Questions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Eco Mode/i)).toBeInTheDocument();
+
+    // Toggle Eco Mode
+    const ecoBtn = screen.getByRole('button', { name: /Toggle Eco Mode/i });
+    fireEvent.click(ecoBtn);
+    expect(handleEcoChange).toHaveBeenCalledWith(true);
+
+    // Change difficulty to HARD
+    const hardBtn = screen.getByRole('button', { name: /Hard/i });
+    fireEvent.click(hardBtn);
+    expect(handleDifficultyChange).toHaveBeenCalledWith('HARD');
+  });
+
+  it('renders curriculum rules and target vocabulary with library saving', () => {
+    const handleSaveRule = vi.fn();
+    const handleSaveVocab = vi.fn();
+    const handleRuleChange = vi.fn();
+    const handleVocabChange = vi.fn();
+
+    render(
+      <GrammarConfigPanel
+        cefrLevel="C1"
+        grammarTopic="Inversion"
+        onGrammarTopicChange={vi.fn()}
+        domain="Business"
+        onDomainChange={vi.fn()}
+        difficulty="HARD"
+        onDifficultyChange={vi.fn()}
+        numberOfQuestions={5}
+        onNumberOfQuestionsChange={vi.fn()}
+        ecoMode={false}
+        onEcoModeChange={vi.fn()}
+        customRule="Inversion occurs after negative adverbials like Hardly, Seldom."
+        onCustomRuleChange={handleRuleChange}
+        customVocabulary="seldom, scarcely, barely, no sooner"
+        onCustomVocabularyChange={handleVocabChange}
+        uploadedRuleFile={null}
+        onUploadedRuleFileChange={vi.fn()}
+        uploadedVocabFile={null}
+        onUploadedVocabFileChange={vi.fn()}
+        catalog={null}
+        isStudent={false}
+        onSaveRuleToLibrary={handleSaveRule}
+        onSaveVocabToLibrary={handleSaveVocab}
+      />
+    );
+
+    // Expand the curriculum collapsible panel
+    const accordionBtn = screen.getByText(/Target Rules & Vocabulary Reference/i);
+    fireEvent.click(accordionBtn);
+
+    expect(screen.getByText(/Target Grammar Rule \/ Formula/i)).toBeInTheDocument();
+    expect(screen.getByText(/Target Vocabulary \/ Lexicon List/i)).toBeInTheDocument();
+
+    // Save rule button
+    const saveRuleBtn = screen.getByRole('button', { name: /Save Rule to Library/i });
+    fireEvent.click(saveRuleBtn);
+    expect(handleSaveRule).toHaveBeenCalledTimes(1);
+
+    // Save vocab button
+    const saveVocabBtn = screen.getByRole('button', { name: /Save Vocabulary to Library/i });
+    fireEvent.click(saveVocabBtn);
+    expect(handleSaveVocab).toHaveBeenCalledTimes(1);
+  });
+});
+
 
 
 

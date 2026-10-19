@@ -21,6 +21,7 @@ import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.request.TransferTaskRequest;
 import com.linguaoptima.api.dto.response.GenerationStatusResponse;
 import com.linguaoptima.api.dto.response.GroupTaskResponse;
+import com.linguaoptima.api.dto.response.PronunciationPackResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -66,6 +67,8 @@ public class TaskService {
     private final ObjectMapper objectMapper;
     /** @brief Field representing curriculum storage service for context injection. */
     private final CurriculumStorageService curriculumStorageService;
+    /** @brief Field representing pronunciation pack service for phonetics drill injection. */
+    private final PronunciationPackService pronunciationPackService;
     /** @brief Field representing submission repository for tracking student attempts. */
     private final SubmissionRepository submissionRepository;
     /** @brief Field enforcing single device and concurrency protection during generation. */
@@ -339,7 +342,15 @@ public class TaskService {
         }
 
         if (params.getTaskType() == TaskType.SPEAKING) {
-            return PromptTemplates.buildSpeakingGenerationPrompt(params, targetRule, targetVocab);
+            PronunciationPackResponse pack = null;
+            if (!Boolean.TRUE.equals(params.getEcoMode()) && pronunciationPackService != null) {
+                pack = pronunciationPackService.resolvePack(
+                    params.getCefrLevel(),
+                    params.getPronunciationPackId(),
+                    params.getTargetSounds()
+                );
+            }
+            return PromptTemplates.buildSpeakingGenerationPrompt(params, targetRule, targetVocab, pack);
         }
 
         return PromptTemplates.buildTaskGenerationPrompt(

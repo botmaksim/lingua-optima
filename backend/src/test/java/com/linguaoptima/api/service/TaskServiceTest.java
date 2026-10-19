@@ -18,6 +18,7 @@ import com.linguaoptima.api.dto.request.CustomQuestionRequest;
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import com.linguaoptima.api.dto.request.TransferTaskRequest;
 import com.linguaoptima.api.dto.response.GroupTaskResponse;
+import com.linguaoptima.api.dto.response.PronunciationPackResponse;
 import com.linguaoptima.api.dto.response.QuestionResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -78,6 +79,9 @@ class TaskServiceTest {
     /** @brief Test fixture or mock dependency for curriculum storage service. */
     @Mock
     private CurriculumStorageService curriculumStorageService;
+    /** @brief Test fixture or mock dependency for pronunciation pack service. */
+    @Mock
+    private PronunciationPackService pronunciationPackService;
     /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
@@ -1559,6 +1563,114 @@ class TaskServiceTest {
         TaskResponse emptyNullTopicRes = taskService.generateTask(reqNullTopic, teacherUser);
         assertNotNull(emptyNullTopicRes);
         assertTrue(emptyNullTopicRes.getContent().contains("Pronunciation and Natural Flow"));
+    }
+
+    /**
+     * @brief Verifies that speaking generation injects pronunciation pack drill words when Eco Mode is off.
+     */
+    @Test
+    void testGenerateSpeakingTask_WithPronunciationPack() {
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        PronunciationPackResponse pack = PronunciationPackResponse.builder()
+            .id("B1_DENTAL_FRICATIVES")
+            .title("Dental Fricatives: /θ/ and /ð/")
+            .drillWords(List.of("thorough", "threaten", "author"))
+            .minimalPairs(List.of(
+                com.linguaoptima.api.dto.response.MinimalPairDto.builder()
+                    .word1("faith").word2("face").phoneme1("/θ/").phoneme2("/s/").build()
+            ))
+            .contrastFocus("Sustain friction on end consonants without stopping")
+            .tongueTwister("The author thought through a thorough method")
+            .build();
+
+        when(pronunciationPackService.resolvePack(eq(CefrLevel.B1), isNull(), eq("/θ/ vs /ð/")))
+            .thenReturn(pack);
+
+        String sampleResponse = """
+            {
+              "title": "Dental Fricatives Drill",
+              "content": "The author thought through a thorough method of northern therapy.",
+              "questions": [
+                {
+                  "id": 1,
+                  "text": "The author thought through a thorough method of northern therapy.",
+                  "correctAnswer": "The author thought through a thorough method of northern therapy.",
+                  "points": 100
+                }
+              ]
+            }
+            """;
+
+        org.mockito.ArgumentCaptor<String> promptCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
+        when(aiBrokerService.generateTaskContent(promptCaptor.capture(), eq(studentUser)))
+            .thenReturn(sampleResponse);
+
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .taskType(TaskType.SPEAKING)
+            .cefrLevel(CefrLevel.B1)
+            .targetSounds("/θ/ vs /ð/")
+            .ecoMode(false)
+            .build();
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        verify(pronunciationPackService).resolvePack(eq(CefrLevel.B1), isNull(), eq("/θ/ vs /ð/"));
+
+        String prompt = promptCaptor.getValue();
+        assertTrue(prompt.contains("TARGET PHONETICS PACK"));
+        assertTrue(prompt.contains("Dental Fricatives: /θ/ and /ð/"));
+        assertTrue(prompt.contains("thorough, threaten, author"));
+    }
+
+    /**
+     * @brief Verifies that speaking generation bypasses phonetics pack injection when Eco Mode is active.
+     */
+    @Test
+    void testGenerateSpeakingTask_WithEcoMode() {
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        String sampleResponse = """
+            {
+              "title": "Quick Speech",
+              "content": "Good morning class.",
+              "questions": [
+                {
+                  "id": 1,
+                  "text": "Good morning class.",
+                  "correctAnswer": "Good morning class.",
+                  "points": 100
+                }
+              ]
+            }
+            """;
+
+        org.mockito.ArgumentCaptor<String> promptCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
+        when(aiBrokerService.generateTaskContent(promptCaptor.capture(), eq(studentUser)))
+            .thenReturn(sampleResponse);
+
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .taskType(TaskType.SPEAKING)
+            .cefrLevel(CefrLevel.B1)
+            .targetSounds("/θ/ vs /ð/")
+            .ecoMode(true)
+            .build();
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        verify(pronunciationPackService, never()).resolvePack(any(), any(), any());
+
+        String prompt = promptCaptor.getValue();
+        assertTrue(prompt.contains("ECO MODE ACTIVE"));
+        assertFalse(prompt.contains("TARGET PHONETICS PACK"));
     }
 }
 

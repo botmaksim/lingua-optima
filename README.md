@@ -124,6 +124,27 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 - **Educator Studio & Student Self-Service**: Teachers can customize, preview, listen to text-to-speech synthesized audio, edit reading texts, and review student audio attempts with accuracy diagnostics and WPM speed indicators. Students can autonomously configure target phonemes and generate custom drills.
 - **Enterprise Upgrade Readiness**: Cleanly decoupled engine contracts enable swapping client-side speech recognition with cloud acoustic models (e.g. Azure Pronunciation Assessment, Whisper) without database or UI refactoring.
 
+### 8. JSON-Calibrated Pronunciation Packs & Speaking Eco Mode
+- **Structured Phonetics Resource**: 36 calibrated pronunciation packs stored in JSON resource (`backend/src/main/resources/phonetics/pronunciation_packs.json`) across all CEFR tiers (A1 Beginner to C2 Mastery). Covers dental fricatives (`/θ/`, `/ð/`), liquids (`/r/`, `/l/`), labiodentals (`/v/`, `/w/`), vowel duration contrasts (`/iː/` vs `/ɪ/`, `/uː/` vs `/ʊ/`), sibilants, silent consonants, and connected speech assimilation.
+- **Minimal Pair Contrast Modeling**: Each pack includes target drill words, focus sound descriptions, and minimal pair contrast matrices (e.g., *ship* vs *sheep*, *think* vs *sink*, *berry* vs *very*) for targeted auditory and articulatory distinction.
+- **Speaking Eco Mode**:
+  - **Eco Mode OFF**: Prompts are dynamically enriched with JSON target sound lists and minimal pair contrasts, instructing the neural network to weave high-density phonetic drills into the passage.
+  - **Eco Mode ON**: Streamlines prompt structure, bypassing heavy phonetic lists to reduce token consumption by up to 45% and minimize generation latency.
+
+### 9. Zero-Duplication Modular Task Studios
+- **Syllabus Isolation**: Replaces disjointed configuration inputs with dedicated, cohesive panels: `GrammarConfigPanel`, `ReadingConfigPanel`, and `SpeakingConfigPanel`.
+- **Contextual Clarity**: Topic selectors, grammar rules, and target vocabulary appear exclusively for grammar exercises; reading passages expose only text length, paragraphs, and question distributions; speaking configurations focus purely on acoustic sounds, duration, and pronunciation packs.
+- **Unified Controls**: AI engine selection, cohort assignment, and CEFR level are maintained as clean top-level controls with zero field duplication.
+
+### 10. Quick Practice Mode (Быстрый режим)
+- **1-Click Generation**: Streamlined mode requiring only CEFR level, practice format (Surprise Mix, Grammar Quiz, Reading Article, Speaking Drill), and topic.
+- **Surprise Topic Shuffle**: Instant randomized topic shuffle (`🎲`) across the CEFR curriculum catalog or direct custom topic entry.
+- **Automatic Parameter Balancing**: Difficulty tier, question counts, narrative paragraphs, and real-world domain contexts are automatically balanced behind the scenes with Eco Mode enabled by default.
+
+### 11. Cross-Interface Curriculum Persistence
+- **Teacher-to-Student Synchronization**: Custom grammar rules and vocabulary sets saved by educators are automatically inherited by their enrolled students via cohort group relationships.
+- **Unified Library**: Students see both their personal custom rules and their teachers' verified curriculum entries clearly labeled with teacher attribution in task generation and homework execution interfaces.
+
 ---
 
 ## Enterprise Action Audit and Distributed Tracing

@@ -9,7 +9,9 @@ import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.CurriculumFileType;
 import com.linguaoptima.api.dto.response.CurriculumReferenceResponse;
 import com.linguaoptima.api.dto.response.CurriculumUploadResponse;
+import com.linguaoptima.api.dto.response.PronunciationPackResponse;
 import com.linguaoptima.api.service.CurriculumStorageService;
+import com.linguaoptima.api.service.PronunciationPackService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,6 +38,9 @@ class CurriculumControllerTest {
 
     @Mock
     private CurriculumStorageService curriculumStorageService;
+
+    @Mock
+    private PronunciationPackService pronunciationPackService;
 
     @InjectMocks
     private CurriculumController curriculumController;
@@ -104,5 +109,25 @@ class CurriculumControllerTest {
         assertNotNull(response.getBody());
         assertEquals("CANONICAL", response.getBody().getSource());
         assertEquals("B2", response.getBody().getCefrLevel());
+    }
+
+    @Test
+    void testGetPronunciationPacks() {
+        PronunciationPackResponse pack = PronunciationPackResponse.builder()
+            .id("B1_DENTAL_FRICATIVES")
+            .cefrLevel(CefrLevel.B1)
+            .title("Dental Fricatives: /θ/ and /ð/")
+            .drillWords(List.of("thorough", "threaten"))
+            .build();
+
+        when(pronunciationPackService.getPacksByLevel(CefrLevel.B1))
+            .thenReturn(List.of(pack));
+
+        ResponseEntity<List<PronunciationPackResponse>> response = curriculumController.getPronunciationPacks(CefrLevel.B1);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        assertEquals("B1_DENTAL_FRICATIVES", response.getBody().get(0).getId());
     }
 }

@@ -6,8 +6,10 @@ package com.linguaoptima.api.service;
 
 import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.domain.CustomCurriculumEntry;
+import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.domain.Subscription;
 import com.linguaoptima.api.domain.User;
+import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubscriptionTier;
 import com.linguaoptima.api.dto.request.CustomCurriculumRequest;
 import com.linguaoptima.api.dto.response.CustomCurriculumResponse;
@@ -15,18 +17,21 @@ import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.CustomCurriculumRepository;
+import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * @brief Service managing teacher custom grammar rules and vocabulary sets with subscription tier quota enforcement.
+ * @brief Service managing teacher and student custom grammar rules and vocabulary sets with cross-interface sharing.
  */
 @Slf4j
 @Service
@@ -36,6 +41,7 @@ public class CustomCurriculumService {
     private final CustomCurriculumRepository customCurriculumRepository;
     private final PricingProperties pricingProperties;
     private final SubscriptionRepository subscriptionRepository;
+    private final GroupStudentRepository groupStudentRepository;
 
     private SubscriptionTier getUserTier(User user) {
         if (user == null) return SubscriptionTier.FREE;
@@ -45,20 +51,37 @@ public class CustomCurriculumService {
     }
 
     /**
-     * @brief Retrieves saved custom curriculum items owned by the authenticated educator.
+     * @brief Retrieves saved custom curriculum items owned by the user, plus any teacher curriculum shared with enrolled students.
      */
     @Transactional(readOnly = true)
     public List<CustomCurriculumResponse> getCustomCurriculum(User user, String type) {
+        Set<UUID> userIds = new HashSet<>();
+        if (user != null && user.getId() != null) {
+            userIds.add(user.getId());
+
+            // If user is a student, also include curriculum created by educators of groups the student is enrolled in
+            if (user.getRole() == Role.STUDENT && groupStudentRepository != null) {
+                List<GroupStudent> enrollments = groupStudentRepository.findByStudentIdAndIsActiveTrue(user.getId());
+                for (GroupStudent enrollment : enrollments) {
+                    if (enrollment.getGroup() != null && enrollment.getGroup().getTeacher() != null) {
+                        userIds.add(enrollment.getGroup().getTeacher().getId());
+                    }
+                }
+            }
+        }
+
         List<CustomCurriculumEntry> entries;
         if (type != null && !type.isBlank()) {
-            entries = customCurriculumRepository.findByUserIdAndCurriculumTypeOrderByCreatedAtDesc(
-                user.getId(), type.trim().toUpperCase()
+            entries = customCurriculumRepository.findByUserIdInAndCurriculumTypeOrderByCreatedAtDesc(
+                userIds, type.trim().toUpperCase()
             );
         } else {
-            entries = customCurriculumRepository.findByUserIdOrderByCreatedAtDesc(user.getId());
+            entries = customCurriculumRepository.findByUserIdInOrderByCreatedAtDesc(userIds);
         }
+
+        UUID currentUserId = user != null ? user.getId() : null;
         return entries.stream()
-            .map(CustomCurriculumResponse::fromEntity)
+            .map(e -> CustomCurriculumResponse.fromEntity(e, currentUserId))
             .collect(Collectors.toList());
     }
 

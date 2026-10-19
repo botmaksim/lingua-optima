@@ -3,7 +3,7 @@
  * @brief Educator task generation, parameter configuration, preview, custom curriculum context, and cohort deployment interface.
  */
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Send,
@@ -11,14 +11,8 @@ import {
   Eye,
   CheckCircle2,
   Cpu,
-  BookOpen,
-  ChevronDown,
-  ChevronUp,
-  UploadCloud,
-  FileText,
   Trash2,
   Sparkles,
-  Leaf,
   Plus,
   RefreshCw,
   Check,
@@ -26,6 +20,8 @@ import {
   Key,
   ArrowRightLeft,
   Smartphone,
+  Zap,
+  SlidersHorizontal,
   Volume2,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
@@ -43,7 +39,6 @@ import {
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
 import { CustomSelect } from '../common/CustomSelect';
-import { TopicSelector } from '../common/TopicSelector';
 import { useNotificationStore } from '../../store/notificationStore';
 import {
   AI_PROVIDER_CATALOG,
@@ -59,6 +54,8 @@ import { CustomCurriculumEntry } from '../../types/curriculum';
 import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
 import { ReadingConfigPanel, ReadingConfig } from './ReadingConfigPanel';
 import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from './SpeakingConfigPanel';
+import { GrammarConfigPanel, UploadedCurriculumFile } from './GrammarConfigPanel';
+import { QuickModePanel, QuickGenerateParams } from '../common/QuickModePanel';
 import { speakText } from '../../utils/phonetics';
 
 /**
@@ -70,6 +67,7 @@ export const ConfigureTask: React.FC = () => {
   const { addToast } = useNotificationStore();
   const { openUpgradeWall } = useUIStore();
 
+  const [generationMode, setGenerationMode] = useState<'QUICK' | 'DETAILED'>('DETAILED');
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
   const [catalog, setCatalog] = useState<TopicsCatalogResponse | null>(null);
@@ -77,8 +75,8 @@ export const ConfigureTask: React.FC = () => {
   const [grammarTopic, setGrammarTopic] = useState<string>('Passive Voice (Basic)');
   const [domain, setDomain] = useState<string>('Academic');
   const [taskType, setTaskType] = useState<TaskType>('MCQ');
-  const difficulty: DifficultyLevel = 'MEDIUM';
-  const numberOfQuestions = 5;
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('MEDIUM');
+  const [numberOfQuestions, setNumberOfQuestions] = useState<number>(5);
   const [totalPoints, setTotalPoints] = useState<number>(100);
   const [dueDate, setDueDate] = useState<string>('');
   const [maxAttempts, setMaxAttempts] = useState<number>(1);
@@ -104,31 +102,16 @@ export const ConfigureTask: React.FC = () => {
   // Dedicated Speaking task configuration state
   const [speakingTitle, setSpeakingTitle] = useState<string>('');
   const [targetSounds, setTargetSounds] = useState<string>(TARGET_SOUND_PRESETS[0].value);
+  const [pronunciationPackId, setPronunciationPackId] = useState<string | null>(null);
   const [speakingLength, setSpeakingLength] = useState<string>('MEDIUM');
+  const [customWordCount, setCustomWordCount] = useState<number | undefined>(undefined);
+  const [customInstructions, setCustomInstructions] = useState<string>('');
 
   // Curriculum context state
-  const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
   const [customRule, setCustomRule] = useState<string>('');
   const [customVocabulary, setCustomVocabulary] = useState<string>('');
-  const [uploadedRuleFile, setUploadedRuleFile] = useState<{
-    fileName: string;
-    fileSize: number;
-    contentSnippet: string;
-    serverPath: string;
-  } | null>(null);
-  const [uploadedVocabFile, setUploadedVocabFile] = useState<{
-    fileName: string;
-    fileSize: number;
-    contentSnippet: string;
-    serverPath: string;
-  } | null>(null);
-  const [isUploadingRule, setIsUploadingRule] = useState<boolean>(false);
-  const [isUploadingVocab, setIsUploadingVocab] = useState<boolean>(false);
-  const [isLoadingRef, setIsLoadingRef] = useState<boolean>(false);
-  const [refNotice, setRefNotice] = useState<string | null>(null);
-
-  const ruleFileInputRef = useRef<HTMLInputElement>(null);
-  const vocabFileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedRuleFile, setUploadedRuleFile] = useState<UploadedCurriculumFile | null>(null);
+  const [uploadedVocabFile, setUploadedVocabFile] = useState<UploadedCurriculumFile | null>(null);
 
   const [previewTask, setPreviewTask] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -264,87 +247,7 @@ export const ConfigureTask: React.FC = () => {
     );
   };
 
-  /**
-   * @brief Loads canonical or synthesized reference curriculum from server.
-   */
-  const handleLoadReference = async () => {
-    setIsLoadingRef(true);
-    setRefNotice(null);
-    try {
-      const ref = await taskApi.getCurriculumReference(cefrLevel, grammarTopic);
-      if (ref.referenceRule) {
-        setCustomRule(ref.referenceRule);
-      }
-      if (ref.referenceVocabulary && ref.referenceVocabulary.length > 0) {
-        setCustomVocabulary(ref.referenceVocabulary.join(', '));
-      }
-      setRefNotice(
-        ref.source === 'CANONICAL'
-          ? 'Loaded canonical curriculum rules & vocabulary from server repository!'
-          : 'Standard reference curriculum aligned with CEFR standards.'
-      );
-      setShowCurriculumPanel(true);
-    } catch (err: any) {
-      console.error('Failed to load reference curriculum:', err);
-      setRefNotice('Could not fetch reference curriculum.');
-    } finally {
-      setIsLoadingRef(false);
-    }
-  };
-
-  /**
-   * @brief Handles file upload for rule or vocabulary context.
-   */
-  const handleFileUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: 'RULE' | 'VOCABULARY'
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (type === 'RULE') {
-      setIsUploadingRule(true);
-    } else {
-      setIsUploadingVocab(true);
-    }
-
-    try {
-      const res = await taskApi.uploadCurriculumFile(file, type, grammarTopic);
-      if (type === 'RULE') {
-        setUploadedRuleFile({
-          fileName: res.fileName,
-          fileSize: res.fileSize,
-          contentSnippet: res.contentSnippet,
-          serverPath: res.serverPath,
-        });
-        if (res.fullContent) {
-          setCustomRule(res.fullContent);
-        }
-      } else {
-        setUploadedVocabFile({
-          fileName: res.fileName,
-          fileSize: res.fileSize,
-          contentSnippet: res.contentSnippet,
-          serverPath: res.serverPath,
-        });
-        if (res.fullContent) {
-          setCustomVocabulary(res.fullContent);
-        }
-      }
-      setShowCurriculumPanel(true);
-    } catch (err: any) {
-      console.error('Failed to upload curriculum file:', err);
-      setStatusMessage(err.response?.data?.message || 'Failed to upload curriculum file.');
-    } finally {
-      if (type === 'RULE') {
-        setIsUploadingRule(false);
-        if (ruleFileInputRef.current) ruleFileInputRef.current.value = '';
-      } else {
-        setIsUploadingVocab(false);
-        if (vocabFileInputRef.current) vocabFileInputRef.current.value = '';
-      }
-    }
-  };
+  const isGrammarTask = ['MCQ', 'GAP_FILL', 'OPEN_BRACKETS', 'REWRITE'].includes(taskType);
 
   /**
    * @brief Helper returning current task parameters including curriculum context.
@@ -396,11 +299,122 @@ export const ConfigureTask: React.FC = () => {
             speakingTitle: speakingTitle.trim() || undefined,
             targetSounds: targetSounds.trim() || undefined,
             speakingLength: speakingLength.trim() || undefined,
+            pronunciationPackId: pronunciationPackId || undefined,
             numberOfQuestions: 1,
             totalPoints: totalPoints || 100,
           }
         : {}),
     };
+  };
+
+  /**
+   * @brief Fast generation triggered from QuickModePanel in educator view.
+   */
+  const handleQuickGenerate = async (params: QuickGenerateParams) => {
+    setIsLoading(true);
+    setStatusMessage(null);
+    try {
+      setTaskType(params.taskType);
+      setGrammarTopic(params.grammarTopic);
+      setDomain(params.domain);
+      setDifficulty(params.difficulty);
+      setNumberOfQuestions(params.numberOfQuestions);
+      setEcoMode(params.ecoMode);
+      if (params.readingConfig) {
+        setReadingConfig((prev) => ({ ...prev, ...params.readingConfig }));
+      }
+      if (params.speakingConfig) {
+        setSpeakingTitle(params.speakingConfig.speakingTitle);
+        setTargetSounds(params.speakingConfig.targetSounds);
+        setSpeakingLength(params.speakingConfig.speakingLength);
+        if (params.speakingConfig.pronunciationPackId) {
+          setPronunciationPackId(params.speakingConfig.pronunciationPackId);
+        }
+      }
+
+      const readingTotalPoints = params.readingConfig
+        ? (params.readingConfig.mcqQuestionsCount || 0) * (params.readingConfig.mcqPoints || 0) +
+          (params.readingConfig.trueFalseQuestionsCount || 0) * (params.readingConfig.trueFalsePoints || 0) +
+          (params.readingConfig.openQuestionsCount || 0) * (params.readingConfig.openPoints || 0)
+        : undefined;
+
+      const readingQuestionsCount = params.readingConfig
+        ? (params.readingConfig.mcqQuestionsCount || 0) +
+          (params.readingConfig.trueFalseQuestionsCount || 0) +
+          (params.readingConfig.openQuestionsCount || 0)
+        : undefined;
+
+      const task = await taskApi.previewTask({
+        cefrLevel,
+        grammarTopic: params.grammarTopic,
+        domain: params.domain,
+        taskType: params.taskType,
+        difficulty: params.difficulty,
+        numberOfQuestions: params.taskType === 'READING' ? readingQuestionsCount : params.numberOfQuestions,
+        totalPoints: readingTotalPoints || totalPoints || 100,
+        provider,
+        modelName,
+        ecoMode: params.ecoMode,
+        groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
+        dueDate: dueDate || undefined,
+        maxAttempts,
+        ...(params.readingConfig
+          ? {
+              readingTitle: params.readingConfig.readingTitle,
+              readingLength: params.readingConfig.readingLength,
+              readingParagraphs: params.readingConfig.readingParagraphs,
+              mcqQuestionsCount: params.readingConfig.mcqQuestionsCount,
+              mcqPoints: params.readingConfig.mcqPoints,
+              trueFalseQuestionsCount: params.readingConfig.trueFalseQuestionsCount,
+              trueFalsePoints: params.readingConfig.trueFalsePoints,
+              openQuestionsCount: params.readingConfig.openQuestionsCount,
+              openPoints: params.readingConfig.openPoints,
+            }
+          : {}),
+        ...(params.speakingConfig
+          ? {
+              speakingTitle: params.speakingConfig.speakingTitle,
+              targetSounds: params.speakingConfig.targetSounds,
+              speakingLength: params.speakingConfig.speakingLength,
+              pronunciationPackId: params.speakingConfig.pronunciationPackId,
+              numberOfQuestions: 1,
+              totalPoints: totalPoints || 100,
+            }
+          : {}),
+      });
+
+      const effTotal = task.totalPoints || totalPoints || 100;
+      const qLen = task.questions && task.questions.length > 0 ? task.questions.length : 1;
+      const basePoints = Math.floor(effTotal / qLen);
+      const remPoints = effTotal % qLen;
+      const enrichedQuestions = (task.questions || []).map((q, idx) => ({
+        ...q,
+        points: q.points && q.points > 0 ? q.points : Math.max(1, basePoints + (idx === 0 ? remPoints : 0)),
+      }));
+
+      setPreviewTask({
+        ...task,
+        totalPoints: effTotal,
+        questions: enrichedQuestions,
+      });
+
+      addToast({
+        type: 'success',
+        title: 'Quick Task Generated',
+        message: 'Task preview generated! Review the questions or deploy directly to cohorts.',
+      });
+    } catch (err: any) {
+      if (err.response?.status === 409 || err.response?.data?.errorCode === 'CONCURRENT_GENERATION') {
+        setPendingAction('preview');
+        setConcurrentConflict(true);
+      } else {
+        const errMsg = err.response?.data?.message || 'Failed to preview quick task.';
+        addToast({ type: 'error', title: 'Generation Failed', message: errMsg });
+        setStatusMessage(errMsg);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   /**
@@ -764,13 +778,44 @@ export const ConfigureTask: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-          Configure & Deploy Task
-        </h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Design custom exercises, inject syllabus rules, and deploy assignments to student cohorts.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+            Configure & Deploy Task
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Design custom exercises, inject syllabus rules, and deploy assignments to student cohorts.
+          </p>
+        </div>
+
+        {/* Mode Switcher Tabs */}
+        <div className="flex items-center p-1.5 rounded-2xl bg-slate-100 border border-slate-200/80 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setGenerationMode('QUICK')}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+              generationMode === 'QUICK'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <span>Quick Mode</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setGenerationMode('DETAILED')}
+            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+              generationMode === 'DETAILED'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
+            <span>Detailed Studio</span>
+          </button>
+        </div>
       </div>
 
       {statusMessage && (
@@ -787,641 +832,500 @@ export const ConfigureTask: React.FC = () => {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-          {/* AI Engine Selection */}
-          <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Cpu className="w-4 h-4 text-primary" />
-                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Model Selection
-                </span>
-              </div>
-              <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                {provider} · {modelName}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="lg:col-span-2 space-y-6">
+          {generationMode === 'QUICK' ? (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
+              {/* Cohort Groups */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  AI Provider
-                </label>
-                <CustomSelect
-                  size="sm"
-                  value={provider}
-                  onChange={(val) => handleProviderChange(val as AIProviderType)}
-                  groups={providerGroups}
-                  ariaLabel="AI Provider"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase mb-1">
-                  <span>AI Model</span>
-                  {isLiveSynced && (
-                    <span className="text-[10px] font-semibold text-emerald-600 lowercase">
-                      ● live vendor sync
-                    </span>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Target Cohort Groups (Multi-select)
+                  </label>
+                  {groups.length > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedGroupIds(groups.map((g) => g.id))}
+                        className="text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        Select All
+                      </button>
+                      <span className="text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedGroupIds([])}
+                        className="text-[11px] font-semibold text-slate-500 hover:underline"
+                      >
+                        Clear
+                      </button>
+                    </div>
                   )}
-                </label>
-                <CustomSelect
-                  size="sm"
-                  value={modelName}
-                  onChange={(val) => setModelName(val)}
-                  options={providerModels.map((m) => ({
-                    value: m.id,
-                    label: m.label,
-                    badge: m.badge,
-                  }))}
-                  ariaLabel="AI Model"
-                />
-              </div>
-            </div>
-
-            {!isSelectedProviderConfigured && (
-              <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-2">
-                <div className="flex items-center space-x-2">
-                  <Key className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                  <span>
-                    <strong>{AI_PROVIDER_CATALOG.find((p) => p.id === provider)?.name}</strong> requires your own API key. You can add one in Profile &rarr; AI API Keys, or deploy using Gemini for free cloud generation.
-                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/profile')}
-                  className="self-end sm:self-auto px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold whitespace-nowrap text-[11px] shadow-sm transition"
-                >
-                  Add Key
-                </button>
-              </div>
-            )}
-          </div>
 
-          {/* Cohort Groups */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Target Cohort Groups (Multi-select)
-              </label>
-              {groups.length > 1 && (
-                <div className="flex items-center space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedGroupIds(groups.map((g) => g.id))}
-                    className="text-[11px] font-semibold text-primary hover:underline"
-                  >
-                    Select All
-                  </button>
-                  <span className="text-slate-300">|</span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedGroupIds([])}
-                    className="text-[11px] font-semibold text-slate-500 hover:underline"
-                  >
-                    Clear
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {selectedGroupIds.length > 1 && (
-              <div className="mb-2.5 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-800 flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-sky-600 flex-shrink-0" />
-                <span>
-                  Deploying simultaneously to <strong>{selectedGroupIds.length}</strong> cohorts ({
-                    groups
-                      .filter((g) => selectedGroupIds.includes(g.id))
-                      .reduce((acc, g) => acc + (g.studentCount || 0), 0)
-                  } students total).
-                </span>
-              </div>
-            )}
-
-            <div className="flex flex-wrap gap-2">
-              {groups.map((g) => {
-                const isSelected = selectedGroupIds.includes(g.id);
-                return (
-                  <button
-                    type="button"
-                    key={g.id}
-                    onClick={() => toggleGroup(g.id)}
-                    className={`py-2 px-3.5 rounded-xl border text-xs font-semibold transition flex items-center space-x-1.5 ${
-                      isSelected
-                        ? 'border-accent bg-sky-50 text-sky-800 ring-2 ring-sky-200'
-                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                    }`}
-                  >
-                    <span>{isSelected ? '✓ ' : ''}{g.name}</span>
-                    <span className="text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
-                      {g.studentCount}
+                {selectedGroupIds.length > 1 && (
+                  <div className="mb-2.5 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-800 flex items-center space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-sky-600 flex-shrink-0" />
+                    <span>
+                      Deploying simultaneously to <strong>{selectedGroupIds.length}</strong> cohorts ({
+                        groups
+                          .filter((g) => selectedGroupIds.includes(g.id))
+                          .reduce((acc, g) => acc + (g.studentCount || 0), 0)
+                      } students total).
                     </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* CEFR Level */}
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              CEFR Level
-            </label>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-              {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => (
-                <button
-                  type="button"
-                  key={level}
-                  onClick={() => {
-                    setCefrLevel(level);
-                    const defaultList = catalog?.topicsByLevel?.[level] || DEFAULT_CEFR_TOPICS[level];
-                    if (defaultList && defaultList.length > 0) {
-                      setGrammarTopic(defaultList[0]);
-                    }
-                  }}
-                  className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center space-x-1.5 transition ${
-                    cefrLevel === level
-                      ? 'border-primary bg-indigo-50 text-primary'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  <CefrBadge level={level} size="sm" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Topic & Domain Selection via unified TopicSelector */}
-          <TopicSelector
-            cefrLevel={cefrLevel}
-            topic={grammarTopic}
-            onTopicChange={(t) => setGrammarTopic(t)}
-            domain={domain}
-            onDomainChange={(d) => setDomain(d)}
-            catalog={catalog}
-            showDomain={true}
-            size="sm"
-          />
-
-          {/* Eco Mode (Token Saver) Toggle */}
-          <div className={`p-4 rounded-2xl border transition ${
-            ecoMode
-              ? 'bg-emerald-50/70 border-emerald-200'
-              : 'bg-slate-50/80 border-slate-200/80'
-          } flex items-center justify-between`}>
-            <div className="flex items-center space-x-3">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
-                ecoMode ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'
-              }`}>
-                <Leaf className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    Eco Mode
-                  </h4>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    ecoMode ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {ecoMode ? 'ACTIVE' : 'OFF'}
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  {ecoMode
-                    ? 'Skip curriculum notes for faster generation and lower token usage.'
-                    : 'Include curriculum rules and target vocabulary in generation.'}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setEcoMode(!ecoMode)}
-              className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                ecoMode ? 'bg-emerald-600' : 'bg-slate-300'
-              }`}
-            >
-              <span
-                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  ecoMode ? 'translate-x-5' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-
-          {/* Curriculum Context (Rules & Vocabulary) Expandable Panel */}
-          <div className={`rounded-2xl border transition overflow-hidden ${
-            ecoMode ? 'border-slate-200 bg-slate-50/30 opacity-75' : 'border-slate-200/90 bg-slate-50/50'
-          }`}>
-            <button
-              type="button"
-              onClick={() => setShowCurriculumPanel(!showCurriculumPanel)}
-              className="w-full p-4 flex items-center justify-between text-left hover:bg-slate-100/60 transition"
-            >
-              <div className="flex items-center space-x-2.5">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 text-primary flex items-center justify-center">
-                  <BookOpen className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                    Curriculum Rules & Target Vocabulary
-                  </h3>
-                  <p className="text-[11px] text-slate-500">
-                    {ecoMode ? (
-                      <span className="flex items-center gap-1 text-emerald-600 font-semibold">
-                        <Leaf className="w-3.5 h-3.5" />
-                        <span>Eco Mode active: reference materials will be skipped during generation</span>
-                      </span>
-                    ) : uploadedRuleFile || uploadedVocabFile || customRule || customVocabulary ? (
-                      <span className="flex items-center gap-1 text-indigo-600 font-semibold">
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Custom rules or vocabulary active</span>
-                      </span>
-                    ) : (
-                      <span>Attach lesson rules, target vocabulary, or upload reference files</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 text-slate-400">
-                {showCurriculumPanel ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              </div>
-            </button>
-
-            {showCurriculumPanel && (
-              <div className="p-4 sm:p-5 border-t border-slate-200/80 bg-white space-y-4 animate-in fade-in duration-200">
-                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
-                  <span className="text-xs text-slate-600 font-medium">
-                    Enforce exact target rules and vocabulary in the assignment:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleLoadReference}
-                    disabled={isLoadingRef}
-                    className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition flex items-center space-x-1.5 disabled:opacity-50"
-                  >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>{isLoadingRef ? 'Loading...' : 'Auto-Fill Canonical Reference'}</span>
-                  </button>
-                </div>
-
-                {refNotice && (
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center space-x-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                    <span>{refNotice}</span>
                   </div>
                 )}
 
-                {/* Target Grammar Rule Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-700">
-                      1. Target Grammar Rule / Structural Guide
-                    </label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        ref={ruleFileInputRef}
-                        type="file"
-                        accept=".txt,.md,.json"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e, 'RULE')}
-                      />
+                <div className="flex flex-wrap gap-2">
+                  {groups.map((g) => {
+                    const isSelected = selectedGroupIds.includes(g.id);
+                    return (
                       <button
                         type="button"
-                        onClick={() => ruleFileInputRef.current?.click()}
-                        disabled={isUploadingRule}
-                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1 disabled:opacity-50"
+                        key={g.id}
+                        onClick={() => toggleGroup(g.id)}
+                        className={`py-2 px-3.5 rounded-xl border text-xs font-semibold transition flex items-center space-x-1.5 ${
+                          isSelected
+                            ? 'border-accent bg-sky-50 text-sky-800 ring-2 ring-sky-200'
+                            : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                        }`}
                       >
-                        <UploadCloud className="w-3.5 h-3.5" />
-                        <span>{isUploadingRule ? 'Uploading...' : 'Upload Rule File (.md, .txt)'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {uploadedRuleFile && (
-                    <div className="p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200 flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-2 truncate">
-                        <FileText className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="font-semibold text-slate-800 truncate">{uploadedRuleFile.fileName}</span>
-                        <span className="text-slate-500 font-mono text-[10px]">
-                          ({(uploadedRuleFile.fileSize / 1024).toFixed(1)} KB)
+                        <span>{isSelected ? '✓ ' : ''}{g.name}</span>
+                        <span className="text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
+                          {g.studentCount}
                         </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setUploadedRuleFile(null)}
-                        className="text-slate-400 hover:text-rose-500 transition ml-2"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-                    {savedRules.length > 0 ? (
-                      <select
-                        onChange={(e) => {
-                          const found = savedRules.find((r) => r.id === e.target.value);
-                          if (found) setCustomRule(found.content);
-                        }}
-                        defaultValue=""
-                        className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 w-full sm:w-auto"
-                      >
-                        <option value="" disabled>Load saved rule from library ({savedRules.length})...</option>
-                        {savedRules.map((r) => (
-                          <option key={r.id} value={r.id}>{r.title}</option>
-                        ))}
-                      </select>
-                    ) : <div />}
-                    {customRule.trim() && (
-                      <button
-                        type="button"
-                        onClick={handleSaveRuleToLibrary}
-                        disabled={isSavingRule}
-                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1"
-                      >
-                        <Bookmark className="w-3.5 h-3.5" />
-                        <span>{isSavingRule ? 'Saving...' : 'Save Rule to Library'}</span>
-                      </button>
-                    )}
-                  </div>
-
-                  <textarea
-                    value={customRule}
-                    onChange={(e) => setCustomRule(e.target.value)}
-                    rows={3}
-                    placeholder="e.g. Focus on Inversion after negative adverbials..."
-                    className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-mono leading-relaxed"
-                  />
-                </div>
-
-                {/* Target Vocabulary Section */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-700">
-                      2. Target Vocabulary / Lexicon List
-                    </label>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        ref={vocabFileInputRef}
-                        type="file"
-                        accept=".txt,.json,.csv"
-                        className="hidden"
-                        onChange={(e) => handleFileUpload(e, 'VOCABULARY')}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => vocabFileInputRef.current?.click()}
-                        disabled={isUploadingVocab}
-                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1 disabled:opacity-50"
-                      >
-                        <UploadCloud className="w-3.5 h-3.5" />
-                        <span>{isUploadingVocab ? 'Uploading...' : 'Upload Vocab File (.json, .csv)'}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {uploadedVocabFile && (
-                    <div className="p-2.5 rounded-xl bg-indigo-50/80 border border-indigo-200 flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-2 truncate">
-                        <FileText className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="font-semibold text-slate-800 truncate">{uploadedVocabFile.fileName}</span>
-                        <span className="text-slate-500 font-mono text-[10px]">
-                          ({(uploadedVocabFile.fileSize / 1024).toFixed(1)} KB)
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setUploadedVocabFile(null)}
-                        className="text-slate-400 hover:text-rose-500 transition ml-2"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
-                    {savedVocabSets.length > 0 ? (
-                      <select
-                        onChange={(e) => {
-                          const found = savedVocabSets.find((v) => v.id === e.target.value);
-                          if (found) setCustomVocabulary(found.content);
-                        }}
-                        defaultValue=""
-                        className="text-xs px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white text-slate-700 w-full sm:w-auto"
-                      >
-                        <option value="" disabled>Load saved vocabulary ({savedVocabSets.length})...</option>
-                        {savedVocabSets.map((v) => (
-                          <option key={v.id} value={v.id}>{v.title}</option>
-                        ))}
-                      </select>
-                    ) : <div />}
-                    {customVocabulary.trim() && (
-                      <button
-                        type="button"
-                        onClick={handleSaveVocabToLibrary}
-                        disabled={isSavingVocab}
-                        className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center space-x-1"
-                      >
-                        <Bookmark className="w-3.5 h-3.5" />
-                        <span>{isSavingVocab ? 'Saving...' : 'Save Vocabulary to Library'}</span>
-                      </button>
-                    )}
-                  </div>
-
-                  <textarea
-                    value={customVocabulary}
-                    onChange={(e) => setCustomVocabulary(e.target.value)}
-                    rows={2}
-                    placeholder="e.g. substantiate, empirical, paradigm, ubiquitous, resilient..."
-                    className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/40 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition font-mono leading-relaxed"
-                  />
+                    );
+                  })}
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* Task Type */}
-          <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-              Task Type
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-              {(
-                [
-                  { type: 'MCQ', label: 'MCQ' },
-                  { type: 'GAP_FILL', label: 'Gap Fill' },
-                  { type: 'OPEN_BRACKETS', label: 'Open Brackets' },
-                  { type: 'REWRITE', label: 'Rewrite' },
-                  { type: 'ESSAY', label: 'Essay' },
-                  { type: 'READING', label: 'Reading' },
-                  { type: 'SPEAKING', label: 'Speaking' },
-                ] as { type: TaskType; label: string }[]
-              ).map((item) => (
-                <button
-                  type="button"
-                  key={item.type}
-                  onClick={() => setTaskType(item.type)}
-                  className={`py-2 px-2.5 rounded-xl border text-xs font-semibold text-center transition ${
-                    taskType === item.type
-                      ? 'border-primary bg-indigo-50 text-primary'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Reading Comprehension Studio Panel */}
-            {taskType === 'READING' && (
-              <div className="mt-4 animate-in fade-in duration-200">
-                <ReadingConfigPanel
-                  config={readingConfig}
-                  onChange={(updated) => setReadingConfig((prev) => ({ ...prev, ...updated }))}
-                  cefrLevel={cefrLevel}
-                  customVocabulary={customVocabulary}
-                  onCustomVocabularyChange={setCustomVocabulary}
-                />
-              </div>
-            )}
-
-            {/* Speaking Comprehension Studio Panel */}
-            {taskType === 'SPEAKING' && (
-              <div className="mt-4 animate-in fade-in duration-200">
-                <SpeakingConfigPanel
-                  speakingTitle={speakingTitle}
-                  onTitleChange={setSpeakingTitle}
-                  targetSounds={targetSounds}
-                  onTargetSoundsChange={setTargetSounds}
-                  speakingLength={speakingLength}
-                  onSpeakingLengthChange={setSpeakingLength}
-                  totalPoints={totalPoints}
-                  onTotalPointsChange={setTotalPoints}
-                  isStudent={false}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Due Date & Attempt Limit */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Submission Due Date
-              </label>
-              <input
-                type="datetime-local"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              <QuickModePanel
+                cefrLevel={cefrLevel}
+                onCefrLevelChange={(lvl: CefrLevel) => {
+                  setCefrLevel(lvl);
+                  const defaultList = catalog?.topicsByLevel?.[lvl] || DEFAULT_CEFR_TOPICS[lvl];
+                  if (defaultList && defaultList.length > 0) {
+                    setGrammarTopic(defaultList[0]);
+                  }
+                }}
+                onQuickGenerate={handleQuickGenerate}
+                isLoading={isLoading}
+                isStudent={false}
               />
             </div>
+          ) : (
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
+              {/* AI Engine Selection */}
+              <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Cpu className="w-4 h-4 text-primary" />
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Model Selection
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                    {provider} · {modelName}
+                  </span>
+                </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-                Allowed Student Attempts
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMaxAttempts(1)}
-                  className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition ${
-                    maxAttempts === 1
-                      ? 'border-primary bg-indigo-50 text-primary shadow-sm'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  1 Attempt (Default)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMaxAttempts(0)}
-                  className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition ${
-                    maxAttempts === 0
-                      ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-sm'
-                      : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                  }`}
-                >
-                  ∞ Unlimited
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                      AI Provider
+                    </label>
+                    <CustomSelect
+                      size="sm"
+                      value={provider}
+                      onChange={(val) => handleProviderChange(val as AIProviderType)}
+                      groups={providerGroups}
+                      ariaLabel="AI Provider"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase mb-1">
+                      <span>AI Model</span>
+                      {isLiveSynced && (
+                        <span className="text-[10px] font-semibold text-emerald-600 lowercase">
+                          ● live vendor sync
+                        </span>
+                      )}
+                    </label>
+                    <CustomSelect
+                      size="sm"
+                      value={modelName}
+                      onChange={(val) => setModelName(val)}
+                      options={providerModels.map((m) => ({
+                        value: m.id,
+                        label: m.label,
+                        badge: m.badge,
+                      }))}
+                      ariaLabel="AI Model"
+                    />
+                  </div>
+                </div>
+
+                {!isSelectedProviderConfigured && (
+                  <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-2">
+                    <div className="flex items-center space-x-2">
+                      <Key className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                      <span>
+                        <strong>{AI_PROVIDER_CATALOG.find((p) => p.id === provider)?.name}</strong> requires your own API key. You can add one in Profile &rarr; AI API Keys, or deploy using Gemini for free cloud generation.
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/profile')}
+                      className="self-end sm:self-auto px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold whitespace-nowrap text-[11px] shadow-xs transition"
+                    >
+                      Add Key
+                    </button>
+                  </div>
+                )}
               </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                {maxAttempts === 1
-                  ? 'Single attempt: once submitted, students view their graded results.'
-                  : 'Unlimited attempts: students can retry this assignment for practice.'}
-              </p>
-            </div>
-          </div>
 
-          {/* Total Assignment Points / Max Score */}
-          <div className="p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/80 space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Total Assignment Points / Max Score
-              </label>
-              <span className="text-xs font-mono font-bold text-primary bg-white px-2 py-0.5 rounded-lg border border-indigo-100 shadow-sm">
-                {totalPoints} pts
-              </span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="relative w-36">
-                <input
-                  type="number"
-                  min="1"
-                  max="1000"
-                  aria-label="Total Assignment Points"
-                  value={totalPoints}
-                  onChange={(e) => {
-                    const val = Math.max(1, parseInt(e.target.value) || 100);
-                    setTotalPoints(val);
-                    if (previewTask) {
-                      setPreviewTask({ ...previewTask, totalPoints: val });
-                    }
-                  }}
-                  className="w-full pl-3 pr-9 py-2 rounded-xl border border-indigo-200 bg-white text-xs font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              {/* Cohort Groups */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Target Cohort Groups (Multi-select)
+                  </label>
+                  {groups.length > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedGroupIds(groups.map((g) => g.id))}
+                        className="text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        Select All
+                      </button>
+                      <span className="text-slate-300">|</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedGroupIds([])}
+                        className="text-[11px] font-semibold text-slate-500 hover:underline"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {selectedGroupIds.length > 1 && (
+                  <div className="mb-2.5 p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-xs text-sky-800 flex items-center space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-sky-600 flex-shrink-0" />
+                    <span>
+                      Deploying simultaneously to <strong>{selectedGroupIds.length}</strong> cohorts ({
+                        groups
+                          .filter((g) => selectedGroupIds.includes(g.id))
+                          .reduce((acc, g) => acc + (g.studentCount || 0), 0)
+                      } students total).
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-2">
+                  {groups.map((g) => {
+                    const isSelected = selectedGroupIds.includes(g.id);
+                    return (
+                      <button
+                        type="button"
+                        key={g.id}
+                        onClick={() => toggleGroup(g.id)}
+                        className={`py-2 px-3.5 rounded-xl border text-xs font-semibold transition flex items-center space-x-1.5 ${
+                          isSelected
+                            ? 'border-accent bg-sky-50 text-sky-800 ring-2 ring-sky-200'
+                            : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                        }`}
+                      >
+                        <span>{isSelected ? '✓ ' : ''}{g.name}</span>
+                        <span className="text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
+                          {g.studentCount}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* CEFR Level */}
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  CEFR Level
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  {(['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as CefrLevel[]).map((level) => (
+                    <button
+                      type="button"
+                      key={level}
+                      onClick={() => {
+                        setCefrLevel(level);
+                        const defaultList = catalog?.topicsByLevel?.[level] || DEFAULT_CEFR_TOPICS[level];
+                        if (defaultList && defaultList.length > 0) {
+                          setGrammarTopic(defaultList[0]);
+                        }
+                      }}
+                      className={`py-2 px-2.5 rounded-xl border text-xs font-bold flex items-center justify-center space-x-1.5 transition ${
+                        cefrLevel === level
+                          ? 'border-primary bg-indigo-50 text-primary'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <CefrBadge level={level} size="sm" />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Task Format / Type Switcher */}
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                  Task Format
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                  {(
+                    [
+                      { type: 'MCQ', label: 'MCQ' },
+                      { type: 'GAP_FILL', label: 'Gap Fill' },
+                      { type: 'OPEN_BRACKETS', label: 'Open Brackets' },
+                      { type: 'REWRITE', label: 'Rewrite' },
+                      { type: 'READING', label: 'Reading' },
+                      { type: 'SPEAKING', label: 'Speaking' },
+                      { type: 'ESSAY', label: 'Essay' },
+                    ] as { type: TaskType; label: string }[]
+                  ).map((item) => (
+                    <button
+                      type="button"
+                      key={item.type}
+                      onClick={() => setTaskType(item.type)}
+                      className={`py-2 px-2.5 rounded-xl border text-xs font-semibold text-center transition ${
+                        taskType === item.type
+                          ? 'border-primary bg-indigo-50 text-primary font-bold shadow-xs'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Dynamic Module 1: Grammar Exercises */}
+              {isGrammarTask && (
+                <GrammarConfigPanel
+                  cefrLevel={cefrLevel}
+                  grammarTopic={grammarTopic}
+                  onGrammarTopicChange={setGrammarTopic}
+                  domain={domain}
+                  onDomainChange={setDomain}
+                  difficulty={difficulty}
+                  onDifficultyChange={setDifficulty}
+                  numberOfQuestions={numberOfQuestions}
+                  onNumberOfQuestionsChange={setNumberOfQuestions}
+                  ecoMode={ecoMode}
+                  onEcoModeChange={setEcoMode}
+                  customRule={customRule}
+                  onCustomRuleChange={setCustomRule}
+                  customVocabulary={customVocabulary}
+                  onCustomVocabularyChange={setCustomVocabulary}
+                  uploadedRuleFile={uploadedRuleFile}
+                  onUploadedRuleFileChange={setUploadedRuleFile}
+                  uploadedVocabFile={uploadedVocabFile}
+                  onUploadedVocabFileChange={setUploadedVocabFile}
+                  catalog={catalog}
+                  isStudent={false}
+                  savedRules={savedRules}
+                  savedVocabSets={savedVocabSets}
+                  onSaveRuleToLibrary={handleSaveRuleToLibrary}
+                  onSaveVocabToLibrary={handleSaveVocabToLibrary}
+                  isSavingRule={isSavingRule}
+                  isSavingVocab={isSavingVocab}
                 />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
-                  pts
-                </span>
+              )}
+
+              {/* Dynamic Module 2: Reading Comprehension Studio Panel */}
+              {taskType === 'READING' && (
+                <div className="animate-in fade-in duration-200">
+                  <ReadingConfigPanel
+                    config={readingConfig}
+                    onChange={(updated) => setReadingConfig((prev) => ({ ...prev, ...updated }))}
+                    cefrLevel={cefrLevel}
+                    customVocabulary={customVocabulary}
+                    onCustomVocabularyChange={setCustomVocabulary}
+                    isStudent={false}
+                  />
+                </div>
+              )}
+
+              {/* Dynamic Module 3: Speaking Comprehension Studio Panel */}
+              {taskType === 'SPEAKING' && (
+                <div className="animate-in fade-in duration-200">
+                  <SpeakingConfigPanel
+                    cefrLevel={cefrLevel}
+                    speakingTitle={speakingTitle}
+                    onTitleChange={setSpeakingTitle}
+                    targetSounds={targetSounds}
+                    onTargetSoundsChange={setTargetSounds}
+                    pronunciationPackId={pronunciationPackId}
+                    onPronunciationPackIdChange={setPronunciationPackId}
+                    speakingLength={speakingLength}
+                    onSpeakingLengthChange={setSpeakingLength}
+                    totalPoints={totalPoints}
+                    onTotalPointsChange={setTotalPoints}
+                    ecoMode={ecoMode}
+                    onEcoModeChange={setEcoMode}
+                    isStudent={false}
+                    customWordCount={customWordCount}
+                    onCustomWordCountChange={setCustomWordCount}
+                    customInstructions={customInstructions}
+                    onCustomInstructionsChange={setCustomInstructions}
+                  />
+                </div>
+              )}
+
+              {/* Dynamic Module 4: Essay Writing */}
+              {taskType === 'ESSAY' && (
+                <div className="rounded-3xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-white to-violet-50/30 p-6 space-y-4 shadow-xs">
+                  <h3 className="text-sm font-black text-slate-900 tracking-tight">
+                    Essay Topic & Writing Guidance
+                  </h3>
+                  <input
+                    type="text"
+                    value={grammarTopic}
+                    onChange={(e) => setGrammarTopic(e.target.value)}
+                    placeholder="e.g. Discuss the advantages and disadvantages of remote work..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  />
+                  <p className="text-[11px] text-slate-400">
+                    Students will be presented with a full essay editor with live word count and rubric grading.
+                  </p>
+                </div>
+              )}
+
+              {/* Due Date & Attempt Limit */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Submission Due Date
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+                    Allowed Student Attempts
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMaxAttempts(1)}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition ${
+                        maxAttempts === 1
+                          ? 'border-primary bg-indigo-50 text-primary shadow-xs'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      1 Attempt (Default)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMaxAttempts(0)}
+                      className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition ${
+                        maxAttempts === 0
+                          ? 'border-emerald-600 bg-emerald-50 text-emerald-700 shadow-xs'
+                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      ∞ Unlimited
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    {maxAttempts === 1
+                      ? 'Single attempt: once submitted, students view their graded results.'
+                      : 'Unlimited attempts: students can retry this assignment for practice.'}
+                  </p>
+                </div>
               </div>
-              <p className="text-[11px] text-slate-500 leading-snug">
-                Overall maximum score for this homework. Automatically distributed across questions during preview.
-              </p>
+
+              {/* Total Assignment Points / Max Score */}
+              {taskType !== 'READING' && (
+                <div className="p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Total Assignment Points / Max Score
+                    </label>
+                    <span className="text-xs font-mono font-bold text-primary bg-white px-2 py-0.5 rounded-lg border border-indigo-100 shadow-xs">
+                      {totalPoints} pts
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="relative w-36">
+                      <input
+                        type="number"
+                        min="1"
+                        max="1000"
+                        aria-label="Total Assignment Points"
+                        value={totalPoints}
+                        onChange={(e) => {
+                          const val = Math.max(1, parseInt(e.target.value) || 100);
+                          setTotalPoints(val);
+                          if (previewTask) {
+                            setPreviewTask({ ...previewTask, totalPoints: val });
+                          }
+                        }}
+                        className="w-full pl-3 pr-9 py-2 rounded-xl border border-indigo-200 bg-white text-xs font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                        pts
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Overall maximum score for this homework. Automatically distributed across questions during preview.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={handlePreview}
+                  disabled={isLoading}
+                  className="flex items-center space-x-1.5 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>Preview</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSaveTemplate}
+                  disabled={isLoading}
+                  className="flex items-center space-x-1.5 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
+                >
+                  <Bookmark className="w-4 h-4" />
+                  <span>Save Template</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDeploy}
+                  disabled={isLoading}
+                  className="flex-1 flex items-center justify-center space-x-2 py-3 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Deploy to Students</span>
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={handlePreview}
-              disabled={isLoading}
-              className="flex items-center space-x-1.5 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
-            >
-              <Eye className="w-4 h-4" />
-              <span>Preview</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSaveTemplate}
-              disabled={isLoading}
-              className="flex items-center space-x-1.5 py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition"
-            >
-              <Bookmark className="w-4 h-4" />
-              <span>Save Template</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleDeploy}
-              disabled={isLoading}
-              className="flex-1 flex items-center justify-center space-x-2 py-3 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
-            >
-              <Send className="w-4 h-4" />
-              <span>Deploy to Students</span>
-            </button>
-          </div>
+          )}
         </div>
 
         {/* Live Preview Column */}

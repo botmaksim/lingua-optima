@@ -8,6 +8,7 @@ import com.linguaoptima.api.domain.CustomCurriculumEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +27,16 @@ public interface CustomCurriculumRepository extends JpaRepository<CustomCurricul
      * @brief Finds all curriculum entries owned by user.
      */
     List<CustomCurriculumEntry> findByUserIdOrderByCreatedAtDesc(UUID userId);
+
+    /**
+     * @brief Finds all curriculum entries owned by any of the specified users filtered by type.
+     */
+    List<CustomCurriculumEntry> findByUserIdInAndCurriculumTypeOrderByCreatedAtDesc(Collection<UUID> userIds, String curriculumType);
+
+    /**
+     * @brief Finds all curriculum entries owned by any of the specified users.
+     */
+    List<CustomCurriculumEntry> findByUserIdInOrderByCreatedAtDesc(Collection<UUID> userIds);
 
     /**
      * @brief Counts entries of specific type owned by user.

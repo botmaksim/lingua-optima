@@ -41,11 +41,32 @@ public class CustomCurriculumResponse {
     /** @brief Creation timestamp. */
     private LocalDateTime createdAt;
 
+    /** @brief Author full name or email who created the curriculum entry. */
+    private String authorName;
+
+    /** @brief Indicates if the entry was created by the student's educator. */
+    private Boolean isSharedByTeacher;
+
     /**
-     * @brief Maps a JPA entity to this response DTO.
+     * @brief Maps a JPA entity to this response DTO without caller context.
      */
     public static CustomCurriculumResponse fromEntity(CustomCurriculumEntry entity) {
+        return fromEntity(entity, null);
+    }
+
+    /**
+     * @brief Maps a JPA entity to this response DTO with caller context to detect shared teacher materials.
+     */
+    public static CustomCurriculumResponse fromEntity(CustomCurriculumEntry entity, UUID currentUserId) {
         if (entity == null) return null;
+        String author = entity.getUser() != null
+            ? (entity.getUser().getFullName() != null && !entity.getUser().getFullName().isBlank()
+                ? entity.getUser().getFullName()
+                : entity.getUser().getEmail())
+            : null;
+        boolean shared = currentUserId != null && entity.getUser() != null
+            && !currentUserId.equals(entity.getUser().getId());
+
         return CustomCurriculumResponse.builder()
             .id(entity.getId())
             .title(entity.getTitle())
@@ -53,6 +74,8 @@ public class CustomCurriculumResponse {
             .curriculumType(entity.getCurriculumType())
             .content(entity.getContent())
             .createdAt(entity.getCreatedAt())
+            .authorName(author)
+            .isSharedByTeacher(shared)
             .build();
     }
 }

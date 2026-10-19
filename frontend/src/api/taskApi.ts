@@ -159,4 +159,21 @@ export const taskApi = {
     const res = await axiosInstance.get<import('../types/task').TopicsCatalogResponse>('/tasks/topics');
     return res.data;
   },
+
+  /**
+   * @brief Retrieves pre-calibrated pronunciation drill packs and minimal pair contrasts.
+   * @param level Optional CEFR level filter.
+   * @return Promise resolving to array of PronunciationPack.
+   */
+  getPronunciationPacks: async (
+    level?: string
+  ): Promise<import('../types/task').PronunciationPack[]> => {
+    const res = await axiosInstance.get<import('../types/task').PronunciationPack[]>(
+      '/tasks/curriculum/pronunciation-packs',
+      {
+        params: level ? { level } : undefined,
+      }
+    );
+    return res.data;
+  },
 };

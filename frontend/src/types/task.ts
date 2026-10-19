@@ -4,6 +4,7 @@
  */
 
 import { CefrLevel, User } from './user';
+export type { CefrLevel };
 
 /**
  * @brief Types of pedagogical tasks available.
@@ -156,6 +157,33 @@ export interface TaskParams {
   targetSounds?: string;
   /** @brief Optional speaking passage length preset (SHORT, MEDIUM, LONG, CUSTOM). */
   speakingLength?: string;
+  /** @brief Optional ID of pre-calibrated pronunciation pack from phonetics/pronunciation_packs.json. */
+  pronunciationPackId?: string;
+}
+
+/**
+ * @brief Phonetic minimal pair contrast.
+ */
+export interface MinimalPair {
+  word1: string;
+  word2: string;
+  phoneme1: string;
+  phoneme2: string;
+}
+
+/**
+ * @brief Pre-calibrated CEFR pronunciation drill pack loaded from phonetics JSON resource.
+ */
+export interface PronunciationPack {
+  id: string;
+  cefrLevel: CefrLevel;
+  category: string;
+  title: string;
+  phonemes: string[];
+  drillWords: string[];
+  minimalPairs: MinimalPair[];
+  contrastFocus: string;
+  tongueTwister: string;
 }
 
 /**

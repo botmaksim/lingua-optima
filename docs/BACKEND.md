@@ -61,6 +61,7 @@ backend/
 │   │   ├── AuthController.java        — POST /register, /login, /google, /refresh, /logout, /logout-all, /forgot-password, /send-verification-code
 │   │   ├── UserController.java        — GET /me, PUT /me, PUT /me/password, DELETE /me (GDPR)
 │   │   ├── TaskController.java        — POST /generate, /preview, /{id}/assign, /template; GET / (list), /{id}
+│   │   ├── CurriculumController.java  — GET /curriculum/catalog, /curriculum/pronunciation-packs (CEFR pronunciation packs with minimal pairs)
 │   │   ├── SessionController.java     — POST /start; GET /active, /{id}/next-question; POST /{id}/answer, /{id}/complete
 │   │   ├── SubmissionController.java  — POST /text, /image; GET /{id}, /my; PUT /{id}/override
 │   │   ├── GroupController.java       — GET /, /{id}; POST /; POST /{id}/students; DELETE /{id}/students/{uid}, /{id}
@@ -77,7 +78,7 @@ backend/
 │   │   │   ├── RegisterRequest.java    — email, password, fullName, role
 │   │   │   ├── LoginRequest.java       — email, password
 │   │   │   ├── GoogleAuthRequest.java  — credential, role
-│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty, groupIds[], dueDate, maxAttempts, readingTitle, readingLength, readingParagraphs, mcqQuestionsCount, mcqPoints, trueFalseQuestionsCount, trueFalsePoints, openQuestionsCount, openPoints
+│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty, ecoMode, groupIds[], dueDate, maxAttempts, readingTitle, readingLength, readingParagraphs, mcqQuestionsCount, mcqPoints, trueFalseQuestionsCount, trueFalsePoints, openQuestionsCount, openPoints, speakingTitle, targetSounds, speakingLength
 │   │   │   ├── AssignTaskRequest.java  — groupIds[], dueDate, maxAttempts
 │   │   │   ├── TransferTaskRequest.java — targetGroupId, keepInSource, dueDate, maxAttempts
 │   │   │   ├── TextSubmissionRequest.java — text, assignmentId, type (GRAMMAR/ESSAY)
@@ -97,6 +98,9 @@ backend/
 │   │       ├── GroupTaskResponse.java — taskId, type, cefrLevel, grammarTopic, domain, totalPoints, dueDate, maxAttempts, assignedStudentCount, completedStudentCount, avgScore, createdAt
 │   │       ├── QuestionResponse.java  — id, questionText, options (for MCQ), difficulty
 │   │       ├── AnswerFeedbackResponse.java — isCorrect, correctAnswer, explanation, newDifficulty
+│   │       ├── PronunciationPackResponse.java — packId, name, cefrLevel, targetSounds, description, drillWords, minimalPairs
+│   │       ├── MinimalPairDto.java    — word1, word2, sound1, sound2, explanation
+│   │       ├── CustomCurriculumResponse.java — id, type, title, content, cefrLevel, isSharedByTeacher, authorName, createdAt
 │   │       ├── SubmissionResultResponse.java — originalText, items, corrections, score, feedback, rubric breakdown, aiAnalysis
 │   │       ├── SubmissionItemResponse.java — questionNumber, sentence, studentAnswer, correctAnswer, isCorrect, isSkipped, explanation, grammarRule, points, options
 │   │       ├── SentenceCorrectionResponse.java — original, corrected, explanation, grammarRule
@@ -164,7 +168,8 @@ backend/
 │   │   ├── ProgressService.java       — updateFromSubmission(), updateFromOverride(), getGapsForStudent(), getGroupProgress(), checkCefrLevelUp(), confirmLevelUp()
 │   │   ├── GroupService.java          — createGroup(), addStudent(), removeStudent() (soft-delete), getGroupsForTeacher() (marks surplus locked groups on downgrade), deleteGroup()
 │   │   ├── NotificationService.java   — send(), sendToGroup(), getUnreadCount(), markAsRead(), markAllAsRead(), SSE emitter management
-│   │   ├── CustomCurriculumService.java — getCustomEntries(), saveCustomEntry() (enforces tier quotas for custom rules/vocab), deleteCustomEntry()
+│   │   ├── CustomCurriculumService.java — getCustomEntries(), saveCustomEntry() (enforces tier quotas for custom rules/vocab), deleteCustomEntry(), shared teacher curriculum resolution for enrolled students
+│   │   ├── PronunciationPackService.java — getPacksByCefrLevel(), getAllPacks(), getPackById(). Loads structured phonetics/pronunciation_packs.json resource with drill words and minimal pair contrasts
 │   │   ├── GenerationProtectionService.java — validateDeviceBinding() (12h device TTL), acquireExclusiveGenerationLease() (90s concurrency=1 lock)
 │   │   ├── GamificationService.java   — onSubmissionCompleted() (streak +1, freeze token every 7 days), applyDailyStreakCheck() (called by scheduler)
 │   │   ├── SubscriptionService.java   — getSubscription(), upgrade() (calls PaymentService), downgrade() (locks surplus cohorts without data deletion), checkQuota(), isFeatureAllowed()
@@ -651,6 +656,40 @@ The PostgreSQL relational database is version-controlled using an enterprise bas
 - **SubmissionService Persistence**:
   - Preserves objective oral speech scores and avoids overwriting speaking evaluation with discrete question weights.
   - Automatically enriches question breakdown with the actual spoken transcript and teacher grade override support.
+
+### 12.3 CEFR Pronunciation Packs Repository (`PronunciationPackService`)
+- **JSON Resource Repository (`backend/src/main/resources/phonetics/pronunciation_packs.json`)**:
+  - Stores 36 comprehensive, calibrated phonetics packs spanning all CEFR levels (A1 through C2).
+  - Each pack provides: `packId`, `name`, `cefrLevel`, `targetSounds`, `description`, `drillWords` (high-frequency exemplar vocabulary), and `minimalPairs` (`word1`, `word2`, `sound1`, `sound2`, `explanation`).
+  - Loaded once into an immutable in-memory cache during bean construction (`@PostConstruct`), eliminating filesystem overhead on subsequent queries.
+- **API Endpoint (`GET /api/tasks/curriculum/pronunciation-packs?cefrLevel=...`)**:
+  - Exposes pack metadata and minimal pairs to student and teacher interfaces.
+  - Supports optional CEFR filtering or returns the full structured catalog.
+
+### 12.4 Speaking Eco Mode & Dynamic Prompt Compiling
+- **Eco Mode Mechanics (`PromptTemplates.buildSpeakingGenerationPrompt`)**:
+  - **Eco Mode OFF (Default / Detailed)**: The LLM prompt is enriched with target phonetics guidance, explicit drill word requirements, and minimal pair contrasts from the selected pronunciation pack. The model weaves these exact contrasts into natural, cohesive oral reading passages.
+  - **Eco Mode ON**: All verbose word lists, phonetics drill vocabulary, and instructional overhead are stripped from the prompt. The model generates a concise oral reading passage adhering strictly to the topic and CEFR level, reducing input tokens by up to 70% and minimizing generation latency.
+- **Prompt Compiling Invariant**:
+  - Governed by `ecoMode` in `TaskParamsRequest`. When set to `true`, `PromptTemplates` bypasses `pronunciationGuidance` and `phoneticsDrillWords`, outputting a lightweight token-saving generation contract.
+
+---
+
+## 13. Cross-Interface Custom Curriculum Synchronization
+
+### 13.1 Teacher-to-Student Curriculum Sharing
+- In previous versions, custom grammar rules and vocabulary sets created by teachers in the Curriculum Studio (`CustomCurriculumController`) were private to the authoring educator.
+- With cross-interface curriculum sharing, students enrolled in an active teacher group (`group_students.is_active = true`) automatically inherit access to that teacher's custom rules and vocabulary sets.
+
+### 13.2 Resolution Pipeline (`CustomCurriculumService.getCustomEntries`)
+1. Fetches personal custom curriculum entries authored by the authenticated user (`customCurriculumRepository.findByUserAndCurriculumTypeOrderByCreatedAtDesc`).
+2. If the user has role `STUDENT`, queries all active groups the student belongs to via `groupStudentRepository.findActiveGroupIdsByStudentId(student.getId())`.
+3. Resolves all distinct teachers managing those cohorts and retrieves their published custom rules and vocabulary sets.
+4. Maps entries into `CustomCurriculumResponse` DTOs:
+   - Sets `isSharedByTeacher = true` and `authorName = teacher.getFullName()` for teacher-provided items.
+   - Sets `isSharedByTeacher = false` for student-created personal entries.
+5. De-duplicates entries by title and CEFR level, prioritizing the student's personal notes if conflicts arise.
+6. The resulting unified curriculum is available in both Student Self-Service (`GenerateTask.tsx`) and Educator Homework Configurator (`ConfigureTask.tsx`), ensuring seamless pedagogical alignment between classroom teaching and independent practice.
 
 ---
 

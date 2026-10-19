@@ -2,16 +2,18 @@
  * @file SpeakingConfigPanel.tsx
  * @brief Configuration panel for speaking and pronunciation tasks.
  *
- * Enables educators and students to calibrate target phonemes, sound contrasts,
- * passage length presets, tongue twister modes, custom word counts, and point allocations.
+ * Enables educators and students to calibrate target phonemes, pre-calibrated JSON word packs,
+ * minimal pair contrasts, passage length presets, custom word counts, and point allocations.
  */
 
-import React, { useState } from 'react';
-import { Mic, Volume2, Sparkles, HelpCircle, Edit3 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mic, Volume2, Sparkles, HelpCircle, Edit3, Leaf, Dices } from 'lucide-react';
+import { CefrLevel, PronunciationPack } from '../../types/task';
+import { taskApi } from '../../api/taskApi';
 import { speakWord } from '../../utils/phonetics';
 
 /**
- * @brief Predefined target phoneme focus options for speaking exercises.
+ * @brief Predefined target phoneme fallback presets if offline or loading.
  */
 export const TARGET_SOUND_PRESETS = [
   { label: 'Dental Fricatives: /θ/, /ð/', value: '/θ/ and /ð/ (think, this, thought, breathe)', title: 'Th-Sounds (/θ/ and /ð/)', example: 'think, this, thought, breathe' },
@@ -34,14 +36,19 @@ export const SPEAKING_LENGTH_PRESETS = [
 ] as const;
 
 interface SpeakingConfigPanelProps {
+  cefrLevel?: CefrLevel;
   speakingTitle: string;
   onTitleChange: (title: string) => void;
   targetSounds: string;
   onTargetSoundsChange: (sounds: string) => void;
+  pronunciationPackId?: string | null;
+  onPronunciationPackIdChange?: (packId: string | null) => void;
   speakingLength: string;
   onSpeakingLengthChange: (length: string) => void;
   totalPoints: number;
   onTotalPointsChange: (points: number) => void;
+  ecoMode?: boolean;
+  onEcoModeChange?: (eco: boolean) => void;
   isStudent?: boolean;
   customWordCount?: number;
   onCustomWordCountChange?: (count: number) => void;
@@ -50,14 +57,19 @@ interface SpeakingConfigPanelProps {
 }
 
 export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
+  cefrLevel = 'B1',
   speakingTitle,
   onTitleChange,
   targetSounds,
   onTargetSoundsChange,
+  pronunciationPackId,
+  onPronunciationPackIdChange,
   speakingLength,
   onSpeakingLengthChange,
   totalPoints,
   onTotalPointsChange,
+  ecoMode = false,
+  onEcoModeChange,
   isStudent = false,
   customWordCount,
   onCustomWordCountChange,
@@ -67,6 +79,8 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
   const [testWord] = useState('thoughtful');
   const [internalWordCount, setInternalWordCount] = useState<number>(50);
   const [internalInstructions, setInternalInstructions] = useState<string>('');
+  const [packs, setPacks] = useState<PronunciationPack[]>([]);
+  const [selectedPack, setSelectedPack] = useState<PronunciationPack | null>(null);
 
   const activeWordCount = customWordCount ?? internalWordCount;
   const updateWordCount = (val: number) => {
@@ -80,12 +94,56 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
     onCustomInstructionsChange?.(val);
   };
 
+  // Fetch JSON pronunciation packs for the current CEFR level
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPacks = async () => {
+      try {
+        const loaded = await taskApi.getPronunciationPacks(cefrLevel);
+        if (isMounted && loaded && loaded.length > 0) {
+          setPacks(loaded);
+          if (pronunciationPackId) {
+            const found = loaded.find((p) => p.id === pronunciationPackId);
+            if (found) setSelectedPack(found);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load pronunciation packs from API, fallback to presets:', err);
+      }
+    };
+    fetchPacks();
+    return () => {
+      isMounted = false;
+    };
+  }, [cefrLevel, pronunciationPackId]);
+
+  const handlePackSelect = (pack: PronunciationPack) => {
+    setSelectedPack(pack);
+    onPronunciationPackIdChange?.(pack.id);
+    const soundDesc = pack.phonemes && pack.phonemes.length > 0
+      ? `${pack.phonemes.join(' and ')} · ${pack.title}`
+      : pack.title;
+    onTargetSoundsChange(soundDesc);
+  };
+
   const handleSoundPresetSelect = (presetVal: string) => {
+    setSelectedPack(null);
+    onPronunciationPackIdChange?.('');
     onTargetSoundsChange(presetVal);
   };
 
-  const handleTestAudio = () => {
-    speakWord(testWord);
+  const handleRandomPack = () => {
+    if (packs.length > 0) {
+      const randomIdx = Math.floor(Math.random() * packs.length);
+      handlePackSelect(packs[randomIdx]);
+    } else {
+      const randomIdx = Math.floor(Math.random() * TARGET_SOUND_PRESETS.length);
+      handleSoundPresetSelect(TARGET_SOUND_PRESETS[randomIdx].value);
+    }
+  };
+
+  const handleTestAudio = (word: string) => {
+    speakWord(word);
   };
 
   return (
@@ -102,13 +160,13 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
                 Speaking Practice
               </h3>
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
-                Pronunciation & Pace
+                CEFR {cefrLevel}
               </span>
             </div>
             <p className="text-xs text-slate-500">
               {isStudent
-                ? 'Read the passage aloud into your microphone to practice pronunciation and pace'
-                : 'Configure speech topics, target sounds, and grading'}
+                ? 'Read the passage aloud into your microphone to practice pronunciation, phonemes, and pace'
+                : 'Configure target phonemes, drill word packs, passage length, and grading'}
             </p>
           </div>
         </div>
@@ -118,7 +176,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           <span className="text-[11px] font-semibold text-slate-400">TTS Test:</span>
           <button
             type="button"
-            onClick={handleTestAudio}
+            onClick={() => handleTestAudio(testWord)}
             className="flex items-center space-x-1.5 text-xs font-bold text-primary hover:text-primary-hover bg-indigo-50/80 hover:bg-indigo-100/80 px-2.5 py-1 rounded-xl transition"
             title="Click to test pronunciation audio playback"
           >
@@ -145,41 +203,131 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
         </p>
       </div>
 
-      {/* Target Sounds & Phonemes */}
+      {/* Target Sounds & Phoneme Packs */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
-            <span>Target Sounds</span>
-            <span title="Select specific sound contrasts or enter custom phonemes">
+            <span>Phonetics & Word Packs ({cefrLevel})</span>
+            <span title="Select pre-calibrated drill words and minimal pair contrasts from JSON">
               <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
             </span>
           </label>
-          <span className="text-[11px] font-semibold text-primary">Click preset to populate</span>
+          <button
+            type="button"
+            onClick={handleRandomPack}
+            className="flex items-center space-x-1 text-[11px] font-bold text-primary hover:text-primary-hover bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-xl transition"
+          >
+            <Dices className="w-3.5 h-3.5" />
+            <span>Surprise Pack</span>
+          </button>
         </div>
 
-        {/* Presets Grid */}
+        {/* Dynamic JSON Packs or Fallback Presets Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-          {TARGET_SOUND_PRESETS.map((preset) => {
-            const isSelected = targetSounds === preset.value;
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => handleSoundPresetSelect(preset.value)}
-                className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between ${
-                  isSelected
-                    ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
-                    : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
-                }`}
-              >
-                <div>
-                  <div className="text-xs font-bold leading-tight">{preset.label}</div>
-                  <div className="text-[11px] text-slate-400 mt-1 font-mono line-clamp-1">{preset.example}</div>
-                </div>
-              </button>
-            );
-          })}
+          {packs.length > 0 ? (
+            packs.map((pack) => {
+              const isSelected = pronunciationPackId === pack.id || targetSounds.includes(pack.title);
+              return (
+                <button
+                  key={pack.id}
+                  type="button"
+                  onClick={() => handlePackSelect(pack)}
+                  className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between ${
+                    isSelected
+                      ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
+                      : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-1">
+                      <div className="text-xs font-bold leading-tight line-clamp-1">{pack.title}</div>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-indigo-100/70 text-indigo-700 flex-shrink-0 font-semibold">
+                        {pack.phonemes?.join(' ') || pack.category}
+                      </span>
+                    </div>
+                    {pack.drillWords && pack.drillWords.length > 0 && (
+                      <div className="text-[11px] text-slate-400 mt-1 font-mono line-clamp-1">
+                        {pack.drillWords.slice(0, 4).join(', ')}...
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            TARGET_SOUND_PRESETS.map((preset) => {
+              const isSelected = targetSounds === preset.value;
+              return (
+                <button
+                  key={preset.label}
+                  type="button"
+                  onClick={() => handleSoundPresetSelect(preset.value)}
+                  className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between ${
+                    isSelected
+                      ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
+                      : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
+                  }`}
+                >
+                  <div>
+                    <div className="text-xs font-bold leading-tight">{preset.label}</div>
+                    <div className="text-[11px] text-slate-400 mt-1 font-mono line-clamp-1">{preset.example}</div>
+                  </div>
+                </button>
+              );
+            })
+          )}
         </div>
+
+        {/* Selected Pack Interactive Preview */}
+        {selectedPack && !ecoMode && (
+          <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-xs space-y-3 animate-in fade-in duration-200">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-50 pb-2">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <span className="text-xs font-bold text-slate-800">
+                  Target Words to Weave into Speech:
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400">Click word to hear pronunciation</span>
+            </div>
+
+            {/* Drill Words Pills */}
+            {selectedPack.drillWords && selectedPack.drillWords.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {selectedPack.drillWords.map((word) => (
+                  <button
+                    key={word}
+                    type="button"
+                    onClick={() => handleTestAudio(word)}
+                    className="group px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 text-xs font-medium text-slate-700 hover:text-primary transition flex items-center space-x-1"
+                    title={`Click to pronounce "${word}"`}
+                  >
+                    <span>{word}</span>
+                    <Volume2 className="w-3 h-3 text-slate-400 group-hover:text-primary" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Minimal Pairs Contrast preview */}
+            {selectedPack.minimalPairs && selectedPack.minimalPairs.length > 0 && (
+              <div className="pt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-slate-500 text-[11px]">Contrast Pairs:</span>
+                {selectedPack.minimalPairs.map((pair, idx) => (
+                  <span key={idx} className="px-2 py-0.5 rounded-lg bg-indigo-50/60 text-slate-800 font-mono text-[11px]">
+                    <strong>{pair.word1}</strong> ({pair.phoneme1}) vs <strong>{pair.word2}</strong> ({pair.phoneme2})
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {selectedPack.contrastFocus && (
+              <p className="text-[11px] text-slate-500 italic">
+                {selectedPack.contrastFocus}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Selected Sound Focus / Custom Input */}
         <div className="pt-1 space-y-1.5">
@@ -198,6 +346,53 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           />
         </div>
       </div>
+
+      {/* Eco Mode Toggle */}
+      {onEcoModeChange && (
+        <div className={`p-4 rounded-2xl border transition ${
+          ecoMode
+            ? 'bg-emerald-50/70 border-emerald-200'
+            : 'bg-white border-slate-200/90'
+        } flex items-center justify-between`}>
+          <div className="flex items-center space-x-3">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
+              ecoMode ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+            }`}>
+              <Leaf className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Eco Mode
+                </h4>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                  ecoMode ? 'bg-emerald-200 text-emerald-900' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  {ecoMode ? 'ACTIVE' : 'OFF'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {ecoMode
+                  ? 'Skip heavy phonetic drill word lists to generate a lean passage and save tokens.'
+                  : 'Inject level-calibrated drill words and minimal pair contrasts into the passage.'}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onEcoModeChange(!ecoMode)}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              ecoMode ? 'bg-emerald-600' : 'bg-slate-300'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                ecoMode ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      )}
 
       {/* Passage Length Presets */}
       <div className="space-y-3">

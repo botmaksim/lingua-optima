@@ -5,6 +5,7 @@
 package com.linguaoptima.api.util;
 
 import com.linguaoptima.api.dto.request.TaskParamsRequest;
+import com.linguaoptima.api.dto.response.PronunciationPackResponse;
 
 /**
  * @brief Structured prompt generators ensuring strict JSON schema compliance from downstream AI models.
@@ -388,6 +389,19 @@ public final class PromptTemplates {
      * @return Formatted speaking generation prompt string.
      */
     public static String buildSpeakingGenerationPrompt(TaskParamsRequest params, String targetRule, String targetVocabulary) {
+        return buildSpeakingGenerationPrompt(params, targetRule, targetVocabulary, null);
+    }
+
+    /**
+     * @brief Constructs speaking practice generation prompt based on TaskParamsRequest and optional PronunciationPackResponse.
+     * @param params Task generation parameters.
+     * @param targetRule Optional target rule or context.
+     * @param targetVocabulary Optional target vocabulary.
+     * @param pack Optional CEFR-calibrated pronunciation drill pack from JSON.
+     * @return Formatted speaking generation prompt string.
+     */
+    public static String buildSpeakingGenerationPrompt(TaskParamsRequest params, String targetRule, String targetVocabulary,
+                                                        PronunciationPackResponse pack) {
         String level = params.getCefrLevel() != null ? params.getCefrLevel().name() : "B1";
         String topic = params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank()
             ? params.getGrammarTopic() : "Contemporary English Communication";
@@ -397,13 +411,15 @@ public final class PromptTemplates {
         String title = params.getSpeakingTitle() != null && !params.getSpeakingTitle().isBlank()
             ? params.getSpeakingTitle() : (topic + " - Pronunciation & Speech Practice");
         String targetSounds = params.getTargetSounds() != null && !params.getTargetSounds().isBlank()
-            ? params.getTargetSounds() : "Natural Rhythm, Intonation & Clear Articulation";
+            ? params.getTargetSounds() : (pack != null ? pack.getTitle() : "Natural Rhythm, Intonation & Clear Articulation");
         String length = params.getSpeakingLength() != null && !params.getSpeakingLength().isBlank()
             ? params.getSpeakingLength() : "MEDIUM";
         int totalPoints = params.getTotalPoints() != null && params.getTotalPoints() > 0
             ? params.getTotalPoints() : 100;
+        boolean ecoMode = Boolean.TRUE.equals(params.getEcoMode());
 
-        return buildSpeakingGenerationPrompt(level, topic, domain, difficulty, title, targetSounds, length, totalPoints, targetVocabulary);
+        return buildSpeakingGenerationPrompt(level, topic, domain, difficulty, title, targetSounds, length, totalPoints,
+            targetVocabulary, pack, ecoMode);
     }
 
     /**
@@ -422,6 +438,29 @@ public final class PromptTemplates {
     public static String buildSpeakingGenerationPrompt(String cefrLevel, String topic, String domain, String difficulty,
                                                        String title, String targetSounds, String length, int totalPoints,
                                                        String targetVocabulary) {
+        return buildSpeakingGenerationPrompt(cefrLevel, topic, domain, difficulty, title, targetSounds, length, totalPoints,
+            targetVocabulary, null, false);
+    }
+
+    /**
+     * @brief Detailed prompt generator for speaking and pronunciation exercises with phonetics pack and ecoMode support.
+     * @param cefrLevel Target CEFR level.
+     * @param topic Topic or theme.
+     * @param domain Real-world domain.
+     * @param difficulty Difficulty tier.
+     * @param title Title of assignment.
+     * @param targetSounds Target sounds or phonemes.
+     * @param length Length preset.
+     * @param totalPoints Total points budget.
+     * @param targetVocabulary Target vocabulary words.
+     * @param pack Optional pronunciation pack.
+     * @param ecoMode Eco mode flag.
+     * @return Formatted prompt string.
+     */
+    public static String buildSpeakingGenerationPrompt(String cefrLevel, String topic, String domain, String difficulty,
+                                                       String title, String targetSounds, String length, int totalPoints,
+                                                       String targetVocabulary, PronunciationPackResponse pack,
+                                                       boolean ecoMode) {
         String lengthGuidance = switch (length.toUpperCase()) {
             case "SHORT" -> "Short reading passage: 30 to 50 words (2-3 sentences). Ideal for quick drill and focused sound repetition.";
             case "LONG" -> "Long reading passage: 120 to 180 words (2-3 connected paragraphs). Ideal for advanced rhythm, stress, and continuous discourse.";
@@ -429,10 +468,41 @@ public final class PromptTemplates {
             default -> "Medium reading passage: 60 to 90 words (1 rich, natural paragraph). Balanced flow and articulation.";
         };
 
-        StringBuilder vocabBuilder = new StringBuilder();
-        if (targetVocabulary != null && !targetVocabulary.isBlank()) {
-            vocabBuilder.append("\n- TARGET VOCABULARY WORDS TO INTEGRATE:\n").append(targetVocabulary.trim()).append("\n");
+        StringBuilder contextBuilder = new StringBuilder();
+
+        if (ecoMode) {
+            contextBuilder.append("\n- ECO MODE ACTIVE: Generate a concise, natural passage prioritizing conversational flow and cadence without heavy drill word constraints.\n");
+        } else if (pack != null) {
+            contextBuilder.append("\n- TARGET PHONETICS PACK: ").append(pack.getTitle()).append("\n");
+            if (pack.getPhonemes() != null && !pack.getPhonemes().isEmpty()) {
+                contextBuilder.append("- PHONEMES: ").append(String.join(", ", pack.getPhonemes())).append("\n");
+            }
+            if (pack.getDrillWords() != null && !pack.getDrillWords().isEmpty()) {
+                contextBuilder.append("- TARGET DRILL WORDS (weave 4-6 into the passage): ")
+                    .append(String.join(", ", pack.getDrillWords())).append("\n");
+            }
+            if (pack.getMinimalPairs() != null && !pack.getMinimalPairs().isEmpty()) {
+                contextBuilder.append("- MINIMAL PAIR CONTRASTS (weave at least 1 contrast pair):\n");
+                for (var pair : pack.getMinimalPairs()) {
+                    contextBuilder.append("  * ").append(pair.getWord1()).append(" (").append(pair.getPhoneme1())
+                        .append(") vs ").append(pair.getWord2()).append(" (").append(pair.getPhoneme2()).append(")\n");
+                }
+            }
+            if (pack.getContrastFocus() != null && !pack.getContrastFocus().isBlank()) {
+                contextBuilder.append("- ARTICULATION FOCUS: ").append(pack.getContrastFocus().trim()).append("\n");
+            }
+            if (pack.getTongueTwister() != null && !pack.getTongueTwister().isBlank()) {
+                contextBuilder.append("- RHYTHMIC REFERENCE: ").append(pack.getTongueTwister().trim()).append("\n");
+            }
         }
+
+        if (targetVocabulary != null && !targetVocabulary.isBlank() && !ecoMode) {
+            contextBuilder.append("\n- TARGET VOCABULARY WORDS TO INTEGRATE:\n").append(targetVocabulary.trim()).append("\n");
+        }
+
+        String soundReq = (!ecoMode && pack != null && pack.getDrillWords() != null && !pack.getDrillWords().isEmpty())
+            ? "The passage must naturally incorporate at least 4-6 target drill words and at least one minimal pair contrast from the phonetics pack specified above."
+            : "The passage must emphasize the target sounds and rhythm (" + targetSounds + ") while maintaining natural communicative flow.";
 
         return """
             Generate an English Speaking & Pronunciation reading practice assignment based on the following parameters:
@@ -446,7 +516,7 @@ public final class PromptTemplates {
             %s
             CRITICAL PEDAGOGICAL REQUIREMENTS:
             1. Create an authentic, natural, and engaging English passage for the student to read aloud into a microphone.
-            2. The passage must emphasize the target sounds/phonemes (%s) in natural contexts (or contrast minimal pairs where applicable) while maintaining genuine communicative value.
+            2. %s
             3. Lexical and syntactic complexity MUST strictly calibrate to CEFR %s. Avoid vocabulary above this level.
             4. In the "questions" array, provide 1 item whose "text" and "correctAnswer" contain the passage text to be read aloud, with points allocated equal to %d.
             5. Return ONLY a valid JSON object matching this exact schema:
@@ -478,7 +548,7 @@ public final class PromptTemplates {
             }
             """.formatted(
                 cefrLevel, topic, title, domain, difficulty, targetSounds, lengthGuidance,
-                vocabBuilder.toString(), targetSounds, cefrLevel, totalPoints,
+                contextBuilder.toString(), soundReq, cefrLevel, totalPoints,
                 title, targetSounds, targetSounds, totalPoints, targetSounds
             );
     }

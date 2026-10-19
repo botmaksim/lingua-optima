@@ -9,7 +9,9 @@ import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.CurriculumFileType;
 import com.linguaoptima.api.dto.response.CurriculumReferenceResponse;
 import com.linguaoptima.api.dto.response.CurriculumUploadResponse;
+import com.linguaoptima.api.dto.response.PronunciationPackResponse;
 import com.linguaoptima.api.service.CurriculumStorageService;
+import com.linguaoptima.api.service.PronunciationPackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +19,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
- * @brief REST endpoints for curriculum file uploads and pedagogical reference queries.
+ * @brief REST endpoints for curriculum file uploads, reference queries, and pronunciation word packs.
  */
 @RestController
 @RequestMapping("/api/tasks/curriculum")
@@ -27,6 +31,9 @@ public class CurriculumController {
 
     /** @brief Service managing curriculum file persistence and reference resolution. */
     private final CurriculumStorageService curriculumStorageService;
+
+    /** @brief Service providing CEFR-calibrated pronunciation drill packs. */
+    private final PronunciationPackService pronunciationPackService;
 
     /**
      * @brief Uploads custom grammar rules or vocabulary reference materials to server storage.
@@ -60,5 +67,20 @@ public class CurriculumController {
     ) {
         CurriculumReferenceResponse response = curriculumStorageService.getReferenceCurriculum(level, topic);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * @brief Retrieves pre-calibrated pronunciation word packs and minimal pair drills.
+     * @param level Optional CEFR level filter.
+     * @return HTTP 200 with list of PronunciationPackResponse.
+     */
+    @GetMapping("/pronunciation-packs")
+    public ResponseEntity<List<PronunciationPackResponse>> getPronunciationPacks(
+        @RequestParam(value = "level", required = false) CefrLevel level
+    ) {
+        List<PronunciationPackResponse> packs = level != null
+            ? pronunciationPackService.getPacksByLevel(level)
+            : pronunciationPackService.getAllPacks();
+        return ResponseEntity.ok(packs);
     }
 }

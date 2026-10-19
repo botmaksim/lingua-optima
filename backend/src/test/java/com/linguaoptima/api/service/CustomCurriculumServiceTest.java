@@ -16,7 +16,10 @@ import com.linguaoptima.api.dto.response.CustomCurriculumResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
+import com.linguaoptima.api.domain.Group;
+import com.linguaoptima.api.domain.GroupStudent;
 import com.linguaoptima.api.repository.CustomCurriculumRepository;
+import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.SubscriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +32,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +50,9 @@ class CustomCurriculumServiceTest {
 
     @Mock
     private SubscriptionRepository subscriptionRepository;
+
+    @Mock
+    private GroupStudentRepository groupStudentRepository;
 
     @Spy
     private PricingProperties pricingProperties = new PricingProperties();
@@ -85,9 +92,9 @@ class CustomCurriculumServiceTest {
             .createdAt(LocalDateTime.now())
             .build();
 
-        when(customCurriculumRepository.findByUserIdOrderByCreatedAtDesc(teacher.getId()))
+        when(customCurriculumRepository.findByUserIdInOrderByCreatedAtDesc(anyCollection()))
             .thenReturn(List.of(e1));
-        when(customCurriculumRepository.findByUserIdAndCurriculumTypeOrderByCreatedAtDesc(teacher.getId(), "RULE"))
+        when(customCurriculumRepository.findByUserIdInAndCurriculumTypeOrderByCreatedAtDesc(anyCollection(), eq("RULE")))
             .thenReturn(List.of(e1));
 
         List<CustomCurriculumResponse> all = customCurriculumService.getCustomCurriculum(teacher, null);
@@ -97,6 +104,53 @@ class CustomCurriculumServiceTest {
         List<CustomCurriculumResponse> filtered = customCurriculumService.getCustomCurriculum(teacher, "RULE");
         assertEquals(1, filtered.size());
         assertEquals("RULE", filtered.get(0).getCurriculumType());
+    }
+
+    @Test
+    void testGetCustomCurriculum_StudentReceivesTeacherCurriculum() {
+        User student = User.builder()
+            .id(UUID.randomUUID())
+            .email("student@test.com")
+            .fullName("Student Sam")
+            .role(Role.STUDENT)
+            .build();
+
+        Group group = Group.builder()
+            .id(UUID.randomUUID())
+            .name("B2 Advanced English")
+            .teacher(teacher)
+            .build();
+
+        GroupStudent enrollment = GroupStudent.builder()
+            .id(UUID.randomUUID())
+            .group(group)
+            .student(student)
+            .isActive(true)
+            .build();
+
+        when(groupStudentRepository.findByStudentIdAndIsActiveTrue(student.getId()))
+            .thenReturn(List.of(enrollment));
+
+        CustomCurriculumEntry teacherRule = CustomCurriculumEntry.builder()
+            .id(UUID.randomUUID())
+            .user(teacher)
+            .title("Inversion Rules for Homework")
+            .cefrLevel(CefrLevel.B2)
+            .curriculumType("RULE")
+            .content("Never in my life had I...")
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        when(customCurriculumRepository.findByUserIdInOrderByCreatedAtDesc(argThat(coll -> coll.contains(teacher.getId()) && coll.contains(student.getId()))))
+            .thenReturn(List.of(teacherRule));
+
+        List<CustomCurriculumResponse> results = customCurriculumService.getCustomCurriculum(student, null);
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        CustomCurriculumResponse item = results.get(0);
+        assertEquals("Inversion Rules for Homework", item.getTitle());
+        assertEquals("Teacher Alice", item.getAuthorName());
+        assertTrue(item.getIsSharedByTeacher(), "Should be marked as shared by teacher for student viewer");
     }
 
     @Test

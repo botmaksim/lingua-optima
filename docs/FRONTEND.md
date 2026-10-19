@@ -55,6 +55,7 @@ frontend/
 │   │   │   ├── MobileBottomNav.tsx — Persistent bottom navigation bar on mobile viewports (<768px) with quick access to dashboard, tasks, progress, units, cohorts, and grading
 │   │   │   ├── TranslatorDropdown.tsx — Automated website translation menu integrating official Google Translate widget with multilingual picker and English revert
 │   │   │   ├── Footer.tsx     — Navigation links to Privacy Policy (/privacy), Terms of Service (/terms), Help Center (/help), Presentation, and © Lingua Optima
+│   │   │   ├── QuickModePanel.tsx — Streamlined 1-click practice and assignment mode with CEFR level, format selector (Surprise Mix, Grammar Quiz, Reading Article, Speaking Drill), topic shuffle (🎲), custom topic override, and automatic parameter randomization with token-saving Eco Mode active by default
 │   │   │   ├── TopicSelector.tsx — Reusable CEFR topic selector with domain categorization, curriculum catalog, and custom topic input
 │   │   │   ├── CustomSelect.tsx — Accessible dropdown select with custom styled menu items
 │   │   │   ├── ProtectedRoute.tsx — Checks auth + role, redirects to /login
@@ -71,7 +72,7 @@ frontend/
 │   │   │
 │   │   ├── student/           — Student-only components
 │   │   │   ├── Dashboard.tsx          — Streak counter, CEFR progress bar, Learning Modules & Practice Modes grid (AI Generator, Essay Studio, Photo OCR, Adaptive CAT, My Units, Progress), active assignments with smart essay/grammar routing, grammar gaps
-│   │   │   ├── GenerateTask.tsx       — AI Provider & Model selector (7 providers + October 2026 models incl. Gemini Flash Lite), CEFR level selector (A1-C2), unified topic & vocabulary domain selector (TopicSelector), optional advanced textbook context injector (custom rules & vocabulary lists), full task type selector (MCQ, Gap-Fill, Open Brackets, Rewrite, Essay, Reading, Speaking), integrated student ReadingConfigPanel (Random Mix vs Custom Selection) and SpeakingConfigPanel, and difficulty & question slider for standard exercises. In-flight animated generation status banner (5-20s latency notice) + AI High Demand / Queue banner with 1-click Retry, Lite switch, and BYOK settings.
+│   │   │   ├── GenerateTask.tsx       — Student task creation studio featuring Mode Switcher (Quick Practice vs Detailed Studio), modular studio views (GrammarConfigPanel, ReadingConfigPanel, SpeakingConfigPanel), AI provider and model selector, teacher-shared curriculum rules, and animated generation progress banner
 │   │   │   ├── TaskView.tsx           — Task title + CEFR badge, sanitized task instructions, automatic redirection for ESSAY tasks to Essay Studio. For Reading Comprehension: responsive two-column split layout with sticky reading article, interactive window scaling controls (column width presets 35%, 50%, 58%, 67% with auto-expanding widescreen container up to max-w-7xl, typography font resizing toolbar A-/A+ with 4 size presets sm/base/lg/xl, and full-height scroll toggle), live answered progress indicator (X of Y answered), pre-submit ConfirmDialog modal warning against uncompleted questions, in-flight grading status banner, and queue/retry error panel. Buttons: [Submit Answers] [Save Draft] [← Back]
 │   │   │   ├── AdaptiveSession.tsx    — Interactive CAT Diagnostic Hub (IRT calibration guide, task picker) + In-flight CAT test runner (single question, difficulty indicator, progress bar, answer feedback). Handles resume from GET /sessions/active
 │   │   │   ├── OcrSubmit.tsx          — Drag&drop zone / [Browse File] button, image preview, hint 'deleted after processing'. Buttons: [Analyse Photo] [Clear Photo]
@@ -85,9 +86,10 @@ frontend/
 │   │   ├── teacher/           — Teacher-only components
 │   │   │   ├── TeacherDashboard.tsx   — Educator Command Center: summary stats, Educator Toolkit & Modules grid (Cohorts, Configurator, Submissions, Reports), student groups list with quick actions
 │   │   │   ├── StudentGroups.tsx      — Dual-tab cohort management: Students & Roster (search, CEFR filters, hide/unhide, pagination, student alias renaming) and Assigned Tasks (completion metrics, avg score, due dates). Includes Transfer / Move / Copy Assignment modal between educator cohorts. Buttons: [+ New Group] [+ Add Student] [Transfer / Copy] [Assign Task]
-│   │   │   ├── ConfigureTask.tsx      — Multi-cohort simultaneous assignment generator & deployer. Features dedicated Reading Comprehension studio tab, reading passage textarea editor, question choice/open conversion, option and point adjustments, Eco Mode, curriculum catalog & custom topic selector, point budgeting, interactive live preview editor. Buttons: [Preview] [Deploy to Students] [Save Template]
+│   │   │   ├── ConfigureTask.tsx      — Multi-cohort simultaneous assignment generator & deployer. Features Mode Switcher (Quick Mode vs Detailed Studio), isolated studios without duplicate fields, live preview editor, and single source of truth for total assignment points
+│   │   │   ├── GrammarConfigPanel.tsx — Dedicated modular configuration panel for grammar exercises (MCQ, GAP_FILL, OPEN_BRACKETS, REWRITE). Encapsulates topic selection, domain, difficulty, question count, Eco Mode, and target rules & vocabulary library
 │   │   │   ├── ReadingConfigPanel.tsx — Dedicated reading comprehension configuration menu with custom assignment title, text length presets (Short/Medium/Long/Custom with numeric 50-1000 word counter), paragraph narrative structure guidance, target vocabulary keywords, CEFR lexical level, question mode switcher (Surprise Me Random Mix vs Custom Selection), question counters for MCQ, True/False, and Open-ended questions, and per-category point weight budgeting
-│   │   │   ├── SpeakingConfigPanel.tsx — Dedicated speaking assignment configuration panel styled in Lingua Optima brand light theme. Features educational phonetic contrast presets with everyday examples (Dental Fricatives /θ/ & /ð/, Liquids /r/ vs /l/, Labials /v/ vs /w/, Vowel Length /iː/ vs /ɪ/, Sibilants & Affricates, Silent Letters, Natural Rhythm), passage length presets (Short 30-50w, Medium 60-90w, Long 120-180w, Custom with numeric 15-300 word counter and custom scenario instructions), TTS tester, and point budgeting
+│   │   │   ├── SpeakingConfigPanel.tsx — Dedicated speaking assignment configuration panel. Integrates CEFR JSON pronunciation packs (A1-C2), minimal pairs cards with TTS audio, articulatory contrast explanations, Eco Mode toggle, scenario instructions, and duration presets
 │   │   │   ├── SubmissionsReview.tsx  — Educator review queue (`GET /api/submissions/teacher`) strictly isolated to taught student submissions. Search by student/group/task, status filter, hide/unhide toggles, pagination. Integrated AnnotatedTextReview in editable mode (educator can click red highlights to edit explanations, delete error highlights, select text to highlight new errors), clickable question item correctness toggles, and persistent override saving via submissionApi.overrideScore without clobbering AI telemetry
 │   │   │   └── ExportReports.tsx      — Cohort performance report generator (PDF/CSV) featuring comprehensive breakdown across all assigned homeworks, student submission statuses, attempt counters, scores, and teacher commentary
 │   │   │
@@ -286,9 +288,10 @@ The application implements full Progressive Web App (PWA) support to ensure a re
 - **Speech Synthesis (`speakWord`, `speakText`, `stopSpeech`)**: Natural speech playback with accent selection (`en-US` and `en-GB`).
 
 ### 3. Educator Configuration (`SpeakingConfigPanel.tsx`)
-- Configures assignment title, target phonemes, passage length presets (`Short 30–50w`, `Medium 60–90w`, `Long 120–180w`, `Custom`), and total points.
-- 7 Built-in target phoneme presets: Dental Fricatives, Liquids, Labials, Vowel Length, Sibilants & Affricates, Silent Letters, and General Fluency.
-- Live TTS audio tester allows instant verification of speaker audio.
+- Configures assignment title, target phonemes, passage length presets (`Short 30–50w`, `Medium 60–90w`, `Long 120–180w`, `Custom`), scenario instructions, and total points.
+- Integrates calibrated CEFR JSON Pronunciation Packs (A1–C2) with minimal pair contrast exploration.
+- Eco Mode switch: toggles between enriched phonetic guidance and token-saving lightweight prompt compiling.
+- Live TTS audio tester allows instant verification of speaker audio across US and UK accents.
 
 ### 4. Student Practice Workspace (`SpeakingPracticeView.tsx`)
 - Displays target phoneme focus badges, points, and passage word chips.
@@ -306,6 +309,44 @@ The application implements full Progressive Web App (PWA) support to ensure a re
 - Dedicated oral speaking diagnostic banner displaying accuracy score, speech rate (WPM), recording duration, pacing analysis, spoken transcript, and reference text.
 - One-click native TTS audio playback of student's spoken words or model reference passage.
 - Score override and teacher comments editing.
+
+### 6. JSON Pronunciation Packs & Minimal Pairs Studio
+- **Curriculum Integration**: Fetches calibrated pronunciation packs via `taskApi.getPronunciationPacks(cefrLevel)`.
+- **Minimal Pair Contrast Cards**: Interactive cards for vowel contrasts (e.g., `/iː/` vs `/ɪ/` sheep/ship), consonant contrasts (`/θ/` vs `/s/` think/sink, `/v/` vs `/w/` vest/west), and rhythm drills.
+- **Audio Articulation Audition**: Each word in a minimal pair card has an interactive TTS speaker button allowing students and educators to hear the contrast side-by-side with phonetic explanations.
+- **Eco Mode Support**: Integrated toggle in the speaking studio. When active, prompt payload excludes verbose phonetic word lists, saving tokens and lowering generation latency.
+
+---
+
+## Modular Task Studios & Single Source of Truth
+
+### 1. Isolated Studio Architecture
+To eliminate UI duplication and configuration clutter:
+- **`GrammarConfigPanel`**: Encapsulates all discrete grammar exercises (`MCQ`, `GAP_FILL`, `OPEN_BRACKETS`, `REWRITE`). Centralizes domain, CEFR topic selection, difficulty slider, question counts, Eco Mode, and custom curriculum integration.
+- **`ReadingConfigPanel`**: Encapsulates reading comprehension configuration (`READING`), passage length presets (Short/Medium/Long/Custom), paragraph structure guidance, target vocabulary, and point budgeting across MCQ, True/False, and Open-ended question types.
+- **`SpeakingConfigPanel`**: Encapsulates oral speech exercises (`SPEAKING`), target sounds, CEFR pronunciation packs, minimal pairs cards, and scenario instructions.
+- Only the panel corresponding to the active task type is rendered in both `GenerateTask.tsx` and `ConfigureTask.tsx`.
+
+### 2. Elimination of Parameter Duplication
+- **Total Points Single Source of Truth**: For reading assignments, points are computed directly from category subtotals. For all other formats, a single points counter appears prior to the deployment/generation action.
+- **Curriculum Library Synchronization**: Teacher-created custom rules and vocabulary sets are seamlessly shared with enrolled students. In `GrammarConfigPanel`, custom rules can be saved directly to the user's library without modal barriers.
+
+---
+
+## Quick Practice Mode & Zero-Friction Flow
+
+### 1. QuickModePanel (`frontend/src/components/common/QuickModePanel.tsx`)
+- Designed for immediate 1-click practice without navigating dozens of configuration sliders.
+- **Core Parameters**:
+  - **CEFR Level**: Quick selector (A1–C2).
+  - **Format**: 4 streamlined options:
+    - `Surprise Mix`: Random selection between grammar, reading, or speaking exercises.
+    - `Grammar Quiz`: Multiple choice and gap-fill exercises.
+    - `Reading Article`: Coherent reading text with comprehension checks.
+    - `Speaking Drill`: Pronunciation and oral reading exercise.
+  - **Topic Selection**: Built-in 1-click random shuffle button (`🎲 Random Topic`) with instant rotation across CEFR topics, plus custom topic input support.
+- **Automatic Parameter Randomization**: Automatically calibrates question count (3–6), difficulty (Easy to Hard), domain (General/Academic/Business), and sets Eco Mode to ON for rapid generation and minimal token consumption.
+- **Universal Availability**: Integrated into both Student Self-Service (`GenerateTask.tsx`) and Educator Homework Configurator (`ConfigureTask.tsx`).
 
 ---
 

@@ -1,0 +1,520 @@
+[
+  {
+    "id": "A1_DENTAL_FRICATIVES",
+    "cefrLevel": "A1",
+    "category": "DENTAL_FRICATIVES",
+    "title": "Dental Fricatives: /θ/ and /ð/",
+    "phonemes": ["/θ/", "/ð/"],
+    "drillWords": ["three", "think", "thank", "this", "that", "these", "those", "with", "mother", "father", "brother", "mouth"],
+    "minimalPairs": [
+      { "word1": "think", "word2": "sink", "phoneme1": "/θ/", "phoneme2": "/s/" },
+      { "word1": "thick", "word2": "sick", "phoneme1": "/θ/", "phoneme2": "/s/" },
+      { "word1": "three", "word2": "free", "phoneme1": "/θ/", "phoneme2": "/f/" }
+    ],
+    "contrastFocus": "Place tongue tip between teeth for unvoiced /θ/ (think) and voiced /ð/ (this). Avoid replacing with /s/ or /f/.",
+    "tongueTwister": "Three thankful brothers think about this and that."
+  },
+  {
+    "id": "A2_DENTAL_FRICATIVES",
+    "cefrLevel": "A2",
+    "category": "DENTAL_FRICATIVES",
+    "title": "Dental Fricatives: /θ/ and /ð/",
+    "phonemes": ["/θ/", "/ð/"],
+    "drillWords": ["birthday", "healthy", "nothing", "weather", "together", "breathe", "clothes", "without", "another", "thousand"],
+    "minimalPairs": [
+      { "word1": "thought", "word2": "fought", "phoneme1": "/θ/", "phoneme2": "/f/" },
+      { "word1": "theme", "word2": "seem", "phoneme1": "/θ/", "phoneme2": "/s/" },
+      { "word1": "breathe", "word2": "breeze", "phoneme1": "/ð/", "phoneme2": "/z/" }
+    ],
+    "contrastFocus": "Distinguish medial /θ/ (healthy) and voiced /ð/ (weather, together).",
+    "tongueTwister": "Whether the weather is warm, whether the weather is hot, we must stay together."
+  },
+  {
+    "id": "B1_DENTAL_FRICATIVES",
+    "cefrLevel": "B1",
+    "category": "DENTAL_FRICATIVES",
+    "title": "Dental Fricatives: /θ/ and /ð/",
+    "phonemes": ["/θ/", "/ð/"],
+    "drillWords": ["thorough", "threaten", "author", "method", "marathon", "soothe", "leather", "breathtaking", "worthy", "northern"],
+    "minimalPairs": [
+      { "word1": "faith", "word2": "face", "phoneme1": "/θ/", "phoneme2": "/s/" },
+      { "word1": "teeth", "word2": "tease", "phoneme1": "/θ/", "phoneme2": "/z/" },
+      { "word1": "loathe", "word2": "load", "phoneme1": "/ð/", "phoneme2": "/d/" }
+    ],
+    "contrastFocus": "Sustain friction on end consonants (faith, loathe) without stopping into /t/ or /d/.",
+    "tongueTwister": "The author thought through a thorough method of northern therapy."
+  },
+  {
+    "id": "B2_DENTAL_FRICATIVES",
+    "cefrLevel": "B2",
+    "category": "DENTAL_FRICATIVES",
+    "title": "Dental Fricatives: /θ/ and /ð/",
+    "phonemes": ["/θ/", "/ð/"],
+    "drillWords": ["hypothesis", "arithmetic", "sympathetic", "furthermore", "nonetheless", "withstand", "worthwhile", "pathology"],
+    "minimalPairs": [
+      { "word1": "mouths", "word2": "mouse", "phoneme1": "/ðz/", "phoneme2": "/s/" },
+      { "word1": "sheath", "word2": "sheet", "phoneme1": "/θ/", "phoneme2": "/t/" }
+    ],
+    "contrastFocus": "Maintain accurate fricative voicing in academic compound nouns and transitions.",
+    "tongueTwister": "Nonetheless, the sympathetic author withheld his arithmetic hypothesis."
+  },
+  {
+    "id": "C1_DENTAL_FRICATIVES",
+    "cefrLevel": "C1",
+    "category": "DENTAL_FRICATIVES",
+    "title": "Dental Fricatives: /θ/ and /ð/",
+    "phonemes": ["/θ/", "/ð/"],
+    "drillWords": ["aesthetic", "philanthropy", "zenith", "plethora", "antithesis", "notwithstanding", "anathema", "logarithm"],
+    "minimalPairs": [
+      { "word1": "zenith", "word2": "tenant", "phoneme1": "/θ/", "phoneme2": "/t/" },
+      { "word1": "loath", "word2": "loathe", "phoneme1": "/θ/", "phoneme2": "/ð/" }
+    ],
+    "contrastFocus": "Precise articulation of unvoiced noun noun endings vs voiced verbs (loath vs loathe, bath vs bathe).",
+    "tongueTwister": "The philanthropic theorist praised the aesthetic zenith notwithstanding the antithesis."
+  },
+  {
+    "id": "C2_DENTAL_FRICATIVES",
+    "cefrLevel": "C2",
+    "category": "DENTAL_FRICATIVES",
+    "title": "Dental Fricatives: /θ/ and /ð/",
+    "phonemes": ["/θ/", "/ð/"],
+    "drillWords": ["quintessential", "chrysanthemum", "misanthrope", "authoritative", "theocratic", "dithyrambic", "bequeath", "labyrinth"],
+    "minimalPairs": [
+      { "word1": "wreath", "word2": "wreathe", "phoneme1": "/θ/", "phoneme2": "/ð/" },
+      { "word1": "teeth", "word2": "teethe", "phoneme1": "/θ/", "phoneme2": "/ð/" }
+    ],
+    "contrastFocus": "Fluency and subtle voicing shifts in high-register formal oratory.",
+    "tongueTwister": "He was loath to bequeath the labyrinthine chrysanthemum treatise to misanthropes."
+  },
+  {
+    "id": "A1_LIQUIDS_R_L",
+    "cefrLevel": "A1",
+    "category": "LIQUIDS_R_L",
+    "title": "Liquids: /r/ vs /l/",
+    "phonemes": ["/r/", "/l/"],
+    "drillWords": ["red", "led", "right", "light", "read", "lead", "road", "load", "rice", "lice", "room", "look"],
+    "minimalPairs": [
+      { "word1": "red", "word2": "led", "phoneme1": "/r/", "phoneme2": "/l/" },
+      { "word1": "right", "word2": "light", "phoneme1": "/r/", "phoneme2": "/l/" },
+      { "word1": "rice", "word2": "lice", "phoneme1": "/r/", "phoneme2": "/l/" }
+    ],
+    "contrastFocus": "Curl tongue tip back for /r/ without touching roof; press tip against tooth ridge for /l/.",
+    "tongueTwister": "Red lorry, yellow lorry, red road, light load."
+  },
+  {
+    "id": "A2_LIQUIDS_R_L",
+    "cefrLevel": "A2",
+    "category": "LIQUIDS_R_L",
+    "title": "Liquids: /r/ vs /l/",
+    "phonemes": ["/r/", "/l/"],
+    "drillWords": ["play", "pray", "climb", "crime", "glass", "grass", "fly", "fry", "blue", "arrive", "listen"],
+    "minimalPairs": [
+      { "word1": "play", "word2": "pray", "phoneme1": "/l/", "phoneme2": "/r/" },
+      { "word1": "glass", "word2": "grass", "phoneme1": "/l/", "phoneme2": "/r/" },
+      { "word1": "climb", "word2": "crime", "phoneme1": "/l/", "phoneme2": "/r/" }
+    ],
+    "contrastFocus": "Cluster transitions: /pl/ vs /pr/, /cl/ vs /cr/, /gl/ vs /gr/.",
+    "tongueTwister": "Please pray on the green grass before you play on the glass."
+  },
+  {
+    "id": "B1_LIQUIDS_R_L",
+    "cefrLevel": "B1",
+    "category": "LIQUIDS_R_L",
+    "title": "Liquids: /r/ vs /l/",
+    "phonemes": ["/r/", "/l/"],
+    "drillWords": ["correct", "collect", "arrive", "alive", "bleed", "breed", "crown", "clown", "brilliant", "reliable"],
+    "minimalPairs": [
+      { "word1": "correct", "word2": "collect", "phoneme1": "/r/", "phoneme2": "/l/" },
+      { "word1": "arrive", "word2": "alive", "phoneme1": "/r/", "phoneme2": "/l/" },
+      { "word1": "bleed", "word2": "breed", "phoneme1": "/l/", "phoneme2": "/r/" }
+    ],
+    "contrastFocus": "Medial consonants: ensure clear contrast between /rr/ and /ll/ sounds in rapid syllables.",
+    "tongueTwister": "Collect the correct cards to arrive alive at the rally."
+  },
+  {
+    "id": "B2_LIQUIDS_R_L",
+    "cefrLevel": "B2",
+    "category": "LIQUIDS_R_L",
+    "title": "Liquids: /r/ vs /l/",
+    "phonemes": ["/r/", "/l/"],
+    "drillWords": ["parallel", "plurality", "regulatory", "collaborate", "deliberate", "illustrate", "relevant", "correlate"],
+    "minimalPairs": [
+      { "word1": "relevance", "word2": "reverence", "phoneme1": "/l/", "phoneme2": "/r/" },
+      { "word1": "pilot", "word2": "pirate", "phoneme1": "/l/", "phoneme2": "/r/" }
+    ],
+    "contrastFocus": "Complex alternating sequences: tongue agility switching between /l/ and /r/ in the same word (parallel, regulatory).",
+    "tongueTwister": "The regulatory committee will deliberately collaborate to illustrate parallel trends."
+  },
+  {
+    "id": "C1_LIQUIDS_R_L",
+    "cefrLevel": "C1",
+    "category": "LIQUIDS_R_L",
+    "title": "Liquids: /r/ vs /l/",
+    "phonemes": ["/r/", "/l/"],
+    "drillWords": ["prolific", "cerebral", "chlorophyll", "labyrinth", "scrupulous", "irreparable", "parliamentary", "preliminary"],
+    "minimalPairs": [
+      { "word1": "elect", "word2": "erect", "phoneme1": "/l/", "phoneme2": "/r/" },
+      { "word1": "lateral", "word2": "literal", "phoneme1": "/l/", "phoneme2": "/r/" }
+    ],
+    "contrastFocus": "Polysyllabic precision with unstressed liquids in academic terminology.",
+    "tongueTwister": "Preliminary parliamentary procedures require scrupulous and deliberate collaboration."
+  },
+  {
+    "id": "C2_LIQUIDS_R_L",
+    "cefrLevel": "C2",
+    "category": "LIQUIDS_R_L",
+    "title": "Liquids: /r/ vs /l/",
+    "phonemes": ["/r/", "/l/"],
+    "drillWords": ["lugubrious", "peregrination", "pellucid", "recalcitrant", "multilateral", "corroborate", "scintillating", "equilibrium"],
+    "minimalPairs": [
+      { "word1": "clarity", "word2": "rarity", "phoneme1": "/l/", "phoneme2": "/r/" },
+      { "word1": "prelate", "word2": "prorate", "phoneme1": "/l/", "phoneme2": "/r/" }
+    ],
+    "contrastFocus": "Rhetorical mastery of liquid consonants in dense, cadence-driven prose.",
+    "tongueTwister": "The recalcitrant scholar corroborated the pellucid peregrination with multilateral clarity."
+  },
+  {
+    "id": "A1_LABIALS_V_W",
+    "cefrLevel": "A1",
+    "category": "LABIALS_V_W",
+    "title": "Labials: /v/ vs /w/",
+    "phonemes": ["/v/", "/w/"],
+    "drillWords": ["very", "wary", "vine", "wine", "vest", "west", "vet", "wet", "view", "water", "warm", "visit"],
+    "minimalPairs": [
+      { "word1": "very", "word2": "wary", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "vine", "word2": "wine", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "vest", "word2": "west", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "vet", "word2": "wet", "phoneme1": "/v/", "phoneme2": "/w/" }
+    ],
+    "contrastFocus": "Top teeth on bottom lip for /v/; round lips into a circle without teeth contact for /w/.",
+    "tongueTwister": "We visit the west with very warm water and wine."
+  },
+  {
+    "id": "A2_LABIALS_V_W",
+    "cefrLevel": "A2",
+    "category": "LABIALS_V_W",
+    "title": "Labials: /v/ vs /w/",
+    "phonemes": ["/v/", "/w/"],
+    "drillWords": ["village", "weather", "vacation", "winter", "voice", "welcome", "travel", "forward", "seven", "twenty"],
+    "minimalPairs": [
+      { "word1": "veil", "word2": "wail", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "vow", "word2": "wow", "phoneme1": "/v/", "phoneme2": "/w/" }
+    ],
+    "contrastFocus": "Avoid confusing /v/ and /w/ in conversational travel and weather dialogues.",
+    "tongueTwister": "Winter weather in the village was very welcoming."
+  },
+  {
+    "id": "B1_LABIALS_V_W",
+    "cefrLevel": "B1",
+    "category": "LABIALS_V_W",
+    "title": "Labials: /v/ vs /w/",
+    "phonemes": ["/v/", "/w/"],
+    "drillWords": ["vivid", "waver", "vent", "went", "avail", "whale", "vague", "worldwide", "evaluate", "whatever"],
+    "minimalPairs": [
+      { "word1": "vent", "word2": "went", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "verse", "word2": "worse", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "vary", "word2": "wary", "phoneme1": "/v/", "phoneme2": "/w/" }
+    ],
+    "contrastFocus": "Speed drill: rapid contrast between bilabial glide /w/ and labiodental fricative /v/.",
+    "tongueTwister": "Wary travelers vent their worries when verses grow worse."
+  },
+  {
+    "id": "B2_LABIALS_V_W",
+    "cefrLevel": "B2",
+    "category": "LABIALS_V_W",
+    "title": "Labials: /v/ vs /w/",
+    "phonemes": ["/v/", "/w/"],
+    "drillWords": ["vulnerable", "worthwhile", "innovative", "unwarranted", "versatile", "overwhelm", "convene", "withdraw"],
+    "minimalPairs": [
+      { "word1": "viper", "word2": "wiper", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "vault", "word2": "waltz", "phoneme1": "/v/", "phoneme2": "/w/" }
+    ],
+    "contrastFocus": "Articulatory precision when /v/ and /w/ occur within consecutive words or compound adjectives.",
+    "tongueTwister": "Versatile workers avoid overwhelming and unwarranted vulnerabilities."
+  },
+  {
+    "id": "C1_LABIALS_V_W",
+    "cefrLevel": "C1",
+    "category": "LABIALS_V_W",
+    "title": "Labials: /v/ vs /w/",
+    "phonemes": ["/v/", "/w/"],
+    "drillWords": ["equivocal", "ubiquitous", "vindicate", "whimsical", "veracity", "waver", "inadvertent", "unwavering"],
+    "minimalPairs": [
+      { "word1": "wane", "word2": "vane", "phoneme1": "/w/", "phoneme2": "/v/" },
+      { "word1": "wheel", "word2": "veal", "phoneme1": "/w/", "phoneme2": "/v/" }
+    ],
+    "contrastFocus": "Maintaining crisp labiodental friction during swift academic presentations.",
+    "tongueTwister": "The ubiquitous witness showed unwavering veracity without equivocal wavering."
+  },
+  {
+    "id": "C2_LABIALS_V_W",
+    "cefrLevel": "C2",
+    "category": "LABIALS_V_W",
+    "title": "Labials: /v/ vs /w/",
+    "phonemes": ["/v/", "/w/"],
+    "drillWords": ["verisimilitude", "vicissitude", "wanton", "vociferous", "evanescent", "unswerving", "welter", "vivacious"],
+    "minimalPairs": [
+      { "word1": "vow", "word2": "woe", "phoneme1": "/v/", "phoneme2": "/w/" },
+      { "word1": "vale", "word2": "wail", "phoneme1": "/v/", "phoneme2": "/w/" }
+    ],
+    "contrastFocus": "Flawless prosodic integration of labial contrasts in complex, dense narrative text.",
+    "tongueTwister": "His vociferous vow captured the verisimilitude of life's vicissitudes."
+  },
+  {
+    "id": "A1_VOWEL_LENGTH",
+    "cefrLevel": "A1",
+    "category": "VOWEL_LENGTH",
+    "title": "Vowel Length: /iː/ vs /ɪ/",
+    "phonemes": ["/iː/", "/ɪ/"],
+    "drillWords": ["sheep", "ship", "seat", "sit", "eat", "it", "feet", "fit", "leave", "live", "green", "big"],
+    "minimalPairs": [
+      { "word1": "sheep", "word2": "ship", "phoneme1": "/iː/", "phoneme2": "/ɪ/" },
+      { "word1": "seat", "word2": "sit", "phoneme1": "/iː/", "phoneme2": "/ɪ/" },
+      { "word1": "leave", "word2": "live", "phoneme1": "/iː/", "phoneme2": "/ɪ/" },
+      { "word1": "feet", "word2": "fit", "phoneme1": "/iː/", "phoneme2": "/ɪ/" }
+    ],
+    "contrastFocus": "Tense long vowel /iː/ (spread lips, high tongue) vs relaxed short vowel /ɪ/ (neutral jaw).",
+    "tongueTwister": "Please sit on this seat and eat a bit of green meat."
+  },
+  {
+    "id": "A2_VOWEL_LENGTH",
+    "cefrLevel": "A2",
+    "category": "VOWEL_LENGTH",
+    "title": "Vowel Length: /iː/ vs /ɪ/ and /uː/ vs /ʊ/",
+    "phonemes": ["/iː/", "/ɪ/", "/uː/", "/ʊ/"],
+    "drillWords": ["pool", "pull", "fool", "full", "reach", "rich", "peach", "pitch", "meal", "milk", "sleep", "slip"],
+    "minimalPairs": [
+      { "word1": "pool", "word2": "pull", "phoneme1": "/uː/", "phoneme2": "/ʊ/" },
+      { "word1": "fool", "word2": "full", "phoneme1": "/uː/", "phoneme2": "/ʊ/" },
+      { "word1": "reach", "word2": "rich", "phoneme1": "/iː/", "phoneme2": "/ɪ/" }
+    ],
+    "contrastFocus": "Back vowel length: /uː/ (tight round lips) vs /ʊ/ (relaxed lips, book, foot).",
+    "tongueTwister": "Pull the full pool tool into the cool room."
+  },
+  {
+    "id": "B1_VOWEL_LENGTH",
+    "cefrLevel": "B1",
+    "category": "VOWEL_LENGTH",
+    "title": "Vowel Length: Long vs Short Vowels",
+    "phonemes": ["/iː/", "/ɪ/", "/ɔː/", "/ɒ/"],
+    "drillWords": ["least", "list", "cord", "cod", "port", "pot", "caught", "cot", "seek", "sick", "deep", "dip"],
+    "minimalPairs": [
+      { "word1": "caught", "word2": "cot", "phoneme1": "/ɔː/", "phoneme2": "/ɒ/" },
+      { "word1": "port", "word2": "pot", "phoneme1": "/ɔː/", "phoneme2": "/ɒ/" },
+      { "word1": "least", "word2": "list", "phoneme1": "/iː/", "phoneme2": "/ɪ/" }
+    ],
+    "contrastFocus": "Contrast low back vowels: open /ɒ/ vs rounded /ɔː/.",
+    "tongueTwister": "Paul caught a hot pot at the port."
+  },
+  {
+    "id": "B2_VOWEL_LENGTH",
+    "cefrLevel": "B2",
+    "category": "VOWEL_LENGTH",
+    "title": "Vowel Length & Quality Contrasts",
+    "phonemes": ["/iː/", "/ɪ/", "/e/", "/æ/"],
+    "drillWords": ["discrete", "discreet", "pan", "pen", "pin", "man", "men", "bad", "bed", "flash", "flesh"],
+    "minimalPairs": [
+      { "word1": "bad", "word2": "bed", "phoneme1": "/æ/", "phoneme2": "/e/" },
+      { "word1": "man", "word2": "men", "phoneme1": "/æ/", "phoneme2": "/e/" },
+      { "word1": "pan", "word2": "pen", "phoneme1": "/æ/", "phoneme2": "/e/" }
+    ],
+    "contrastFocus": "Jaw opening gradient from /æ/ (wide open) to /e/ (half open) to /ɪ/ (close).",
+    "tongueTwister": "Ten men met ten bad men with ten black pens."
+  },
+  {
+    "id": "C1_VOWEL_LENGTH",
+    "cefrLevel": "C1",
+    "category": "VOWEL_LENGTH",
+    "title": "Vowel Length & Diphthong Calibration",
+    "phonemes": ["/iː/", "/ɪ/", "/eɪ/", "/aɪ/"],
+    "drillWords": ["heed", "hid", "glean", "grin", "bequeath", "pristine", "lucrative", "ubiquity", "height", "hate"],
+    "minimalPairs": [
+      { "word1": "glean", "word2": "grin", "phoneme1": "/iː/", "phoneme2": "/ɪ/" },
+      { "word1": "heed", "word2": "hid", "phoneme1": "/iː/", "phoneme2": "/ɪ/" }
+    ],
+    "contrastFocus": "Preserving tense vowel duration before voiced vs voiceless consonants (pre-fortis clipping).",
+    "tongueTwister": "The pristine gleam of the green beam seemed keen."
+  },
+  {
+    "id": "C2_VOWEL_LENGTH",
+    "cefrLevel": "C2",
+    "category": "VOWEL_LENGTH",
+    "title": "Vowel Length & Pre-Fortis Clipping",
+    "phonemes": ["/iː/", "/ɪ/", "/uː/", "/ʊ/"],
+    "drillWords": ["beat", "bead", "seat", "seed", "leak", "league", "loop", "lube", "feet", "feed"],
+    "minimalPairs": [
+      { "word1": "beat", "word2": "bead", "phoneme1": "/iː/ short", "phoneme2": "/iː/ long" },
+      { "word1": "leak", "word2": "league", "phoneme1": "/iː/ short", "phoneme2": "/iː/ long" }
+    ],
+    "contrastFocus": "Mastery of pre-fortis clipping: vowels are shorter before unvoiced consonants than voiced ones.",
+    "tongueTwister": "He feed the sheep a sweet treat before the league's big defeat."
+  },
+  {
+    "id": "A1_SIBILANTS",
+    "cefrLevel": "A1",
+    "category": "SIBILANTS_AFFRICATES",
+    "title": "Sibilants & Affricates: /s/, /ʃ/, /tʃ/",
+    "phonemes": ["/s/", "/ʃ/", "/tʃ/"],
+    "drillWords": ["sea", "she", "sock", "shock", "chair", "share", "chip", "cheap", "wash", "watch", "catch", "juice"],
+    "minimalPairs": [
+      { "word1": "sea", "word2": "she", "phoneme1": "/s/", "phoneme2": "/ʃ/" },
+      { "word1": "sock", "word2": "shock", "phoneme1": "/s/", "phoneme2": "/ʃ/" },
+      { "word1": "chair", "word2": "share", "phoneme1": "/tʃ/", "phoneme2": "/ʃ/" },
+      { "word1": "watch", "word2": "wash", "phoneme1": "/tʃ/", "phoneme2": "/ʃ/" }
+    ],
+    "contrastFocus": "Hissing /s/ (sharp front airflow) vs hushing /ʃ/ (rounded lips) vs explosive stop /tʃ/ (chair).",
+    "tongueTwister": "She sells sea shells on the sea shore while watching children cheer."
+  },
+  {
+    "id": "B1_SIBILANTS",
+    "cefrLevel": "B1",
+    "category": "SIBILANTS_AFFRICATES",
+    "title": "Sibilants & Voicing: /s/, /z/, /ʃ/, /ʒ/",
+    "phonemes": ["/s/", "/z/", "/ʃ/", "/ʒ/"],
+    "drillWords": ["sip", "zip", "pressure", "pleasure", "measure", "treasure", "decision", "confusion", "judge", "choice"],
+    "minimalPairs": [
+      { "word1": "sip", "word2": "zip", "phoneme1": "/s/", "phoneme2": "/z/" },
+      { "word1": "pressure", "word2": "pleasure", "phoneme1": "/ʃ/", "phoneme2": "/ʒ/" },
+      { "word1": "choke", "word2": "joke", "phoneme1": "/tʃ/", "phoneme2": "/dʒ/" }
+    ],
+    "contrastFocus": "Voicing contrast between unvoiced /ʃ/ (pressure) and voiced /ʒ/ (pleasure, measure, vision).",
+    "tongueTwister": "It is a pleasure to measure the treasure without confusion or pressure."
+  },
+  {
+    "id": "B2_SIBILANTS",
+    "cefrLevel": "B2",
+    "category": "SIBILANTS_AFFRICATES",
+    "title": "Complex Affricates & Sibilants",
+    "phonemes": ["/ʃ/", "/ʒ/", "/tʃ/", "/dʒ/"],
+    "drillWords": ["jurisdiction", "distinction", "judicious", "ostentatious", "prestigious", "precision", "conclusion", "chancellor"],
+    "minimalPairs": [
+      { "word1": "badge", "word2": "batch", "phoneme1": "/dʒ/", "phoneme2": "/tʃ/" },
+      { "word1": "ridge", "word2": "rich", "phoneme1": "/dʒ/", "phoneme2": "/tʃ/" }
+    ],
+    "contrastFocus": "End-consonant voicing in business & legal vocabulary (badge vs batch, ridge vs rich).",
+    "tongueTwister": "The chancellor made a judicious decision with precision under strict jurisdiction."
+  },
+  {
+    "id": "C1_SIBILANTS",
+    "cefrLevel": "C1",
+    "category": "SIBILANTS_AFFRICATES",
+    "title": "Advanced Sibilants & Assimilation",
+    "phonemes": ["/s/, /z/, /ʃ/, /tʃ/"],
+    "drillWords": ["schism", "incisive", "chagrin", "coalesce", "evanescence", "surreptitious", "fluorescence", "perspicacity"],
+    "minimalPairs": [
+      { "word1": "prestige", "word2": "pasturage", "phoneme1": "/ʒ/", "phoneme2": "/dʒ/" },
+      { "word1": "glazier", "word2": "glacier", "phoneme1": "/ʒ/", "phoneme2": "/ʃ/" }
+    ],
+    "contrastFocus": "French loanword phonemes /ʒ/ and /ʃ/ preserving authentic historical voicing.",
+    "tongueTwister": "To his chagrin, the incisive schism caused prestige to coalesce into silence."
+  },
+  {
+    "id": "A1_SILENT_LETTERS",
+    "cefrLevel": "A1",
+    "category": "SILENT_LETTERS",
+    "title": "Silent Letters: Basic Silent Consonants",
+    "phonemes": ["silent k", "silent w", "silent l", "silent b"],
+    "drillWords": ["know", "knee", "knife", "write", "wrong", "walk", "talk", "half", "climb", "comb", "listen", "hour"],
+    "minimalPairs": [
+      { "word1": "know", "word2": "no", "phoneme1": "homophone", "phoneme2": "homophone" },
+      { "word1": "write", "word2": "right", "phoneme1": "homophone", "phoneme2": "homophone" },
+      { "word1": "hour", "word2": "our", "phoneme1": "homophone", "phoneme2": "homophone" }
+    ],
+    "contrastFocus": "Drop silent initial consonants: do not pronounce the 'k' in knife or 'w' in write.",
+    "tongueTwister": "I know the knight wrote the wrong answer on his knee."
+  },
+  {
+    "id": "B1_SILENT_LETTERS",
+    "cefrLevel": "B1",
+    "category": "SILENT_LETTERS",
+    "title": "Silent Letters & Irregular Words",
+    "phonemes": ["silent b", "silent p", "silent s", "silent g"],
+    "drillWords": ["doubt", "subtle", "debt", "receipt", "island", "foreign", "design", "sign", "autumn", "column", "muscle", "fasten"],
+    "minimalPairs": [
+      { "word1": "doubt", "word2": "dot", "phoneme1": "/aʊt/", "phoneme2": "/ɒt/" },
+      { "word1": "debt", "word2": "dead", "phoneme1": "/det/", "phoneme2": "/ded/" }
+    ],
+    "contrastFocus": "Silent 'b' in doubt/subtle, silent 'p' in receipt, silent 's' in island.",
+    "tongueTwister": "He had no doubt that the subtle receipt cleared his autumn debt on the island."
+  },
+  {
+    "id": "B2_SILENT_LETTERS",
+    "cefrLevel": "B2",
+    "category": "SILENT_LETTERS",
+    "title": "Silent Letters in Academic English",
+    "phonemes": ["silent c", "silent t", "silent h", "silent n"],
+    "drillWords": ["conscience", "acquire", "whistle", "castle", "rhythm", "ghost", "condemn", "solemn", "sovereign", "campaign"],
+    "minimalPairs": [
+      { "word1": "whistle", "word2": "whisper", "phoneme1": "silent t", "phoneme2": "voiced p" },
+      { "word1": "scent", "word2": "sent", "phoneme1": "silent c", "phoneme2": "homophone" }
+    ],
+    "contrastFocus": "Suppress internal plosives in words with historical spelling (castle, whistle, rhythm).",
+    "tongueTwister": "The sovereign campaign condemned the solemn rhythm of the castle."
+  },
+  {
+    "id": "C1_SILENT_LETTERS",
+    "cefrLevel": "C1",
+    "category": "SILENT_LETTERS",
+    "title": "Silent Letters in French & Classical Borrowings",
+    "phonemes": ["silent c", "silent g", "silent p", "silent s"],
+    "drillWords": ["indict", "paradigm", "debris", "bourgeois", "rendezvous", "phlegm", "epistle", "viscount", "corps", "chassis"],
+    "minimalPairs": [
+      { "word1": "corps", "word2": "core", "phoneme1": "silent ps", "phoneme2": "homophone" },
+      { "word1": "indict", "word2": "insight", "phoneme1": "/ɪnˈdaɪt/", "phoneme2": "/ˈɪnsaɪt/" }
+    ],
+    "contrastFocus": "Non-phonetic borrowings: indict is /ɪnˈdaɪt/, debris is /ˈdeɪbriː/, corps is /kɔːr/.",
+    "tongueTwister": "The viscount attended a rendezvous amidst the debris of the bourgeois paradigm."
+  },
+  {
+    "id": "A1_CONNECTED_SPEECH",
+    "cefrLevel": "A1",
+    "category": "CONNECTED_SPEECH",
+    "title": "Connected Speech & Rhythm: Basic Stress & Linking",
+    "phonemes": ["weak forms: to, of, for, a", "linking consonant to vowel"],
+    "drillWords": ["cup of tea", "an apple", "go to work", "for you", "stand up", "come in", "get out", "turn off"],
+    "minimalPairs": [
+      { "word1": "an aim", "word2": "a name", "phoneme1": "linking n", "phoneme2": "isolated n" }
+    ],
+    "contrastFocus": "Link final consonant to next vowel (stand_up, come_in); reduce 'of' to /əv/ and 'to' to /tə/.",
+    "tongueTwister": "Stand up and get a cup of tea for an hour."
+  },
+  {
+    "id": "B1_CONNECTED_SPEECH",
+    "cefrLevel": "B1",
+    "category": "CONNECTED_SPEECH",
+    "title": "Connected Speech: Intrusive Sounds & Weak Forms",
+    "phonemes": ["linking r", "intrusive w", "intrusive j", "elision"],
+    "drillWords": ["law and order", "go away", "see it", "far away", "last night", "next day", "you are", "we are"],
+    "minimalPairs": [
+      { "word1": "law and", "word2": "lore and", "phoneme1": "intrusive r", "phoneme2": "linking r" }
+    ],
+    "contrastFocus": "Insert smooth transition glides /w/ (go_away) and /j/ (see_it); linking /r/ between vowels.",
+    "tongueTwister": "Far away in law and order, we saw a raw egg go away."
+  },
+  {
+    "id": "B2_CONNECTED_SPEECH",
+    "cefrLevel": "B2",
+    "category": "CONNECTED_SPEECH",
+    "title": "Connected Speech: Assimilation & Content Word Stress",
+    "phonemes": ["coalescent assimilation", "elision /t/, /d/", "tonic stress"],
+    "drillWords": ["don't you", "would you", "best friend", "hold on", "what you need", "tell him", "used to"],
+    "minimalPairs": [
+      { "word1": "did you", "word2": "bid you", "phoneme1": "/dʒ/", "phoneme2": "/dʒ/" }
+    ],
+    "contrastFocus": "Assimilate /t/ + /j/ into /tʃ/ (don't you) and /d/ + /j/ into /dʒ/ (would you); stress nouns & verbs over function words.",
+    "tongueTwister": "Would you mind if your best friend told you what you really needed?"
+  },
+  {
+    "id": "C1_CONNECTED_SPEECH",
+    "cefrLevel": "C1",
+    "category": "CONNECTED_SPEECH",
+    "title": "Connected Speech: Rhetorical Cadence & Tone Units",
+    "phonemes": ["nuclear stress", "pitch reset", "falling vs rising contours"],
+    "drillWords": ["fundamentally", "on the contrary", "in other words", "as a matter of fact", "to put it mildly", "ironically enough"],
+    "minimalPairs": [
+      { "word1": "I didn't say he stole it (neutral)", "word2": "I didn't say HE stole it (contrastive)", "phoneme1": "pitch shift", "phoneme2": "focus shift" }
+    ],
+    "contrastFocus": "Contrastive pitch accents on specific content words to convey subtle implication and irony.",
+    "tongueTwister": "Fundamentally speaking, on the contrary, it is, to put it mildly, an exceptional situation."
+  }
+]

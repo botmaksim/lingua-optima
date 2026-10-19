@@ -118,4 +118,7 @@ public class TaskParamsRequest {
 
     /** @brief Optional length preset for speaking task (e.g. SHORT, MEDIUM, LONG, CUSTOM). */
     private String speakingLength;
+
+    /** @brief Optional ID of pre-calibrated pronunciation pack from phonetics/pronunciation_packs.json. */
+    private String pronunciationPackId;
 }
