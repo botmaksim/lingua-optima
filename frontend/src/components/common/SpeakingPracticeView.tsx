@@ -18,7 +18,9 @@ import {
   AlertTriangle,
   Sparkles,
   Info,
-  Award
+  Award,
+  Gauge,
+  Timer
 } from 'lucide-react';
 import {
   speakWord,
@@ -29,7 +31,6 @@ import {
   AlignedWord
 } from '../../utils/phonetics';
 
-// Type definitions for browser Web Speech Recognition
 interface SpeechRecognitionEvent {
   results: {
     [index: number]: {
@@ -66,6 +67,10 @@ interface SpeakingPracticeViewProps {
     spokenTranscript: string;
     accuracyScore: number;
     overallScore: number;
+    wpm: number;
+    durationSeconds: number;
+    pacingScore: number;
+    pacingFeedback: string;
     words: AlignedWord[];
     generalFeedback: string[];
   }) => void;
@@ -87,6 +92,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   const [accent, setAccent] = useState<'en-US' | 'en-GB'>('en-US');
   const [isPlayingModel, setIsPlayingModel] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [recordedTranscript, setRecordedTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [recognitionSupported, setRecognitionSupported] = useState(true);
@@ -95,8 +101,20 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   const [micError, setMicError] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const startTimeRef = useRef<number>(0);
 
-  // Initialize Speech Recognition
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (isRecording) {
+      timer = setInterval(() => {
+        setRecordingSeconds(Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000)));
+      }, 500);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isRecording]);
+
   useEffect(() => {
     const SpeechRecognitionAPI =
       (window as unknown as { SpeechRecognition?: new () => SpeechRecognitionInstance }).SpeechRecognition ||
@@ -149,7 +167,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       };
 
       recognitionRef.current = recognition;
-    } catch (e) {
+    } catch {
       setRecognitionSupported(false);
     }
 
@@ -163,7 +181,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
     };
   }, [accent]);
 
-  // Model audio playback
   const handlePlayModelAudio = () => {
     if (isPlayingModel) {
       stopSpeech();
@@ -176,16 +193,16 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
     }
   };
 
-  // Start / Stop speech recording
   const toggleRecording = () => {
     if (isRecording) {
+      const elapsed = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000));
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
         } catch (ignored) {}
       }
       setIsRecording(false);
-      evaluateSpokenSpeech();
+      evaluateSpokenSpeech(undefined, elapsed);
     } else {
       stopSpeech();
       setIsPlayingModel(false);
@@ -194,26 +211,28 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       setEvaluationResult(null);
       setActiveWordTip(null);
       setMicError(null);
+      setRecordingSeconds(0);
+      startTimeRef.current = Date.now();
 
       if (recognitionRef.current) {
         try {
           recognitionRef.current.lang = accent;
           recognitionRef.current.start();
-        } catch (err) {
+        } catch {
           setMicError('Could not start microphone. Please check browser permissions.');
         }
       }
     }
   };
 
-  // Evaluate speech after recording completes
-  const evaluateSpokenSpeech = (overrideText?: string) => {
+  const evaluateSpokenSpeech = (overrideText?: string, elapsedSeconds?: number) => {
     const fullTranscript = (overrideText || (recordedTranscript + ' ' + interimTranscript)).trim();
     if (!fullTranscript) {
       setMicError('No speech detected. Please speak closer to the microphone and read clearly.');
       return;
     }
-    const result = alignSpokenWords(passageText, fullTranscript, 0.92);
+    const duration = elapsedSeconds || recordingSeconds || 5;
+    const result = alignSpokenWords(passageText, fullTranscript, 0.92, duration);
     setEvaluationResult(result);
   };
 
@@ -226,6 +245,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
     setEvaluationResult(null);
     setActiveWordTip(null);
     setMicError(null);
+    setRecordingSeconds(0);
   };
 
   const handleSubmit = () => {
@@ -233,10 +253,20 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
     onSubmit({
       spokenTranscript: recordedTranscript || interimTranscript || 'Speech practice completed.',
       accuracyScore: evaluationResult.accuracyScore,
-      overallScore: Math.round((evaluationResult.accuracyScore / 100) * points),
+      overallScore: Math.round((evaluationResult.overallScore / 100) * points),
+      wpm: evaluationResult.wpm,
+      durationSeconds: evaluationResult.durationSeconds,
+      pacingScore: evaluationResult.pacingScore,
+      pacingFeedback: evaluationResult.pacingFeedback,
       words: evaluationResult.words,
       generalFeedback: evaluationResult.generalFeedback,
     });
+  };
+
+  const formatDuration = (sec: number) => {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   // Quick word pronunciation click
@@ -386,12 +416,18 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
 
       {/* Recording Status / Live Transcription */}
       {isRecording && (
-        <div className="bg-indigo-950/30 border border-indigo-500/40 rounded-xl p-4 animate-pulse">
-          <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold mb-1">
-            <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-            <span>Listening to your speech... Speak clearly now</span>
+        <div className="bg-indigo-950/40 border border-indigo-500/50 rounded-xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold">
+              <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+              <span>Listening to your speech... Speak clearly now</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-900/60 border border-indigo-500/30 text-indigo-200 text-xs font-mono font-bold">
+              <Timer className="w-3.5 h-3.5 text-indigo-400" />
+              <span>{formatDuration(recordingSeconds)}</span>
+            </div>
           </div>
-          <div className="text-sm text-slate-200 italic font-medium min-h-[1.5rem]">
+          <div className="text-sm text-slate-200 italic font-medium min-h-[1.5rem] bg-slate-900/60 p-3 rounded-lg border border-slate-800">
             {recordedTranscript} <span className="text-indigo-400">{interimTranscript}</span>
           </div>
         </div>
@@ -403,9 +439,12 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/70 pb-3">
             <div className="flex items-center gap-2">
               <Award className="w-5 h-5 text-indigo-400" />
-              <h3 className="text-base font-bold text-white">Pronunciation Analysis</h3>
+              <div>
+                <h3 className="text-base font-bold text-white">Speech & Pronunciation Evaluation</h3>
+                <p className="text-xs text-slate-400">Calibrated against accuracy, articulation, and pacing rate</p>
+              </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div className="text-right">
                 <div className="text-2xl font-black text-indigo-400">
                   {evaluationResult.accuracyScore}%
@@ -414,22 +453,42 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                   Pronunciation Accuracy
                 </div>
               </div>
+              <div className="h-8 w-px bg-slate-700" />
+              <div className="text-right">
+                <div className="text-xl font-bold text-emerald-400">
+                  {Math.round((evaluationResult.overallScore / 100) * points)} / {points}
+                </div>
+                <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                  Earned Points ({evaluationResult.overallScore}%)
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Stats Triad */}
-          <div className="grid grid-cols-3 gap-3 text-center">
+          {/* Stats Quad */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div className="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg">
-              <div className="text-lg font-bold text-emerald-400">{evaluationResult.correctCount}</div>
-              <div className="text-[11px] text-emerald-300/80">Accurate Words</div>
+              <div className="text-lg font-bold text-emerald-400">{evaluationResult.accuracyScore}%</div>
+              <div className="text-[11px] text-emerald-300/80">Accuracy ({evaluationResult.correctCount}/{evaluationResult.totalWords})</div>
+            </div>
+            <div className="bg-indigo-500/10 border border-indigo-500/20 p-2.5 rounded-lg">
+              <div className="flex items-center justify-center gap-1 text-lg font-bold text-indigo-400">
+                <Gauge className="w-4 h-4 text-indigo-400" />
+                <span>{evaluationResult.wpm}</span>
+                <span className="text-xs font-normal text-indigo-300">WPM</span>
+              </div>
+              <div className="text-[11px] text-indigo-300/80">Pacing ({evaluationResult.pacingScore}%)</div>
             </div>
             <div className="bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg">
               <div className="text-lg font-bold text-rose-400">{evaluationResult.mispronouncedCount}</div>
               <div className="text-[11px] text-rose-300/80">Mispronounced</div>
             </div>
-            <div className="bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-lg">
-              <div className="text-lg font-bold text-amber-400">{evaluationResult.omittedCount}</div>
-              <div className="text-[11px] text-amber-300/80">Omitted Words</div>
+            <div className="bg-slate-700/30 border border-slate-700 p-2.5 rounded-lg">
+              <div className="flex items-center justify-center gap-1 text-lg font-bold text-slate-200">
+                <Timer className="w-4 h-4 text-slate-400" />
+                <span>{evaluationResult.durationSeconds}s</span>
+              </div>
+              <div className="text-[11px] text-slate-400">Recorded Time</div>
             </div>
           </div>
 

@@ -1145,43 +1145,57 @@ export const SubmissionsReview: React.FC = () => {
                     })()}
 
                       {/* Speaking & Pronunciation Practice Summary Card */}
-                      {sub.originalText?.includes('Pronunciation Accuracy:') && (
-                        <div className="p-4 rounded-2xl bg-indigo-950 text-white border border-indigo-500/30 space-y-3">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex items-center space-x-2">
-                              <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
-                                <Mic className="w-4 h-4" />
+                      {sub.originalText?.includes('Pronunciation Accuracy:') && (() => {
+                        const wpmMatch = sub.originalText.match(/Speech Rate:\s*([^\n]+)/);
+                        const durMatch = sub.originalText.match(/Speaking Duration:\s*([^\n]+)/);
+                        return (
+                          <div className="p-4 rounded-2xl bg-indigo-950 text-white border border-indigo-500/30 space-y-3">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <div className="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
+                                  <Mic className="w-4 h-4" />
+                                </div>
+                                <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+                                  Oral Speaking Submission Diagnostics
+                                </span>
+                                {wpmMatch && (
+                                  <span className="px-2 py-0.5 rounded-md bg-indigo-800/80 border border-indigo-600/40 text-[11px] font-mono text-indigo-200">
+                                    {wpmMatch[1]}
+                                  </span>
+                                )}
+                                {durMatch && (
+                                  <span className="px-2 py-0.5 rounded-md bg-slate-800 text-[11px] font-mono text-slate-300 border border-slate-700">
+                                    {durMatch[1]}
+                                  </span>
+                                )}
                               </div>
-                              <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
-                                Oral Speaking Submission Diagnostics
-                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const transcriptMatch = sub.originalText.match(/Spoken Transcript:\s*([^\n]+)/);
+                                  if (transcriptMatch && transcriptMatch[1]) {
+                                    speakText(transcriptMatch[1]);
+                                  } else {
+                                    speakText(sub.originalText);
+                                  }
+                                }}
+                                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span>Listen Spoken Audio (TTS)</span>
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const transcriptMatch = sub.originalText.match(/Spoken Transcript:\s*([^\n]+)/);
-                                if (transcriptMatch && transcriptMatch[1]) {
-                                  speakText(transcriptMatch[1]);
-                                } else {
-                                  speakText(sub.originalText);
-                                }
-                              }}
-                              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-sm"
-                            >
-                              <Volume2 className="w-3.5 h-3.5" />
-                              <span>Listen Spoken Audio (TTS)</span>
-                            </button>
+                            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 space-y-1">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                                Automated Speech-to-Text Alignment:
+                              </span>
+                              <p className="font-mono text-indigo-200 whitespace-pre-wrap">
+                                {sub.originalText}
+                              </p>
+                            </div>
                           </div>
-                          <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-300 space-y-1">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                              Automated Speech-to-Text Alignment:
-                            </span>
-                            <p className="font-mono text-indigo-200 whitespace-pre-wrap">
-                              {sub.originalText}
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                        );
+                      })()}
 
                       {/* Interactive Student Text Error Annotation (Teacher Mode) */}
                       {sub.originalText && (

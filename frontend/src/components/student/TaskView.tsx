@@ -143,6 +143,10 @@ export const TaskView: React.FC = () => {
     spokenTranscript: string;
     accuracyScore: number;
     overallScore: number;
+    wpm?: number;
+    durationSeconds?: number;
+    pacingScore?: number;
+    pacingFeedback?: string;
     words: any[];
     generalFeedback: string[];
   }) => {
@@ -152,6 +156,10 @@ export const TaskView: React.FC = () => {
     try {
       const formattedSubmission = [
         `Pronunciation Accuracy: ${result.accuracyScore}%`,
+        `Overall Speaking Score: ${result.overallScore}%`,
+        `Speech Rate: ${result.wpm ?? 120} WPM (Pacing Score: ${result.pacingScore ?? 100}%)`,
+        `Speaking Duration: ${result.durationSeconds ?? 0}s`,
+        `Pacing Diagnostics: ${result.pacingFeedback || 'Normal pacing'}`,
         `Spoken Transcript: ${result.spokenTranscript}`,
         `Reference Passage: ${task.content || task.questions?.[0]?.questionText || ''}`,
       ].join('\n\n');

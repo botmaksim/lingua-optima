@@ -1401,6 +1401,34 @@ describe('Phonetics Utilities (phonetics.ts)', () => {
     expect(emptyResult.words.every((w) => w.status === 'OMITTED')).toBe(true);
   });
 
+  it('alignSpokenWords calculates speech rate (WPM) and calibrated pacing score correctly', () => {
+    const reference = 'The three brothers walk thoughtfully through the woods';
+    const spoken = 'The three brothers walk thoughtfully through the woods';
+
+    // 8 words in 4 seconds = 120 WPM (optimal 100-160 band)
+    const normalResult = alignSpokenWords(reference, spoken, 100, 4);
+    expect(normalResult.wpm).toBe(120);
+    expect(normalResult.pacingScore).toBe(100);
+    expect(normalResult.durationSeconds).toBe(4);
+    expect(normalResult.pacingFeedback).toContain('Optimal speech rate');
+    expect(normalResult.overallScore).toBe(100);
+
+    // 8 words in 30 seconds = 16 WPM (excessively slow)
+    const slowResult = alignSpokenWords(reference, spoken, 100, 30);
+    expect(slowResult.wpm).toBe(16);
+    expect(slowResult.pacingScore).toBeLessThan(50);
+    expect(slowResult.pacingFeedback).toContain('delayed delivery');
+    // Accuracy is 100%, but overall score is degraded due to sluggish pace
+    expect(slowResult.overallScore).toBeLessThan(100);
+    expect(slowResult.overallScore).toBeGreaterThan(60);
+
+    // 8 words in 1.5 seconds = 320 WPM (rushed)
+    const fastResult = alignSpokenWords(reference, spoken, 100, 1.5);
+    expect(fastResult.wpm).toBeGreaterThan(190);
+    expect(fastResult.pacingScore).toBeLessThan(80);
+    expect(fastResult.pacingFeedback).toContain('Rushed delivery');
+  });
+
   it('speakWord, speakText, and stopSpeech invoke speechSynthesis methods safely', () => {
     speakWord('thoughtful', 'en-US');
     expect(window.speechSynthesis.speak).toHaveBeenCalled();
@@ -1565,7 +1593,7 @@ describe('SpeakingPracticeView component', () => {
 
     // Accuracy badge is visible
     expect(screen.getByText(/Pronunciation Accuracy/i)).toBeInTheDocument();
-    expect(screen.getByText(/100%/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/100%/i).length).toBeGreaterThan(0);
 
     // Click submit evaluation
     const submitBtn = screen.getByRole('button', { name: /Submit Speaking Assessment/i });
@@ -1575,6 +1603,7 @@ describe('SpeakingPracticeView component', () => {
     const submittedPayload = handleSubmit.mock.calls[0][0];
     expect(submittedPayload.accuracyScore).toBe(100);
     expect(submittedPayload.overallScore).toBe(100);
+    expect(submittedPayload.wpm).toBe(140);
   });
 });
 

@@ -36,6 +36,10 @@ export interface PronunciationResult {
   mispronouncedCount: number;
   omittedCount: number;
   totalWords: number;
+  wpm: number;
+  durationSeconds: number;
+  pacingScore: number;
+  pacingFeedback: string;
   words: AlignedWord[];
   mispronouncedWords: AlignedWord[];
   generalFeedback: string[];
@@ -393,16 +397,18 @@ function generatePhoneticTip(expected: string, heard?: string): string {
 }
 
 /**
- * @brief Aligns spoken recognized words against reference passage text.
+ * @brief Aligns spoken recognized words against reference passage text and assesses speech rate.
  * @param referenceText Official reference passage the student was supposed to read.
  * @param recognizedText Spoken transcript captured by speech recognition.
  * @param rawConfidence Average acoustic confidence reported by recognition (0.0 to 1.0).
- * @return Detailed PronunciationResult breakdown.
+ * @param durationSeconds Total elapsed speech duration in seconds.
+ * @return Detailed PronunciationResult breakdown including speech rate and pacing analysis.
  */
 export function alignSpokenWords(
   referenceText: string,
   recognizedText: string,
-  rawConfidence: number = 0.90
+  rawConfidence: number = 0.90,
+  durationSeconds?: number
 ): PronunciationResult {
   const refTokens = referenceText
     .trim()
@@ -431,7 +437,6 @@ export function alignSpokenWords(
       const spokenWord = spokenTokens[spokenIndex];
 
       if (cleanWord === spokenWord) {
-        // Exact match
         alignedWords.push({
           word: rawWord,
           cleanWord,
@@ -443,7 +448,6 @@ export function alignSpokenWords(
         correctCount++;
         spokenIndex++;
       } else {
-        // Check fuzzy match within edit distance 1 (minor slip / accent)
         const distance = levenshteinDistance(cleanWord, spokenWord);
         if (distance <= 1 && cleanWord.length > 3) {
           alignedWords.push({
@@ -457,13 +461,11 @@ export function alignSpokenWords(
           correctCount++;
           spokenIndex++;
         } else {
-          // Check if student skipped this word and spoke the next one
           const peekDistance = (spokenIndex + 1 < spokenTokens.length)
             ? levenshteinDistance(cleanWord, spokenTokens[spokenIndex + 1])
             : 99;
 
           if (peekDistance <= 1) {
-            // Student added an extra word before this
             spokenIndex++;
             alignedWords.push({
               word: rawWord,
@@ -476,7 +478,6 @@ export function alignSpokenWords(
             correctCount++;
             spokenIndex++;
           } else {
-            // Mispronounced or substituted
             alignedWords.push({
               word: rawWord,
               cleanWord,
@@ -492,7 +493,6 @@ export function alignSpokenWords(
         }
       }
     } else {
-      // Out of spoken words: omitted
       alignedWords.push({
         word: rawWord,
         cleanWord,
@@ -504,11 +504,42 @@ export function alignSpokenWords(
     }
   }
 
+  const spokenWordCount = spokenTokens.length;
+  const elapsedSec = durationSeconds !== undefined && durationSeconds > 0
+    ? durationSeconds
+    : Math.max(1, Math.round((spokenWordCount / 130) * 60));
+
+  const elapsedMinutes = Math.max(0.01, elapsedSec / 60);
+  const wpm = Math.max(1, Math.round(spokenWordCount / elapsedMinutes));
+
+  let pacingScore = 100;
+  let pacingFeedback = '';
+
+  if (wpm >= 100 && wpm <= 160) {
+    pacingScore = 100;
+    pacingFeedback = `Optimal speech rate (${wpm} WPM) with natural sentence cadence and clear pausing.`;
+  } else if (wpm >= 80 && wpm < 100) {
+    pacingScore = Math.round(80 + ((wpm - 80) / 20) * 19);
+    pacingFeedback = `Deliberate, slower reading pace (${wpm} WPM). Practice linking words smoothly in thought groups.`;
+  } else if (wpm >= 50 && wpm < 80) {
+    pacingScore = Math.round(60 + ((wpm - 50) / 30) * 19);
+    pacingFeedback = `Fragmented speech pace (${wpm} WPM). Work on sentence momentum to avoid excessive pauses.`;
+  } else if (wpm < 50) {
+    pacingScore = Math.max(30, Math.round(wpm * 0.9));
+    pacingFeedback = `Significantly delayed delivery (${wpm} WPM). Focus on fluency drills and breath pacing.`;
+  } else if (wpm > 160 && wpm <= 190) {
+    pacingScore = Math.round(100 - ((wpm - 160) / 30) * 15);
+    pacingFeedback = `Rapid reading speed (${wpm} WPM). Slow down slightly to preserve full vowel quality and word endings.`;
+  } else {
+    pacingScore = Math.max(40, Math.round(85 - (wpm - 190) * 0.8));
+    pacingFeedback = `Rushed delivery (${wpm} WPM). High speed leads to slurred consonants and clipped vowels.`;
+  }
+
   const totalWords = Math.max(1, refTokens.length);
   const accuracyScore = Math.min(100, Math.round((correctCount / totalWords) * 100));
   const completenessScore = Math.min(100, Math.round(((totalWords - omittedCount) / totalWords) * 100));
-  const fluencyScore = Math.min(100, Math.round((accuracyScore * 0.7) + (completenessScore * 0.3)));
-  const overallScore = Math.round((accuracyScore * 0.6) + (fluencyScore * 0.25) + (completenessScore * 0.15));
+  const fluencyScore = Math.min(100, Math.round((pacingScore * 0.6) + (completenessScore * 0.4)));
+  const overallScore = Math.min(100, Math.round((accuracyScore * 0.55) + (fluencyScore * 0.30) + (completenessScore * 0.15)));
 
   const mispronouncedWords = alignedWords.filter(w => w.status === 'MISPRONOUNCED' || w.status === 'OMITTED');
 
@@ -520,6 +551,8 @@ export function alignSpokenWords(
   } else {
     generalFeedback.push('Pronunciation needs targeted practice. Take advantage of the audio buttons to hear native pronunciation for each misread word, then try reading again.');
   }
+
+  generalFeedback.push(pacingFeedback);
 
   if (omittedCount > 0) {
     generalFeedback.push(`${omittedCount} word(s) were missed or skipped. Try pacing your reading steadily.`);
@@ -534,6 +567,10 @@ export function alignSpokenWords(
     mispronouncedCount,
     omittedCount,
     totalWords,
+    wpm,
+    durationSeconds: elapsedSec,
+    pacingScore,
+    pacingFeedback,
     words: alignedWords,
     mispronouncedWords,
     generalFeedback,

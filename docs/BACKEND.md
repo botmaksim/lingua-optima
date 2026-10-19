@@ -599,25 +599,11 @@ For every item evaluated (from CAT session, task questions, or synthesized answe
 
 ## 10. Database Schema Migrations (Flyway)
 
-The PostgreSQL relational database is version-controlled using ordered Flyway migrations (`backend/src/main/resources/db/migration/`):
+The PostgreSQL relational database is version-controlled using an enterprise baseline schema migration (`backend/src/main/resources/db/migration/`):
 
 | Version | File | Description |
 |---|---|---|
-| `V1` | `V1__create_users.sql` | Core `users` table, roles (`STUDENT`, `TEACHER`, `ADMIN`), CEFR levels, and initial indices |
-| `V2` | `V2__create_user_api_keys.sql` | `api_keys` table for BYOK encrypted keys |
-| `V3` | `V3__create_materials.sql` | Pedagogical reference materials and CEFR syllabus |
-| `V4` | `V4__create_exercises.sql` | `tasks`, `task_questions`, and `task_assignments` relational schema |
-| `V5` | `V5__create_user_progress.sql` | `progress_records`, `session_states`, and `submissions` schema |
-| `V6` | `V6__create_vocabulary.sql` | Lexical items and vocabulary registry |
-| `V7` | `V7__expand_cefr_levels.sql` | Calibration across the 6-level CEFR spectrum (A1, A2, B1, B2, C1, C2) |
-| `V8` | `V8__add_assignment_attempts.sql` | Homework attempt counters and max attempts limits |
-| `V9` | `V9__add_open_brackets_task_type.sql` | Adds `OPEN_BRACKETS` (раскрытие скобок) task format |
-| `V10` | `V10__add_group_enrollment_status_and_notification_reference.sql` | Cohort soft deletion (`is_active`, `removed_at`) and notification foreign references |
-| `V11` | `V11__add_task_points_and_question_points.sql` | Granular per-task and per-question point budget weighting |
-| `V12` | `V12__add_token_tracking_to_usage_counters.sql` | Weekly usage counter token and OCR quota tracking |
-| `V13` | `V13__create_custom_curriculum_entries.sql` | Teacher custom grammar formulas, rules, and target vocabulary storage |
-| `V14` | `V14__add_reading_task_type.sql` | Adds `READING` comprehension task format to `tasks_type_check` constraint |
-| `V15` | `V15__add_speaking_task_type.sql` | Adds `SPEAKING` oral pronunciation practice format to `tasks_type_check` constraint |
+| `V1` | `V1__initial_schema.sql` | Complete baseline schema: users, encrypted API keys, subscriptions, usage quotas, notifications, cohorts (`groups`, `group_students`), custom curriculum, tasks (MCQ, GAP_FILL, ESSAY, REWRITE, SHORT_ANSWER, OPEN_BRACKETS, READING, SPEAKING), adaptive CAT session states, submissions with item diagnostics, and CEFR mastery progress |
 
 ---
 
