@@ -8,7 +8,7 @@ import { CefrLevel, User } from './user';
 /**
  * @brief Types of pedagogical tasks available.
  */
-export type TaskType = 'MCQ' | 'GAP_FILL' | 'OPEN_BRACKETS' | 'REWRITE' | 'ESSAY' | 'SHORT_ANSWER' | 'READING';
+export type TaskType = 'MCQ' | 'GAP_FILL' | 'OPEN_BRACKETS' | 'REWRITE' | 'ESSAY' | 'SHORT_ANSWER' | 'READING' | 'SPEAKING';
 
 /**
  * @brief Task difficulty categorization.
@@ -88,6 +88,10 @@ export interface Task {
   latestSubmissionId?: string;
   /** @brief Flag indicating whether the student can still submit an attempt. */
   canSubmit?: boolean;
+  /** @brief Target phonemes or contrastive sound pairs for oral speaking practice. */
+  targetSounds?: string;
+  /** @brief Passage length preset for speaking exercises. */
+  speakingLength?: string;
 }
 
 /**
@@ -146,6 +150,12 @@ export interface TaskParams {
   openQuestionsCount?: number;
   /** @brief Optional points allocated per sentence completion / open question in reading tasks. */
   openPoints?: number;
+  /** @brief Optional speaking and pronunciation assignment title. */
+  speakingTitle?: string;
+  /** @brief Optional target sounds or phonemes (e.g. /θ/ vs /ð/, /r/ vs /l/). */
+  targetSounds?: string;
+  /** @brief Optional speaking passage length preset (SHORT, MEDIUM, LONG, CUSTOM). */
+  speakingLength?: string;
 }
 
 /**

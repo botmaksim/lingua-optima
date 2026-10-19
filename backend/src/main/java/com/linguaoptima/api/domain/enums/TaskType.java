@@ -21,5 +21,7 @@ public enum TaskType {
     /** @brief Constant or enum value representing short answer in TaskType. */
     SHORT_ANSWER,
     /** @brief Constant or enum value representing reading comprehension in TaskType. */
-    READING
+    READING,
+    /** @brief Constant or enum value representing pronunciation and speaking practice in TaskType. */
+    SPEAKING
 }

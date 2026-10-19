@@ -45,6 +45,7 @@ import {
   isSystemFreeProvider,
 } from '../../constants/aiModels';
 import { DEFAULT_CEFR_TOPICS, DOMAINS } from '../../constants/topics';
+import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from '../teacher/SpeakingConfigPanel';
 
 /**
  * @brief Form component to configure and generate AI-driven practice tasks.
@@ -72,6 +73,11 @@ export const GenerateTask: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [ecoMode, setEcoMode] = useState<boolean>(false);
+
+  // Dedicated Speaking task configuration state
+  const [speakingTitle, setSpeakingTitle] = useState<string>('');
+  const [targetSounds, setTargetSounds] = useState<string>(TARGET_SOUND_PRESETS[0].value);
+  const [speakingLength, setSpeakingLength] = useState<string>('MEDIUM');
 
   // Curriculum context state
   const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
@@ -246,7 +252,7 @@ export const GenerateTask: React.FC = () => {
         domain,
         taskType,
         difficulty,
-        numberOfQuestions,
+        numberOfQuestions: taskType === 'SPEAKING' ? 1 : numberOfQuestions,
         provider,
         modelName,
         customRule: customRule.trim() || undefined,
@@ -254,6 +260,13 @@ export const GenerateTask: React.FC = () => {
         ruleFilePath: uploadedRuleFile?.serverPath || undefined,
         vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
         ecoMode,
+        ...(taskType === 'SPEAKING'
+          ? {
+              speakingTitle: speakingTitle.trim() || undefined,
+              targetSounds: targetSounds.trim() || undefined,
+              speakingLength: speakingLength.trim() || undefined,
+            }
+          : {}),
       });
 
       if (taskType === 'ESSAY') {
@@ -305,6 +318,9 @@ export const GenerateTask: React.FC = () => {
     setTaskType('MCQ');
     setDifficulty('MEDIUM');
     setNumberOfQuestions(5);
+    setSpeakingTitle('');
+    setTargetSounds(TARGET_SOUND_PRESETS[0].value);
+    setSpeakingLength('MEDIUM');
     setCustomRule('');
     setCustomVocabulary('');
     setUploadedRuleFile(null);
@@ -747,7 +763,7 @@ export const GenerateTask: React.FC = () => {
           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
             Task Type
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
             {(
               [
                 { type: 'MCQ', label: 'Multiple Choice' },
@@ -755,6 +771,8 @@ export const GenerateTask: React.FC = () => {
                 { type: 'OPEN_BRACKETS', label: 'Open Brackets' },
                 { type: 'REWRITE', label: 'Sentence Rewrite' },
                 { type: 'ESSAY', label: 'Essay Writing' },
+                { type: 'READING', label: 'Reading' },
+                { type: 'SPEAKING', label: 'Speaking' },
               ] as { type: TaskType; label: string }[]
             ).map((item) => (
               <button
@@ -771,10 +789,27 @@ export const GenerateTask: React.FC = () => {
               </button>
             ))}
           </div>
+
+          {/* Speaking Configuration Studio Panel */}
+          {taskType === 'SPEAKING' && (
+            <div className="mt-4 animate-in fade-in duration-200">
+              <SpeakingConfigPanel
+                speakingTitle={speakingTitle}
+                onTitleChange={setSpeakingTitle}
+                targetSounds={targetSounds}
+                onTargetSoundsChange={setTargetSounds}
+                speakingLength={speakingLength}
+                onSpeakingLengthChange={setSpeakingLength}
+                totalPoints={100}
+                onTotalPointsChange={() => {}}
+                isStudent={true}
+              />
+            </div>
+          )}
         </div>
 
         {/* Difficulty and Question Count */}
-        {taskType !== 'ESSAY' && (
+        {taskType !== 'ESSAY' && taskType !== 'SPEAKING' && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">

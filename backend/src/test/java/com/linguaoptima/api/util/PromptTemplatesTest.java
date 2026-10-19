@@ -5,6 +5,7 @@
 package com.linguaoptima.api.util;
 
 import com.linguaoptima.api.domain.enums.CefrLevel;
+import com.linguaoptima.api.dto.request.TaskParamsRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -137,5 +138,58 @@ class PromptTemplatesTest {
         );
         assertTrue(zeroPrompt.contains("Travel"));
         assertTrue(zeroPrompt.contains("Medium (250-400 words)"));
+    }
+
+    /**
+     * @brief Tests buildSpeakingGenerationPrompt with TaskParamsRequest and length presets.
+     */
+    @Test
+    void testBuildSpeakingGenerationPrompt() {
+        TaskParamsRequest params = TaskParamsRequest.builder()
+            .cefrLevel(com.linguaoptima.api.domain.enums.CefrLevel.B2)
+            .grammarTopic("Pronunciation of Dental Fricatives")
+            .domain("Daily Dialogue")
+            .difficulty(com.linguaoptima.api.domain.enums.DifficultyLevel.MEDIUM)
+            .speakingTitle("Mastering /θ/ and /ð/")
+            .targetSounds("/θ/ vs /ð/")
+            .speakingLength("SHORT")
+            .totalPoints(100)
+            .build();
+
+        String prompt = PromptTemplates.buildSpeakingGenerationPrompt(params, null, "thought, bother, breathe");
+        assertNotNull(prompt);
+        assertTrue(prompt.contains("Speaking & Pronunciation reading practice"));
+        assertTrue(prompt.contains("B2"));
+        assertTrue(prompt.contains("/θ/ vs /ð/"));
+        assertTrue(prompt.contains("Short reading passage: 30 to 50 words"));
+        assertTrue(prompt.contains("thought, bother, breathe"));
+        assertTrue(prompt.contains("Mastering /θ/ and /ð/"));
+
+        // Test with LONG length
+        params.setSpeakingLength("LONG");
+        String longPrompt = PromptTemplates.buildSpeakingGenerationPrompt(params, null, null);
+        assertTrue(longPrompt.contains("Long reading passage: 120 to 180 words"));
+
+        // Test with CUSTOM length
+        params.setSpeakingLength("CUSTOM");
+        String customPrompt = PromptTemplates.buildSpeakingGenerationPrompt(params, null, null);
+        assertTrue(customPrompt.contains("CUSTOM"));
+
+        // Test default fallbacks with null fields
+        TaskParamsRequest nullParams = TaskParamsRequest.builder()
+            .cefrLevel(null)
+            .grammarTopic(null)
+            .domain(null)
+            .difficulty(null)
+            .speakingTitle(null)
+            .targetSounds(null)
+            .speakingLength(null)
+            .totalPoints(null)
+            .build();
+        String defaultPrompt = PromptTemplates.buildSpeakingGenerationPrompt(nullParams, null, null);
+        assertTrue(defaultPrompt.contains("B1"));
+        assertTrue(defaultPrompt.contains("Contemporary English Communication"));
+        assertTrue(defaultPrompt.contains("Natural Rhythm, Intonation & Clear Articulation"));
+        assertTrue(defaultPrompt.contains("Medium reading passage: 60 to 90 words"));
     }
 }

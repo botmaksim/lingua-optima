@@ -113,6 +113,13 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 - **Semantic AI Evaluation of Open Questions**: Intelligent semantic evaluation ensures alternative, accurate student phrasings and formulations receive full credit rather than being penalized for non-verbatim matches with the reference answer key.
 - **Inline Grammatical Mistake Highlighting & Educator Review**: Highlights grammatical and stylistic errors directly within student essays and open responses in red with contextual popovers detailing the error, suggested rewrite, grammar rule, and explanation. Educators can dynamically highlight new mistakes, edit explanations, toggle question correctness, and remove highlights.
 
+### 7. Speaking & Pronunciation Practice Studio ($0-Budget Acoustic Architecture)
+- **AI Speech Generation**: Generation of oral reading passages calibrated to CEFR levels (A1–C2) with targeted phonetic patterns (dental fricatives `/θ/-/ð/`, liquids `/r/-/l/`, labiodentals `/v/-/w/`, vowel contrasts `/iː/-/ɪ/`, sibilants, silent letters, connected speech rhythm) and duration presets.
+- **Client-Side Phonetic Alignment & Zero-Cost Scoring**: Browser-native Web Speech API (`SpeechRecognition`) captures microphone audio without recurring cloud API fees; client-side dynamic Levenshtein alignment categorizes spoken words as correct, mispronounced, or omitted.
+- **IPA Transcription & Multimodal Articulation Guidance**: Integrated phonetics dictionary with suffix heuristics provides full IPA transcriptions and clickable articulatory placement guides for mispronounced tokens.
+- **Educator Studio & Student Self-Service**: Teachers can customize, preview, listen to text-to-speech synthesized audio, edit reading texts, and review student audio attempts with accuracy diagnostics. Students can autonomously configure target phonemes and generate custom drills.
+- **Enterprise Upgrade Readiness**: Cleanly decoupled engine contracts enable swapping client-side speech recognition with cloud acoustic models (e.g. Azure Pronunciation Assessment, Whisper) without database or UI refactoring.
+
 ---
 
 ## Enterprise Action Audit and Distributed Tracing
@@ -199,14 +206,14 @@ docker compose up --build -d
 ### 2. Local Backend Testing & JaCoCo Verification
 ```bash
 cd backend
-# Runs 398 unit and slice tests, verifies >=99% instructions and >=99% line coverage
+# Runs 401 unit and slice tests, verifies >=99% instructions and >=99% line coverage
 ./gradlew test jacocoTestCoverageVerification
 ```
 
 ### 3. Local Frontend Testing & Production Build
 ```bash
 cd frontend
-# Runs 49 Vitest unit tests and builds optimized production bundles
+# Runs 58 Vitest unit tests and builds optimized production bundles
 npm install
 npm test
 npm run build
@@ -261,12 +268,12 @@ lingua_optima/
 ├── backend/                       # Spring Boot 3 + Java 21 REST API
 │   ├── src/main/java/             # Controllers, Services, Repositories, Domain, Config
 │   ├── src/main/resources/        # application.yml, logback-spring.xml, Flyway migrations
-│   └── src/test/java/             # 398 unit & slice tests, 99.7% lines | 99.3% instructions
+│   └── src/test/java/             # 401 unit & slice tests, 99.7% lines | 99.3% instructions
 ├── frontend/                      # React 18 + TypeScript + Vite PWA
 │   ├── src/components/            # Student, Teacher, Auth, and Common UI components
 │   ├── src/pages/                 # Landing, Dashboards, Privacy Policy, Terms, Help Center
 │   ├── src/store/                 # Zustand state stores (auth, task, ui, notification)
-│   └── src/test/                  # 49 Vitest unit and component tests
+│   └── src/test/                  # 58 Vitest unit and component tests
 ├── docs/                          # In-depth architectural specifications
 │   ├── presentation.html          # Interactive Project Presentation (Pitch Deck)
 │   ├── AUDIT_LOGGING.md           # Structured Action Audit & Distributed Tracing

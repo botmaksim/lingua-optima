@@ -14,6 +14,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { saveDraftLocal, getDraftLocal } from '../../utils/offlineSync';
 import { sanitizeTaskContent } from '../../utils/textSanitizer';
+import { SpeakingPracticeView } from '../common/SpeakingPracticeView';
 
 /**
  * @brief Student task interactive view component.
@@ -130,6 +131,40 @@ export const TaskView: React.FC = () => {
       console.error('Submission failed:', err);
       setSubmitError(err?.response?.data?.message || 'Submission failed. Your draft has been saved locally.');
       await handleSaveDraft();
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  /**
+   * @brief Handles speaking practice submission with pronunciation metrics and transcript.
+   */
+  const handleSpeakingSubmit = async (result: {
+    spokenTranscript: string;
+    accuracyScore: number;
+    overallScore: number;
+    words: any[];
+    generalFeedback: string[];
+  }) => {
+    if (!task) return;
+    setIsSubmitting(true);
+    setSubmitError(null);
+    try {
+      const formattedSubmission = [
+        `Pronunciation Accuracy: ${result.accuracyScore}%`,
+        `Spoken Transcript: ${result.spokenTranscript}`,
+        `Reference Passage: ${task.content || task.questions?.[0]?.questionText || ''}`,
+      ].join('\n\n');
+
+      const res = await submissionApi.submitText({
+        taskId: task.id,
+        text: formattedSubmission,
+        type: 'GRAMMAR',
+      });
+      navigate(`/student/review/${res.id}`);
+    } catch (err: any) {
+      console.error('Speaking submission failed:', err);
+      setSubmitError(err?.response?.data?.message || 'Submission failed.');
     } finally {
       setIsSubmitting(false);
     }
@@ -272,7 +307,7 @@ export const TaskView: React.FC = () => {
         <h1 className="text-xl font-black text-slate-900 tracking-tight">
           {task.grammarTopic || 'Grammar Practice'}
         </h1>
-        {task.content && task.type !== 'READING' && (
+        {task.content && task.type !== 'READING' && task.type !== 'SPEAKING' && (
           <p className="text-sm text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 leading-relaxed">
             {sanitizeTaskContent(task.content, 'Read the questions carefully and select the best answer.')}
           </p>
@@ -304,8 +339,18 @@ export const TaskView: React.FC = () => {
         </div>
       )}
 
-      {/* Main Content Area: Split Grid for READING vs Standard for other tasks */}
-      {task.type === 'READING' ? (
+      {/* Main Content Area: Speaking vs Reading vs Standard Tasks */}
+      {task.type === 'SPEAKING' ? (
+        <SpeakingPracticeView
+          passageText={task.content || task.questions?.[0]?.questionText || ''}
+          taskTitle={task.grammarTopic || 'Speaking & Pronunciation Practice'}
+          targetSounds={task.targetSounds}
+          points={task.totalPoints || 100}
+          onSubmit={handleSpeakingSubmit}
+          isSubmitting={isSubmitting}
+          readOnly={task.canSubmit === false}
+        />
+      ) : task.type === 'READING' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Sticky Reading Article */}
           <div className="lg:col-span-5 lg:sticky lg:top-6 rounded-3xl bg-white p-6 border border-slate-200/90 shadow-sm space-y-4">
@@ -476,45 +521,47 @@ export const TaskView: React.FC = () => {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
-        <div className="flex items-center space-x-3 text-xs font-semibold text-slate-500">
-          <span>{answeredCount} of {questions.length} answered</span>
-          <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-            <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${questions.length > 0 ? (answeredCount / questions.length) * 100 : 0}%` }}
-            />
+      {task.type !== 'SPEAKING' && (
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
+          <div className="flex items-center space-x-3 text-xs font-semibold text-slate-500">
+            <span>{answeredCount} of {questions.length} answered</span>
+            <div className="w-24 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{ width: `${questions.length > 0 ? (answeredCount / questions.length) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={task.canSubmit === false}
+              className="flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              <span>{saveSuccess ? 'Draft Saved!' : 'Save Draft'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSubmitClick}
+              disabled={isSubmitting || task.canSubmit === false}
+              className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <LoadingSpinner size="sm" className="p-0 text-white" />
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>{task.canSubmit === false ? 'Attempt Already Submitted' : 'Submit Answers'}</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
-
-        <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={task.canSubmit === false}
-            className="flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            <span>{saveSuccess ? 'Draft Saved!' : 'Save Draft'}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSubmitClick}
-            disabled={isSubmitting || task.canSubmit === false}
-            className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <LoadingSpinner size="sm" className="p-0 text-white" />
-            ) : (
-              <>
-                <Send className="w-4 h-4" />
-                <span>{task.canSubmit === false ? 'Attempt Already Submitted' : 'Submit Answers'}</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
+      )}
 
       <ConfirmDialog
         isOpen={showUnansweredConfirm}

@@ -1477,5 +1477,88 @@ class TaskServiceTest {
         assertNotNull(emptyNullTopicRes);
         assertTrue(emptyNullTopicRes.getContent().contains("Contemporary Global Trends"));
     }
+
+    /**
+     * @brief Tests generation of SPEAKING task, fallback content, and default question creation.
+     */
+    @Test
+    void testGenerateSpeakingTask() {
+        String speakingJson = """
+            {
+              "title": "Mastering Dental Fricatives",
+              "content": "Thirty-three thoughtful thieves thought they thrilled the throne throughout Thursday.",
+              "targetSounds": "/θ/ vs /ð/",
+              "questions": [
+                {
+                  "id": 1,
+                  "questionOrder": 1,
+                  "type": "SPEAKING",
+                  "text": "Thirty-three thoughtful thieves thought they thrilled the throne throughout Thursday.",
+                  "correctAnswer": "Thirty-three thoughtful thieves thought they thrilled the throne throughout Thursday.",
+                  "grammarRule": "Target Pronunciation: /θ/",
+                  "difficulty": 2,
+                  "points": 100,
+                  "options": []
+                }
+              ],
+              "answerKey": []
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(speakingJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .taskType(TaskType.SPEAKING)
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Dental Fricatives")
+            .domain("Phonetics")
+            .speakingTitle("Mastering Dental Fricatives")
+            .targetSounds("/θ/ vs /ð/")
+            .speakingLength("SHORT")
+            .totalPoints(100)
+            .build();
+
+        TaskResponse res = taskService.generateTask(req, teacherUser);
+        assertNotNull(res);
+        assertEquals(TaskType.SPEAKING, res.getType());
+        assertEquals(100, res.getTotalPoints());
+        assertEquals(1, res.getQuestions().size());
+        assertTrue(res.getContent().contains("thoughtful thieves"));
+
+        // Test fallback question creation when questions array is empty
+        String speakingNoQuestionsJson = """
+            {
+              "title": "Natural Rhythm",
+              "content": "Good morning everyone. Today we are going to talk about global trade and economy.",
+              "targetSounds": "Connected speech"
+            }
+            """;
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(speakingNoQuestionsJson);
+        TaskResponse noQRes = taskService.generateTask(req, teacherUser);
+        assertNotNull(noQRes);
+        assertEquals(1, noQRes.getQuestions().size());
+        assertTrue(noQRes.getContent().contains("Good morning everyone"));
+
+        // Test default speaking content fallback when AI content is empty
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn("{\"content\":\"\"}");
+        TaskResponse emptyRes = taskService.generateTask(req, teacherUser);
+        assertNotNull(emptyRes);
+        assertTrue(emptyRes.getContent().contains("Read the speech practice passage about Dental Fricatives aloud"));
+
+        // Test default speaking content with null topic
+        TaskParamsRequest reqNullTopic = TaskParamsRequest.builder()
+            .taskType(TaskType.SPEAKING)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic(null)
+            .build();
+        TaskResponse emptyNullTopicRes = taskService.generateTask(reqNullTopic, teacherUser);
+        assertNotNull(emptyNullTopicRes);
+        assertTrue(emptyNullTopicRes.getContent().contains("Pronunciation and Natural Flow"));
+    }
 }
 

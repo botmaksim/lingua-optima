@@ -381,6 +381,109 @@ public final class PromptTemplates {
     }
 
     /**
+     * @brief Constructs speaking practice generation prompt based on TaskParamsRequest.
+     * @param params Task generation parameters.
+     * @param targetRule Optional target rule or context.
+     * @param targetVocabulary Optional target vocabulary.
+     * @return Formatted speaking generation prompt string.
+     */
+    public static String buildSpeakingGenerationPrompt(TaskParamsRequest params, String targetRule, String targetVocabulary) {
+        String level = params.getCefrLevel() != null ? params.getCefrLevel().name() : "B1";
+        String topic = params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank()
+            ? params.getGrammarTopic() : "Contemporary English Communication";
+        String domain = params.getDomain() != null && !params.getDomain().isBlank()
+            ? params.getDomain() : "Daily Life";
+        String difficulty = params.getDifficulty() != null ? params.getDifficulty().name() : "MEDIUM";
+        String title = params.getSpeakingTitle() != null && !params.getSpeakingTitle().isBlank()
+            ? params.getSpeakingTitle() : (topic + " - Pronunciation & Speech Practice");
+        String targetSounds = params.getTargetSounds() != null && !params.getTargetSounds().isBlank()
+            ? params.getTargetSounds() : "Natural Rhythm, Intonation & Clear Articulation";
+        String length = params.getSpeakingLength() != null && !params.getSpeakingLength().isBlank()
+            ? params.getSpeakingLength() : "MEDIUM";
+        int totalPoints = params.getTotalPoints() != null && params.getTotalPoints() > 0
+            ? params.getTotalPoints() : 100;
+
+        return buildSpeakingGenerationPrompt(level, topic, domain, difficulty, title, targetSounds, length, totalPoints, targetVocabulary);
+    }
+
+    /**
+     * @brief Detailed prompt generator for speaking and pronunciation exercises.
+     * @param cefrLevel Target CEFR level.
+     * @param topic Topic or theme.
+     * @param domain Real-world domain.
+     * @param difficulty Difficulty tier.
+     * @param title Title of assignment.
+     * @param targetSounds Target sounds or phonemes.
+     * @param length Length preset.
+     * @param totalPoints Total points budget.
+     * @param targetVocabulary Target vocabulary words.
+     * @return Formatted prompt string.
+     */
+    public static String buildSpeakingGenerationPrompt(String cefrLevel, String topic, String domain, String difficulty,
+                                                       String title, String targetSounds, String length, int totalPoints,
+                                                       String targetVocabulary) {
+        String lengthGuidance = switch (length.toUpperCase()) {
+            case "SHORT" -> "Short reading passage: 30 to 50 words (2-3 sentences). Ideal for quick drill and focused sound repetition.";
+            case "LONG" -> "Long reading passage: 120 to 180 words (2-3 connected paragraphs). Ideal for advanced rhythm, stress, and continuous discourse.";
+            case "CUSTOM" -> length;
+            default -> "Medium reading passage: 60 to 90 words (1 rich, natural paragraph). Balanced flow and articulation.";
+        };
+
+        StringBuilder vocabBuilder = new StringBuilder();
+        if (targetVocabulary != null && !targetVocabulary.isBlank()) {
+            vocabBuilder.append("\n- TARGET VOCABULARY WORDS TO INTEGRATE:\n").append(targetVocabulary.trim()).append("\n");
+        }
+
+        return """
+            Generate an English Speaking & Pronunciation reading practice assignment based on the following parameters:
+            - CEFR Target Level: %s
+            - Topic/Theme: %s
+            - Assignment Title: %s
+            - Situational Domain: %s
+            - Difficulty Tier: %s
+            - Target Sounds / Phonemes: %s
+            - Passage Length: %s
+            %s
+            CRITICAL PEDAGOGICAL REQUIREMENTS:
+            1. Create an authentic, natural, and engaging English passage for the student to read aloud into a microphone.
+            2. The passage must emphasize the target sounds/phonemes (%s) in natural contexts (or contrast minimal pairs where applicable) while maintaining genuine communicative value.
+            3. Lexical and syntactic complexity MUST strictly calibrate to CEFR %s. Avoid vocabulary above this level.
+            4. In the "questions" array, provide 1 item whose "text" and "correctAnswer" contain the passage text to be read aloud, with points allocated equal to %d.
+            5. Return ONLY a valid JSON object matching this exact schema:
+            {
+              "title": "%s",
+              "content": "Full text of the speech passage to read aloud...",
+              "targetSounds": "%s",
+              "questions": [
+                {
+                  "id": 1,
+                  "questionOrder": 1,
+                  "type": "SPEAKING",
+                  "text": "Full text of the speech passage to read aloud...",
+                  "correctAnswer": "Full text of the speech passage to read aloud...",
+                  "grammarRule": "Target Pronunciation Focus: %s",
+                  "difficulty": 2,
+                  "points": %d,
+                  "options": []
+                }
+              ],
+              "answerKey": [
+                {
+                  "questionId": 1,
+                  "questionOrder": 1,
+                  "correctAnswer": "Full text of the speech passage to read aloud...",
+                  "explanation": "Read clearly with proper sentence stress, intonation, and accurate pronunciation of %s."
+                }
+              ]
+            }
+            """.formatted(
+                cefrLevel, topic, title, domain, difficulty, targetSounds, lengthGuidance,
+                vocabBuilder.toString(), targetSounds, cefrLevel, totalPoints,
+                title, targetSounds, targetSounds, totalPoints, targetSounds
+            );
+    }
+
+    /**
      * @brief System instruction prompt for essay scoring models.
      */
     public static final String ESSAY_SCORING_SYSTEM =

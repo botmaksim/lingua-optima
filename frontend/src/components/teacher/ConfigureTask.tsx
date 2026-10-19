@@ -26,6 +26,7 @@ import {
   Key,
   ArrowRightLeft,
   Smartphone,
+  Volume2,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
@@ -57,6 +58,8 @@ import { customCurriculumApi } from '../../api/customCurriculumApi';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
 import { ReadingConfigPanel, ReadingConfig } from './ReadingConfigPanel';
+import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from './SpeakingConfigPanel';
+import { speakText } from '../../utils/phonetics';
 
 /**
  * @brief Teacher component for configuring and deploying AI-generated assignments to student groups.
@@ -97,6 +100,11 @@ export const ConfigureTask: React.FC = () => {
     openQuestionsCount: 2,
     openPoints: 15,
   });
+
+  // Dedicated Speaking task configuration state
+  const [speakingTitle, setSpeakingTitle] = useState<string>('');
+  const [targetSounds, setTargetSounds] = useState<string>(TARGET_SOUND_PRESETS[0].value);
+  const [speakingLength, setSpeakingLength] = useState<string>('MEDIUM');
 
   // Curriculum context state
   const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
@@ -381,6 +389,15 @@ export const ConfigureTask: React.FC = () => {
             trueFalsePoints: readingConfig.trueFalsePoints,
             openQuestionsCount: readingConfig.openQuestionsCount,
             openPoints: readingConfig.openPoints,
+          }
+        : {}),
+      ...(taskType === 'SPEAKING'
+        ? {
+            speakingTitle: speakingTitle.trim() || undefined,
+            targetSounds: targetSounds.trim() || undefined,
+            speakingLength: speakingLength.trim() || undefined,
+            numberOfQuestions: 1,
+            totalPoints: totalPoints || 100,
           }
         : {}),
     };
@@ -1228,7 +1245,7 @@ export const ConfigureTask: React.FC = () => {
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Task Type
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
               {(
                 [
                   { type: 'MCQ', label: 'MCQ' },
@@ -1237,6 +1254,7 @@ export const ConfigureTask: React.FC = () => {
                   { type: 'REWRITE', label: 'Rewrite' },
                   { type: 'ESSAY', label: 'Essay' },
                   { type: 'READING', label: 'Reading' },
+                  { type: 'SPEAKING', label: 'Speaking' },
                 ] as { type: TaskType; label: string }[]
               ).map((item) => (
                 <button
@@ -1263,6 +1281,23 @@ export const ConfigureTask: React.FC = () => {
                   cefrLevel={cefrLevel}
                   customVocabulary={customVocabulary}
                   onCustomVocabularyChange={setCustomVocabulary}
+                />
+              </div>
+            )}
+
+            {/* Speaking Comprehension Studio Panel */}
+            {taskType === 'SPEAKING' && (
+              <div className="mt-4 animate-in fade-in duration-200">
+                <SpeakingConfigPanel
+                  speakingTitle={speakingTitle}
+                  onTitleChange={setSpeakingTitle}
+                  targetSounds={targetSounds}
+                  onTargetSoundsChange={setTargetSounds}
+                  speakingLength={speakingLength}
+                  onSpeakingLengthChange={setSpeakingLength}
+                  totalPoints={totalPoints}
+                  onTotalPointsChange={setTotalPoints}
+                  isStudent={false}
                 />
               </div>
             )}
@@ -1506,26 +1541,43 @@ export const ConfigureTask: React.FC = () => {
                 </p>
               </div>
 
-              {/* Editable Instructions / Reading Passage */}
+              {/* Editable Instructions / Reading / Speaking Passage */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    {previewTask.type === 'READING'
+                    {previewTask.type === 'SPEAKING'
+                      ? 'Oral Reading Passage (Editable by Teacher)'
+                      : previewTask.type === 'READING'
                       ? 'Reading Comprehension Passage (Editable by Teacher)'
                       : 'Exercise Instructions / Reading Passage'}
                   </label>
-                  {previewTask.type === 'READING' && (
-                    <span className="text-[11px] font-semibold text-primary">
-                      {previewTask.content?.split(/\s+/).filter(Boolean).length || 0} words
-                    </span>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {previewTask.type === 'SPEAKING' && previewTask.content && (
+                      <button
+                        type="button"
+                        onClick={() => speakText(previewTask.content)}
+                        className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-primary text-xs font-bold transition"
+                        title="Listen to synthesized pronunciation of passage"
+                      >
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Listen Passage</span>
+                      </button>
+                    )}
+                    {(previewTask.type === 'READING' || previewTask.type === 'SPEAKING') && (
+                      <span className="text-[11px] font-semibold text-primary">
+                        {previewTask.content?.split(/\s+/).filter(Boolean).length || 0} words
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <textarea
-                  rows={previewTask.type === 'READING' ? 9 : 3}
+                  rows={previewTask.type === 'READING' ? 9 : previewTask.type === 'SPEAKING' ? 6 : 3}
                   value={previewTask.content}
                   onChange={(e) => handleUpdateInstruction(e.target.value)}
                   placeholder={
-                    previewTask.type === 'READING'
+                    previewTask.type === 'SPEAKING'
+                      ? 'Review and edit the oral speech passage text here...'
+                      : previewTask.type === 'READING'
                       ? 'Review and edit the full reading comprehension passage text here...'
                       : 'Enter exercise instructions or reading context here...'
                   }

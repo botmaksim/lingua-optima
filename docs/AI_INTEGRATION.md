@@ -421,6 +421,30 @@ Essay evaluation is modeled after official IELTS and Cambridge English assessmen
 
 ---
 
+## 10. Speaking Passage Generation & Pronunciation Assessment Architecture
+
+### 10.1 Speaking Prompt Engineering (`PromptTemplates.buildSpeakingGenerationPrompt`)
+- **CEFR & Phonemic Alignment**: The generation prompt directs the LLM to construct a coherent narrative passage calibrated to the target CEFR level while maximizing occurrences of target sounds and contrastive minimal pairs (such as `/θ/` and `/ð/`, `/r/` and `/l/`, `/v/` and `/w/`, `/iː/` and `/ɪ/`).
+- **Passage Length Presets**:
+  - `SHORT` (30–50 words): 2–3 sentences. Ideal for focused sound drills and quick testing.
+  - `MEDIUM` (60–90 words): 1 rich paragraph. Balanced fluency, rhythm, and natural discourse.
+  - `LONG` (120–180 words): 2–3 paragraphs. Continuous discourse and complex prosody.
+  - `CUSTOM`: Custom word counts and educator-specified stylistic parameters.
+- **Strict JSON Contract**: Enforces valid JSON output conforming to the backend `TaskService` parser schema.
+
+### 10.2 Zero-Cost Acoustic Assessment Strategy & Modular Architecture
+- **In-Browser Free-Tier Execution ($0 Operational Cost)**:
+  - Uses the browser's native `SpeechRecognition` / `webkitSpeechRecognition` API for real-time speech capture.
+  - Phonetic alignment engine computes Levenshtein distance between recognized tokens and reference tokens.
+  - Classifies word articulation into `CORRECT` (exact or near acoustic match), `MISPRONOUNCED` (phoneme substitution or slurring), and `OMITTED` (skipped).
+  - Generates actionable articulation tips on tongue placement, lip rounding, and vowel length.
+  - Provides native TTS speech playback (`window.speechSynthesis`) with accent toggling (`en-US` and `en-GB`).
+- **Seamless Future Upgrade Path**:
+  - The client architecture isolates acoustic assessment behind a standard interface (`PronunciationResult`).
+  - While the default zero-cost engine requires zero API credentials and zero infrastructure spending, it can be seamlessly upgraded to enterprise-grade cloud acoustic engines (e.g. Azure AI Speech Pronunciation Assessment, SpeechSuper, or Whisper API) by swapping the audio ingestion provider without modifying any teacher review views, grading workflows, or database schemas.
+
+---
+
 ## License and Copyright
 
 Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  

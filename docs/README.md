@@ -47,7 +47,7 @@
 - **Students** independently generate exercises via AI, upload photos of handwritten homework (OCR), write essays, and receive instant diagnostic feedback
 - **Teachers** create and deploy assignments to student groups, inspect analytics, override AI grades, and export progress reports
 
-### 6 Core Components (from the Presentation)
+### 7 Core Components (from the Presentation)
 
 | # | Component | Description |
 |---|---|---|
@@ -57,6 +57,7 @@
 | 4 | Adaptive Tests | CAT algorithm: question difficulty adapts in real time |
 | 5 | Progress Dashboard | Grammar gap tracking and mastery radar chart across A1–C2 |
 | 6 | Educator Portal | Task deployment, grade overrides, and report exports |
+| 7 | Speaking & Pronunciation Practice | Oral reading drills, Web Speech API phonetic alignment, IPA transcription, and zero-cost acoustic assessment |
 
 ---
 
@@ -74,6 +75,7 @@
 | Task vs Essay Prompts | **Dedicated prompt contracts:** Essays use open-ended topics (250+ words, guiding discussion questions, zero blanks) | Prevents LLMs from generating gap-fill brackets or multiple-choice questions for writing essays |
 | AI Resilience & Queue UX | **Multi-tier fallback + In-flight status & Queue banners:** Fallback cascade (Groq ↔ Gemini Lite ↔ DB queue) with real-time UI status | Eliminates confusion during 5–25s inference latency and guides students during upstream provider rate limits |
 | Email Verification | **2-step registration with Gmail SMTP** | Requires 6-digit confirmation code with 60s cooldown rate-limiting and 10-minute expiry in Redis. Verifies email ownership and prevents bot signups, while Google OAuth2 provides seamless 1-click onboarding. |
+| Pronunciation Assessment | **Web Speech API + Client-side Levenshtein Alignment** ($0 operational cost, enterprise-upgrade ready) | Real-time speech recognition and phonetic alignment without proprietary speech API fees. Decoupled engine enables seamless plug-and-play migration to cloud acoustic models (Azure, Whisper). |
 
 ---
 
@@ -329,7 +331,7 @@ lingua_optima/
         │   ├── exportApi.ts
         │   └── leaderboardApi.ts
         ├── components/
-        │   ├── common/                 — 11 shared UI components
+        │   ├── common/                 — 12 shared UI components
         │   │   ├── Navbar.tsx          — Logo, navigation, notifications, avatar, remaining evals
         │   │   ├── Footer.tsx          — Privacy, Terms, Help
         │   │   ├── ProtectedRoute.tsx
@@ -340,11 +342,12 @@ lingua_optima/
         │   │   ├── LoadingSpinner.tsx
         │   │   ├── Toast.tsx
         │   │   ├── ConfirmDialog.tsx
-        │   │   └── AnnotatedTextReview.tsx — Inline error highlighting and teacher diagnostic review
+        │   │   ├── AnnotatedTextReview.tsx — Inline error highlighting and teacher diagnostic review
+        │   │   └── SpeakingPracticeView.tsx — Interactive speech recorder, phonetic alignment chips, and IPA player
         │   ├── student/                — 11 student components
         │   │   ├── Dashboard.tsx
         │   │   ├── GenerateTask.tsx    — Task generator with AI Provider & Model selector
-        │   │   ├── TaskView.tsx        — Split reading layout and standard question solving
+        │   │   ├── TaskView.tsx        — Split reading layout, speaking practice view, and standard question solving
         │   │   ├── AdaptiveSession.tsx — CAT session + interrupted session resume
         │   │   ├── OcrSubmit.tsx
         │   │   ├── EssayEditor.tsx
@@ -353,12 +356,13 @@ lingua_optima/
         │   │   ├── Progress.tsx
         │   │   ├── GroupLeaderboard.tsx — Intra-group leaderboard only!
         │   │   └── LevelUpModal.tsx
-        │   ├── teacher/                — 6 educator components
+        │   ├── teacher/                — 7 educator components
         │   │   ├── TeacherDashboard.tsx
         │   │   ├── StudentGroups.tsx
-        │   │   ├── ConfigureTask.tsx   — Multi-cohort designer and reading comprehension studio
+        │   │   ├── ConfigureTask.tsx   — Multi-cohort designer, reading studio, and speaking practice editor
         │   │   ├── ReadingConfigPanel.tsx — Dedicated reading menu and point weighting
-        │   │   ├── SubmissionsReview.tsx — Educator review with interactive diagnostic edits
+        │   │   ├── SpeakingConfigPanel.tsx — Target phoneme presets, length presets, and TTS audio tester
+        │   │   ├── SubmissionsReview.tsx — Educator review with interactive diagnostic edits & oral speech audio player
         │   │   └── ExportReports.tsx
         │   └── auth/
         │       ├── LoginPage.tsx
@@ -366,7 +370,7 @@ lingua_optima/
         ├── hooks/                      — 6 custom React hooks
         ├── store/                      — 4 Zustand state stores
         ├── types/                      — 8 TypeScript type definition modules
-        ├── utils/                      — Helper utilities (including textSanitizer.ts)
+        ├── utils/                      — Helper utilities (textSanitizer.ts, phonetics.ts)
         └── pages/                      — 6 route-level page wrappers
 ```
 
@@ -416,7 +420,7 @@ erDiagram
 
     TASKS {
         bigint id PK
-        varchar type "MCQ|GAP_FILL|ESSAY|REWRITE|OPEN_BRACKETS|SHORT_ANSWER|READING"
+        varchar type "MCQ|GAP_FILL|ESSAY|REWRITE|OPEN_BRACKETS|SHORT_ANSWER|READING|SPEAKING"
         varchar cefr_level
         varchar grammar_topic
         varchar domain
@@ -548,9 +552,9 @@ erDiagram
 | PUT | `/api/users/{id}/name` | TEACHER | Update displayed roster name/alias for an enrolled student |
 | DELETE | `/api/users/me` | Any | Delete account and anonymize data (GDPR Right to Erasure) |
 | **Tasks** | | | |
-| POST | `/api/tasks/generate` | Any | Generate a new exercise or reading comprehension task via AI (supports reading parameters, Eco Mode, topic catalog, custom topics) |
+| POST | `/api/tasks/generate` | Any | Generate a new exercise, reading comprehension, or speaking practice task via AI (supports reading & speaking parameters, Eco Mode, topic catalog, custom topics) |
 | POST | `/api/tasks/generate-multi` | TEACHER | Generate a task once and batch-distribute individual scoped assignments simultaneously across multiple teacher cohorts |
-| POST | `/api/tasks/preview` | Any | Preview an AI-generated task or reading comprehension passage without saving |
+| POST | `/api/tasks/preview` | Any | Preview an AI-generated task, reading comprehension passage, or speaking practice text without saving |
 | GET | `/api/tasks` | Any | List accessible tasks and assignments |
 | GET | `/api/tasks/{id}` | Any | Retrieve a specific task by ID |
 | POST | `/api/tasks/{id}/assign` | TEACHER | Assign a task to one or more student groups with custom points |
@@ -562,7 +566,7 @@ erDiagram
 | POST | `/api/sessions/{id}/answer` | STUDENT | Submit an answer and adjust difficulty |
 | POST | `/api/sessions/{id}/complete` | STUDENT | Complete the adaptive test and compute mastery |
 | **Submissions** | | | |
-| POST | `/api/submissions/text` | STUDENT | Submit text, reading open-ended answers, or an essay for AI evaluation |
+| POST | `/api/submissions/text` | STUDENT | Submit text, reading open-ended answers, oral speech transcript diagnostics, or an essay for AI evaluation |
 | POST | `/api/submissions/image` | STUDENT | Upload a handwritten homework photo for OCR + AI grading |
 | GET | `/api/submissions/my` | STUDENT | List the current student's submissions |
 | GET | `/api/submissions/teacher` | TEACHER | Review queue for educator's students (excludes self-practice) |

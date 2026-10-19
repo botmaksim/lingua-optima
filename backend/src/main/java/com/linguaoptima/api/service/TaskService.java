@@ -338,6 +338,10 @@ public class TaskService {
             return PromptTemplates.buildReadingGenerationPrompt(params, targetRule, targetVocab);
         }
 
+        if (params.getTaskType() == TaskType.SPEAKING) {
+            return PromptTemplates.buildSpeakingGenerationPrompt(params, targetRule, targetVocab);
+        }
+
         return PromptTemplates.buildTaskGenerationPrompt(
             params.getCefrLevel().name(),
             params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
@@ -788,6 +792,21 @@ public class TaskService {
                     questions.add(tq);
                 }
             }
+            if (params.getTaskType() == TaskType.SPEAKING && questions.isEmpty()) {
+                TaskQuestion tq = TaskQuestion.builder()
+                    .task(task)
+                    .questionOrder(1)
+                    .questionText(task.getContent())
+                    .correctAnswer(task.getContent())
+                    .optionsJson("[]")
+                    .difficulty(2)
+                    .points(reqTotal)
+                    .grammarRule(params.getTargetSounds() != null && !params.getTargetSounds().isBlank()
+                        ? "Pronunciation: " + params.getTargetSounds()
+                        : "Pronunciation & Intonation")
+                    .build();
+                questions.add(tq);
+            }
             if (params.getTaskType() == TaskType.READING && !questions.isEmpty()) {
                 int sumPoints = questions.stream().mapToInt(TaskQuestion::getPoints).sum();
                 if (sumPoints > 0) {
@@ -906,6 +925,11 @@ public class TaskService {
             String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
                 ? params.getGrammarTopic() : "Contemporary Global Trends";
             return "Read the following passage about " + topic + " carefully. Answer all comprehension questions, verify the factual statements, and complete the sentences based on the reading text.";
+        }
+        if (params.getTaskType() == TaskType.SPEAKING) {
+            String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
+                ? params.getGrammarTopic() : "Pronunciation and Natural Flow";
+            return "Read the speech practice passage about " + topic + " aloud into the microphone. Focus on clear articulation, accurate pronunciation, and natural rhythm.";
         }
         String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
             ? params.getGrammarTopic() : "English grammar";

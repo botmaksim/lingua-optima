@@ -25,6 +25,9 @@ import { HelpCenter } from '../pages/HelpCenter';
 import { ReadingConfigPanel, ReadingConfig } from '../components/teacher/ReadingConfigPanel';
 import { AnnotatedTextReview } from '../components/common/AnnotatedTextReview';
 import { SentenceCorrection } from '../types/submission';
+import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from '../components/teacher/SpeakingConfigPanel';
+import { SpeakingPracticeView } from '../components/common/SpeakingPracticeView';
+import { getIpaTranscription, alignSpokenWords, speakWord, speakText, stopSpeech } from '../utils/phonetics';
 
 describe('CefrBadge component', () => {
   it('renders level text and badge correctly', () => {
@@ -1316,6 +1319,265 @@ describe('AnnotatedTextReview component', () => {
     expect(resultList[2].original).toBe('three cat');
   });
 });
+
+describe('Phonetics Utilities (phonetics.ts)', () => {
+  beforeEach(() => {
+    // Setup mock speechSynthesis
+    window.speechSynthesis = {
+      speak: vi.fn(),
+      cancel: vi.fn(),
+      pause: vi.fn(),
+      resume: vi.fn(),
+      getVoices: vi.fn().mockReturnValue([
+        { name: 'Google US English', lang: 'en-US', default: true },
+        { name: 'Google UK English Female', lang: 'en-GB', default: false },
+      ]),
+      onvoiceschanged: null,
+      paused: false,
+      pending: false,
+      speaking: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    } as any;
+
+    (window as any).SpeechSynthesisUtterance = vi.fn().mockImplementation((text) => ({
+      text,
+      voice: null,
+      rate: 1,
+      pitch: 1,
+      volume: 1,
+      lang: 'en-US',
+    }));
+  });
+
+  it('getIpaTranscription returns correct dictionary IPA and handles heuristics', () => {
+    expect(getIpaTranscription('thoughtful')).toBe('/ˈθɔːtfəl/');
+    expect(getIpaTranscription('three')).toBe('/θriː/');
+    expect(getIpaTranscription('rhythm')).toBe('/ˈrɪðəm/');
+    expect(getIpaTranscription('The')).toBe('/ðiː, ðə/');
+
+    // Fallback suffix heuristics
+    const walkingIpa = getIpaTranscription('walking');
+    expect(walkingIpa).toContain('ɪŋ');
+
+    const quicklyIpa = getIpaTranscription('quickly');
+    expect(quicklyIpa).toContain('li');
+  });
+
+  it('alignSpokenWords correctly scores 100% on perfect matches', () => {
+    const reference = 'The three brothers walk thoughtfully through the woods';
+    const spoken = 'The three brothers walk thoughtfully through the woods';
+
+    const result = alignSpokenWords(reference, spoken, 100);
+    expect(result.accuracyScore).toBe(100);
+    expect(result.overallScore).toBe(100);
+    expect(result.words.every((w) => w.status === 'CORRECT')).toBe(true);
+    expect(result.generalFeedback[0]).toContain('Excellent clarity');
+  });
+
+  it('alignSpokenWords flags mispronounced words and offers articulation advice', () => {
+    const reference = 'The weather is very warm today in the morning';
+    const spoken = 'The bad is dark cold yesterday in the morning';
+
+    const result = alignSpokenWords(reference, spoken, 100);
+    expect(result.accuracyScore).toBeLessThan(70);
+    expect(result.words.some((w) => w.status === 'MISPRONOUNCED')).toBe(true);
+
+    const mispronounced = result.words.filter((w) => w.status === 'MISPRONOUNCED');
+    expect(mispronounced.length).toBeGreaterThan(0);
+    expect(mispronounced[0].tip).toBeDefined();
+  });
+
+  it('alignSpokenWords handles omitted words and completely empty spoken text', () => {
+    const reference = 'Practice makes perfect every single day';
+    const spoken = 'Practice makes day';
+
+    const result = alignSpokenWords(reference, spoken, 100);
+    expect(result.words.some((w) => w.status === 'OMITTED')).toBe(true);
+
+    const emptyResult = alignSpokenWords(reference, '', 100);
+    expect(emptyResult.accuracyScore).toBe(0);
+    expect(emptyResult.words.every((w) => w.status === 'OMITTED')).toBe(true);
+  });
+
+  it('speakWord, speakText, and stopSpeech invoke speechSynthesis methods safely', () => {
+    speakWord('thoughtful', 'en-US');
+    expect(window.speechSynthesis.speak).toHaveBeenCalled();
+
+    speakText('She sells sea shells by the sea shore.', 'en-GB');
+    expect(window.speechSynthesis.speak).toHaveBeenCalled();
+
+    stopSpeech();
+    expect(window.speechSynthesis.cancel).toHaveBeenCalled();
+  });
+});
+
+describe('SpeakingConfigPanel component', () => {
+  it('renders in educator mode and handles preset selection, title, points and length changes', () => {
+    const handleTitleChange = vi.fn();
+    const handleSoundsChange = vi.fn();
+    const handleLengthChange = vi.fn();
+    const handlePointsChange = vi.fn();
+
+    render(
+      <SpeakingConfigPanel
+        speakingTitle="Dental Fricatives Mastery"
+        onTitleChange={handleTitleChange}
+        targetSounds={TARGET_SOUND_PRESETS[0].value}
+        onTargetSoundsChange={handleSoundsChange}
+        speakingLength="MEDIUM"
+        onSpeakingLengthChange={handleLengthChange}
+        totalPoints={100}
+        onTotalPointsChange={handlePointsChange}
+        isStudent={false}
+      />
+    );
+
+    // Educator header is visible
+    expect(screen.getByText('Speaking Practice Studio')).toBeInTheDocument();
+    expect(screen.getByText('Total Points for Pronunciation')).toBeInTheDocument();
+
+    // Change title
+    const titleInput = screen.getByPlaceholderText(/e\.g\. Master the Dental Fricatives/i);
+    fireEvent.change(titleInput, { target: { value: 'New Speaking Exercise' } });
+    expect(handleTitleChange).toHaveBeenCalledWith('New Speaking Exercise');
+
+    // Click another target sound preset (Liquids)
+    const liquidPresetBtn = screen.getByText('Liquids (/r/ vs /l/)');
+    fireEvent.click(liquidPresetBtn);
+    expect(handleSoundsChange).toHaveBeenCalledWith(TARGET_SOUND_PRESETS[1].value);
+
+    // Change length preset
+    const shortLengthBtn = screen.getByText('Short Drill (30–50 words)');
+    fireEvent.click(shortLengthBtn);
+    expect(handleLengthChange).toHaveBeenCalledWith('SHORT');
+
+    // Change points
+    const pointsInput = screen.getByDisplayValue('100');
+    fireEvent.change(pointsInput, { target: { value: '80' } });
+    expect(handlePointsChange).toHaveBeenCalledWith(80);
+
+    // Click TTS audio tester button
+    const testAudioBtn = screen.getByTitle(/Click to test pronunciation audio playback/i);
+    fireEvent.click(testAudioBtn);
+    expect(window.speechSynthesis.speak).toHaveBeenCalled();
+  });
+
+  it('renders in student mode without points allocation panel', () => {
+    render(
+      <SpeakingConfigPanel
+        speakingTitle=""
+        onTitleChange={vi.fn()}
+        targetSounds={TARGET_SOUND_PRESETS[0].value}
+        onTargetSoundsChange={vi.fn()}
+        speakingLength="SHORT"
+        onSpeakingLengthChange={vi.fn()}
+        totalPoints={100}
+        onTotalPointsChange={vi.fn()}
+        isStudent={true}
+      />
+    );
+
+    expect(screen.getByText('Speaking & Pronunciation Studio')).toBeInTheDocument();
+    expect(screen.queryByText('Assignment Points (Max Score)')).not.toBeInTheDocument();
+  });
+});
+
+describe('SpeakingPracticeView component', () => {
+  const samplePassage = 'Three thoughtful brothers thought through the theory.';
+
+  beforeEach(() => {
+    window.speechSynthesis = {
+      speak: vi.fn(),
+      cancel: vi.fn(),
+      pause: vi.fn(),
+      resume: vi.fn(),
+      getVoices: vi.fn().mockReturnValue([]),
+      onvoiceschanged: null,
+      paused: false,
+      pending: false,
+      speaking: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    } as any;
+
+    class MockSpeechRecognition {
+      continuous = false;
+      interimResults = false;
+      lang = 'en-US';
+      start = vi.fn().mockImplementation(() => {
+        if (this.onstart) this.onstart();
+      });
+      stop = vi.fn().mockImplementation(() => {
+        if (this.onend) this.onend();
+      });
+      abort = vi.fn();
+      onstart: (() => void) | null = null;
+      onresult: ((ev: any) => void) | null = null;
+      onerror: ((ev: any) => void) | null = null;
+      onend: (() => void) | null = null;
+    }
+    (window as any).SpeechRecognition = MockSpeechRecognition;
+    (window as any).webkitSpeechRecognition = MockSpeechRecognition;
+  });
+
+  it('renders passage words, allows accent switching and triggers pronunciation on click', () => {
+    render(
+      <SpeakingPracticeView
+        passageText={samplePassage}
+        taskTitle="Dental Fricatives Practice"
+        targetSounds="/θ/ and /ð/"
+        points={100}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Dental Fricatives Practice')).toBeInTheDocument();
+    expect(screen.getByText(/Phonetic Focus:/i)).toBeInTheDocument();
+    expect(screen.getByText('Three')).toBeInTheDocument();
+
+    // Click word to pronounce
+    const wordBtn = screen.getByText('thoughtful');
+    fireEvent.click(wordBtn);
+    expect(window.speechSynthesis.speak).toHaveBeenCalled();
+
+    // Switch accent
+    const ukBtn = screen.getByText('UK Accent');
+    fireEvent.click(ukBtn);
+    expect(ukBtn).toHaveClass('bg-indigo-600');
+  });
+
+  it('displays pronunciation diagnostic metrics and submits results', () => {
+    const handleSubmit = vi.fn();
+    const mockResult = alignSpokenWords(samplePassage, 'Three thoughtful brothers thought through the theory', 100);
+
+    render(
+      <SpeakingPracticeView
+        passageText={samplePassage}
+        taskTitle="Practice Drill"
+        points={100}
+        onSubmit={handleSubmit}
+        initialResult={mockResult}
+      />
+    );
+
+    // Accuracy badge is visible
+    expect(screen.getByText(/Pronunciation Accuracy/i)).toBeInTheDocument();
+    expect(screen.getByText(/100%/i)).toBeInTheDocument();
+
+    // Click submit evaluation
+    const submitBtn = screen.getByRole('button', { name: /Submit Speaking Assessment/i });
+    fireEvent.click(submitBtn);
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+    const submittedPayload = handleSubmit.mock.calls[0][0];
+    expect(submittedPayload.accuracyScore).toBe(100);
+    expect(submittedPayload.overallScore).toBe(100);
+  });
+});
+
 
 
 

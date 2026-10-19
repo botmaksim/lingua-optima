@@ -122,7 +122,8 @@ frontend/
 │   │   ├── cefrColors.ts      — Color mapping for CEFR badges (A1 teal, A2 cyan, B1 emerald, B2 sky, C1 purple, C2 amber)
 │   │   ├── wordCount.ts       — Essay word counter
 │   │   ├── textSanitizer.ts   — Sanitizes task content and AI feedback to strip internal system prompt markers
-│   │   └── offlineSync.ts     — IndexedDB + Background Sync logic
+│   │   ├── offlineSync.ts     — IndexedDB + Background Sync logic
+│   │   └── phonetics.ts       — 200+ IPA dictionary, suffix heuristics, Levenshtein speech alignment, and TTS audio synthesis
 │   │
 │   └── pages/                 — Route-level page components
 │       ├── Landing.tsx        — Hero block, 6 feature cards, [Get Started] [Log In] [View Demo] buttons
@@ -264,6 +265,39 @@ The application implements full Progressive Web App (PWA) support to ensure a re
   - Educator reviews student homework with full diagnostic tools.
   - Clickable question item badges toggle item correctness between correct and incorrect.
   - "Save Diagnostic Adjustments" button commits adjusted corrections, items, comments, and scores to backend via `submissionApi.overrideScore(...)`.
+
+---
+
+## Speaking & Pronunciation Practice Studio
+
+### 1. Zero-Cost Speech Recognition & Phonetic Alignment Architecture
+- **In-Browser Execution ($0 API Cost)**: Utilizes native browser speech recognition (`webkitSpeechRecognition` / `SpeechRecognition`) and native speech synthesis (`window.speechSynthesis`). Avoids expensive recurring per-minute speech API fees.
+- **Pluggable Modular Design**: The engine is wrapped behind a clean interface (`PronunciationResult`, `alignSpokenWords`). It functions standalone in modern web browsers and can be upgraded seamlessly to proprietary cloud speech assessment APIs (e.g. Azure Speech Assessment or Whisper) without changing client contracts.
+
+### 2. Phonetics Utilities (`frontend/src/utils/phonetics.ts`)
+- **IPA Transcription Engine (`getIpaTranscription`)**: Built-in 200+ word dictionary covering phonetically complex dental fricatives (`/θ/`, `/ð/`), liquids (`/r/`, `/l/`), labials (`/v/`, `/w/`), vowel pairs, and silent letters, backed by morphological suffix heuristics (`-ing`, `-ly`, `-ed`, `-s`).
+- **Levenshtein Alignment (`alignSpokenWords`)**: Matches recognized spoken words against reference tokens. Categorizes words into:
+  - `CORRECT` (green): Accurately articulated words.
+  - `MISPRONOUNCED` (red): Substituted or slurred words, tagged with actionable articulatory placement tips (e.g., tongue position between teeth for dental fricatives).
+  - `OMITTED` (amber/strikethrough): Skipped or inaudible words.
+- **Scoring Formulas**: Computes independent Accuracy, Completeness, and Fluency sub-scores to generate an overall Pronunciation Score (0–100%).
+- **Speech Synthesis (`speakWord`, `speakText`, `stopSpeech`)**: Natural speech playback with accent selection (`en-US` and `en-GB`).
+
+### 3. Educator Configuration (`SpeakingConfigPanel.tsx`)
+- Configures assignment title, target phonemes, passage length presets (`Short 30–50w`, `Medium 60–90w`, `Long 120–180w`, `Custom`), and total points.
+- 7 Built-in target phoneme presets: Dental Fricatives, Liquids, Labials, Vowel Length, Sibilants & Affricates, Silent Letters, and General Fluency.
+- Live TTS audio tester allows instant verification of speaker audio.
+
+### 4. Student Practice Workspace (`SpeakingPracticeView.tsx`)
+- Displays target phoneme focus badges, points, and passage word chips.
+- Click any individual word to hear native pronunciation and inspect its IPA transcription.
+- Real-time speech recognition recording with interim transcript feedback.
+- Comprehensive evaluation breakdown with color-coded word highlights, word-by-word articulation popovers, and overall accuracy badges.
+
+### 5. Educator Submission Diagnostics (`SubmissionsReview.tsx`)
+- Dedicated oral speaking diagnostic banner displaying accuracy score, spoken transcript, and reference text.
+- One-click native TTS audio playback of student's spoken words or model reference passage.
+- Score override and teacher comments editing.
 
 ---
 

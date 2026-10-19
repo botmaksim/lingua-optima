@@ -127,7 +127,7 @@ backend/
 │   │   └── enums/
 │   │       ├── Role.java              — STUDENT, TEACHER, ADMIN
 │   │       ├── CefrLevel.java         — A1, A2, B1, B2, C1, C2 (Complete 6-level CEFR scale)
-│   │       ├── TaskType.java          — MCQ, GAP_FILL, ESSAY, REWRITE, OPEN_BRACKETS, SHORT_ANSWER, READING
+│   │       ├── TaskType.java          — MCQ, GAP_FILL, ESSAY, REWRITE, OPEN_BRACKETS, SHORT_ANSWER, READING, SPEAKING
 │   │       ├── DifficultyLevel.java   — EASY, MEDIUM, HARD, EXPERT
 │   │       ├── SubmissionType.java    — TEXT, IMAGE
 │   │       ├── AssignmentStatus.java  — PENDING, IN_PROGRESS, SUBMITTED, GRADED
@@ -617,6 +617,7 @@ The PostgreSQL relational database is version-controlled using ordered Flyway mi
 | `V12` | `V12__add_token_tracking_to_usage_counters.sql` | Weekly usage counter token and OCR quota tracking |
 | `V13` | `V13__create_custom_curriculum_entries.sql` | Teacher custom grammar formulas, rules, and target vocabulary storage |
 | `V14` | `V14__add_reading_task_type.sql` | Adds `READING` comprehension task format to `tasks_type_check` constraint |
+| `V15` | `V15__add_speaking_task_type.sql` | Adds `SPEAKING` oral pronunciation practice format to `tasks_type_check` constraint |
 
 ---
 
@@ -638,6 +639,20 @@ The PostgreSQL relational database is version-controlled using ordered Flyway mi
   - `corrections`: List of `SentenceCorrectionResponse` objects (teachers can edit explanations, delete unnecessary error highlights, or add new highlighted errors).
   - `items`: List of `SubmissionItemResponse` objects with toggled `isCorrect` status and adjusted point awards.
 - Serialized into `ai_feedback` JSON without destroying original AI telemetry.
+
+---
+
+## 12. Speaking & Pronunciation Practice Engine
+
+### 12.1 Speaking Task Architecture
+- **TaskType.SPEAKING**: Designed for oral speech practice, pronunciation assessment, and connected speech training.
+- **TaskParamsRequest Fields**:
+  - `speakingTitle`: Custom title or thematic focus for the speech drill.
+  - `targetSounds`: Target phoneme contrasts or articulatory focus (e.g., `/θ/` vs `/ð/`, `/r/` vs `/l/`, `/v/` vs `/w/`, `/iː/` vs `/ɪ/`, sibilants, silent consonants, natural rhythm).
+  - `speakingLength`: Passage length presets (`SHORT` 30–50 words, `MEDIUM` 60–90 words, `LONG` 120–180 words, or `CUSTOM`).
+- **Passage Generation**: Governed by `PromptTemplates.buildSpeakingGenerationPrompt(...)`. Prompts LLMs to construct an oral reading text packed with the target phonemes while strictly enforcing the student's CEFR vocabulary constraints and natural prosody.
+- **Teacher Review & Editability**: In `ConfigureTask.tsx`, educators can review generated passages, edit sentences in a live textarea, test native pronunciation playback via TTS, and deploy to cohorts.
+- **Student Self-Service Generation**: In `GenerateTask.tsx`, students can autonomously configure target phonemes and generate custom speaking practice drills.
 
 ---
 

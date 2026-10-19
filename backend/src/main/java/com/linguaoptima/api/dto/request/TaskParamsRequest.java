@@ -109,4 +109,13 @@ public class TaskParamsRequest {
 
     /** @brief Optional points allocated per sentence completion / open question in reading tasks. */
     private Integer openPoints;
+
+    /** @brief Optional speaking and pronunciation task title. */
+    private String speakingTitle;
+
+    /** @brief Optional target sounds or phonemes to practice (e.g. /θ/, /ð/, /r/ vs /l/, /v/ vs /w/). */
+    private String targetSounds;
+
+    /** @brief Optional length preset for speaking task (e.g. SHORT, MEDIUM, LONG, CUSTOM). */
+    private String speakingLength;
 }
