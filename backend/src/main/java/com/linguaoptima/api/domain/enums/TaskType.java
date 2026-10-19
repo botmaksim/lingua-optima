@@ -19,5 +19,7 @@ public enum TaskType {
     /** @brief Constant or enum value representing open brackets (раскрытие скобок) in TaskType. */
     OPEN_BRACKETS,
     /** @brief Constant or enum value representing short answer in TaskType. */
-    SHORT_ANSWER
+    SHORT_ANSWER,
+    /** @brief Constant or enum value representing reading comprehension in TaskType. */
+    READING
 }

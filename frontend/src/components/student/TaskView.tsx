@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Send, Clock, CheckCircle2, AlertTriangle, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Save, Send, Clock, CheckCircle2, AlertTriangle, RotateCcw, BookOpen } from 'lucide-react';
 import { taskApi } from '../../api/taskApi';
 import { submissionApi } from '../../api/submissionApi';
 import { Task, TaskQuestion } from '../../types/task';
@@ -272,7 +272,7 @@ export const TaskView: React.FC = () => {
         <h1 className="text-xl font-black text-slate-900 tracking-tight">
           {task.grammarTopic || 'Grammar Practice'}
         </h1>
-        {task.content && (
+        {task.content && task.type !== 'READING' && (
           <p className="text-sm text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-100 leading-relaxed">
             {sanitizeTaskContent(task.content, 'Read the questions carefully and select the best answer.')}
           </p>
@@ -304,75 +304,177 @@ export const TaskView: React.FC = () => {
         </div>
       )}
 
-      <div className="space-y-4">
-        {questions.length === 0 ? (
-          <div className="bg-white p-6 rounded-2xl text-center text-slate-500 text-sm">
-            No specific multiple-choice questions loaded.
-          </div>
-        ) : (
-          questions.map((q, idx) => (
-            <div
-              key={q.id}
-              className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <span className="text-sm font-bold text-slate-800">
-                  {idx + 1}. {q.questionText}
-                </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
-                  Diff: {q.difficulty}
-                </span>
+      {/* Main Content Area: Split Grid for READING vs Standard for other tasks */}
+      {task.type === 'READING' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Left Column: Sticky Reading Article */}
+          <div className="lg:col-span-5 lg:sticky lg:top-6 rounded-3xl bg-white p-6 border border-slate-200/90 shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <BookOpen className="w-4 h-4 text-primary" />
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Reading Passage
+                </h3>
               </div>
-
-              {task.type !== 'REWRITE' && task.type !== 'OPEN_BRACKETS' && task.type !== 'SHORT_ANSWER' && Array.isArray(q.options) && q.options.length > 0 ? (
-                <div className="space-y-2">
-                  {q.options.map((opt, optIdx) => {
-                    const isSelected = answers[q.id] === opt;
-                    return (
-                      <button
-                        type="button"
-                        key={optIdx}
-                        disabled={task.canSubmit === false}
-                        onClick={() => handleSelectAnswer(q.id, opt)}
-                        className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
-                          isSelected
-                            ? 'border-primary bg-indigo-50/60 text-primary font-semibold'
-                            : 'border-slate-200 hover:border-slate-300 text-slate-700'
-                        } disabled:opacity-60`}
-                      >
-                        <span>{opt}</span>
-                        {isSelected && <CheckCircle2 className="w-4 h-4 text-primary" />}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : task.type === 'REWRITE' ? (
-                <textarea
-                  rows={2}
-                  disabled={task.canSubmit === false}
-                  placeholder="Rewrite the complete sentence here..."
-                  value={answers[q.id] || ''}
-                  onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
-                  className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60 resize-y"
-                />
-              ) : (
-                <input
-                  type="text"
-                  disabled={task.canSubmit === false}
-                  placeholder={
-                    task.type === 'OPEN_BRACKETS'
-                      ? 'Type the correct form of the word in brackets...'
-                      : 'Type your answer here...'
-                  }
-                  value={answers[q.id] || ''}
-                  onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
-                  className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60"
-                />
-              )}
+              <span className="text-[11px] font-semibold text-slate-400">
+                {task.content?.split(/\s+/).filter(Boolean).length || 0} words
+              </span>
             </div>
-          ))
-        )}
-      </div>
+
+            <div className="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap font-serif select-text max-h-[70vh] overflow-y-auto pr-2 space-y-3">
+              {task.content}
+            </div>
+          </div>
+
+          {/* Right Column: Questions */}
+          <div className="lg:col-span-7 space-y-4">
+            {questions.length === 0 ? (
+              <div className="bg-white p-6 rounded-2xl text-center text-slate-500 text-sm">
+                No comprehension questions loaded for this reading task.
+              </div>
+            ) : (
+              questions.map((q, idx) => {
+                const isTF =
+                  Array.isArray(q.options) &&
+                  q.options.length === 2 &&
+                  (q.options.includes('True') || q.options.includes('False'));
+                const isMCQ = Array.isArray(q.options) && q.options.length > 0 && !isTF;
+
+                return (
+                  <div
+                    key={q.id}
+                    className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
+                            {idx + 1}
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            {isTF ? 'True / False' : isMCQ ? 'Multiple Choice' : 'Sentence Completion'}
+                          </span>
+                          {q.points && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-primary">
+                              {q.points} pts
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-sm font-bold text-slate-800 block pt-1">
+                          {q.questionText}
+                        </span>
+                      </div>
+                    </div>
+
+                    {isMCQ || isTF ? (
+                      <div className="space-y-2">
+                        {q.options?.map((opt, optIdx) => {
+                          const isSelected = answers[q.id] === opt;
+                          return (
+                            <button
+                              type="button"
+                              key={optIdx}
+                              disabled={task.canSubmit === false}
+                              onClick={() => handleSelectAnswer(q.id, opt)}
+                              className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
+                                isSelected
+                                  ? 'border-primary bg-indigo-50/60 text-primary font-semibold'
+                                  : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                              } disabled:opacity-60`}
+                            >
+                              <span>{opt}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        disabled={task.canSubmit === false}
+                        placeholder="Complete the sentence or answer based on the reading text..."
+                        value={answers[q.id] || ''}
+                        onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
+                        className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60"
+                      />
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {questions.length === 0 ? (
+            <div className="bg-white p-6 rounded-2xl text-center text-slate-500 text-sm">
+              No specific multiple-choice questions loaded.
+            </div>
+          ) : (
+            questions.map((q, idx) => (
+              <div
+                key={q.id}
+                className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <span className="text-sm font-bold text-slate-800">
+                    {idx + 1}. {q.questionText}
+                  </span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
+                    Diff: {q.difficulty}
+                  </span>
+                </div>
+
+                {task.type !== 'REWRITE' && task.type !== 'OPEN_BRACKETS' && task.type !== 'SHORT_ANSWER' && Array.isArray(q.options) && q.options.length > 0 ? (
+                  <div className="space-y-2">
+                    {q.options.map((opt, optIdx) => {
+                      const isSelected = answers[q.id] === opt;
+                      return (
+                        <button
+                          type="button"
+                          key={optIdx}
+                          disabled={task.canSubmit === false}
+                          onClick={() => handleSelectAnswer(q.id, opt)}
+                          className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
+                            isSelected
+                              ? 'border-primary bg-indigo-50/60 text-primary font-semibold'
+                              : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                          } disabled:opacity-60`}
+                        >
+                          <span>{opt}</span>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : task.type === 'REWRITE' ? (
+                  <textarea
+                    rows={2}
+                    disabled={task.canSubmit === false}
+                    placeholder="Rewrite the complete sentence here..."
+                    value={answers[q.id] || ''}
+                    onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
+                    className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60 resize-y"
+                  />
+                ) : (
+                  <input
+                    type="text"
+                    disabled={task.canSubmit === false}
+                    placeholder={
+                      task.type === 'OPEN_BRACKETS'
+                        ? 'Type the correct form of the word in brackets...'
+                        : 'Type your answer here...'
+                    }
+                    value={answers[q.id] || ''}
+                    onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
+                    className="w-full p-3.5 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition disabled:opacity-60"
+                  />
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
         <div className="flex items-center space-x-3 text-xs font-semibold text-slate-500">

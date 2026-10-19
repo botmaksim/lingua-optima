@@ -9,7 +9,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-7-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 [![Docker](https://img.shields.io/badge/Docker_Compose-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![JaCoCo Coverage](https://img.shields.io/badge/JaCoCo-99.8%25_Lines_%7C_99.4%25_Instr-brightgreen?style=for-the-badge&logo=codecov&logoColor=white)](./docs/BACKEND.md)
+[![JaCoCo Coverage](https://img.shields.io/badge/JaCoCo-99.7%25_Lines_%7C_99.3%25_Instr-brightgreen?style=for-the-badge&logo=codecov&logoColor=white)](./docs/BACKEND.md)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](./LICENSE)
 
 **An enterprise-grade, interactive learning and assessment platform for mastering the English language across the entire CEFR continuum (A1–C2).**  
@@ -107,6 +107,12 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 - **AES-256-GCM BYOK Encryption**: User-supplied API keys are encrypted at rest with random 12-byte initialization vectors and 128-bit authentication tags.
 - **Automatic Fallback Chain**: System-level fallback gracefully reroutes failed inference requests to secondary providers before queuing.
 
+### 6. Reading Comprehension Studio & Diagnostic Error Annotation
+- **Reading Comprehension Engine**: Generates coherent thematic reading texts with calibrated CEFR vocabulary, customizable passage length, and paragraph structural narrative guidelines.
+- **Mixed Question Architectures & Point Allocation**: Supports multi-category reading tasks combining Multiple Choice (`MCQ`), True / False / Not Given (`True / False`), and Sentence Completion / Open-Ended questions with customizable point weighting per question category.
+- **Semantic AI Evaluation of Open Questions**: Intelligent semantic evaluation ensures alternative, accurate student phrasings and formulations receive full credit rather than being penalized for non-verbatim matches with the reference answer key.
+- **Inline Grammatical Mistake Highlighting & Educator Review**: Highlights grammatical and stylistic errors directly within student essays and open responses in red with contextual popovers detailing the error, suggested rewrite, grammar rule, and explanation. Educators can dynamically highlight new mistakes, edit explanations, toggle question correctness, and remove highlights.
+
 ---
 
 ## Enterprise Action Audit and Distributed Tracing
@@ -193,14 +199,14 @@ docker compose up --build -d
 ### 2. Local Backend Testing & JaCoCo Verification
 ```bash
 cd backend
-# Runs 394 unit and slice tests, verifies >=99% instructions and >=99% line coverage
+# Runs 398 unit and slice tests, verifies >=99% instructions and >=99% line coverage
 ./gradlew test jacocoTestCoverageVerification
 ```
 
 ### 3. Local Frontend Testing & Production Build
 ```bash
 cd frontend
-# Runs 45 Vitest unit tests and builds optimized production bundles
+# Runs 49 Vitest unit tests and builds optimized production bundles
 npm install
 npm test
 npm run build
@@ -255,12 +261,12 @@ lingua_optima/
 ├── backend/                       # Spring Boot 3 + Java 21 REST API
 │   ├── src/main/java/             # Controllers, Services, Repositories, Domain, Config
 │   ├── src/main/resources/        # application.yml, logback-spring.xml, Flyway migrations
-│   └── src/test/java/             # 394 unit & slice tests, 99.8% lines | 99.4% instructions
+│   └── src/test/java/             # 398 unit & slice tests, 99.7% lines | 99.3% instructions
 ├── frontend/                      # React 18 + TypeScript + Vite PWA
 │   ├── src/components/            # Student, Teacher, Auth, and Common UI components
 │   ├── src/pages/                 # Landing, Dashboards, Privacy Policy, Terms, Help Center
 │   ├── src/store/                 # Zustand state stores (auth, task, ui, notification)
-│   └── src/test/                  # 45 Vitest unit and component tests
+│   └── src/test/                  # 49 Vitest unit and component tests
 ├── docs/                          # In-depth architectural specifications
 │   ├── presentation.html          # Interactive Project Presentation (Pitch Deck)
 │   ├── AUDIT_LOGGING.md           # Structured Action Audit & Distributed Tracing

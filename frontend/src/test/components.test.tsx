@@ -22,6 +22,9 @@ import { Footer } from '../components/common/Footer';
 import { PrivacyPolicy } from '../pages/PrivacyPolicy';
 import { TermsOfService } from '../pages/TermsOfService';
 import { HelpCenter } from '../pages/HelpCenter';
+import { ReadingConfigPanel, ReadingConfig } from '../components/teacher/ReadingConfigPanel';
+import { AnnotatedTextReview } from '../components/common/AnnotatedTextReview';
+import { SentenceCorrection } from '../types/submission';
 
 describe('CefrBadge component', () => {
   it('renders level text and badge correctly', () => {
@@ -1153,6 +1156,167 @@ describe('ForgotPassword component', () => {
     });
   });
 });
+
+describe('ReadingConfigPanel component', () => {
+  it('renders reading configuration fields and handles changes', () => {
+    const config: ReadingConfig = {
+      readingTitle: 'Renewable Power Evolution',
+      readingLength: 'Medium (250-400 words)',
+      readingParagraphs: '3 paragraphs on solar and wind',
+      mcqQuestionsCount: 3,
+      mcqPoints: 10,
+      trueFalseQuestionsCount: 2,
+      trueFalsePoints: 10,
+      openQuestionsCount: 2,
+      openPoints: 15,
+    };
+    const handleChange = vi.fn();
+    const handleVocabChange = vi.fn();
+
+    render(
+      <ReadingConfigPanel
+        config={config}
+        onChange={handleChange}
+        cefrLevel="B2"
+        customVocabulary="grid, solar, turbine"
+        onCustomVocabularyChange={handleVocabChange}
+      />
+    );
+
+    expect(screen.getByText(/Reading Comprehension Studio/i)).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Renewable Power Evolution')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('grid, solar, turbine')).toBeInTheDocument();
+
+    // Check total points badge: 3*10 + 2*10 + 2*15 = 80 pts
+    expect(screen.getByText(/80 pts/i)).toBeInTheDocument();
+
+    // Change title
+    const titleInput = screen.getByPlaceholderText(/The Green Transition/i);
+    fireEvent.change(titleInput, { target: { value: 'New Reading Title' } });
+    expect(handleChange).toHaveBeenCalledWith({ readingTitle: 'New Reading Title' });
+
+    // Change length preset
+    const shortBtn = screen.getByRole('button', { name: /Short/i });
+    fireEvent.click(shortBtn);
+    expect(handleChange).toHaveBeenCalledWith({ readingLength: 'Short (150-250 words)' });
+
+    // Change vocabulary
+    const vocabInput = screen.getByPlaceholderText(/breakthrough, sustainable/i);
+    fireEvent.change(vocabInput, { target: { value: 'clean, green' } });
+    expect(handleVocabChange).toHaveBeenCalledWith('clean, green');
+  });
+});
+
+describe('AnnotatedTextReview component', () => {
+  const sampleText = 'He go to school yesterday and have three cat.';
+  const corrections: SentenceCorrection[] = [
+    {
+      original: 'He go',
+      corrected: 'He went',
+      explanation: 'Past tense required for past time reference (yesterday).',
+      grammarRule: 'Past Simple',
+    },
+    {
+      original: 'have three cat',
+      corrected: 'had three cats',
+      explanation: 'Past tense of have is had; plural noun cats needed after three.',
+      grammarRule: 'Plural Nouns & Past Tense',
+    },
+  ];
+
+  it('renders text with inline red mistake highlights and displays explanation on click', () => {
+    render(<AnnotatedTextReview text={sampleText} corrections={corrections} editable={false} />);
+
+    // Text segments rendered
+    expect(screen.getByText('He go')).toBeInTheDocument();
+    expect(screen.getByText('have three cat')).toBeInTheDocument();
+
+    // Click on the first highlighted mistake
+    fireEvent.click(screen.getByText('He go'));
+
+    // Inspector card appears
+    expect(screen.getByText(/Diagnostic Analysis #1/i)).toBeInTheDocument();
+    expect(screen.getByText('Past tense required for past time reference (yesterday).')).toBeInTheDocument();
+    expect(screen.getByText('He went')).toBeInTheDocument();
+  });
+
+  it('allows teacher to edit explanation and delete a highlight in editable mode', () => {
+    const handleCorrectionsChange = vi.fn();
+
+    render(
+      <AnnotatedTextReview
+        text={sampleText}
+        corrections={corrections}
+        editable={true}
+        onCorrectionsChange={handleCorrectionsChange}
+      />
+    );
+
+    // Educator diagnostic mode banner is visible
+    expect(screen.getByText(/Educator Diagnostic Mode/i)).toBeInTheDocument();
+
+    // Click first error to inspect
+    fireEvent.click(screen.getByText('He go'));
+
+    // Click edit button
+    const editBtn = screen.getByTitle(/Edit explanation and correction/i);
+    fireEvent.click(editBtn);
+
+    // Update explanation
+    const explInput = screen.getByDisplayValue('Past tense required for past time reference (yesterday).');
+    fireEvent.change(explInput, { target: { value: 'Teacher updated explanation.' } });
+
+    // Save changes
+    const saveBtn = screen.getByRole('button', { name: /Save Changes/i });
+    fireEvent.click(saveBtn);
+
+    expect(handleCorrectionsChange).toHaveBeenCalled();
+    const updatedList = handleCorrectionsChange.mock.calls[0][0];
+    expect(updatedList[0].explanation).toBe('Teacher updated explanation.');
+
+    // Click delete highlight button
+    const deleteBtn = screen.getByTitle(/Remove error highlight/i);
+    fireEvent.click(deleteBtn);
+    expect(handleCorrectionsChange).toHaveBeenCalledWith([corrections[1]]);
+  });
+
+  it('allows teacher to manually open new mistake highlight modal and add correction', () => {
+    const handleCorrectionsChange = vi.fn();
+
+    render(
+      <AnnotatedTextReview
+        text={sampleText}
+        corrections={corrections}
+        editable={true}
+        onCorrectionsChange={handleCorrectionsChange}
+      />
+    );
+
+    const highlightBtn = screen.getByRole('button', { name: /Highlight New Mistake/i });
+    fireEvent.click(highlightBtn);
+
+    expect(screen.getByText(/Highlight Grammatical Mistake/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByPlaceholderText(/Text snippet containing error/i), {
+      target: { value: 'three cat' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Correct grammatically polished phrasing/i), {
+      target: { value: 'three cats' },
+    });
+    fireEvent.change(screen.getByPlaceholderText(/Explain why this phrasing is incorrect/i), {
+      target: { value: 'Plural -s needed.' },
+    });
+
+    const applyBtn = screen.getByRole('button', { name: /Apply Highlight/i });
+    fireEvent.click(applyBtn);
+
+    expect(handleCorrectionsChange).toHaveBeenCalled();
+    const resultList = handleCorrectionsChange.mock.calls[0][0];
+    expect(resultList.length).toBe(3);
+    expect(resultList[2].original).toBe('three cat');
+  });
+});
+
 
 
 

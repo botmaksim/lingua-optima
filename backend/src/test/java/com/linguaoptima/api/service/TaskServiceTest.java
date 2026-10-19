@@ -1392,5 +1392,90 @@ class TaskServiceTest {
         TaskResponse manualResp = taskService.createCustomTask(manualReq, teacherUser);
         assertNotNull(manualResp);
     }
+
+    /**
+     * @brief Verifies unit test scenario: generate reading task with questions and total points calculation.
+     */
+    @Test
+    void testGenerateReadingTask() {
+        String readingJson = """
+            {
+              "content": "The transition to renewable energy sources has accelerated globally over the past decade.",
+              "questions": [
+                {
+                  "text": "What has accelerated globally over the past decade?",
+                  "options": ["Renewable energy transition", "Coal usage", "Deforestation", "Fossil subsidies"],
+                  "correctAnswer": "Renewable energy transition",
+                  "points": 10,
+                  "difficulty": 2,
+                  "grammarRule": "Reading: Multiple Choice"
+                },
+                {
+                  "text": "Renewable energy adoption slowed down recently. (True / False)",
+                  "options": ["True", "False"],
+                  "correctAnswer": "False",
+                  "points": 10,
+                  "difficulty": 2,
+                  "grammarRule": "Reading: True / False"
+                },
+                {
+                  "text": "Complete the sentence: Modern wind turbines generate...",
+                  "options": [],
+                  "correctAnswer": "clean electricity",
+                  "points": 15,
+                  "difficulty": 3,
+                  "grammarRule": "Reading: Sentence Completion"
+                }
+              ],
+              "answerKey": []
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(readingJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .taskType(TaskType.READING)
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Renewable Energy")
+            .domain("Science")
+            .readingTitle("Green Energy Evolution")
+            .readingLength("Medium (250-400 words)")
+            .readingParagraphs("3 paragraphs")
+            .mcqQuestionsCount(1)
+            .mcqPoints(10)
+            .trueFalseQuestionsCount(1)
+            .trueFalsePoints(10)
+            .openQuestionsCount(1)
+            .openPoints(15)
+            .build();
+
+        TaskResponse res = taskService.generateTask(req, teacherUser);
+        assertNotNull(res);
+        assertEquals(TaskType.READING, res.getType());
+        assertEquals(35, res.getTotalPoints());
+        assertEquals(3, res.getQuestions().size());
+        assertTrue(res.getContent().contains("transition to renewable energy"));
+
+        // Test default reading content fallback when AI content is empty
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn("{\"content\":\"\"}");
+        TaskResponse emptyRes = taskService.generateTask(req, teacherUser);
+        assertNotNull(emptyRes);
+        assertTrue(emptyRes.getContent().contains("Read the following passage about Renewable Energy carefully"));
+
+        // Test default reading content with null topic
+        TaskParamsRequest reqNullTopic = TaskParamsRequest.builder()
+            .taskType(TaskType.READING)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic(null)
+            .build();
+        TaskResponse emptyNullTopicRes = taskService.generateTask(reqNullTopic, teacherUser);
+        assertNotNull(emptyNullTopicRes);
+        assertTrue(emptyNullTopicRes.getContent().contains("Contemporary Global Trends"));
+    }
 }
 

@@ -82,4 +82,31 @@ public class TaskParamsRequest {
 
     /** @brief Optional maximum allowed attempts when assigning to cohorts upon generation. */
     private Integer maxAttempts;
+
+    /** @brief Optional reading assignment title. */
+    private String readingTitle;
+
+    /** @brief Optional reading passage length or volume (e.g. SHORT, MEDIUM, LONG, or specific word count). */
+    private String readingLength;
+
+    /** @brief Optional description of paragraph count or structure for the reading passage. */
+    private String readingParagraphs;
+
+    /** @brief Optional count of multiple choice questions to generate for reading tasks. */
+    private Integer mcqQuestionsCount;
+
+    /** @brief Optional points allocated per multiple choice question in reading tasks. */
+    private Integer mcqPoints;
+
+    /** @brief Optional count of True/False questions to generate for reading tasks. */
+    private Integer trueFalseQuestionsCount;
+
+    /** @brief Optional points allocated per True/False question in reading tasks. */
+    private Integer trueFalsePoints;
+
+    /** @brief Optional count of sentence completion / open questions to generate for reading tasks. */
+    private Integer openQuestionsCount;
+
+    /** @brief Optional points allocated per sentence completion / open question in reading tasks. */
+    private Integer openPoints;
 }

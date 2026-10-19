@@ -56,6 +56,7 @@ import { useUIStore } from '../../store/uiStore';
 import { customCurriculumApi } from '../../api/customCurriculumApi';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
+import { ReadingConfigPanel, ReadingConfig } from './ReadingConfigPanel';
 
 /**
  * @brief Teacher component for configuring and deploying AI-generated assignments to student groups.
@@ -83,6 +84,19 @@ export const ConfigureTask: React.FC = () => {
   const { models: providerModels, isLiveSynced } = useProviderModels(provider);
   const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
   const [ecoMode, setEcoMode] = useState<boolean>(false);
+
+  // Dedicated Reading task configuration state
+  const [readingConfig, setReadingConfig] = useState<ReadingConfig>({
+    readingTitle: '',
+    readingLength: 'Medium (250-400 words)',
+    readingParagraphs: '3 to 4 distinct paragraphs with clear narrative progression',
+    mcqQuestionsCount: 3,
+    mcqPoints: 10,
+    trueFalseQuestionsCount: 2,
+    trueFalsePoints: 10,
+    openQuestionsCount: 2,
+    openPoints: 15,
+  });
 
   // Curriculum context state
   const [showCurriculumPanel, setShowCurriculumPanel] = useState<boolean>(false);
@@ -327,25 +341,50 @@ export const ConfigureTask: React.FC = () => {
   /**
    * @brief Helper returning current task parameters including curriculum context.
    */
-  const buildTaskParams = () => ({
-    cefrLevel,
-    grammarTopic: grammarTopic.trim() || 'General Practice',
-    domain,
-    taskType,
-    difficulty,
-    numberOfQuestions,
-    totalPoints,
-    provider,
-    modelName,
-    customRule: customRule.trim() || undefined,
-    customVocabulary: customVocabulary.trim() || undefined,
-    ruleFilePath: uploadedRuleFile?.serverPath || undefined,
-    vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
-    ecoMode,
-    groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
-    dueDate: dueDate || undefined,
-    maxAttempts,
-  });
+  const buildTaskParams = () => {
+    const readingTotalPoints =
+      (readingConfig.mcqQuestionsCount || 0) * (readingConfig.mcqPoints || 0) +
+      (readingConfig.trueFalseQuestionsCount || 0) * (readingConfig.trueFalsePoints || 0) +
+      (readingConfig.openQuestionsCount || 0) * (readingConfig.openPoints || 0);
+
+    const readingQuestionsCount =
+      (readingConfig.mcqQuestionsCount || 0) +
+      (readingConfig.trueFalseQuestionsCount || 0) +
+      (readingConfig.openQuestionsCount || 0);
+
+    return {
+      cefrLevel,
+      grammarTopic: grammarTopic.trim() || 'General Practice',
+      domain,
+      taskType,
+      difficulty,
+      numberOfQuestions: taskType === 'READING' ? readingQuestionsCount : numberOfQuestions,
+      totalPoints: taskType === 'READING' ? readingTotalPoints : totalPoints,
+      provider,
+      modelName,
+      customRule: customRule.trim() || undefined,
+      customVocabulary: customVocabulary.trim() || undefined,
+      ruleFilePath: uploadedRuleFile?.serverPath || undefined,
+      vocabularyFilePath: uploadedVocabFile?.serverPath || undefined,
+      ecoMode,
+      groupIds: selectedGroupIds.length > 0 ? selectedGroupIds : undefined,
+      dueDate: dueDate || undefined,
+      maxAttempts,
+      ...(taskType === 'READING'
+        ? {
+            readingTitle: readingConfig.readingTitle.trim() || undefined,
+            readingLength: readingConfig.readingLength.trim() || undefined,
+            readingParagraphs: readingConfig.readingParagraphs.trim() || undefined,
+            mcqQuestionsCount: readingConfig.mcqQuestionsCount,
+            mcqPoints: readingConfig.mcqPoints,
+            trueFalseQuestionsCount: readingConfig.trueFalseQuestionsCount,
+            trueFalsePoints: readingConfig.trueFalsePoints,
+            openQuestionsCount: readingConfig.openQuestionsCount,
+            openPoints: readingConfig.openPoints,
+          }
+        : {}),
+    };
+  };
 
   /**
    * @brief Event handler executing preview generation.
@@ -1189,7 +1228,7 @@ export const ConfigureTask: React.FC = () => {
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Task Type
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               {(
                 [
                   { type: 'MCQ', label: 'MCQ' },
@@ -1197,6 +1236,7 @@ export const ConfigureTask: React.FC = () => {
                   { type: 'OPEN_BRACKETS', label: 'Open Brackets' },
                   { type: 'REWRITE', label: 'Rewrite' },
                   { type: 'ESSAY', label: 'Essay' },
+                  { type: 'READING', label: 'Reading' },
                 ] as { type: TaskType; label: string }[]
               ).map((item) => (
                 <button
@@ -1213,6 +1253,19 @@ export const ConfigureTask: React.FC = () => {
                 </button>
               ))}
             </div>
+
+            {/* Reading Comprehension Studio Panel */}
+            {taskType === 'READING' && (
+              <div className="mt-4 animate-in fade-in duration-200">
+                <ReadingConfigPanel
+                  config={readingConfig}
+                  onChange={(updated) => setReadingConfig((prev) => ({ ...prev, ...updated }))}
+                  cefrLevel={cefrLevel}
+                  customVocabulary={customVocabulary}
+                  onCustomVocabularyChange={setCustomVocabulary}
+                />
+              </div>
+            )}
           </div>
 
           {/* Due Date & Attempt Limit */}
@@ -1453,17 +1506,30 @@ export const ConfigureTask: React.FC = () => {
                 </p>
               </div>
 
-              {/* Editable Instructions */}
+              {/* Editable Instructions / Reading Passage */}
               <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                  Exercise Instructions / Reading Passage
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    {previewTask.type === 'READING'
+                      ? 'Reading Comprehension Passage (Editable by Teacher)'
+                      : 'Exercise Instructions / Reading Passage'}
+                  </label>
+                  {previewTask.type === 'READING' && (
+                    <span className="text-[11px] font-semibold text-primary">
+                      {previewTask.content?.split(/\s+/).filter(Boolean).length || 0} words
+                    </span>
+                  )}
+                </div>
                 <textarea
-                  rows={3}
+                  rows={previewTask.type === 'READING' ? 9 : 3}
                   value={previewTask.content}
                   onChange={(e) => handleUpdateInstruction(e.target.value)}
-                  placeholder="Enter exercise instructions or reading context here..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition leading-relaxed"
+                  placeholder={
+                    previewTask.type === 'READING'
+                      ? 'Review and edit the full reading comprehension passage text here...'
+                      : 'Enter exercise instructions or reading context here...'
+                  }
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition leading-relaxed font-serif"
                 />
               </div>
 
@@ -1503,6 +1569,15 @@ export const ConfigureTask: React.FC = () => {
                             <span className="text-xs font-bold text-slate-700">
                               Question {qIdx + 1}
                             </span>
+                            {previewTask.type === 'READING' && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                                {Array.isArray(q.options) && q.options.length === 2 && (q.options.includes('True') || q.options.includes('False'))
+                                  ? 'True / False'
+                                  : Array.isArray(q.options) && q.options.length > 0
+                                  ? 'Multiple Choice'
+                                  : 'Sentence Completion'}
+                              </span>
+                            )}
                           </div>
 
                           <div className="flex items-center space-x-2">
@@ -1552,21 +1627,33 @@ export const ConfigureTask: React.FC = () => {
                           />
                         </div>
 
-                        {/* MCQ Options vs Open Answers */}
-                        {previewTask.type === 'MCQ' ? (
+                        {/* MCQ & Choice Options vs Open Answers */}
+                        {previewTask.type === 'MCQ' ||
+                        (previewTask.type === 'READING' && Array.isArray(q.options) && q.options.length > 0) ? (
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                 Answer Choices (Select the correct option)
                               </label>
-                              <button
-                                type="button"
-                                onClick={() => handleAddOption(qIdx)}
-                                className="text-[11px] font-bold text-primary hover:underline inline-flex items-center space-x-1"
-                              >
-                                <Plus className="w-3 h-3" />
-                                <span>Add Choice</span>
-                              </button>
+                              <div className="flex items-center space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={() => handleAddOption(qIdx)}
+                                  className="text-[11px] font-bold text-primary hover:underline inline-flex items-center space-x-1"
+                                >
+                                  <Plus className="w-3 h-3" />
+                                  <span>Add Choice</span>
+                                </button>
+                                {previewTask.type === 'READING' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateQuestion(qIdx, { options: [] })}
+                                    className="text-[11px] font-semibold text-slate-500 hover:text-slate-700"
+                                  >
+                                    Switch to Open Question
+                                  </button>
+                                )}
+                              </div>
                             </div>
 
                             <div className="space-y-2">
@@ -1623,17 +1710,36 @@ export const ConfigureTask: React.FC = () => {
                             </div>
                           </div>
                         ) : (
-                          <div>
-                            <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
-                              Target Correct Answer Key
-                            </label>
+                          <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                                Expected Correct Answer Key
+                              </label>
+                              {previewTask.type === 'READING' && (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdateQuestion(qIdx, {
+                                      options: ['Option A', 'Option B', 'Option C', 'Option D'],
+                                      correctAnswer: 'Option A',
+                                    })
+                                  }
+                                  className="text-[11px] font-bold text-primary hover:underline"
+                                >
+                                  + Convert to Choices (MCQ)
+                                </button>
+                              )}
+                            </div>
                             <input
                               type="text"
                               value={q.correctAnswer}
                               onChange={(e) => handleSetCorrectAnswer(qIdx, e.target.value)}
-                              placeholder="e.g. have visited / had gone"
+                              placeholder="e.g. clean electricity / renewable resources"
                               className="w-full px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50/20 text-emerald-950 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
                             />
+                            <p className="text-[11px] text-slate-400">
+                              For open-ended questions, AI performs semantic evaluation—student answers matching this meaning will be accepted.
+                            </p>
                           </div>
                         )}
 

@@ -15,8 +15,11 @@ import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubmissionType;
+import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.request.OverrideRequest;
 import com.linguaoptima.api.dto.request.TextSubmissionRequest;
+import com.linguaoptima.api.dto.response.SentenceCorrectionResponse;
+import com.linguaoptima.api.dto.response.SubmissionItemResponse;
 import com.linguaoptima.api.dto.response.SubmissionResultResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.OcrException;
@@ -1365,5 +1368,171 @@ class SubmissionServiceTest {
         // 6. Save exception catch branch in enrichSubmissionResult
         doThrow(new RuntimeException("DB down")).when(submissionRepository).save(any(Submission.class));
         submissionService.enrichSubmissionResult(respOr, subOr, null);
+    }
+
+    /**
+     * @brief Verifies teacher override persists structured corrections and item adjustments into aiFeedback JSON.
+     */
+    @Test
+    void testOverrideScoreWithCorrectionsAndItems() {
+        UUID subId = UUID.randomUUID();
+        Submission sub = Submission.builder()
+            .id(subId)
+            .student(student)
+            .aiScore(70.0)
+            .aiFeedback("{\"feedback\":\"Initial evaluation\",\"corrections\":[],\"items\":[]}")
+            .studentText("1. She have two cats.")
+            .build();
+
+        SentenceCorrectionResponse corr = SentenceCorrectionResponse.builder()
+            .original("She have")
+            .corrected("She has")
+            .explanation("Subject-verb agreement: third-person singular requires 'has'")
+            .grammarRule("Present Simple")
+            .build();
+
+        SubmissionItemResponse item = SubmissionItemResponse.builder()
+            .questionNumber(1)
+            .sentence("She ___ two cats.")
+            .studentAnswer("have")
+            .correctAnswer("has")
+            .isCorrect(false)
+            .isSkipped(false)
+            .explanation("Incorrect auxiliary/verb agreement")
+            .grammarRule("Present Simple")
+            .points(10)
+            .options(List.of("have", "has"))
+            .build();
+
+        OverrideRequest req = OverrideRequest.builder()
+            .overrideScore(85.0)
+            .teacherComment("Well analyzed by teacher")
+            .feedback("Teacher updated AI commentary")
+            .corrections(List.of(corr))
+            .items(List.of(item))
+            .build();
+
+        when(submissionRepository.findById(subId)).thenReturn(Optional.of(sub));
+        when(submissionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        SubmissionResultResponse res = submissionService.overrideScore(subId, req, teacher);
+        assertNotNull(res);
+        assertEquals(85.0, res.getOverrideScore());
+        assertEquals("Teacher updated AI commentary", res.getFeedback());
+        assertTrue(sub.getAiFeedback().contains("She have"));
+        assertTrue(sub.getAiFeedback().contains("Present Simple"));
+
+        // Retrieve and verify items and corrections are restored from serialized JSON
+        when(submissionRepository.findById(subId)).thenReturn(Optional.of(sub));
+        SubmissionResultResponse retrieved = submissionService.getSubmissionById(subId, teacher);
+        assertNotNull(retrieved);
+        assertNotNull(retrieved.getCorrections());
+        assertEquals(1, retrieved.getCorrections().size());
+        assertEquals("She have", retrieved.getCorrections().get(0).getOriginal());
+        assertNotNull(retrieved.getItems());
+        assertEquals(1, retrieved.getItems().size());
+        assertEquals("have", retrieved.getItems().get(0).getStudentAnswer());
+        assertNotNull(retrieved.getItems().get(0).getOptions());
+    }
+
+    /**
+     * @brief Verifies overrideScore handles plain-text aiFeedback without throwing exceptions.
+     */
+    @Test
+    void testOverrideScoreWithPlainTextFeedback() {
+        UUID subId = UUID.randomUUID();
+        Submission sub = Submission.builder()
+            .id(subId)
+            .student(student)
+            .aiScore(65.0)
+            .aiFeedback("Plain text assessment without JSON formatting")
+            .build();
+
+        OverrideRequest req = OverrideRequest.builder()
+            .overrideScore(75.0)
+            .feedback("Updated summary notes")
+            .build();
+
+        when(submissionRepository.findById(subId)).thenReturn(Optional.of(sub));
+        when(submissionRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        SubmissionResultResponse res = submissionService.overrideScore(subId, req, teacher);
+        assertNotNull(res);
+        assertEquals(75.0, res.getOverrideScore());
+        assertTrue(sub.getAiFeedback().contains("Updated summary notes"));
+    }
+
+    /**
+     * @brief Verifies that open-ended questions use semantic AI evaluation rather than strict string equality.
+     */
+    @Test
+    void testEnrichFromTaskQuestionsSemanticEvaluation() {
+        Task openTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.READING)
+            .cefrLevel(CefrLevel.B2)
+            .questions(List.of(
+                TaskQuestion.builder()
+                    .id(UUID.randomUUID())
+                    .questionOrder(1)
+                    .questionText("What causes the reduction in energy loss?")
+                    .correctAnswer("aerodynamic efficiency")
+                    .points(15)
+                    .difficulty(2)
+                    .grammarRule("Reading: Open Question")
+                    .build()
+            ))
+            .build();
+
+        Submission sub = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .studentText("1. streamlined air resistance and optimized aerodynamic flow")
+            .aiScore(100.0)
+            .build();
+
+        SubmissionResultResponse resp = SubmissionResultResponse.fromEntity(sub);
+        resp.setTaskId(openTask.getId());
+        when(taskRepository.findById(openTask.getId())).thenReturn(Optional.of(openTask));
+
+        // AI rubric marked question 1 as correct despite non-exact string match
+        Map<String, Object> rubric = Map.of(
+            "items", List.of(
+                Map.of(
+                    "questionNumber", 1,
+                    "isCorrect", true,
+                    "explanation", "Semantically valid: student accurately described aerodynamic flow.",
+                    "grammarRule", "Reading: Open Question"
+                )
+            )
+        );
+
+        submissionService.enrichSubmissionResult(resp, sub, rubric);
+        assertNotNull(resp.getItems());
+        assertEquals(1, resp.getItems().size());
+        assertTrue(resp.getItems().get(0).isCorrect());
+        assertEquals(15, resp.getItems().get(0).getPoints());
+        assertTrue(resp.getItems().get(0).getExplanation().contains("Semantically valid"));
+
+        // Now test when rubric is absent but aiFeedback JSON has the evaluation item
+        sub.setAiFeedback("""
+            {
+              "items": [
+                {
+                  "questionNumber": 1,
+                  "isCorrect": true,
+                  "explanation": "Semantically correct from stored feedback",
+                  "grammarRule": "Reading: Open Question"
+                }
+              ]
+            }
+            """);
+        SubmissionResultResponse respFromJson = SubmissionResultResponse.fromEntity(sub);
+        respFromJson.setTaskId(openTask.getId());
+        submissionService.enrichSubmissionResult(respFromJson, sub, null);
+        assertNotNull(respFromJson.getItems());
+        assertEquals(1, respFromJson.getItems().size());
+        assertTrue(respFromJson.getItems().get(0).isCorrect());
+        assertTrue(respFromJson.getItems().get(0).getExplanation().contains("Semantically correct from stored feedback"));
     }
 }

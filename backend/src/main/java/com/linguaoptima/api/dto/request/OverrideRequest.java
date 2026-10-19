@@ -4,11 +4,15 @@
  */
 package com.linguaoptima.api.dto.request;
 
+import com.linguaoptima.api.dto.response.SentenceCorrectionResponse;
+import com.linguaoptima.api.dto.response.SubmissionItemResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 /**
  * @brief Request DTO for teacher manual score override and comment.
@@ -28,4 +32,10 @@ public class OverrideRequest {
 
     /** @brief Optional revised AI diagnostic feedback / evaluation comment. */
     private String feedback;
+
+    /** @brief Optional teacher-updated sentence corrections and highlighted grammar mistakes. */
+    private List<SentenceCorrectionResponse> corrections;
+
+    /** @brief Optional teacher-updated question items and diagnostic explanations. */
+    private List<SubmissionItemResponse> items;
 }

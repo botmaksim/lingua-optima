@@ -334,6 +334,10 @@ public class TaskService {
             }
         }
 
+        if (params.getTaskType() == TaskType.READING) {
+            return PromptTemplates.buildReadingGenerationPrompt(params, targetRule, targetVocab);
+        }
+
         return PromptTemplates.buildTaskGenerationPrompt(
             params.getCefrLevel().name(),
             params.getGrammarTopic() != null ? params.getGrammarTopic() : "General",
@@ -768,7 +772,8 @@ public class TaskService {
                         )
                     );
 
-                    int qPoints = basePoints + (currentOrder == 1 ? remainder : 0);
+                    int parsedPoints = qNode.path("points").asInt(0);
+                    int qPoints = parsedPoints > 0 ? parsedPoints : (basePoints + (currentOrder == 1 ? remainder : 0));
 
                     TaskQuestion tq = TaskQuestion.builder()
                         .task(task)
@@ -781,6 +786,12 @@ public class TaskService {
                         .grammarRule(qNode.path("grammarRule").asText(params.getGrammarTopic()))
                         .build();
                     questions.add(tq);
+                }
+            }
+            if (params.getTaskType() == TaskType.READING && !questions.isEmpty()) {
+                int sumPoints = questions.stream().mapToInt(TaskQuestion::getPoints).sum();
+                if (sumPoints > 0) {
+                    task.setTotalPoints(sumPoints);
                 }
             }
             task.setQuestions(questions);
@@ -890,6 +901,11 @@ public class TaskService {
                 ? params.getDomain() : "Daily Life";
             return "Write an essay discussing " + topic + " in relation to " + domain
                 + ". Present clear arguments and relevant examples to support your viewpoint.";
+        }
+        if (params.getTaskType() == TaskType.READING) {
+            String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
+                ? params.getGrammarTopic() : "Contemporary Global Trends";
+            return "Read the following passage about " + topic + " carefully. Answer all comprehension questions, verify the factual statements, and complete the sentences based on the reading text.";
         }
         String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
             ? params.getGrammarTopic() : "English grammar";

@@ -8,7 +8,7 @@ import { CefrLevel, User } from './user';
 /**
  * @brief Types of pedagogical tasks available.
  */
-export type TaskType = 'MCQ' | 'GAP_FILL' | 'OPEN_BRACKETS' | 'REWRITE' | 'ESSAY' | 'SHORT_ANSWER';
+export type TaskType = 'MCQ' | 'GAP_FILL' | 'OPEN_BRACKETS' | 'REWRITE' | 'ESSAY' | 'SHORT_ANSWER' | 'READING';
 
 /**
  * @brief Task difficulty categorization.
@@ -128,6 +128,24 @@ export interface TaskParams {
   dueDate?: string;
   /** @brief Optional maximum allowed attempts when deploying directly to cohorts. */
   maxAttempts?: number;
+  /** @brief Optional reading assignment title. */
+  readingTitle?: string;
+  /** @brief Optional reading passage length or volume preset (e.g. SHORT, MEDIUM, LONG). */
+  readingLength?: string;
+  /** @brief Optional description of paragraph count or structure for the reading passage. */
+  readingParagraphs?: string;
+  /** @brief Optional count of multiple choice questions to generate for reading tasks. */
+  mcqQuestionsCount?: number;
+  /** @brief Optional points allocated per multiple choice question in reading tasks. */
+  mcqPoints?: number;
+  /** @brief Optional count of True/False questions to generate for reading tasks. */
+  trueFalseQuestionsCount?: number;
+  /** @brief Optional points allocated per True/False question in reading tasks. */
+  trueFalsePoints?: number;
+  /** @brief Optional count of sentence completion / open questions to generate for reading tasks. */
+  openQuestionsCount?: number;
+  /** @brief Optional points allocated per sentence completion / open question in reading tasks. */
+  openPoints?: number;
 }
 
 /**

@@ -138,4 +138,8 @@ export interface OverrideRequest {
   teacherComment?: string;
   /** @brief Optional revised AI diagnostic feedback comment. */
   feedback?: string;
+  /** @brief Revised or curated grammatical corrections. */
+  corrections?: SentenceCorrection[];
+  /** @brief Revised or curated question evaluations. */
+  items?: SubmissionItem[];
 }

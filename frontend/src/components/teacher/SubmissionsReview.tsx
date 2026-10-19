@@ -30,11 +30,12 @@ import {
 import { submissionApi } from '../../api/submissionApi';
 import { userApi } from '../../api/userApi';
 import { groupApi } from '../../api/groupApi';
-import { SubmissionResult } from '../../types/submission';
+import { SubmissionResult, SentenceCorrection, SubmissionItem } from '../../types/submission';
 import { Group } from '../../types/group';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { useNotificationStore } from '../../store/notificationStore';
 import { formatDate } from '../../utils/formatDate';
+import { AnnotatedTextReview } from '../common/AnnotatedTextReview';
 
 /**
  * @brief Educator component reviewing student homework, adjusting scores, inspecting question options, and editing comments.
@@ -61,6 +62,13 @@ export const SubmissionsReview: React.FC = () => {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [commentDraft, setCommentDraft] = useState<string>('');
   const [isSavingInline, setIsSavingInline] = useState(false);
+
+  // Educator overrides for corrections and question items per submission
+  const [submissionCorrections, setSubmissionCorrections] = useState<Record<string, SentenceCorrection[]>>({});
+  const [submissionItems, setSubmissionItems] = useState<Record<string, SubmissionItem[]>>({});
+  const [isSavingDiagnosticOverrides, setIsSavingDiagnosticOverrides] = useState<Record<string, boolean>>({});
+  const [editingItemExplanation, setEditingItemExplanation] = useState<{ subId: string; qNum: number } | null>(null);
+  const [itemExplanationDraft, setItemExplanationDraft] = useState<string>('');
 
   // Student renaming state
   const [renamingStudent, setRenamingStudent] = useState<{ id: string; name: string } | null>(null);
@@ -261,20 +269,124 @@ export const SubmissionsReview: React.FC = () => {
   };
 
   /**
+   * @brief Retrieves active or cached sentence corrections for a submission.
+   */
+  const getCorrectionsForSub = (sub: SubmissionResult): SentenceCorrection[] => {
+    if (submissionCorrections[sub.id]) {
+      return submissionCorrections[sub.id];
+    }
+    if (sub.corrections && sub.corrections.length > 0) {
+      return sub.corrections;
+    }
+    if (sub.rubric?.corrections && Array.isArray(sub.rubric.corrections)) {
+      return sub.rubric.corrections;
+    }
+    return [];
+  };
+
+  /**
+   * @brief Retrieves active or cached question items for a submission.
+   */
+  const getItemsForSub = (sub: SubmissionResult): SubmissionItem[] => {
+    if (submissionItems[sub.id]) {
+      return submissionItems[sub.id];
+    }
+    if (sub.items && sub.items.length > 0) {
+      return sub.items;
+    }
+    return [];
+  };
+
+  /**
+   * @brief Toggles item correctness (e.g. for semantic validation of open-ended answers).
+   */
+  const handleToggleItemCorrectness = (sub: SubmissionResult, qNum: number) => {
+    const current = getItemsForSub(sub);
+    const updated = current.map((it) =>
+      it.questionNumber === qNum ? { ...it, isCorrect: !it.isCorrect } : it
+    );
+    setSubmissionItems((prev) => ({ ...prev, [sub.id]: updated }));
+  };
+
+  /**
+   * @brief Updates educator pedagogical explanation for a specific question item.
+   */
+  const handleSaveItemExplanation = (sub: SubmissionResult, qNum: number, newExplanation: string) => {
+    const current = getItemsForSub(sub);
+    const updated = current.map((it) =>
+      it.questionNumber === qNum ? { ...it, explanation: newExplanation } : it
+    );
+    setSubmissionItems((prev) => ({ ...prev, [sub.id]: updated }));
+    setEditingItemExplanation(null);
+  };
+
+  /**
+   * @brief Saves all diagnostic overrides (mistake highlights, question evaluations, explanations) for a submission.
+   */
+  const handleSaveSubDiagnostics = async (sub: SubmissionResult) => {
+    const corrs = getCorrectionsForSub(sub);
+    const items = getItemsForSub(sub);
+
+    let calculatedScore = sub.overrideScore ?? sub.score;
+    if (items.length > 0) {
+      const totalPoints = items.reduce((acc, it) => acc + (it.points || 10), 0);
+      const earned = items.filter((it) => it.isCorrect).reduce((acc, it) => acc + (it.points || 10), 0);
+      if (totalPoints > 0) {
+        calculatedScore = Math.round((earned / totalPoints) * 100);
+      }
+    }
+
+    setIsSavingDiagnosticOverrides((prev) => ({ ...prev, [sub.id]: true }));
+    try {
+      const updated = await submissionApi.overrideScore(sub.id, {
+        overrideScore: calculatedScore,
+        teacherComment: sub.teacherComment,
+        feedback: sub.feedback,
+        corrections: corrs,
+        items: items,
+      });
+
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === sub.id ? { ...s, ...updated, corrections: corrs, items } : s))
+      );
+
+      addToast({
+        type: 'success',
+        title: 'Diagnostic Overrides Saved',
+        message: 'Grammar mistake highlights, explanations, and question evaluations updated.',
+      });
+    } catch (err) {
+      console.error('Failed to save diagnostic overrides:', err);
+      addToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Could not update diagnostic overrides. Please try again.',
+      });
+    } finally {
+      setIsSavingDiagnosticOverrides((prev) => ({ ...prev, [sub.id]: false }));
+    }
+  };
+
+  /**
    * @brief Saves overridden score, AI feedback, and educator comments from modal.
    */
   const handleSaveOverride = async () => {
     if (!editingSub) return;
     setIsSubmittingOverride(true);
     try {
+      const corrs = getCorrectionsForSub(editingSub);
+      const items = getItemsForSub(editingSub);
+
       const updated = await submissionApi.overrideScore(editingSub.id, {
         overrideScore: Number(newScore),
         teacherComment,
         feedback: aiFeedbackDraft,
+        corrections: corrs.length > 0 ? corrs : undefined,
+        items: items.length > 0 ? items : undefined,
       });
 
       setSubmissions((prev) =>
-        prev.map((s) => (s.id === editingSub.id ? { ...s, ...updated } : s))
+        prev.map((s) => (s.id === editingSub.id ? { ...s, ...updated, corrections: corrs, items } : s))
       );
 
       setEditingSub(null);
@@ -831,144 +943,246 @@ export const SubmissionsReview: React.FC = () => {
                       )}
 
                       {/* Question Breakdown and Answer Choices */}
-                      {sub.items && sub.items.length > 0 ? (
-                        <div className="space-y-3">
-                          <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                            <Sparkles className="w-3.5 h-3.5 text-primary" />
-                            <span>Question-by-Question Diagnostic Evaluation ({sub.items.length} items)</span>
-                          </h4>
+                      {(() => {
+                        const items = getItemsForSub(sub);
+                        return items.length > 0 ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                <span>Question-by-Question Diagnostic Evaluation ({items.length} items)</span>
+                              </h4>
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                Click status pill to toggle correctness; click edit to adjust explanation
+                              </span>
+                            </div>
 
-                          <div className="grid grid-cols-1 gap-2.5">
-                            {sub.items.map((item) => {
-                              const cleanStudent = (item.studentAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
-                              const cleanCorrect = (item.correctAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
-                              const isEffectivelyCorrect = item.isCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect);
+                            <div className="grid grid-cols-1 gap-2.5">
+                              {items.map((item) => {
+                                const cleanStudent = (item.studentAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+                                const cleanCorrect = (item.correctAnswer || '').replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+                                const isEffectivelyCorrect = item.isCorrect || (cleanStudent !== '' && cleanStudent === cleanCorrect);
+                                const isEditingExpl =
+                                  editingItemExplanation?.subId === sub.id &&
+                                  editingItemExplanation?.qNum === item.questionNumber;
 
-                              return (
-                              <div
-                                key={item.questionNumber}
-                                className={`p-4 rounded-2xl border transition space-y-2.5 ${
-                                  isEffectivelyCorrect
-                                    ? 'bg-emerald-50/30 border-emerald-100/80'
-                                    : 'bg-rose-50/30 border-rose-100/80'
-                                }`}
-                              >
-                                <div className="flex items-center justify-between gap-2">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-mono font-bold text-slate-700 text-xs">
-                                      Question {item.questionNumber}
-                                    </span>
-                                    {typeof item.points === 'number' && (
-                                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                                        {item.points} pts
+                                return (
+                                <div
+                                  key={item.questionNumber}
+                                  className={`p-4 rounded-2xl border transition space-y-2.5 ${
+                                    isEffectivelyCorrect
+                                      ? 'bg-emerald-50/30 border-emerald-100/80'
+                                      : 'bg-rose-50/30 border-rose-100/80'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-mono font-bold text-slate-700 text-xs">
+                                        Question {item.questionNumber}
                                       </span>
-                                    )}
+                                      {typeof item.points === 'number' && (
+                                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                          {item.points} pts
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Clickable Correctness Toggle */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleToggleItemCorrectness(sub, item.questionNumber)}
+                                      className={`inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full border transition cursor-pointer ${
+                                        isEffectivelyCorrect
+                                          ? 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border-emerald-200'
+                                          : 'bg-rose-100 hover:bg-rose-200 text-rose-800 border-rose-200'
+                                      }`}
+                                      title="Click to toggle correctness (accept alternative answer or deduct points)"
+                                    >
+                                      {isEffectivelyCorrect ? (
+                                        <>
+                                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                          <span>Correct (Click to Override)</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <XCircle className="w-3 h-3 text-rose-600" />
+                                          <span>Incorrect (Click to Accept)</span>
+                                        </>
+                                      )}
+                                    </button>
                                   </div>
 
-                                  {isEffectivelyCorrect ? (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                      <span>Correct</span>
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200">
-                                      <XCircle className="w-3 h-3 text-rose-600" />
-                                      <span>Incorrect</span>
-                                    </span>
+                                  <p className="text-xs font-semibold text-slate-800">
+                                    {item.sentence}
+                                  </p>
+
+                                  {/* Answer choices / options if present */}
+                                  {item.options && item.options.length > 0 && (
+                                    <div className="space-y-1">
+                                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                        Answer Options:
+                                      </span>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {item.options.map((opt, optIdx) => {
+                                          const optTrim = opt.replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
+                                          const isStudentChoice = optTrim === cleanStudent;
+                                          const isCorrectChoice = optTrim === cleanCorrect;
+
+                                          let badgeStyle = 'bg-white text-slate-600 border-slate-200';
+                                          if (isStudentChoice && isEffectivelyCorrect) {
+                                            badgeStyle = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
+                                          } else if (isStudentChoice && !isEffectivelyCorrect) {
+                                            badgeStyle = 'bg-rose-100 text-rose-900 border-rose-300 font-bold';
+                                          } else if (isCorrectChoice) {
+                                            badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold';
+                                          }
+
+                                          return (
+                                            <div
+                                              key={optIdx}
+                                              className={`px-2.5 py-1 rounded-xl border text-xs flex items-center gap-1.5 ${badgeStyle}`}
+                                            >
+                                              <span>{opt}</span>
+                                              {isStudentChoice && (
+                                                <span className="text-[9px] px-1 py-0.2 rounded bg-black/10 font-bold">
+                                                  {isEffectivelyCorrect ? 'Student Pick (✓)' : 'Student Pick (✗)'}
+                                                </span>
+                                              )}
+                                              {!isStudentChoice && isCorrectChoice && (
+                                                <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-200 text-emerald-900 font-bold">
+                                                  Correct
+                                                </span>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
                                   )}
-                                </div>
 
-                                <p className="text-xs font-semibold text-slate-800">
-                                  {item.sentence}
-                                </p>
-
-                                {/* Answer choices / options if present */}
-                                {item.options && item.options.length > 0 && (
-                                  <div className="space-y-1">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                                      Answer Options:
-                                    </span>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {item.options.map((opt, optIdx) => {
-                                        const optTrim = opt.replace(/[\u00A0\u202F\u200B]/g, ' ').trim().toLowerCase();
-                                        const isStudentChoice = optTrim === cleanStudent;
-                                        const isCorrectChoice = optTrim === cleanCorrect;
-
-                                        let badgeStyle = 'bg-white text-slate-600 border-slate-200';
-                                        if (isStudentChoice && isEffectivelyCorrect) {
-                                          badgeStyle = 'bg-emerald-100 text-emerald-900 border-emerald-300 font-bold';
-                                        } else if (isStudentChoice && !isEffectivelyCorrect) {
-                                          badgeStyle = 'bg-rose-100 text-rose-900 border-rose-300 font-bold';
-                                        } else if (isCorrectChoice) {
-                                          badgeStyle = 'bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold';
-                                        }
-
-                                        return (
-                                          <div
-                                            key={optIdx}
-                                            className={`px-2.5 py-1 rounded-xl border text-xs flex items-center gap-1.5 ${badgeStyle}`}
-                                          >
-                                            <span>{opt}</span>
-                                            {isStudentChoice && (
-                                              <span className="text-[9px] px-1 py-0.2 rounded bg-black/10 font-bold">
-                                                {isEffectivelyCorrect ? 'Student Pick (✓)' : 'Student Pick (✗)'}
-                                              </span>
-                                            )}
-                                            {!isStudentChoice && isCorrectChoice && (
-                                              <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-200 text-emerald-900 font-bold">
-                                                Correct
-                                              </span>
-                                            )}
-                                          </div>
-                                        );
-                                      })}
+                                  {/* Student Answer vs Correct Answer Summary */}
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 bg-white/80 rounded-xl border border-slate-100 text-xs">
+                                    <div>
+                                      <span className="text-[10px] font-bold text-slate-400 uppercase">Student Answer:</span>
+                                      <p className={`font-mono font-bold mt-0.5 ${isEffectivelyCorrect ? 'text-emerald-700' : 'text-rose-600'}`}>
+                                        {item.studentAnswer || 'No answer'}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <span className="text-[10px] font-bold text-slate-400 uppercase">Expected Answer:</span>
+                                      <p className="font-mono font-bold text-emerald-700 mt-0.5">
+                                        {item.correctAnswer}
+                                      </p>
                                     </div>
                                   </div>
-                                )}
 
-                                {/* Student Answer vs Correct Answer Summary */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2.5 bg-white/80 rounded-xl border border-slate-100 text-xs">
-                                  <div>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Student Answer:</span>
-                                    <p className={`font-mono font-bold mt-0.5 ${isEffectivelyCorrect ? 'text-emerald-700' : 'text-rose-600'}`}>
-                                      {item.studentAnswer || 'No answer'}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Expected Answer:</span>
-                                    <p className="font-mono font-bold text-emerald-700 mt-0.5">
-                                      {item.correctAnswer}
-                                    </p>
-                                  </div>
-                                </div>
+                                  {/* Item explanation & rule with Inline Edit */}
+                                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-600 text-xs leading-relaxed space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-bold text-slate-700 text-[11px] uppercase tracking-wider">
+                                        Pedagogical Explanation:
+                                      </span>
+                                      {!isEditingExpl ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setEditingItemExplanation({ subId: sub.id, qNum: item.questionNumber });
+                                            setItemExplanationDraft(item.explanation || '');
+                                          }}
+                                          className="text-[10px] font-bold text-primary hover:underline inline-flex items-center space-x-1"
+                                        >
+                                          <Edit3 className="w-3 h-3" />
+                                          <span>Edit Explanation</span>
+                                        </button>
+                                      ) : (
+                                        <div className="flex items-center space-x-2">
+                                          <button
+                                            type="button"
+                                            onClick={() => setEditingItemExplanation(null)}
+                                            className="text-[10px] font-semibold text-slate-500 hover:text-slate-700"
+                                          >
+                                            Cancel
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              handleSaveItemExplanation(sub, item.questionNumber, itemExplanationDraft)
+                                            }
+                                            className="px-2 py-0.5 rounded bg-primary text-white text-[10px] font-bold"
+                                          >
+                                            Update
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
 
-                                {/* Item explanation & rule */}
-                                {item.explanation && (
-                                  <div className="p-2.5 rounded-xl bg-slate-50 text-slate-600 text-xs leading-relaxed space-y-0.5">
-                                    <p>
-                                      <span className="font-bold text-slate-700">Diagnostic Rule: </span>
-                                      {item.explanation}
-                                    </p>
+                                    {isEditingExpl ? (
+                                      <textarea
+                                        rows={2}
+                                        value={itemExplanationDraft}
+                                        onChange={(e) => setItemExplanationDraft(e.target.value)}
+                                        className="w-full p-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-primary"
+                                      />
+                                    ) : (
+                                      <p>{item.explanation}</p>
+                                    )}
+
                                     {item.grammarRule && (
                                       <span className="inline-block text-[10px] font-bold text-primary px-1.5 py-0.2 rounded bg-indigo-50 border border-indigo-100">
-                                        {item.grammarRule}
+                                        Rule: {item.grammarRule}
                                       </span>
                                     )}
                                   </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                        </div>
-                      ) : (
-                        <div>
-                          <span className="font-bold text-slate-500 uppercase">Student Answer Text:</span>
-                          <div className="p-3 mt-1 bg-slate-50 rounded-xl font-mono text-slate-700 whitespace-pre-wrap">
-                            {sub.originalText}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
+                      ) : null;
+                    })()}
+
+                      {/* Interactive Student Text Error Annotation (Teacher Mode) */}
+                      {sub.originalText && (
+                        <div className="pt-2">
+                          <AnnotatedTextReview
+                            text={sub.originalText}
+                            corrections={getCorrectionsForSub(sub)}
+                            editable={true}
+                            onCorrectionsChange={(newCorrs) =>
+                              setSubmissionCorrections((prev) => ({
+                                ...prev,
+                                [sub.id]: newCorrs,
+                              }))
+                            }
+                            title="Student Submission Text · Inline Error Highlighting & Teacher Editing"
+                          />
+                        </div>
                       )}
+
+                      {/* Teacher Diagnostic Overrides Action Banner */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-indigo-50/70 border border-indigo-200">
+                        <div>
+                          <span className="text-xs font-bold text-indigo-950 block">
+                            Save Diagnostic Adjustments & Overrides
+                          </span>
+                          <span className="text-[11px] text-indigo-700">
+                            Persist modified error highlights, question evaluations, and explanations for this submission.
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleSaveSubDiagnostics(sub)}
+                          disabled={isSavingDiagnosticOverrides[sub.id]}
+                          className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-sm disabled:opacity-50 flex items-center justify-center space-x-1.5 shrink-0"
+                        >
+                          <Save className="w-3.5 h-3.5" />
+                          <span>
+                            {isSavingDiagnosticOverrides[sub.id]
+                              ? 'Saving Overrides...'
+                              : 'Save Diagnostic Adjustments'}
+                          </span>
+                        </button>
+                      </div>
 
                       {/* AI Diagnostic Comment Section with Inline Edit */}
                       <div className="p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/70 space-y-2">

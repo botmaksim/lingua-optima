@@ -74,5 +74,68 @@ class PromptTemplatesTest {
         assertTrue(openBracketsPrompt.contains("раскрытие скобок"));
         assertTrue(openBracketsPrompt.contains("OPEN_BRACKETS"));
         assertTrue(openBracketsPrompt.contains("options\" array MUST be empty []"));
+
+        // Test READING prompt template
+        String readingPrompt = PromptTemplates.buildTaskGenerationPrompt(
+            "B2", "Environment", "Science", "READING", "MEDIUM", 7
+        );
+        assertTrue(readingPrompt.contains("Reading Comprehension assignment"));
+        assertTrue(readingPrompt.contains("B2"));
+        assertTrue(readingPrompt.contains("Environment"));
+    }
+
+    /**
+     * @brief Tests buildReadingGenerationPrompt with TaskParamsRequest and various configurations.
+     */
+    @Test
+    void testBuildReadingGenerationPromptWithParams() {
+        com.linguaoptima.api.dto.request.TaskParamsRequest params = new com.linguaoptima.api.dto.request.TaskParamsRequest();
+        params.setCefrLevel(CefrLevel.B2);
+        params.setGrammarTopic("Renewable Energy");
+        params.setDomain("Technology");
+        params.setDifficulty(com.linguaoptima.api.domain.enums.DifficultyLevel.HARD);
+        params.setReadingTitle("The Green Transition");
+        params.setReadingLength("Long (400-600 words)");
+        params.setReadingParagraphs("4 paragraphs focusing on solar, wind, and storage");
+        params.setMcqQuestionsCount(4);
+        params.setMcqPoints(15);
+        params.setTrueFalseQuestionsCount(3);
+        params.setTrueFalsePoints(10);
+        params.setOpenQuestionsCount(2);
+        params.setOpenPoints(20);
+
+        String prompt = PromptTemplates.buildReadingGenerationPrompt(params, null, "solar, wind, grid");
+        assertTrue(prompt.contains("The Green Transition"));
+        assertTrue(prompt.contains("solar, wind, grid"));
+        assertTrue(prompt.contains("Renewable Energy"));
+        assertTrue(prompt.contains("Technology"));
+        assertTrue(prompt.contains("HARD"));
+        assertTrue(prompt.contains("Long (400-600 words)"));
+
+        // Test with default/empty params
+        com.linguaoptima.api.dto.request.TaskParamsRequest emptyParams = new com.linguaoptima.api.dto.request.TaskParamsRequest();
+        emptyParams.setCefrLevel(CefrLevel.A2);
+        emptyParams.setGrammarTopic("");
+        emptyParams.setDomain("");
+        emptyParams.setDifficulty(null);
+        emptyParams.setMcqQuestionsCount(null);
+        emptyParams.setMcqPoints(-5);
+        emptyParams.setTrueFalseQuestionsCount(null);
+        emptyParams.setTrueFalsePoints(0);
+        emptyParams.setOpenQuestionsCount(null);
+        emptyParams.setOpenPoints(0);
+
+        String defaultPrompt = PromptTemplates.buildReadingGenerationPrompt(emptyParams, null, null);
+        assertTrue(defaultPrompt.contains("Contemporary Global Issues"));
+        assertTrue(defaultPrompt.contains("General"));
+        assertTrue(defaultPrompt.contains("A2"));
+
+        // Test with zero counts in direct method
+        String zeroPrompt = PromptTemplates.buildReadingGenerationPrompt(
+            "B1", "Travel", "Tourism", "EASY", null, null, null, null,
+            0, 0, 0, 0, 0, 0
+        );
+        assertTrue(zeroPrompt.contains("Travel"));
+        assertTrue(zeroPrompt.contains("Medium (250-400 words)"));
     }
 }

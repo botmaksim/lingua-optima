@@ -4,6 +4,8 @@
  */
 package com.linguaoptima.api.util;
 
+import com.linguaoptima.api.dto.request.TaskParamsRequest;
+
 /**
  * @brief Structured prompt generators ensuring strict JSON schema compliance from downstream AI models.
  */
@@ -61,6 +63,14 @@ public final class PromptTemplates {
             .append(cefrLevel)
             .append(" learners.\n");
         String extraContext = contextBuilder.toString();
+
+        if ("READING".equalsIgnoreCase(taskType)) {
+            return buildReadingGenerationPrompt(
+                cefrLevel, grammarTopic, domain, difficulty,
+                null, null, null, targetVocabulary,
+                3, 10, 2, 10, 2, 15
+            );
+        }
 
         if ("ESSAY".equalsIgnoreCase(taskType)) {
             return """
@@ -231,6 +241,146 @@ public final class PromptTemplates {
     }
 
     /**
+     * @brief Constructs reading generation prompt from structured TaskParamsRequest.
+     * @param params Parameter request DTO.
+     * @param targetRule Optional grammar rule.
+     * @param targetVocabulary Optional target vocabulary.
+     * @return Formatted AI generation prompt.
+     */
+    public static String buildReadingGenerationPrompt(TaskParamsRequest params, String targetRule, String targetVocabulary) {
+        String topic = params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank()
+            ? params.getGrammarTopic() : "Contemporary Global Issues";
+        String domain = params.getDomain() != null && !params.getDomain().isBlank()
+            ? params.getDomain() : "General";
+        String difficulty = params.getDifficulty() != null
+            ? params.getDifficulty().name() : "MEDIUM";
+        int mcqCount = params.getMcqQuestionsCount() != null ? params.getMcqQuestionsCount() : 3;
+        int mcqPoints = params.getMcqPoints() != null && params.getMcqPoints() > 0 ? params.getMcqPoints() : 10;
+        int tfCount = params.getTrueFalseQuestionsCount() != null ? params.getTrueFalseQuestionsCount() : 2;
+        int tfPoints = params.getTrueFalsePoints() != null && params.getTrueFalsePoints() > 0 ? params.getTrueFalsePoints() : 10;
+        int openCount = params.getOpenQuestionsCount() != null ? params.getOpenQuestionsCount() : 2;
+        int openPoints = params.getOpenPoints() != null && params.getOpenPoints() > 0 ? params.getOpenPoints() : 15;
+
+        return buildReadingGenerationPrompt(
+            params.getCefrLevel().name(),
+            topic,
+            domain,
+            difficulty,
+            params.getReadingTitle(),
+            params.getReadingLength(),
+            params.getReadingParagraphs(),
+            targetVocabulary,
+            mcqCount,
+            mcqPoints,
+            tfCount,
+            tfPoints,
+            openCount,
+            openPoints
+        );
+    }
+
+    /**
+     * @brief Constructs an English reading comprehension prompt generating passage text and mixed question categories.
+     * @param cefrLevel Target CEFR level.
+     * @param topic Reading topic / thematic subject.
+     * @param domain Situational real-world domain context.
+     * @param difficulty Target difficulty level.
+     * @param title Custom reading passage title.
+     * @param length Passage length or volume specification.
+     * @param paragraphs Paragraph structure or focus guidance.
+     * @param targetVocabulary Target vocabulary words or collocations to incorporate.
+     * @param mcqCount Number of multiple choice questions.
+     * @param mcqPoints Points allocated per multiple choice question.
+     * @param tfCount Number of True/False questions.
+     * @param tfPoints Points allocated per True/False question.
+     * @param openCount Number of sentence completion / open questions.
+     * @param openPoints Points allocated per sentence completion / open question.
+     * @return Formatted AI generation prompt.
+     */
+    public static String buildReadingGenerationPrompt(String cefrLevel, String topic, String domain, String difficulty,
+                                                     String title, String length, String paragraphs, String targetVocabulary,
+                                                     int mcqCount, int mcqPoints, int tfCount, int tfPoints, int openCount, int openPoints) {
+        StringBuilder vocabBuilder = new StringBuilder();
+        if (targetVocabulary != null && !targetVocabulary.isBlank()) {
+            vocabBuilder.append("\n- TARGET VOCABULARY & COLLOCATIONS TO INCORPORATE IN THE TEXT:\n")
+                .append(targetVocabulary.trim()).append("\n");
+        }
+        String resolvedTitle = (title != null && !title.isBlank()) ? title.trim() : topic;
+        String resolvedLength = (length != null && !length.isBlank()) ? length.trim() : "Medium (250-400 words)";
+        String resolvedParagraphs = (paragraphs != null && !paragraphs.isBlank()) ? paragraphs.trim() : "3 to 4 distinct paragraphs with clear narrative progression";
+        int effMcqCount = Math.max(0, mcqCount);
+        int effTfCount = Math.max(0, tfCount);
+        int effOpenCount = Math.max(0, openCount);
+        if (effMcqCount == 0 && effTfCount == 0 && effOpenCount == 0) {
+            effMcqCount = 3;
+            effTfCount = 2;
+            effOpenCount = 2;
+        }
+
+        return """
+            Generate an English Reading Comprehension assignment consisting of an engaging reading article/story and targeted comprehension questions based strictly on the text.
+
+            PARAMETERS:
+            - CEFR Benchmark Level: %s
+            - Reading Topic: %s
+            - Assignment Title: %s
+            - Domain / Context: %s
+            - Difficulty Tier: %s
+            - Target Passage Length: %s
+            - Paragraph Structure & Focus: %s%s
+
+            CRITICAL READING TASK CONTRACT:
+            1. "content" FIELD:
+               - Must contain the COMPLETE reading passage text.
+               - Format the passage into clear, readable paragraphs separated by double newlines (\\n\\n).
+               - Language, grammar, and lexical complexity MUST strictly conform to CEFR %s.
+               - Naturally integrate the target vocabulary if specified.
+               - The "content" field must contain ONLY student-facing reading material, NEVER questions, headings like 'Questions:', or system meta-instructions.
+
+            2. "questions" ARRAY:
+               Generate EXACTLY the requested question breakdown based strictly on the facts, arguments, and details in the reading passage:
+               - %d Multiple Choice Questions (MCQ):
+                 Each question must test comprehension (main ideas, specific details, inferences). "options" array MUST contain 4 plausible choices ["Choice A", "Choice B", "Choice C", "Choice D"]. "correctAnswer" must match the correct option. "points": %d. "grammarRule": "Reading: Multiple Choice".
+               - %d True / False / Not Given Questions:
+                 Each question presents a statement to verify against the passage. "options" MUST be ["True", "False", "Not Given"]. "correctAnswer" must be "True", "False", or "Not Given". "points": %d. "grammarRule": "Reading: True/False/Not Given".
+               - %d Sentence Completion / Information Extraction Questions:
+                 Each question prompts the student to complete a sentence or answer a factual inquiry from the text. "options" MUST be empty []. "correctAnswer" must contain the expected concise phrase or fact (with acceptable variants separated by ' / '). "points": %d. "grammarRule": "Reading: Sentence Completion".
+
+            3. "answerKey" ARRAY:
+               - For every question, provide an entry with questionId, questionOrder, correctOption, and a clear explanation quoting the exact sentence or paragraph from the passage that justifies the answer.
+
+            4. CRITICAL: Do NOT echo, quote, or repeat these system parameters, prompts, or instructions in any JSON field.
+
+            Return ONLY a valid JSON object with the following structure:
+            {
+              "content": "Paragraph 1 text...\\n\\nParagraph 2 text...\\n\\nParagraph 3 text...",
+              "questions": [
+                {
+                  "id": 1,
+                  "text": "What is the primary factor mentioned in paragraph 1 regarding...?",
+                  "options": ["Choice A", "Choice B", "Choice C", "Choice D"],
+                  "correctAnswer": "Choice A",
+                  "points": %d,
+                  "difficulty": 2,
+                  "grammarRule": "Reading: Multiple Choice"
+                }
+              ],
+              "answerKey": [
+                {
+                  "questionId": 1,
+                  "questionOrder": 1,
+                  "correctOption": "Choice A",
+                  "explanation": "In paragraph 1, the text explicitly notes that '...' which confirms Choice A."
+                }
+              ]
+            }
+            """.formatted(
+                cefrLevel, topic, resolvedTitle, domain, difficulty, resolvedLength, resolvedParagraphs,
+                vocabBuilder.toString(), cefrLevel, effMcqCount, mcqPoints, effTfCount, tfPoints, effOpenCount, openPoints, mcqPoints
+            );
+    }
+
+    /**
      * @brief System instruction prompt for essay scoring models.
      */
     public static final String ESSAY_SCORING_SYSTEM =
@@ -261,7 +411,12 @@ public final class PromptTemplates {
               "overallScore": 7.75,
               "feedback": "Detailed general feedback here...",
               "corrections": [
-                { "original": "bad sentence", "corrected": "good sentence", "explanation": "why it was wrong", "grammarRule": "Subject-verb agreement" }
+                {
+                  "original": "exact erroneous word, phrase, or clause from the student essay to highlight in red",
+                  "corrected": "grammatically accurate and natural English rewrite",
+                  "explanation": "detailed pedagogical explanation of what was wrong, why, and how to fix it",
+                  "grammarRule": "Grammar rule category (e.g. Subject-Verb Agreement, Past Simple vs Present Perfect, Article Use, Preposition)"
+                }
               ],
               "weaknesses": ["Specific stylistic or grammatical weaknesses to improve"],
               "strengths": ["Strong points observed in the essay"],
@@ -294,6 +449,9 @@ public final class PromptTemplates {
             The "feedback" field must contain ONLY student-facing evaluation and advice, NEVER system meta-instructions or prompt text.
 
             Identify mistakes, provide sentence-by-sentence corrections, calculate a score from 0 to 100, and analyze what grammar gaps or topics the student needs to brush up on.
+            IMPORTANT FOR OPEN-ENDED QUESTIONS, SENTENCE COMPLETIONS, AND REWRITES:
+            A non-exact match with the answer key does NOT mean the answer is wrong. If the student's answer is semantically accurate, aligns with the context or reading passage, and is grammatically acceptable, evaluate it as isCorrect: true, award points, and explain why it is valid.
+
             Return ONLY a valid JSON object with the following structure:
             {
               "score": 85.0,

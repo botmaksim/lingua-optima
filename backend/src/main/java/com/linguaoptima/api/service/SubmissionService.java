@@ -4,6 +4,7 @@
  */
 package com.linguaoptima.api.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linguaoptima.api.domain.SessionState;
@@ -16,6 +17,7 @@ import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.NotificationType;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubmissionType;
+import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.request.OverrideRequest;
 import com.linguaoptima.api.dto.request.TextSubmissionRequest;
 import com.linguaoptima.api.dto.response.AiAnalysisResponse;
@@ -142,6 +144,10 @@ public class SubmissionService {
 
         Double score = scoringService.extractScore(scoring);
         String feedback = String.valueOf(scoring.getOrDefault("feedback", "Submission evaluated successfully."));
+        String feedbackToStore = feedback;
+        try {
+            feedbackToStore = objectMapper.writeValueAsString(scoring);
+        } catch (Exception ignored) {}
 
         Submission submission = Submission.builder()
             .assignment(assignment)
@@ -149,7 +155,7 @@ public class SubmissionService {
             .submissionType(SubmissionType.TEXT)
             .studentText(request.getText())
             .aiScore(score)
-            .aiFeedback(feedback)
+            .aiFeedback(feedbackToStore)
             .providerUsed(provider)
             .submittedAt(LocalDateTime.now())
             .build();
@@ -286,6 +292,10 @@ public class SubmissionService {
         Map<String, Object> scoring = scoringService.scoreGrammarTask(extractedText, answerKey, student);
         Double score = scoringService.extractScore(scoring);
         String feedback = String.valueOf(scoring.getOrDefault("feedback", "OCR text successfully scored."));
+        String feedbackToStore = feedback;
+        try {
+            feedbackToStore = objectMapper.writeValueAsString(scoring);
+        } catch (Exception ignored) {}
 
         Submission submission = Submission.builder()
             .assignment(assignment)
@@ -293,7 +303,7 @@ public class SubmissionService {
             .submissionType(SubmissionType.IMAGE)
             .studentText(extractedText)
             .aiScore(score)
-            .aiFeedback(feedback)
+            .aiFeedback(feedbackToStore)
             .providerUsed("TESSERACT_OCR+AI")
             .submittedAt(LocalDateTime.now())
             .build();
@@ -361,8 +371,34 @@ public class SubmissionService {
         if (request.getTeacherComment() != null) {
             submission.setTeacherComment(request.getTeacherComment());
         }
+
+        Map<String, Object> feedbackMap = new LinkedHashMap<>();
+        if (submission.getAiFeedback() != null && submission.getAiFeedback().trim().startsWith("{")) {
+            try {
+                feedbackMap = objectMapper.readValue(submission.getAiFeedback(), new TypeReference<Map<String, Object>>() {});
+            } catch (Exception ignored) {}
+        } else if (submission.getAiFeedback() != null) {
+            feedbackMap.put("feedback", submission.getAiFeedback());
+        }
+
         if (request.getFeedback() != null) {
-            submission.setAiFeedback(request.getFeedback());
+            feedbackMap.put("feedback", request.getFeedback());
+        }
+        if (request.getCorrections() != null) {
+            feedbackMap.put("corrections", request.getCorrections());
+        }
+        if (request.getItems() != null) {
+            feedbackMap.put("items", request.getItems());
+        }
+
+        if (!feedbackMap.isEmpty()) {
+            try {
+                submission.setAiFeedback(objectMapper.writeValueAsString(feedbackMap));
+            } catch (Exception e) {
+                if (request.getFeedback() != null) {
+                    submission.setAiFeedback(request.getFeedback());
+                }
+            }
         }
         Submission saved = submissionRepository.save(submission);
 
@@ -484,6 +520,8 @@ public class SubmissionService {
         List<String> rawWeaknesses = new ArrayList<>();
         List<String> rawStrengths = new ArrayList<>();
 
+        Map<Integer, SubmissionItemResponse> aiItemsMap = resolveAiItemsMap(rubric, submission.getAiFeedback());
+
         // 1. Check CAT Session
         if (submission.getAssignment() != null) {
             Optional<SessionState> sessionOpt = sessionStateRepository.findByAssignmentId(submission.getAssignment().getId());
@@ -492,7 +530,7 @@ public class SubmissionService {
             }
         }
 
-        // 2. Check Task Questions (MCQ, GAP_FILL, REWRITE, etc.)
+        // 2. Check Task Questions (MCQ, GAP_FILL, REWRITE, READING, etc.)
         if (items.isEmpty()) {
             Task task = null;
             if (submission.getAssignment() != null && submission.getAssignment().getTask() != null) {
@@ -501,7 +539,7 @@ public class SubmissionService {
                 task = taskRepository.findById(response.getTaskId()).orElse(null);
             }
             if (task != null) {
-                enrichFromTaskQuestions(task, submission.getStudentText(), items, rawWeaknesses, rawStrengths);
+                enrichFromTaskQuestions(task, submission.getStudentText(), items, rawWeaknesses, rawStrengths, aiItemsMap);
             }
         }
 
@@ -516,7 +554,7 @@ public class SubmissionService {
         }
 
         // 5. Extract from Feedback if it contains JSON
-        extractFromFeedback(submission.getAiFeedback(), corrections, rawWeaknesses, rawStrengths);
+        extractFromFeedback(submission.getAiFeedback(), corrections, rawWeaknesses, rawStrengths, items, response);
 
         if (!items.isEmpty()) {
             int totalWeight = items.stream().mapToInt(it -> (it.getPoints() != null && it.getPoints() > 0) ? it.getPoints() : 1).sum();
@@ -753,6 +791,10 @@ public class SubmissionService {
      * @param strengths Target list of detected grammar strengths.
      */
     private void enrichFromTaskQuestions(Task task, String studentText, List<SubmissionItemResponse> items, List<String> weaknesses, List<String> strengths) {
+        enrichFromTaskQuestions(task, studentText, items, weaknesses, strengths, Collections.emptyMap());
+    }
+
+    private void enrichFromTaskQuestions(Task task, String studentText, List<SubmissionItemResponse> items, List<String> weaknesses, List<String> strengths, Map<Integer, SubmissionItemResponse> aiItemsMap) {
         if (task.getQuestions() == null || task.getQuestions().isEmpty()) return;
 
         Map<Integer, String> studentAnswers = parseStudentAnswers(studentText);
@@ -764,14 +806,35 @@ public class SubmissionService {
             boolean isSkipped = isSkippedAnswer(rawAns);
             String studentAns = isSkipped ? "No answer" : rawAns;
             String correctAns = q.getCorrectAnswer() != null ? q.getCorrectAnswer() : "";
-            boolean isCorrect = !isSkipped && isAnswerMatching(studentAns, correctAns);
+
+            List<String> options = parseOptions(q.getOptionsJson());
+            boolean isMatch = !isSkipped && isAnswerMatching(studentAns, correctAns);
+
+            SubmissionItemResponse aiItem = (aiItemsMap != null) ? aiItemsMap.get(qOrder) : null;
+            boolean isOpenEnded = options.isEmpty() || task.getType() == TaskType.REWRITE
+                || task.getType() == TaskType.OPEN_BRACKETS || task.getType() == TaskType.SHORT_ANSWER
+                || task.getType() == TaskType.READING;
+
+            boolean isCorrect;
+            if (isMatch) {
+                isCorrect = true;
+            } else if (!isSkipped && isOpenEnded && aiItem != null && aiItem.isCorrect()) {
+                isCorrect = true;
+            } else {
+                isCorrect = false;
+            }
 
             String rule = q.getGrammarRule() != null && !q.getGrammarRule().isBlank()
                 ? q.getGrammarRule()
                 : (task.getGrammarTopic() != null ? task.getGrammarTopic() : "Grammar");
+            if (aiItem != null && aiItem.getGrammarRule() != null && !aiItem.getGrammarRule().isBlank()) {
+                rule = aiItem.getGrammarRule();
+            }
 
             String explanation = explanations.get(qOrder);
-            if (explanation == null || explanation.isBlank()) {
+            if (aiItem != null && aiItem.getExplanation() != null && !aiItem.getExplanation().isBlank()) {
+                explanation = aiItem.getExplanation();
+            } else if (explanation == null || explanation.isBlank()) {
                 if (isCorrect) {
                     explanation = "Correct! Accurately applies the rule: " + rule + ".";
                 } else if (isSkipped) {
@@ -780,8 +843,6 @@ public class SubmissionService {
                     explanation = "Incorrect. The expected answer is '" + correctAns + "'. Tested rule: " + rule + ".";
                 }
             }
-
-            List<String> options = parseOptions(q.getOptionsJson());
 
             items.add(SubmissionItemResponse.builder()
                 .questionNumber(qOrder)
@@ -1088,16 +1149,71 @@ public class SubmissionService {
     }
 
     /**
-     * @brief Extracts corrections and diagnostic notes from serialized JSON in AI feedback if present.
+     * @brief Resolves map of AI-evaluated question items by question number.
+     * @param rubric Optional AI grading rubric map.
+     * @param aiFeedback Serialized feedback JSON string.
+     * @return Map of question number to evaluated item response.
+     */
+    private Map<Integer, SubmissionItemResponse> resolveAiItemsMap(Map<String, Object> rubric, String aiFeedback) {
+        Map<Integer, SubmissionItemResponse> map = new LinkedHashMap<>();
+        if (rubric != null && rubric.get("items") instanceof List<?> list) {
+            for (Object obj : list) {
+                if (obj instanceof Map<?, ?> m) {
+                    int qNum = m.get("questionNumber") instanceof Number n ? n.intValue() : map.size() + 1;
+                    boolean isCorrect = Boolean.TRUE.equals(m.get("isCorrect"));
+                    String expl = m.get("explanation") != null ? String.valueOf(m.get("explanation")) : "";
+                    String rule = m.get("grammarRule") != null ? String.valueOf(m.get("grammarRule")) : "";
+                    map.put(qNum, SubmissionItemResponse.builder()
+                        .questionNumber(qNum)
+                        .isCorrect(isCorrect)
+                        .explanation(expl)
+                        .grammarRule(rule)
+                        .build());
+                }
+            }
+        }
+        if (map.isEmpty() && aiFeedback != null && aiFeedback.trim().startsWith("{")) {
+            try {
+                JsonNode root = objectMapper.readTree(aiFeedback);
+                if (root.has("items") && root.path("items").isArray()) {
+                    for (JsonNode iNode : root.path("items")) {
+                        int qNum = iNode.path("questionNumber").asInt(map.size() + 1);
+                        boolean isCorrect = iNode.path("isCorrect").asBoolean(false);
+                        String expl = iNode.path("explanation").asText("");
+                        String rule = iNode.path("grammarRule").asText("");
+                        map.put(qNum, SubmissionItemResponse.builder()
+                            .questionNumber(qNum)
+                            .isCorrect(isCorrect)
+                            .explanation(expl)
+                            .grammarRule(rule)
+                            .build());
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        return map;
+    }
+
+    /**
+     * @brief Extracts corrections, items, feedback, and diagnostic notes from serialized JSON in AI feedback if present.
      * @param aiFeedback Raw AI feedback text.
      * @param corrections Target list of sentence corrections.
      * @param weaknesses Target list of weaknesses.
      * @param strengths Target list of strengths.
+     * @param items Target list of itemized questions.
+     * @param response Optional submission response to update feedback.
      */
-    private void extractFromFeedback(String aiFeedback, List<SentenceCorrectionResponse> corrections, List<String> weaknesses, List<String> strengths) {
+
+    private void extractFromFeedback(String aiFeedback, List<SentenceCorrectionResponse> corrections, List<String> weaknesses, List<String> strengths, List<SubmissionItemResponse> items, SubmissionResultResponse response) {
         if (aiFeedback == null || !aiFeedback.trim().startsWith("{")) return;
         try {
             JsonNode root = objectMapper.readTree(aiFeedback);
+            if (root.has("feedback") && response != null) {
+                String fb = root.path("feedback").asText("");
+                if (!fb.isBlank()) {
+                    response.setFeedback(fb);
+                }
+            }
             if (root.has("corrections") && corrections.isEmpty()) {
                 for (JsonNode cNode : root.path("corrections")) {
                     corrections.add(SentenceCorrectionResponse.builder()
@@ -1105,6 +1221,28 @@ public class SubmissionService {
                         .corrected(cNode.path("corrected").asText(""))
                         .explanation(cNode.path("explanation").asText(""))
                         .grammarRule(cNode.path("grammarRule").asText("Grammar & Style"))
+                        .build());
+                }
+            }
+            if (root.has("items") && items.isEmpty()) {
+                for (JsonNode iNode : root.path("items")) {
+                    List<String> options = new ArrayList<>();
+                    if (iNode.has("options") && iNode.path("options").isArray()) {
+                        for (JsonNode opt : iNode.path("options")) {
+                            options.add(opt.asText());
+                        }
+                    }
+                    items.add(SubmissionItemResponse.builder()
+                        .questionNumber(iNode.path("questionNumber").asInt(items.size() + 1))
+                        .sentence(iNode.path("sentence").asText(""))
+                        .studentAnswer(iNode.path("studentAnswer").asText(""))
+                        .correctAnswer(iNode.path("correctAnswer").asText(""))
+                        .isCorrect(iNode.path("isCorrect").asBoolean(false))
+                        .isSkipped(iNode.path("isSkipped").asBoolean(false))
+                        .explanation(iNode.path("explanation").asText(""))
+                        .grammarRule(iNode.path("grammarRule").asText(""))
+                        .points(iNode.path("points").asInt(10))
+                        .options(options)
                         .build());
                 }
             }

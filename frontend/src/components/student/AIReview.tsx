@@ -24,6 +24,7 @@ import { submissionApi } from '../../api/submissionApi';
 import { SubmissionResult, SubmissionItem, SentenceCorrection } from '../../types/submission';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { sanitizeFeedback } from '../../utils/textSanitizer';
+import { AnnotatedTextReview } from '../common/AnnotatedTextReview';
 
 /**
  * @brief Renders the AI evaluation report, sentence-by-sentence breakdown, explanations, and AI gap analysis.
@@ -540,6 +541,18 @@ export const AIReview: React.FC = () => {
             );
           })}
           </div>
+        </div>
+      )}
+
+      {/* 4.5. Interactive In-Text Red Mistake Highlighting */}
+      {submission && submission.originalText && (correctionsToRender.length > 0 || submission.taskType === 'ESSAY') && (
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
+          <AnnotatedTextReview
+            text={submission.originalText}
+            corrections={correctionsToRender}
+            editable={false}
+            title="Grammar & Mistake Analysis (Inline Diagnostic)"
+          />
         </div>
       )}
 
