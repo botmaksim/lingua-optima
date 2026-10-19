@@ -192,4 +192,91 @@ class PromptTemplatesTest {
         assertTrue(defaultPrompt.contains("Natural Rhythm, Intonation & Clear Articulation"));
         assertTrue(defaultPrompt.contains("Medium reading passage: 60 to 90 words"));
     }
+
+    @Test
+    void testBuildSpeakingGenerationPromptWithPackAndEcoMode() {
+        com.linguaoptima.api.dto.response.PronunciationPackResponse pack = com.linguaoptima.api.dto.response.PronunciationPackResponse.builder()
+            .id("B1_DENTAL_FRICATIVES")
+            .title("Dental Fricatives: /θ/ and /ð/")
+            .phonemes(List.of("/θ/", "/ð/"))
+            .drillWords(List.of("thought", "breathe", "weather"))
+            .minimalPairs(List.of(
+                com.linguaoptima.api.dto.response.MinimalPairDto.builder()
+                    .word1("thin").word2("tin").phoneme1("/θ/").phoneme2("/t/").build()
+            ))
+            .contrastFocus("Tongue placement between teeth.")
+            .tongueTwister("Thirty-three thousand feathers on a thrush's throat.")
+            .build();
+
+        TaskParamsRequest params = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .speakingLength("MEDIUM")
+            .build();
+
+        // With Pack and target vocabulary
+        String packPrompt = PromptTemplates.buildSpeakingGenerationPrompt(params, null, "thistle, thoroughly", pack);
+        assertTrue(packPrompt.contains("TARGET PHONETICS PACK: Dental Fricatives: /θ/ and /ð/"));
+        assertTrue(packPrompt.contains("/θ/, /ð/"));
+        assertTrue(packPrompt.contains("thought, breathe, weather"));
+        assertTrue(packPrompt.contains("thin (/θ/) vs tin (/t/)"));
+        assertTrue(packPrompt.contains("Tongue placement between teeth."));
+        assertTrue(packPrompt.contains("Thirty-three thousand feathers on a thrush's throat."));
+        assertTrue(packPrompt.contains("thistle, thoroughly"));
+
+        // With Eco Mode
+        params.setEcoMode(true);
+        String ecoPrompt = PromptTemplates.buildSpeakingGenerationPrompt(params, null, null, pack);
+        assertTrue(ecoPrompt.contains("ECO MODE ACTIVE"));
+        assertFalse(ecoPrompt.contains("TARGET PHONETICS PACK"));
+
+        // Direct 9-argument overload
+        String directPrompt = PromptTemplates.buildSpeakingGenerationPrompt(
+            "B2", "Science", "Education", "MEDIUM", "Phonetics Drill", "/r/ vs /l/", "SHORT", 100, "rocket, locker"
+        );
+        assertTrue(directPrompt.contains("Phonetics Drill"));
+        assertTrue(directPrompt.contains("/r/ vs /l/"));
+        assertTrue(directPrompt.contains("rocket, locker"));
+    }
+
+    @Test
+    void testBuildSentenceExplanationPrompt() {
+        // Standard usage with all fields
+        String prompt = PromptTemplates.buildSentenceExplanationPrompt(
+            "She would have succeeded had she tried.",
+            "Historical fiction excerpt discussing Victorian ambition.",
+            "B2"
+        );
+        assertTrue(prompt.contains("She would have succeeded had she tried."));
+        assertTrue(prompt.contains("Historical fiction excerpt discussing Victorian ambition."));
+        assertTrue(prompt.contains("B2"));
+        assertTrue(prompt.contains("grammarBreakdown"));
+
+        // With null / blank context and cefrLevel
+        String promptDefaults = PromptTemplates.buildSentenceExplanationPrompt(
+            "It rains.",
+            null,
+            null
+        );
+        assertTrue(promptDefaults.contains("It rains."));
+        assertTrue(promptDefaults.contains("B1"));
+        assertFalse(promptDefaults.contains("Context / Passage:"));
+
+        // With blank context and blank cefrLevel
+        String promptBlanks = PromptTemplates.buildSentenceExplanationPrompt(
+            "He laughed.",
+            "   ",
+            "   "
+        );
+        assertTrue(promptBlanks.contains("He laughed."));
+        assertTrue(promptBlanks.contains("B1"));
+
+        // With null sentence
+        String promptNullSentence = PromptTemplates.buildSentenceExplanationPrompt(
+            null,
+            "Some context",
+            "C1"
+        );
+        assertNotNull(promptNullSentence);
+        assertTrue(promptNullSentence.contains("C1"));
+    }
 }

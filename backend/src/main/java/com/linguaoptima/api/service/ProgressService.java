@@ -95,7 +95,7 @@ public class ProgressService {
                 .student(student)
                 .grammarTopic(topic)
                 .totalAttempts(Math.max(1, safeNewErrors))
-                .errorCount(safeNewErrors)
+                .errorCount(0)
                 .masteryScore(0.0)
                 .updatedAt(LocalDateTime.now())
                 .build());

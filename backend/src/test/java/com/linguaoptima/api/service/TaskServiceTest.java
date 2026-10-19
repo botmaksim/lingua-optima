@@ -1704,5 +1704,71 @@ class TaskServiceTest {
         assertEquals(2, res.getKeyVocabulary().size());
         assertEquals("Нереальное условие в прошлом.", res.getExplanation());
     }
+
+    @Test
+    void testExplainSentenceValidation() {
+        assertThrows(IllegalArgumentException.class, () -> taskService.explainSentence(null, studentUser));
+
+        com.linguaoptima.api.dto.request.ExplainSentenceRequest nullSentence = com.linguaoptima.api.dto.request.ExplainSentenceRequest.builder()
+            .sentence(null)
+            .build();
+        assertThrows(IllegalArgumentException.class, () -> taskService.explainSentence(nullSentence, studentUser));
+
+        com.linguaoptima.api.dto.request.ExplainSentenceRequest blankSentence = com.linguaoptima.api.dto.request.ExplainSentenceRequest.builder()
+            .sentence("   ")
+            .build();
+        assertThrows(IllegalArgumentException.class, () -> taskService.explainSentence(blankSentence, studentUser));
+    }
+
+    @Test
+    void testExplainSentenceFallbackOnAiMalformedJson() {
+        when(aiBrokerService.generateTaskContent(anyString(), any())).thenReturn("not a valid json string");
+
+        com.linguaoptima.api.dto.request.ExplainSentenceRequest req = com.linguaoptima.api.dto.request.ExplainSentenceRequest.builder()
+            .sentence("The weather is delightful today.")
+            .build();
+
+        // Call with null user to test level fallback to B1
+        com.linguaoptima.api.dto.response.ExplainSentenceResponse res = taskService.explainSentence(req, null);
+
+        assertNotNull(res);
+        assertEquals("The weather is delightful today.", res.getOriginalSentence());
+        assertNotNull(res.getTranslation());
+        assertNotNull(res.getGrammarBreakdown());
+        assertNotNull(res.getExplanation());
+        assertTrue(res.getKeyVocabulary().isEmpty());
+    }
+
+    @Test
+    void testGetTasksForGroupNotFoundThrows() {
+        UUID unknownGroup = UUID.randomUUID();
+        when(groupRepository.findById(unknownGroup)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> taskService.getTasksForGroup(unknownGroup, teacherUser));
+    }
+
+    @Test
+    void testExplainSentence_UserCefrLevelUsedWhenRequestNull() {
+        studentUser.setCefrLevel(CefrLevel.A2);
+        String aiJson = """
+            {
+              "originalSentence": "He lives in London.",
+              "translation": "Он живет в Лондоне.",
+              "grammarBreakdown": "Present Simple, 3rd person singular",
+              "keyVocabulary": ["lives — живет"],
+              "explanation": "Окончание -s в 3-м лице."
+            }
+            """;
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(aiJson);
+
+        com.linguaoptima.api.dto.request.ExplainSentenceRequest req = com.linguaoptima.api.dto.request.ExplainSentenceRequest.builder()
+            .sentence("He lives in London.")
+            .cefrLevel(null)
+            .build();
+
+        com.linguaoptima.api.dto.response.ExplainSentenceResponse res = taskService.explainSentence(req, studentUser);
+        assertNotNull(res);
+        assertEquals("He lives in London.", res.getOriginalSentence());
+    }
 }
 

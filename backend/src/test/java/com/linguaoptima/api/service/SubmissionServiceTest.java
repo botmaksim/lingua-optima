@@ -1380,7 +1380,7 @@ class SubmissionServiceTest {
             .id(subId)
             .student(student)
             .aiScore(70.0)
-            .aiFeedback("{\"feedback\":\"Initial evaluation\",\"corrections\":[],\"items\":[]}")
+            .aiFeedback("{\"feedback\":\"Initial evaluation\",\"corrections\":[],\"items\":[{\"questionNumber\":1,\"sentence\":\"She ___ two cats.\",\"studentAnswer\":\"have\",\"correctAnswer\":\"has\",\"isCorrect\":false},{\"questionNumber\":2,\"sentence\":\"They ___ here.\",\"studentAnswer\":\"are\",\"correctAnswer\":\"are\",\"isCorrect\":true}]}")
             .studentText("1. She have two cats.")
             .build();
 
@@ -1391,7 +1391,7 @@ class SubmissionServiceTest {
             .grammarRule("Present Simple")
             .build();
 
-        SubmissionItemResponse item = SubmissionItemResponse.builder()
+        SubmissionItemResponse item1 = SubmissionItemResponse.builder()
             .questionNumber(1)
             .sentence("She ___ two cats.")
             .studentAnswer("have")
@@ -1404,12 +1404,21 @@ class SubmissionServiceTest {
             .options(List.of("have", "has"))
             .build();
 
+        SubmissionItemResponse item2 = SubmissionItemResponse.builder()
+            .questionNumber(2)
+            .sentence("They ___ here.")
+            .studentAnswer("are")
+            .correctAnswer("are")
+            .isCorrect(true)
+            .points(10)
+            .build();
+
         OverrideRequest req = OverrideRequest.builder()
             .overrideScore(85.0)
             .teacherComment("Well analyzed by teacher")
             .feedback("Teacher updated AI commentary")
             .corrections(List.of(corr))
-            .items(List.of(item))
+            .items(List.of(item1, item2))
             .build();
 
         when(submissionRepository.findById(subId)).thenReturn(Optional.of(sub));
@@ -1430,7 +1439,7 @@ class SubmissionServiceTest {
         assertEquals(1, retrieved.getCorrections().size());
         assertEquals("She have", retrieved.getCorrections().get(0).getOriginal());
         assertNotNull(retrieved.getItems());
-        assertEquals(1, retrieved.getItems().size());
+        assertEquals(2, retrieved.getItems().size());
         assertEquals("have", retrieved.getItems().get(0).getStudentAnswer());
         assertNotNull(retrieved.getItems().get(0).getOptions());
     }

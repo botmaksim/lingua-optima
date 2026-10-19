@@ -130,4 +130,21 @@ class CurriculumControllerTest {
         assertEquals(1, response.getBody().size());
         assertEquals("B1_DENTAL_FRICATIVES", response.getBody().get(0).getId());
     }
+
+    @Test
+    void testGetPronunciationPacks_NullLevel() {
+        PronunciationPackResponse pack = PronunciationPackResponse.builder()
+            .id("ALL_LEVEL_PACK")
+            .title("General Intonation")
+            .build();
+
+        when(pronunciationPackService.getAllPacks()).thenReturn(List.of(pack));
+
+        ResponseEntity<List<PronunciationPackResponse>> response = curriculumController.getPronunciationPacks(null);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(1, response.getBody().size());
+        assertEquals("ALL_LEVEL_PACK", response.getBody().get(0).getId());
+    }
 }

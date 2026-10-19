@@ -165,8 +165,7 @@ public class PronunciationPackService {
         for (PronunciationPackResponse pack : levelPacks) {
             if (pack.getPhonemes() != null) {
                 for (String phoneme : pack.getPhonemes()) {
-                    String clean = phoneme.replace("/", "").toLowerCase();
-                    if (query.contains(phoneme.toLowerCase()) || (!clean.isBlank() && query.contains(clean))) {
+                    if (matchesPhoneme(query, phoneme)) {
                         return pack;
                     }
                 }
@@ -175,8 +174,7 @@ public class PronunciationPackService {
 
         // 3. Category keywords match for level
         for (PronunciationPackResponse pack : levelPacks) {
-            String category = pack.getCategory() != null ? pack.getCategory().toLowerCase() : "";
-            if (matchesCategory(query, category)) {
+            if (pack.getCategory() != null && matchesCategory(query, pack.getCategory())) {
                 return pack;
             }
         }
@@ -190,41 +188,72 @@ public class PronunciationPackService {
 
         // 5. Global match across all levels if not found in level
         for (PronunciationPackResponse pack : cachedPacks) {
-            if (pack.getCategory() != null && matchesCategory(query, pack.getCategory().toLowerCase())) {
+            if (pack.getCategory() != null && matchesCategory(query, pack.getCategory())) {
                 return pack;
             }
         }
 
         // Fallback: first pack for the level
-        return levelPacks.isEmpty() ? null : levelPacks.get(0);
+        return levelPacks.isEmpty() ? (!cachedPacks.isEmpty() ? cachedPacks.get(0) : null) : levelPacks.get(0);
+    }
+
+    private boolean matchesPhoneme(String query, String phoneme) {
+        if (phoneme == null || phoneme.isBlank()) {
+            return false;
+        }
+        String lowerPhoneme = phoneme.toLowerCase();
+        if (query.contains(lowerPhoneme)) {
+            return true;
+        }
+        String clean = lowerPhoneme.replace("/", "").trim();
+        if (clean.isBlank()) {
+            return false;
+        }
+        if (clean.length() > 1 || clean.charAt(0) >= 128) {
+            return query.contains(clean);
+        }
+        String[] tokens = query.split("[\\s,;:/\\-_+&]+");
+        for (String token : tokens) {
+            if (token.equals(clean)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean matchesCategory(String query, String category) {
-        if (category.contains("dental") && (query.contains("dental") || query.contains("th-") || query.contains("/θ/"))) {
+        if (category == null) {
+            return false;
+        }
+        String lowerCat = category.toLowerCase();
+        if (lowerCat.contains("dental") && (query.contains("dental") || query.contains("th-") || query.contains("/θ/"))) {
             return true;
         }
-        if (category.contains("liquid") && (query.contains("liquid") || query.contains("/r/") || query.contains("r vs l") || query.contains("r & l"))) {
+        if (lowerCat.contains("liquid") && (query.contains("liquid") || query.contains("/r/") || query.contains("r vs l") || query.contains("r & l"))) {
             return true;
         }
-        if (category.contains("labial") && (query.contains("labial") || query.contains("/v/") || query.contains("v vs w") || query.contains("v & w"))) {
+        if (lowerCat.contains("labial") && (query.contains("labial") || query.contains("/v/") || query.contains("v vs w") || query.contains("v & w"))) {
             return true;
         }
-        if (category.contains("vowel") && (query.contains("vowel") || query.contains("long vs short") || query.contains("/iː/"))) {
+        if (lowerCat.contains("vowel") && (query.contains("vowel") || query.contains("long vs short") || query.contains("/iː/"))) {
             return true;
         }
-        if (category.contains("sibilant") && (query.contains("sibilant") || query.contains("affricate") || query.contains("/ʃ/") || query.contains("/tʃ/"))) {
+        if (lowerCat.contains("sibilant") && (query.contains("sibilant") || query.contains("affricate") || query.contains("/ʃ/") || query.contains("/tʃ/"))) {
             return true;
         }
-        if (category.contains("silent") && (query.contains("silent") || query.contains("irregular") || query.contains("reduction"))) {
+        if (lowerCat.contains("silent") && (query.contains("silent") || query.contains("irregular") || query.contains("reduction"))) {
             return true;
         }
-        if (category.contains("connected") && (query.contains("connected") || query.contains("rhythm") || query.contains("stress") || query.contains("linking"))) {
+        if (lowerCat.contains("connected") && (query.contains("connected") || query.contains("rhythm") || query.contains("stress") || query.contains("linking"))) {
             return true;
         }
-        return category.length() > 3 && query.contains(category);
+        return lowerCat.length() > 3 && query.contains(lowerCat);
     }
 
     private boolean containsAnyTerm(String query, String text) {
+        if (text == null || query == null) {
+            return false;
+        }
         String[] parts = text.split("[\\s,;:/]+");
         for (String part : parts) {
             if (part.length() > 3 && query.contains(part)) {

@@ -322,5 +322,43 @@ class ProgressServiceTest {
         // Mastery score updated: (5 - 1) / 5 = 0.80
         assertEquals(0.80, updated.getMasteryScore());
     }
+
+    @Test
+    void testAdjustFromOverride_NewRecordCreated() {
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "Reported Speech"))
+            .thenReturn(Optional.empty());
+        when(progressRecordRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        ProgressRecord created = progressService.adjustFromOverride(student, "Reported Speech", 0, 2);
+
+        assertNotNull(created);
+        assertEquals(2, created.getTotalAttempts());
+        assertEquals(2, created.getErrorCount());
+        assertEquals(0.0, created.getMasteryScore());
+        assertEquals("Reported Speech", created.getGrammarTopic());
+    }
+
+    @Test
+    void testAdjustFromOverride_NullTopicAndAttemptsExpansion() {
+        ProgressRecord existing = ProgressRecord.builder()
+            .student(student)
+            .grammarTopic("General Grammar")
+            .totalAttempts(1)
+            .errorCount(0)
+            .masteryScore(1.0)
+            .build();
+
+        when(progressRecordRepository.findByStudentAndGrammarTopic(student, "General Grammar"))
+            .thenReturn(Optional.of(existing));
+        when(progressRecordRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        // With null grammarTopic, falls back to "General Grammar", and oldErrors=0, newErrors=4 exceeds totalAttempts(1)
+        ProgressRecord updated = progressService.adjustFromOverride(student, null, -1, 4);
+
+        assertNotNull(updated);
+        assertEquals(4, updated.getTotalAttempts(), "Attempts should expand to accommodate error count");
+        assertEquals(4, updated.getErrorCount());
+        assertEquals(0.0, updated.getMasteryScore());
+    }
 }
 
