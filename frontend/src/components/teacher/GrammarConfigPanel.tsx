@@ -245,7 +245,7 @@ export const GrammarConfigPanel: React.FC<GrammarConfigPanelProps> = ({
       />
 
       {/* Difficulty & Number of Questions */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
             Difficulty Tier
@@ -258,7 +258,7 @@ export const GrammarConfigPanel: React.FC<GrammarConfigPanelProps> = ({
                   type="button"
                   key={level}
                   onClick={() => onDifficultyChange(level)}
-                  className={`py-2 px-2.5 rounded-xl border text-xs font-bold text-center transition ${
+                  className={`py-2 px-2 rounded-xl border text-xs font-bold text-center transition truncate ${
                     isSelected
                       ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
                       : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
@@ -271,42 +271,44 @@ export const GrammarConfigPanel: React.FC<GrammarConfigPanelProps> = ({
           </div>
         </div>
 
-        <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-            Number of Questions
-          </label>
-          <div className="flex items-center space-x-2">
-            <input
-              type="number"
-              min={1}
-              max={25}
-              value={numberOfQuestions}
-              onChange={(e) => onNumberOfQuestionsChange(Math.max(1, Math.min(25, parseInt(e.target.value) || 5)))}
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center"
-            />
-            <span className="text-xs font-semibold text-slate-400">items</span>
-          </div>
-        </div>
-
-        {!isStudent && totalPoints !== undefined && onTotalPointsChange && (
+        <div className={`grid ${!isStudent && totalPoints !== undefined && onTotalPointsChange ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-              Total Points
+              Number of Questions
             </label>
             <div className="flex items-center space-x-2">
               <input
                 type="number"
-                min={5}
-                max={500}
-                step={5}
-                value={totalPoints}
-                onChange={(e) => onTotalPointsChange(Math.max(1, parseInt(e.target.value) || 100))}
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center"
+                min={1}
+                max={25}
+                value={numberOfQuestions}
+                onChange={(e) => onNumberOfQuestionsChange(Math.max(1, Math.min(25, parseInt(e.target.value) || 5)))}
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center"
               />
-              <span className="text-xs font-semibold text-slate-400">pts</span>
+              <span className="text-xs font-semibold text-slate-400">items</span>
             </div>
           </div>
-        )}
+
+          {!isStudent && totalPoints !== undefined && onTotalPointsChange && (
+            <div>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                Total Points
+              </label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  min={5}
+                  max={500}
+                  step={5}
+                  value={totalPoints}
+                  onChange={(e) => onTotalPointsChange(Math.max(1, parseInt(e.target.value) || 100))}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center"
+                />
+                <span className="text-xs font-semibold text-slate-400">pts</span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Eco Mode Toggle */}

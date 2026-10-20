@@ -3,7 +3,7 @@
  * @brief Educator task generation, parameter configuration, preview, custom curriculum context, and cohort deployment interface.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Send,
@@ -47,15 +47,10 @@ import {
 } from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
-import { CustomSelect } from '../common/CustomSelect';
 import { useNotificationStore } from '../../store/notificationStore';
 import {
-  AI_PROVIDER_CATALOG,
   AIProviderType,
   getDefaultModelForProvider,
-  useProviderModels,
-  buildProviderOptionGroups,
-  isSystemFreeProvider,
 } from '../../constants/aiModels';
 import { useUIStore } from '../../store/uiStore';
 import { customCurriculumApi } from '../../api/customCurriculumApi';
@@ -97,9 +92,8 @@ export const ConfigureTask: React.FC = () => {
   const [dueDate, setDueDate] = useState<string>('');
   const [maxAttempts, setMaxAttempts] = useState<number>(1);
   const [provider, setProvider] = useState<AIProviderType>('GEMINI');
-  const [modelName, setModelName] = useState<string>(getDefaultModelForProvider('GEMINI'));
+  const [modelName, setModelName] = useState<string>('gemini-flash-latest');
   const [aiEngineMode, setAiEngineMode] = useState<'PLATFORM' | 'BYOK'>('PLATFORM');
-  const { models: providerModels, isLiveSynced } = useProviderModels(provider);
   const [savedKeys, setSavedKeys] = useState<ApiKeyItem[]>([]);
   const [ecoMode, setEcoMode] = useState<boolean>(false);
 
@@ -234,11 +228,6 @@ export const ConfigureTask: React.FC = () => {
       .getKeys()
       .then((keys) => {
         setSavedKeys(keys);
-        if (keys.length > 0) {
-          const first = keys[0];
-          setProvider(first.provider);
-          setModelName(first.modelName || getDefaultModelForProvider(first.provider));
-        }
       })
       .catch(() => {});
 
@@ -307,19 +296,6 @@ export const ConfigureTask: React.FC = () => {
     }
   };
 
-  const userConfiguredProviders = useMemo(() => savedKeys.map((k) => k.provider), [savedKeys]);
-  const providerGroups = useMemo(() => buildProviderOptionGroups(userConfiguredProviders), [userConfiguredProviders]);
-  const isSelectedProviderConfigured = isSystemFreeProvider(provider) || userConfiguredProviders.includes(provider);
-
-  /**
-   * @brief Event handler updating selected AI provider and its associated model.
-   * @param nextProvider New AI provider identifier.
-   */
-  const handleProviderChange = (nextProvider: AIProviderType) => {
-    setProvider(nextProvider);
-    const matchingKey = savedKeys.find((k) => k.provider === nextProvider);
-    setModelName(matchingKey?.modelName || getDefaultModelForProvider(nextProvider));
-  };
 
   /**
    * @brief Event handler or helper executing toggle group.
@@ -946,7 +922,7 @@ export const ConfigureTask: React.FC = () => {
     }
   };
 
-  // Keyboard shortcuts: Ctrl+Enter (Preview / Deploy) & Ctrl+S (Save Template)
+  // Keyboard shortcuts: Ctrl+Enter (Deploy), Ctrl+P (Preview) & Ctrl+S (Save Template)
   useEffect(() => {
     const handleConfigureKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
@@ -956,6 +932,9 @@ export const ConfigureTask: React.FC = () => {
         } else {
           handlePreview();
         }
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'з')) {
+        e.preventDefault();
+        handlePreview();
       } else if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'ы')) {
         e.preventDefault();
         handleSaveTemplate();
@@ -1184,75 +1163,6 @@ export const ConfigureTask: React.FC = () => {
                   </button>
                 </div>
               </div>
-              {/* AI Engine Selection */}
-              <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Cpu className="w-4 h-4 text-primary" />
-                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Model Selection
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-mono font-semibold text-primary bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                    {provider} · {modelName}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
-                      AI Provider
-                    </label>
-                    <CustomSelect
-                      size="sm"
-                      value={provider}
-                      onChange={(val) => handleProviderChange(val as AIProviderType)}
-                      groups={providerGroups}
-                      ariaLabel="AI Provider"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="flex items-center justify-between text-[11px] font-bold text-slate-500 uppercase mb-1">
-                      <span>AI Model</span>
-                      {isLiveSynced && (
-                        <span className="text-[10px] font-semibold text-emerald-600 lowercase">
-                          ● live vendor sync
-                        </span>
-                      )}
-                    </label>
-                    <CustomSelect
-                      size="sm"
-                      value={modelName}
-                      onChange={(val) => setModelName(val)}
-                      options={providerModels.map((m) => ({
-                        value: m.id,
-                        label: m.label,
-                        badge: m.badge,
-                      }))}
-                      ariaLabel="AI Model"
-                    />
-                  </div>
-                </div>
-
-                {!isSelectedProviderConfigured && (
-                  <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-amber-900 gap-2">
-                    <div className="flex items-center space-x-2">
-                      <Key className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                      <span>
-                        <strong>{AI_PROVIDER_CATALOG.find((p) => p.id === provider)?.name}</strong> requires your own API key. You can add one in Profile &rarr; AI API Keys, or deploy using Gemini for free cloud generation.
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/profile')}
-                      className="self-end sm:self-auto px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold whitespace-nowrap text-[11px] shadow-xs transition"
-                    >
-                      Add Key
-                    </button>
-                  </div>
-                )}
-              </div>
 
               {/* Cohort Groups */}
               <div>
@@ -1382,22 +1292,45 @@ export const ConfigureTask: React.FC = () => {
                     </span>
                   </div>
                 ) : savedKeys.length > 0 ? (
-                  <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs gap-3">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
                         <Key className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-slate-800">
-                          {savedKeys[0].provider} · {savedKeys[0].modelName || 'Default Model'}
-                        </span>
+                        {savedKeys.length > 1 ? (
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={Math.max(0, savedKeys.findIndex((k) => k.provider === provider))}
+                              onChange={(e) => {
+                                const idx = parseInt(e.target.value);
+                                const selected = savedKeys[idx];
+                                if (selected) {
+                                  setProvider(selected.provider);
+                                  setModelName(selected.modelName || getDefaultModelForProvider(selected.provider));
+                                }
+                              }}
+                              className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary"
+                            >
+                              {savedKeys.map((k, idx) => (
+                                <option key={k.id || idx} value={idx}>
+                                  {k.provider} · {k.modelName || 'Default'}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <span className="text-xs font-bold text-slate-800">
+                            {savedKeys[0].provider} · {savedKeys[0].modelName || 'Default Model'}
+                          </span>
+                        )}
                         <span className="text-[11px] text-slate-500 block">Using your personal educator API key</span>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={() => navigate('/profile')}
-                      className="text-xs font-bold text-primary hover:underline whitespace-nowrap"
+                      className="text-xs font-bold text-primary hover:underline whitespace-nowrap self-end sm:self-auto"
                     >
                       Change in Profile →
                     </button>
@@ -1711,8 +1644,8 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Eye className="w-4 h-4" />
                   <span>Preview</span>
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
-                    Ctrl+Enter
+                  <kbd className="kbd-shortcut hidden md:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
+                    Ctrl+P
                   </kbd>
                 </button>
 
@@ -1724,7 +1657,7 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Bookmark className="w-4 h-4" />
                   <span>Save Template</span>
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
+                  <kbd className="kbd-shortcut hidden md:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
                     Ctrl+S
                   </kbd>
                 </button>
@@ -1737,7 +1670,7 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Send className="w-4 h-4" />
                   <span>Deploy to Students</span>
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-mono font-bold ml-1">
+                  <kbd className="kbd-shortcut hidden md:inline-block px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-mono font-bold ml-1">
                     Ctrl+Enter
                   </kbd>
                 </button>
@@ -2175,7 +2108,7 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Bookmark className="w-4 h-4" />
                   <span>Save Edited Template</span>
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
+                  <kbd className="kbd-shortcut hidden md:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
                     Ctrl+S
                   </kbd>
                 </button>
@@ -2188,7 +2121,7 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Send className="w-4 h-4" />
                   <span>Deploy Edited Task</span>
-                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-mono font-bold ml-1">
+                  <kbd className="kbd-shortcut hidden md:inline-block px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-mono font-bold ml-1">
                     Ctrl+Enter
                   </kbd>
                 </button>

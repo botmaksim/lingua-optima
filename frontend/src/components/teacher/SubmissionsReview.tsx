@@ -712,8 +712,8 @@ export const SubmissionsReview: React.FC = () => {
                 <X className="w-3.5 h-3.5" />
               </button>
             ) : (
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-block pointer-events-none">
-                <kbd className="px-1.5 py-0.5 rounded bg-slate-200/70 border border-slate-300/70 text-[10px] font-mono font-bold text-slate-500">
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 kbd-shortcut hidden md:inline-block pointer-events-none">
+                <kbd className="kbd-shortcut px-1.5 py-0.5 rounded bg-slate-200/70 border border-slate-300/70 text-[10px] font-mono font-bold text-slate-500">
                   /
                 </kbd>
               </span>

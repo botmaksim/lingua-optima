@@ -214,3 +214,14 @@ select option:hover {
   display: none;
 }
 
+/* Hide keyboard shortcuts on touch devices, phones, and non-pointer screens */
+.kbd-shortcut {
+  display: none !important;
+}
+
+@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+  .kbd-shortcut {
+    display: inline-block !important;
+  }
+}
+
