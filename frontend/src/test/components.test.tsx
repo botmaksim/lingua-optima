@@ -1751,13 +1751,13 @@ describe('QuickModePanel component', () => {
     fireEvent.click(readingPill);
 
     // Click Start Quick Practice button
-    const startBtn = screen.getByRole('button', { name: /Start Quick Practice/i });
+    const startBtn = screen.getByRole('button', { name: /Start 1-Click Practice Now/i });
     fireEvent.click(startBtn);
 
     expect(handleQuickGenerate).toHaveBeenCalledTimes(1);
     const calledParams = handleQuickGenerate.mock.calls[0][0];
     expect(calledParams.taskType).toBe('READING');
-    expect(calledParams.ecoMode).toBe(true);
+    expect(calledParams.ecoMode).toBe(false);
     expect(calledParams.readingConfig).toBeDefined();
     expect(calledParams.readingConfig.readingLength).toBe('Medium (250-400 words)');
   });
@@ -1779,11 +1779,11 @@ describe('QuickModePanel component', () => {
     const customToggleBtn = screen.getByRole('button', { name: /Type custom topic/i });
     fireEvent.click(customToggleBtn);
 
-    const customInput = screen.getByPlaceholderText(/e\.g\. Mixed Conditionals, Job Interview/i);
+    const customInput = screen.getByPlaceholderText(/e\.g\. Past Continuous vs Past Simple in crime stories/i);
     fireEvent.change(customInput, { target: { value: 'Third Conditional in Job Interviews' } });
 
     // Click Generate & Preview Quick Task
-    const generateBtn = screen.getByRole('button', { name: /Start Quick Practice/i });
+    const generateBtn = screen.getByRole('button', { name: /Start 1-Click Practice Now/i });
     fireEvent.click(generateBtn);
 
     expect(handleQuickGenerate).toHaveBeenCalledTimes(1);

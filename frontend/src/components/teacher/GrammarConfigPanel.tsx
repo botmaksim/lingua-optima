@@ -21,7 +21,7 @@ import {
   Check,
   Bookmark,
 } from 'lucide-react';
-import { CefrLevel, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
+import { CefrLevel, DifficultyLevel, TopicsCatalogResponse, TaskType } from '../../types/task';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { TopicSelector } from '../common/TopicSelector';
 import { taskApi } from '../../api/taskApi';
@@ -33,6 +33,8 @@ export interface UploadedCurriculumFile {
 }
 
 interface GrammarConfigPanelProps {
+  taskType?: TaskType;
+  onTaskTypeChange?: (type: TaskType) => void;
   cefrLevel: CefrLevel;
   grammarTopic: string;
   onGrammarTopicChange: (topic: string) => void;
@@ -65,6 +67,8 @@ interface GrammarConfigPanelProps {
 }
 
 export const GrammarConfigPanel: React.FC<GrammarConfigPanelProps> = ({
+  taskType = 'MCQ',
+  onTaskTypeChange,
   cefrLevel,
   grammarTopic,
   onGrammarTopicChange,
@@ -188,6 +192,44 @@ export const GrammarConfigPanel: React.FC<GrammarConfigPanelProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Exercise Sub-type Selection */}
+      {onTaskTypeChange && (
+        <div className="space-y-2">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Exercise Format
+          </label>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { type: 'MCQ', label: 'Multiple Choice', desc: '4 choices quiz' },
+              { type: 'GAP_FILL', label: 'Fill in Blanks', desc: 'Missing cloze items' },
+              { type: 'OPEN_BRACKETS', label: 'Open Brackets', desc: 'Conjugate / transform' },
+              { type: 'REWRITE', label: 'Sentence Rewrite', desc: 'Sentence rephrasing' },
+            ].map((fmt) => {
+              const isSelected = taskType === fmt.type;
+              return (
+                <button
+                  type="button"
+                  key={fmt.type}
+                  onClick={() => onTaskTypeChange(fmt.type as TaskType)}
+                  className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                    isSelected
+                      ? 'border-indigo-600 bg-indigo-50/90 text-indigo-950 ring-2 ring-indigo-200 shadow-xs'
+                      : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                  }`}
+                >
+                  <span className={`text-xs font-bold ${isSelected ? 'text-indigo-950 font-black' : 'text-slate-800'}`}>
+                    {fmt.label}
+                  </span>
+                  <span className="text-[10px] text-slate-400 mt-1 line-clamp-1">
+                    {fmt.desc}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Core Syllabus: Topic & Vocabulary Domain Selection */}
       <TopicSelector

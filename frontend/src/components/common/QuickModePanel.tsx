@@ -1,32 +1,37 @@
 /**
  * @file QuickModePanel.tsx
- * @brief Streamlined, zero-friction task generation panel for rapid student and teacher practice.
- *
- * Allows users to choose only the essential parameters (CEFR level, practice format, and topic),
- * while intelligently randomizing and balancing all fine-grained parameters.
+ * @brief 1-Click Express Practice generator supporting multi-modal recommendation across
+ * Grammar, Reading, Speaking, and Essay Writing, with intelligent learner weakness detection.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Zap,
-  Dices,
+  Sparkles,
   BookOpen,
   Mic,
   Sliders,
-  Sparkles,
-  ArrowRight,
-  Shuffle,
-  Check,
+  Dices,
   Target,
+  PenTool,
+  Check,
+  ArrowRight,
 } from 'lucide-react';
 import { DifficultyLevel, TaskType } from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { ProgressRecord } from '../../types/progress';
+import { SubmissionResult } from '../../types/submission';
 import { progressApi } from '../../api/progressApi';
+import { submissionApi } from '../../api/submissionApi';
 import { CefrBadge } from './CefrBadge';
-import { DEFAULT_CEFR_TOPICS, DEFAULT_MIXED_TOPICS, DOMAINS } from '../../constants/topics';
+import {
+  DEFAULT_CEFR_TOPICS,
+  DEFAULT_ESSAY_TOPICS,
+  DEFAULT_MIXED_TOPICS,
+  DOMAINS,
+} from '../../constants/topics';
 
-export type QuickPracticeFormat = 'RECOMMENDED' | 'SURPRISE' | 'GRAMMAR' | 'READING' | 'SPEAKING';
+export type QuickPracticeFormat = 'RECOMMENDED' | 'SURPRISE' | 'GRAMMAR' | 'ESSAY' | 'READING' | 'SPEAKING';
 
 export interface QuickGenerateParams {
   taskType: TaskType;
@@ -52,6 +57,12 @@ export interface QuickGenerateParams {
     speakingLength: string;
     pronunciationPackId?: string;
   };
+  essayConfig?: {
+    topic: string;
+    domain?: string;
+    customRule?: string;
+    customVocabulary?: string;
+  };
 }
 
 interface QuickModePanelProps {
@@ -60,6 +71,18 @@ interface QuickModePanelProps {
   onQuickGenerate: (params: QuickGenerateParams) => void;
   isLoading: boolean;
   isStudent?: boolean;
+  activeTopic?: string;
+  onActiveTopicChange?: (topic: string) => void;
+  activeFormat?: QuickPracticeFormat;
+  onActiveFormatChange?: (format: QuickPracticeFormat) => void;
+  onSwitchToDetailed?: () => void;
+}
+
+interface SkillWeakness {
+  modality: 'GRAMMAR' | 'READING' | 'SPEAKING' | 'ESSAY';
+  score: number;
+  reason: string;
+  suggestedTopic: string;
 }
 
 export const QuickModePanel: React.FC<QuickModePanelProps> = ({
@@ -68,51 +91,153 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
   onQuickGenerate,
   isLoading,
   isStudent = false,
+  activeTopic,
+  onActiveTopicChange,
+  activeFormat,
+  onActiveFormatChange,
+  onSwitchToDetailed,
 }) => {
-  const [format, setFormat] = useState<QuickPracticeFormat>('RECOMMENDED');
-  const [topic, setTopic] = useState<string>('');
+  const [internalFormat, setInternalFormat] = useState<QuickPracticeFormat>('RECOMMENDED');
+  const format = activeFormat ?? internalFormat;
+  const setFormat = (f: QuickPracticeFormat) => {
+    setInternalFormat(f);
+    onActiveFormatChange?.(f);
+  };
+
+  const [internalTopic, setInternalTopic] = useState<string>('');
+  const topic = activeTopic !== undefined ? activeTopic : internalTopic;
+  const setTopic = (t: string) => {
+    setInternalTopic(t);
+    onActiveTopicChange?.(t);
+  };
+
   const [isCustomTopic, setIsCustomTopic] = useState<boolean>(false);
   const [customTopicInput, setCustomTopicInput] = useState<string>('');
   const [studentGaps, setStudentGaps] = useState<ProgressRecord[]>([]);
+  const [recentSubmissions, setRecentSubmissions] = useState<SubmissionResult[]>([]);
 
-  // Load student learning gaps for smart recommendation
+  // Load student learning gaps and recent submissions for comprehensive cross-skill weakness detection
   useEffect(() => {
     progressApi
       .getGaps()
-      .then((gaps) => {
-        setStudentGaps(gaps || []);
-      })
+      .then((gaps) => setStudentGaps(gaps || []))
+      .catch(() => {});
+
+    submissionApi
+      .getMySubmissions()
+      .then((subs) => setRecentSubmissions(subs || []))
       .catch(() => {});
   }, []);
 
-  const weakestGap = React.useMemo(() => {
-    if (!studentGaps || studentGaps.length === 0) return null;
-    return [...studentGaps].sort((a, b) => a.masteryScore - b.masteryScore)[0];
-  }, [studentGaps]);
+  // Multi-modal weakness analysis: compare Grammar, Reading, Speaking, and Essay scores
+  const detectedWeakness = useMemo<SkillWeakness>(() => {
+    const scoresByModality: Record<'GRAMMAR' | 'READING' | 'SPEAKING' | 'ESSAY', number[]> = {
+      GRAMMAR: [],
+      READING: [],
+      SPEAKING: [],
+      ESSAY: [],
+    };
 
-  // Pick or recommend topic whenever CEFR level or format changes
+    recentSubmissions.forEach((sub) => {
+      const type = (sub.taskType || '').toUpperCase();
+      const score = sub.effectiveScore ?? sub.score ?? 70;
+      if (type === 'READING') {
+        scoresByModality.READING.push(score);
+      } else if (type === 'SPEAKING' || sub.originalText?.startsWith('[SPEAKING_PRACTICE]')) {
+        scoresByModality.SPEAKING.push(score);
+      } else if (type === 'ESSAY') {
+        scoresByModality.ESSAY.push(score > 10 ? score : score * 10);
+      } else {
+        scoresByModality.GRAMMAR.push(score);
+      }
+    });
+
+    const avgScore = (arr: number[], fallback: number) =>
+      arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : fallback;
+
+    const weakestGrammarGap = studentGaps.length > 0
+      ? [...studentGaps].sort((a, b) => a.masteryScore - b.masteryScore)[0]
+      : null;
+
+    const grammarAvg = weakestGrammarGap
+      ? Math.min(weakestGrammarGap.masteryScore, avgScore(scoresByModality.GRAMMAR, 70))
+      : avgScore(scoresByModality.GRAMMAR, 80);
+
+    const readingAvg = avgScore(scoresByModality.READING, 80);
+    const speakingAvg = avgScore(scoresByModality.SPEAKING, 80);
+    const essayAvg = avgScore(scoresByModality.ESSAY, 80);
+
+    const candidates: SkillWeakness[] = [
+      {
+        modality: 'GRAMMAR',
+        score: grammarAvg,
+        reason: weakestGrammarGap
+          ? `Grammar gap: ${weakestGrammarGap.grammarTopic} (${Math.round(weakestGrammarGap.masteryScore)}% mastery)`
+          : 'Core grammar practice from syllabus',
+        suggestedTopic: weakestGrammarGap?.grammarTopic || DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'Grammar Fundamentals',
+      },
+      {
+        modality: 'SPEAKING',
+        score: speakingAvg,
+        reason: scoresByModality.SPEAKING.length > 0
+          ? `Speaking score average (${Math.round(speakingAvg)}%)`
+          : 'Speech & oral articulation practice',
+        suggestedTopic: 'Natural Speech Flow, Connected Rhythm & Articulation',
+      },
+      {
+        modality: 'READING',
+        score: readingAvg,
+        reason: scoresByModality.READING.length > 0
+          ? `Reading comprehension average (${Math.round(readingAvg)}%)`
+          : 'Reading comprehension & inference',
+        suggestedTopic: DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'Modern Technology & Society',
+      },
+      {
+        modality: 'ESSAY',
+        score: essayAvg,
+        reason: scoresByModality.ESSAY.length > 0
+          ? `Essay rubric average (${Math.round(essayAvg)}%)`
+          : 'Discursive essay composition & argument structure',
+        suggestedTopic: DEFAULT_ESSAY_TOPICS[cefrLevel]?.[0] || 'Advantages and Disadvantages of Remote Work',
+      },
+    ];
+
+    // Pick the skill with the lowest score
+    candidates.sort((a, b) => a.score - b.score);
+    return candidates[0];
+  }, [studentGaps, recentSubmissions, cefrLevel]);
+
+  // Sync recommended topic whenever CEFR level or format changes
   useEffect(() => {
     if (format === 'RECOMMENDED') {
-      if (weakestGap) {
-        setTopic(weakestGap.grammarTopic);
-      } else {
-        const foundation = DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'Grammar Fundamentals';
-        setTopic(foundation);
-      }
+      setTopic(detectedWeakness.suggestedTopic);
       setIsCustomTopic(false);
       setCustomTopicInput('');
-    } else {
+    } else if (!topic) {
       shuffleTopic();
     }
-  }, [cefrLevel, format, weakestGap]);
+  }, [cefrLevel, format, detectedWeakness]);
 
   const shuffleTopic = () => {
-    const list = [
-      ...(DEFAULT_CEFR_TOPICS[cefrLevel] || []),
-      ...(DEFAULT_MIXED_TOPICS[cefrLevel] || []),
-    ];
-    if (list.length > 0) {
-      const randomTopic = list[Math.floor(Math.random() * list.length)];
+    let pool: string[] = [];
+    if (format === 'ESSAY') {
+      pool = DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
+    } else if (format === 'SPEAKING') {
+      pool = [
+        'Natural Speech Flow & Connected Speech',
+        'Consonant Contrasts & Minimal Pairs',
+        'Intonation Patterns in Questions & Assertions',
+        'Expressive Pacing & Sentence Stress',
+      ];
+    } else {
+      pool = [
+        ...(DEFAULT_CEFR_TOPICS[cefrLevel] || []),
+        ...(DEFAULT_MIXED_TOPICS[cefrLevel] || []),
+      ];
+    }
+
+    if (pool.length > 0) {
+      const randomTopic = pool[Math.floor(Math.random() * pool.length)];
       setTopic(randomTopic);
       setIsCustomTopic(false);
       setCustomTopicInput('');
@@ -122,11 +247,16 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
   const handleFormatChange = (selectedFormat: QuickPracticeFormat) => {
     setFormat(selectedFormat);
     if (selectedFormat === 'RECOMMENDED') {
-      if (weakestGap) {
-        setTopic(weakestGap.grammarTopic);
-      } else {
-        setTopic(DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'Grammar Fundamentals');
+      setTopic(detectedWeakness.suggestedTopic);
+      setIsCustomTopic(false);
+    } else if (selectedFormat === 'ESSAY') {
+      const essayList = DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
+      if (essayList.length > 0) {
+        setTopic(essayList[Math.floor(Math.random() * essayList.length)]);
       }
+      setIsCustomTopic(false);
+    } else if (selectedFormat === 'SPEAKING') {
+      setTopic('Natural Speech Flow, Connected Rhythm & Articulation');
       setIsCustomTopic(false);
     }
   };
@@ -136,25 +266,49 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
       ? customTopicInput.trim()
       : topic || DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'General Practice';
 
-    // Pick a random real-world domain context
     const randomDomain = DOMAINS[Math.floor(Math.random() * DOMAINS.length)] || 'Daily Life';
 
     // Determine final task type
     let chosenTaskType: TaskType;
     if (format === 'RECOMMENDED') {
-      // For gaps, focused grammar quiz (MCQ or GAP_FILL) gives highest retention
-      const gapTypes: TaskType[] = ['MCQ', 'GAP_FILL'];
-      chosenTaskType = gapTypes[Math.floor(Math.random() * gapTypes.length)];
+      if (detectedWeakness.modality === 'SPEAKING') {
+        chosenTaskType = 'SPEAKING';
+      } else if (detectedWeakness.modality === 'READING') {
+        chosenTaskType = 'READING';
+      } else if (detectedWeakness.modality === 'ESSAY') {
+        chosenTaskType = 'ESSAY';
+      } else {
+        const gapTypes: TaskType[] = ['MCQ', 'GAP_FILL'];
+        chosenTaskType = gapTypes[Math.floor(Math.random() * gapTypes.length)];
+      }
     } else if (format === 'SURPRISE') {
-      const candidates: TaskType[] = ['MCQ', 'GAP_FILL', 'REWRITE', 'READING', 'SPEAKING'];
-      chosenTaskType = candidates[Math.floor(Math.random() * candidates.length)];
+      // Balanced uniform selection across all 4 major modalities
+      const modalities: Array<'GRAMMAR' | 'READING' | 'SPEAKING' | 'ESSAY'> = [
+        'GRAMMAR',
+        'READING',
+        'SPEAKING',
+        'ESSAY',
+      ];
+      const picked = modalities[Math.floor(Math.random() * modalities.length)];
+      if (picked === 'READING') {
+        chosenTaskType = 'READING';
+      } else if (picked === 'SPEAKING') {
+        chosenTaskType = 'SPEAKING';
+      } else if (picked === 'ESSAY') {
+        chosenTaskType = 'ESSAY';
+      } else {
+        const grammarTypes: TaskType[] = ['MCQ', 'GAP_FILL', 'OPEN_BRACKETS', 'REWRITE'];
+        chosenTaskType = grammarTypes[Math.floor(Math.random() * grammarTypes.length)];
+      }
     } else if (format === 'GRAMMAR') {
       const grammarTypes: TaskType[] = ['MCQ', 'GAP_FILL', 'OPEN_BRACKETS', 'REWRITE'];
       chosenTaskType = grammarTypes[Math.floor(Math.random() * grammarTypes.length)];
     } else if (format === 'READING') {
       chosenTaskType = 'READING';
-    } else {
+    } else if (format === 'SPEAKING') {
       chosenTaskType = 'SPEAKING';
+    } else {
+      chosenTaskType = 'ESSAY';
     }
 
     const quickParams: QuickGenerateParams = {
@@ -162,8 +316,8 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
       grammarTopic: activeTopic,
       domain: randomDomain,
       difficulty: 'MEDIUM',
-      numberOfQuestions: chosenTaskType === 'SPEAKING' ? 1 : 5,
-      ecoMode: true,
+      numberOfQuestions: chosenTaskType === 'SPEAKING' || chosenTaskType === 'ESSAY' ? 1 : 5,
+      ecoMode: false,
       ...(chosenTaskType === 'READING'
         ? {
             readingConfig: {
@@ -182,9 +336,17 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
       ...(chosenTaskType === 'SPEAKING'
         ? {
             speakingConfig: {
-              speakingTitle: `${activeTopic} · Speech Practice`,
+              speakingTitle: `${activeTopic} · Speech Drill`,
               targetSounds: 'Natural Rhythm, Connected Speech & Clear Articulation',
               speakingLength: 'MEDIUM',
+            },
+          }
+        : {}),
+      ...(chosenTaskType === 'ESSAY'
+        ? {
+            essayConfig: {
+              topic: activeTopic,
+              domain: randomDomain,
             },
           }
         : {}),
@@ -196,7 +358,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
   const topicSuggestions = (DEFAULT_CEFR_TOPICS[cefrLevel] || []).slice(0, 3);
 
   return (
-    <div className="rounded-3xl border border-amber-200/90 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 p-6 sm:p-8 space-y-6 shadow-xs">
+    <div className="rounded-3xl border border-amber-200/90 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 p-6 sm:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       {/* Quick Mode Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-amber-100">
         <div className="flex items-center space-x-3">
@@ -220,9 +382,9 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
           </div>
         </div>
 
-        <div className="text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center space-x-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-          <span>Fast Token-Saver Generator</span>
+        <div className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center space-x-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+          <span>⚡ Express 1-Click Practice</span>
         </div>
       </div>
 
@@ -252,33 +414,35 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         </div>
       </div>
 
-      {/* 2. Format / Skill Pills */}
+      {/* 2. Format / Skill Grid (6 Cards including Essay Writing) */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           2. Practice Skill / Format
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+          {/* Card 1: Recommended */}
           <button
             type="button"
             onClick={() => handleFormatChange('RECOMMENDED')}
-            className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between col-span-2 sm:col-span-1 ${
+            className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
               format === 'RECOMMENDED'
                 ? 'border-amber-600 bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm'
                 : 'border-amber-200/80 bg-amber-50/50 text-slate-800 hover:border-amber-300'
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-black flex items-center space-x-1.5">
+              <span className="text-xs font-black flex items-center space-x-1">
                 <Target className="w-3.5 h-3.5" />
                 <span>Recommended</span>
               </span>
               {format === 'RECOMMENDED' && <Check className="w-3.5 h-3.5" />}
             </div>
-            <span className={`text-[11px] ${format === 'RECOMMENDED' ? 'text-amber-100' : 'text-slate-500'}`}>
-              {weakestGap ? 'Target weak gaps' : 'CEFR core syllabus'}
+            <span className={`text-[10px] leading-tight line-clamp-1 ${format === 'RECOMMENDED' ? 'text-amber-100' : 'text-slate-500'}`}>
+              {detectedWeakness.reason}
             </span>
           </button>
 
+          {/* Card 2: Surprise Mix */}
           <button
             type="button"
             onClick={() => handleFormatChange('SURPRISE')}
@@ -289,14 +453,18 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-black">🎲 Surprise Mix</span>
+              <span className="text-xs font-black flex items-center space-x-1">
+                <Dices className="w-3.5 h-3.5" />
+                <span>Surprise Mix</span>
+              </span>
               {format === 'SURPRISE' && <Check className="w-3.5 h-3.5" />}
             </div>
-            <span className={`text-[11px] ${format === 'SURPRISE' ? 'text-amber-100' : 'text-slate-400'}`}>
+            <span className={`text-[10px] leading-tight line-clamp-1 ${format === 'SURPRISE' ? 'text-amber-100' : 'text-slate-400'}`}>
               Random skill & format
             </span>
           </button>
 
+          {/* Card 3: Grammar Quiz */}
           <button
             type="button"
             onClick={() => handleFormatChange('GRAMMAR')}
@@ -307,17 +475,18 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-black flex items-center space-x-1.5">
+              <span className="text-xs font-black flex items-center space-x-1">
                 <Sliders className="w-3.5 h-3.5" />
                 <span>Grammar Quiz</span>
               </span>
               {format === 'GRAMMAR' && <Check className="w-3.5 h-3.5" />}
             </div>
-            <span className={`text-[11px] ${format === 'GRAMMAR' ? 'text-amber-100' : 'text-slate-400'}`}>
-              MCQ, cloze, or rewrite
+            <span className={`text-[10px] leading-tight line-clamp-1 ${format === 'GRAMMAR' ? 'text-amber-100' : 'text-slate-400'}`}>
+              MCQ, cloze, rewrite
             </span>
           </button>
 
+          {/* Card 4: Reading Article */}
           <button
             type="button"
             onClick={() => handleFormatChange('READING')}
@@ -328,17 +497,18 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-black flex items-center space-x-1.5">
+              <span className="text-xs font-black flex items-center space-x-1">
                 <BookOpen className="w-3.5 h-3.5" />
                 <span>Reading Article</span>
               </span>
               {format === 'READING' && <Check className="w-3.5 h-3.5" />}
             </div>
-            <span className={`text-[11px] ${format === 'READING' ? 'text-amber-100' : 'text-slate-400'}`}>
+            <span className={`text-[10px] leading-tight line-clamp-1 ${format === 'READING' ? 'text-amber-100' : 'text-slate-400'}`}>
               Passage & comprehension
             </span>
           </button>
 
+          {/* Card 5: Speaking Drill */}
           <button
             type="button"
             onClick={() => handleFormatChange('SPEAKING')}
@@ -349,14 +519,36 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             }`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-black flex items-center space-x-1.5">
+              <span className="text-xs font-black flex items-center space-x-1">
                 <Mic className="w-3.5 h-3.5" />
                 <span>Speaking Drill</span>
               </span>
               {format === 'SPEAKING' && <Check className="w-3.5 h-3.5" />}
             </div>
-            <span className={`text-[11px] ${format === 'SPEAKING' ? 'text-amber-100' : 'text-slate-400'}`}>
-              Read aloud with mic
+            <span className={`text-[10px] leading-tight line-clamp-1 ${format === 'SPEAKING' ? 'text-amber-100' : 'text-slate-400'}`}>
+              Speech & pronunciation
+            </span>
+          </button>
+
+          {/* Card 6: Essay Writing */}
+          <button
+            type="button"
+            onClick={() => handleFormatChange('ESSAY')}
+            className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+              format === 'ESSAY'
+                ? 'border-amber-500 bg-amber-500 text-white shadow-sm'
+                : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+            }`}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-black flex items-center space-x-1">
+                <PenTool className="w-3.5 h-3.5" />
+                <span>Essay Writing</span>
+              </span>
+              {format === 'ESSAY' && <Check className="w-3.5 h-3.5" />}
+            </div>
+            <span className={`text-[10px] leading-tight line-clamp-1 ${format === 'ESSAY' ? 'text-amber-100' : 'text-slate-400'}`}>
+              Rubric & rule practice
             </span>
           </button>
         </div>
@@ -371,45 +563,40 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
           <button
             type="button"
             onClick={shuffleTopic}
-            className="flex items-center space-x-1.5 text-xs font-bold text-amber-700 hover:text-amber-800 bg-amber-100/70 hover:bg-amber-100 px-3 py-1.5 rounded-xl transition shadow-2xs"
-            title="Pick another random syllabus topic"
+            className="flex items-center space-x-1 text-xs font-bold text-amber-700 hover:text-amber-900 bg-amber-100/70 hover:bg-amber-100 px-2.5 py-1 rounded-xl transition"
           >
-            <Dices className="w-3.5 h-3.5 text-amber-600" />
+            <Dices className="w-3.5 h-3.5" />
             <span>Shuffle Topic</span>
           </button>
         </div>
 
-        {/* Selected Topic Display Banner */}
-        <div className="p-3.5 rounded-2xl bg-white border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
-          <div className="flex items-center space-x-2.5 truncate">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${
-              format === 'RECOMMENDED' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-700'
-            }`}>
-              {format === 'RECOMMENDED' ? <Target className="w-3.5 h-3.5" /> : <Shuffle className="w-3.5 h-3.5" />}
+        {/* Active Selected Topic Pill */}
+        <div className="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center space-x-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0">
+              <Dices className="w-3.5 h-3.5" />
             </div>
-            <div className="truncate">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                {format === 'RECOMMENDED'
-                  ? (weakestGap ? 'Recommended Topic (Knowledge Gap)' : 'CEFR Foundation Topic')
-                  : 'Active Topic'}
+            <div className="min-w-0">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                Active Topic
               </span>
-              <span className="text-xs font-bold text-slate-900 truncate">
-                {isCustomTopic && customTopicInput.trim() ? customTopicInput : topic}
-                {format === 'RECOMMENDED' && weakestGap && topic === weakestGap.grammarTopic && (
-                  <span className="ml-2 px-1.5 py-0.5 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold">
-                    {Math.round(weakestGap.masteryScore * 100)}% mastery
-                  </span>
-                )}
+              <span className="text-xs font-bold text-slate-800 truncate block">
+                {isCustomTopic && customTopicInput ? customTopicInput : topic || 'General Practice'}
               </span>
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => setIsCustomTopic(!isCustomTopic)}
-            className="text-[11px] font-bold text-amber-700 hover:underline self-end sm:self-auto"
+            onClick={() => {
+              setIsCustomTopic(!isCustomTopic);
+              if (!isCustomTopic) {
+                setCustomTopicInput(topic);
+              }
+            }}
+            className="text-xs font-semibold text-amber-700 hover:underline self-end sm:self-auto whitespace-nowrap"
           >
-            {isCustomTopic ? 'Use recommended topic' : 'Type custom topic'}
+            {isCustomTopic ? 'Use syllabus topic' : 'Type custom topic'}
           </button>
         </div>
 
@@ -419,46 +606,68 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             type="text"
             value={customTopicInput}
             onChange={(e) => setCustomTopicInput(e.target.value)}
-            placeholder="e.g. Mixed Conditionals, Job Interview, Climate Solutions..."
-            className="w-full px-3.5 py-2.5 rounded-xl border border-amber-300 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition animate-in fade-in duration-200"
+            placeholder="e.g. Past Continuous vs Past Simple in crime stories"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-amber-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 focus:border-amber-500 transition"
           />
         )}
 
-        {/* Quick Topic Chips */}
+        {/* Quick Topic Suggestions */}
         {!isCustomTopic && topicSuggestions.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-              Suggestions:
-            </span>
-            {topicSuggestions.map((sug: string) => (
+            <span className="text-[11px] font-semibold text-slate-400 mr-1">Suggestions:</span>
+            {topicSuggestions.map((t) => (
               <button
-                key={sug}
+                key={t}
                 type="button"
-                onClick={() => setTopic(sug)}
-                className={`text-[11px] font-medium px-2.5 py-1 rounded-xl border transition ${
-                  topic === sug
-                    ? 'border-amber-400 bg-amber-100 text-amber-900 font-bold'
+                onClick={() => setTopic(t)}
+                className={`text-xs px-2.5 py-1 rounded-xl border transition ${
+                  topic === t
+                    ? 'border-amber-500 bg-amber-50 text-amber-900 font-bold'
                     : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
                 }`}
               >
-                {sug}
+                {t}
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* Start Practice Button */}
-      <button
-        type="button"
-        onClick={handleStartPractice}
-        disabled={isLoading}
-        className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm tracking-wide shadow-lg shadow-amber-500/25 transition flex items-center justify-center space-x-2 disabled:opacity-50"
-      >
-        <Zap className="w-4 h-4 fill-white" />
-        <span>{isLoading ? 'Generating Quick Practice Task...' : 'Start Quick Practice'}</span>
-        <ArrowRight className="w-4 h-4" />
-      </button>
+      {/* Start Button & Mode Switch Callout */}
+      <div className="space-y-4 pt-2">
+        <button
+          type="button"
+          onClick={handleStartPractice}
+          disabled={isLoading}
+          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm tracking-wide shadow-md shadow-amber-200/80 hover:shadow-lg transition flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+        >
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <Zap className="w-4 h-4 fill-white" />
+              <span>Start 1-Click Practice Now</span>
+            </>
+          )}
+        </button>
+
+        {/* Switch to Detailed Mode Directional Callout */}
+        {onSwitchToDetailed && (
+          <div className="p-3 bg-white/80 rounded-2xl border border-amber-200/70 flex items-center justify-between text-xs text-slate-600 gap-2">
+            <span>
+              Need fine control over passage length, target sounds, scoring rubric, or custom rules?
+            </span>
+            <button
+              type="button"
+              onClick={onSwitchToDetailed}
+              className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-primary font-bold transition flex items-center space-x-1 whitespace-nowrap text-xs flex-shrink-0"
+            >
+              <span>Switch to Detailed Studio</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

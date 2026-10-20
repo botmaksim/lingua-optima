@@ -566,9 +566,52 @@ public final class PromptTemplates {
      * @return Formatted evaluation prompt string.
      */
     public static String buildEssayScoringPrompt(String cefrLevel, String essayText) {
-        return """
-            Evaluate the following English essay for a student at the %s level.
+        return buildEssayScoringPrompt(cefrLevel, essayText, null, null, null);
+    }
 
+    /**
+     * @brief Constructs an essay grading prompt returning IELTS/CEFR 4-pillar rubric in JSON,
+     * verifying and penalizing missing or inadequate target grammar rules and target vocabulary.
+     * @param cefrLevel Target benchmark level.
+     * @param essayText Student's submitted essay.
+     * @param topic Optional assigned essay topic / title.
+     * @param targetRule Optional target grammar rules to be actively demonstrated in the essay.
+     * @param targetVocabulary Optional target vocabulary words or collocations to incorporate.
+     * @return Formatted evaluation prompt string.
+     */
+    public static String buildEssayScoringPrompt(String cefrLevel, String essayText, String topic, String targetRule, String targetVocabulary) {
+        StringBuilder contextBuilder = new StringBuilder();
+        if (topic != null && !topic.isBlank()) {
+            contextBuilder.append("\n- ASSIGNED ESSAY TOPIC / PROMPT:\n")
+                .append(topic.trim()).append("\n");
+        }
+        if (targetRule != null && !targetRule.isBlank()) {
+            contextBuilder.append("\n- TARGET GRAMMAR RULES TO BE ACTIVELY DEMONSTRATED:\n")
+                .append(targetRule.trim()).append("\n");
+        }
+        if (targetVocabulary != null && !targetVocabulary.isBlank()) {
+            contextBuilder.append("\n- TARGET VOCABULARY WORDS & COLLOCATIONS TO INCORPORATE:\n")
+                .append(targetVocabulary.trim()).append("\n");
+        }
+
+        String ruleContract = "";
+        if ((targetRule != null && !targetRule.isBlank()) || (targetVocabulary != null && !targetVocabulary.isBlank())) {
+            ruleContract = """
+
+                TARGET RULES & VOCABULARY EVALUATION CONTRACT:
+                1. The assignment specifically tests whether the student can actively incorporate the target rules and vocabulary listed above.
+                2. Scrutinize the essay paragraphs for genuine, grammatically accurate usage of these target rules and terms.
+                3. If the student failed to apply the target rules or vocabulary, or applied them only superficially / inaccurately:
+                   - Penalize the "grammarRange" and "taskAchievement" scores (deduct 1.0 to 2.5 points based on the shortfall).
+                   - Adjust "overallScore" downwards accordingly.
+                   - In "feedback", explicitly report whether target rules and vocabulary were successfully demonstrated.
+                   - Flag missing rules/terms in "weaknesses" and "recommendations".
+                4. If the student demonstrated the target rules and vocabulary accurately and naturally, award credit in "grammarRange" and "taskAchievement" and acknowledge this in "strengths".
+                """;
+        }
+
+        return """
+            Evaluate the following English essay for a student at the %s level.%s%s
             Essay:
             %s
 
@@ -596,7 +639,7 @@ public final class PromptTemplates {
               "recommendations": "Actionable pedagogical advice on what concepts to review and practice next",
               "suggestedTopics": ["Topic A", "Topic B"]
             }
-            """.formatted(cefrLevel, essayText);
+            """.formatted(cefrLevel, contextBuilder.toString(), ruleContract, essayText);
     }
 
     /**

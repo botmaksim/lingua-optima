@@ -334,16 +334,20 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold text-slate-600 flex items-center space-x-1">
               <Edit3 className="w-3 h-3 text-primary" />
-              <span>Target Sounds and Words:</span>
+              <span>Target Sounds, Phonemes & Custom Practice Words:</span>
             </span>
+            <span className="text-[10px] text-slate-400">Expandable editor</span>
           </div>
-          <input
-            type="text"
+          <textarea
+            rows={2}
             value={targetSounds}
             onChange={(e) => onTargetSoundsChange(e.target.value)}
-            placeholder="e.g. /θ/, /ð/, rhythm, sentence stress, or custom tongue-twister words"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+            placeholder="e.g. /θ/, /ð/, rhythm, sentence stress, or custom tongue-twister words (e.g. thought, through, thirty-three, weather)"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y min-h-[64px] leading-relaxed"
           />
+          <p className="text-[11px] text-slate-400">
+            Selected phoneme pack words are populated here. You can expand this box and freely type additional contrast words or pronunciation goals.
+          </p>
         </div>
       </div>
 

@@ -23,10 +23,18 @@ import {
   Zap,
   SlidersHorizontal,
   Volume2,
+  BookOpen,
+  FileText,
+  Mic,
+  PenTool,
+  Target,
+  Shuffle,
+  ArrowRight,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
 import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
+import { progressApi } from '../../api/progressApi';
 import { Group } from '../../types/group';
 import {
   Task,
@@ -51,10 +59,11 @@ import {
 import { useUIStore } from '../../store/uiStore';
 import { customCurriculumApi } from '../../api/customCurriculumApi';
 import { CustomCurriculumEntry } from '../../types/curriculum';
-import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
+import { DEFAULT_CEFR_TOPICS, DEFAULT_ESSAY_TOPICS } from '../../constants/topics';
 import { ReadingConfigPanel, ReadingConfig } from './ReadingConfigPanel';
 import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from './SpeakingConfigPanel';
 import { GrammarConfigPanel, UploadedCurriculumFile } from './GrammarConfigPanel';
+import { EssayConfigPanel } from './EssayConfigPanel';
 import { QuickModePanel, QuickGenerateParams } from '../common/QuickModePanel';
 import { speakText } from '../../utils/phonetics';
 
@@ -415,6 +424,58 @@ export const ConfigureTask: React.FC = () => {
       }
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  /**
+   * @brief Fills the weakest student gap or foundational topic into the active topic field.
+   */
+  const handleFillRecommended = async () => {
+    try {
+      const gaps = await progressApi.getGaps();
+      if (gaps && gaps.length > 0) {
+        const weakest = [...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0];
+        setGrammarTopic(weakest.grammarTopic);
+        addToast({
+          type: 'info',
+          title: 'Topic Auto-Filled',
+          message: `Recommended gap: ${weakest.grammarTopic} (${Math.round(weakest.masteryScore)}% mastery). You can edit it freely.`,
+        });
+        return;
+      }
+    } catch (_) {}
+    const defaultList = catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel];
+    if (defaultList && defaultList.length > 0) {
+      setGrammarTopic(defaultList[0]);
+      addToast({
+        type: 'info',
+        title: 'Topic Auto-Filled',
+        message: `Syllabus foundation: ${defaultList[0]}`,
+      });
+    }
+  };
+
+  /**
+   * @brief Fills a random topic from the syllabus or essay pool into the active topic field.
+   */
+  const handleFillRandom = () => {
+    let pool: string[] = [];
+    if (taskType === 'ESSAY') {
+      pool = DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
+    } else {
+      pool = [
+        ...(catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel] || []),
+        ...(catalog?.mixedTopicsByLevel?.[cefrLevel] || []),
+      ];
+    }
+    if (pool.length > 0) {
+      const rolled = pool[Math.floor(Math.random() * pool.length)];
+      setGrammarTopic(rolled);
+      addToast({
+        type: 'info',
+        title: 'Random Topic Rolled',
+        message: `Rolled: ${rolled}. You can edit it freely.`,
+      });
     }
   };
 
@@ -789,32 +850,42 @@ export const ConfigureTask: React.FC = () => {
           </p>
         </div>
 
-        {/* Mode Switcher Tabs */}
-        <div className="flex items-center p-1.5 rounded-2xl bg-slate-100 border border-slate-200/80 self-start sm:self-auto">
+        {/* Prominent Mode Switcher Tabs */}
+        <div className="flex items-center p-1.5 rounded-2xl bg-slate-100 border border-slate-200/90 shadow-2xs self-start sm:self-auto gap-1">
           <button
             type="button"
             onClick={() => setGenerationMode('QUICK')}
-            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+            className={`py-2 px-3.5 rounded-xl text-xs font-black transition flex items-center space-x-2 cursor-pointer ${
               generationMode === 'QUICK'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm ring-1 ring-amber-400/30'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
-            <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-            <span>Quick Mode</span>
+            <Zap className={`w-3.5 h-3.5 ${generationMode === 'QUICK' ? 'fill-white' : 'text-amber-500'}`} />
+            <div className="text-left">
+              <span className="block leading-tight">Quick Practice</span>
+              <span className={`text-[10px] block font-medium ${generationMode === 'QUICK' ? 'text-amber-100' : 'text-slate-400'}`}>
+                1-Click Express
+              </span>
+            </div>
           </button>
 
           <button
             type="button"
             onClick={() => setGenerationMode('DETAILED')}
-            className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${
+            className={`py-2 px-3.5 rounded-xl text-xs font-black transition flex items-center space-x-2 cursor-pointer ${
               generationMode === 'DETAILED'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-500/30'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-primary" />
-            <span>Detailed Studio</span>
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+            <div className="text-left">
+              <span className="block leading-tight">Detailed Studio</span>
+              <span className={`text-[10px] block font-medium ${generationMode === 'DETAILED' ? 'text-indigo-200' : 'text-slate-400'}`}>
+                Full Customization
+              </span>
+            </div>
           </button>
         </div>
       </div>
@@ -909,13 +980,49 @@ export const ConfigureTask: React.FC = () => {
                     setGrammarTopic(defaultList[0]);
                   }
                 }}
+                activeTopic={grammarTopic}
+                onActiveTopicChange={setGrammarTopic}
                 onQuickGenerate={handleQuickGenerate}
                 isLoading={isLoading}
                 isStudent={false}
+                onSwitchToDetailed={() => setGenerationMode('DETAILED')}
               />
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
+              {/* Detailed Studio Header Callout & Quick Fills */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-white to-amber-50/50 border border-indigo-100/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs font-black text-slate-800">Quick Fill Topic & Goal</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100/80 text-primary font-bold">
+                      Freely editable below
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-slate-500 block">
+                    Auto-fill standard syllabus topics or student gaps with one click.
+                  </span>
+                </div>
+
+                <div className="flex items-center space-x-2 self-start sm:self-auto">
+                  <button
+                    type="button"
+                    onClick={handleFillRecommended}
+                    className="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 text-amber-900 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Target className="w-3.5 h-3.5 text-amber-600" />
+                    <span>🎯 Recommended</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleFillRandom}
+                    className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-white hover:bg-indigo-50 text-indigo-900 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
+                  >
+                    <Shuffle className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>🎲 Surprise Topic</span>
+                  </button>
+                </div>
+              </div>
               {/* AI Engine Selection */}
               <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
                 <div className="flex items-center justify-between">
@@ -1065,7 +1172,7 @@ export const ConfigureTask: React.FC = () => {
                       onClick={() => {
                         setAiEngineMode('PLATFORM');
                         setProvider('GEMINI');
-                        setModelName('gemini-2.5-flash');
+                        setModelName('gemini-3.8-flash');
                       }}
                       className={`px-3 py-1.5 rounded-lg transition ${
                         aiEngineMode === 'PLATFORM'
@@ -1102,7 +1209,7 @@ export const ConfigureTask: React.FC = () => {
                         <Sparkles className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-slate-800">Google Gemini 2.5 Flash</span>
+                        <span className="text-xs font-bold text-slate-800">Google Gemini 3.8 Flash</span>
                         <span className="text-[11px] text-slate-500 block">Fast, reliable educator generation included in your tier</span>
                       </div>
                     </div>
@@ -1179,42 +1286,65 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               </div>
 
-              {/* Task Format / Type Switcher */}
+              {/* Task Format / 4 Primary Modules */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   Task Format
                 </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
-                  {(
-                    [
-                      { type: 'MCQ', label: 'MCQ' },
-                      { type: 'GAP_FILL', label: 'Gap Fill' },
-                      { type: 'OPEN_BRACKETS', label: 'Open Brackets' },
-                      { type: 'REWRITE', label: 'Rewrite' },
-                      { type: 'READING', label: 'Reading' },
-                      { type: 'SPEAKING', label: 'Speaking' },
-                      { type: 'ESSAY', label: 'Essay' },
-                    ] as { type: TaskType; label: string }[]
-                  ).map((item) => (
-                    <button
-                      type="button"
-                      key={item.type}
-                      onClick={() => setTaskType(item.type)}
-                      className={`py-2 px-2.5 rounded-xl border text-xs font-semibold text-center transition ${
-                        taskType === item.type
-                          ? 'border-primary bg-indigo-50 text-primary font-bold shadow-xs'
-                          : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {[
+                    { id: 'GRAMMAR', label: 'Grammar', icon: BookOpen, desc: 'MCQ, Cloze, Brackets, Rewrite' },
+                    { id: 'READING', label: 'Reading', icon: FileText, desc: 'Comprehension passage & questions' },
+                    { id: 'SPEAKING', label: 'Speaking', icon: Mic, desc: 'Phonetics & speech evaluation' },
+                    { id: 'ESSAY', label: 'Essay', icon: PenTool, desc: 'Discursive writing & rubric scoring' },
+                  ].map((mod) => {
+                    const isSelected =
+                      (mod.id === 'GRAMMAR' && isGrammarTask) ||
+                      (mod.id === 'READING' && taskType === 'READING') ||
+                      (mod.id === 'SPEAKING' && taskType === 'SPEAKING') ||
+                      (mod.id === 'ESSAY' && taskType === 'ESSAY');
+
+                    return (
+                      <button
+                        type="button"
+                        key={mod.id}
+                        onClick={() => {
+                          if (mod.id === 'GRAMMAR') {
+                            if (!isGrammarTask) setTaskType('MCQ');
+                          } else if (mod.id === 'READING') {
+                            setTaskType('READING');
+                          } else if (mod.id === 'SPEAKING') {
+                            setTaskType('SPEAKING');
+                          } else {
+                            setTaskType('ESSAY');
+                          }
+                        }}
+                        className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                          isSelected
+                            ? 'border-primary bg-indigo-50/90 text-primary ring-2 ring-primary/20 shadow-xs'
+                            : 'border-slate-200 bg-white hover:border-slate-300 text-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2 mb-1">
+                          <mod.icon className={`w-4 h-4 ${isSelected ? 'text-primary' : 'text-slate-500'}`} />
+                          <span className={`text-xs font-bold ${isSelected ? 'text-primary' : 'text-slate-900'}`}>
+                            {mod.label}
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 leading-tight">
+                          {mod.desc}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Dynamic Module 1: Grammar Exercises */}
               {isGrammarTask && (
                 <GrammarConfigPanel
+                  taskType={taskType}
+                  onTaskTypeChange={setTaskType}
                   cefrLevel={cefrLevel}
                   grammarTopic={grammarTopic}
                   onGrammarTopicChange={setGrammarTopic}
@@ -1254,6 +1384,7 @@ export const ConfigureTask: React.FC = () => {
                     cefrLevel={cefrLevel}
                     customVocabulary={customVocabulary}
                     onCustomVocabularyChange={setCustomVocabulary}
+                    savedVocabSets={savedVocabSets}
                     isStudent={false}
                   />
                 </div>
@@ -1285,24 +1416,40 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               )}
 
-              {/* Dynamic Module 4: Essay Writing */}
+              {/* Dynamic Module 4: Essay Studio */}
               {taskType === 'ESSAY' && (
-                <div className="rounded-3xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-white to-violet-50/30 p-6 space-y-4 shadow-xs">
-                  <h3 className="text-sm font-black text-slate-900 tracking-tight">
-                    Essay Topic & Writing Guidance
-                  </h3>
-                  <input
-                    type="text"
-                    value={grammarTopic}
-                    onChange={(e) => setGrammarTopic(e.target.value)}
-                    placeholder="e.g. Discuss the advantages and disadvantages of remote work..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                <div className="animate-in fade-in duration-200">
+                  <EssayConfigPanel
+                    cefrLevel={cefrLevel}
+                    topic={grammarTopic}
+                    onTopicChange={setGrammarTopic}
+                    domain={domain}
+                    onDomainChange={setDomain}
+                    customRule={customRule}
+                    onCustomRuleChange={setCustomRule}
+                    customVocabulary={customVocabulary}
+                    onCustomVocabularyChange={setCustomVocabulary}
+                    totalPoints={totalPoints}
+                    onTotalPointsChange={setTotalPoints}
+                    savedRules={savedRules}
+                    savedVocabSets={savedVocabSets}
+                    isStudent={false}
                   />
-                  <p className="text-[11px] text-slate-400">
-                    Students will be presented with a full essay editor with live word count and rubric grading.
-                  </p>
                 </div>
               )}
+
+              {/* Switch to Quick Mode Callout */}
+              <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-amber-900 gap-2">
+                <span>⚡ Prefer 1-Click Practice without adjusting manual parameters?</span>
+                <button
+                  type="button"
+                  onClick={() => setGenerationMode('QUICK')}
+                  className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center space-x-1.5 whitespace-nowrap text-xs self-end sm:self-auto cursor-pointer shadow-2xs"
+                >
+                  <span>Switch to Quick Practice</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
               {/* Due Date & Attempt Limit */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

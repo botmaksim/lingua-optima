@@ -63,7 +63,21 @@ public class ScoringService {
      * @return Map containing rubric scores across criteria and qualitative feedback.
      */
     public Map<String, Object> scoreEssay(String essayText, String cefrLevel, User user) {
-        String prompt = PromptTemplates.buildEssayScoringPrompt(cefrLevel, essayText);
+        return scoreEssay(essayText, cefrLevel, null, null, null, user);
+    }
+
+    /**
+     * @brief Scores an open-ended essay using the 4 CEFR criteria, enforcing target grammar rules and vocabulary.
+     * @param essayText The student's submitted essay content.
+     * @param cefrLevel Target CEFR level benchmark string.
+     * @param topic Assigned topic or title.
+     * @param targetRule Target grammar rules to be actively demonstrated.
+     * @param targetVocabulary Target vocabulary words or collocations to incorporate.
+     * @param user User submitting the essay.
+     * @return Map containing rubric scores across criteria and qualitative feedback.
+     */
+    public Map<String, Object> scoreEssay(String essayText, String cefrLevel, String topic, String targetRule, String targetVocabulary, User user) {
+        String prompt = PromptTemplates.buildEssayScoringPrompt(cefrLevel, essayText, topic, targetRule, targetVocabulary);
         String aiResponse = aiBrokerService.scoreEssay(prompt, user);
 
         try {
@@ -83,6 +97,7 @@ public class ScoringService {
             return fallback;
         }
     }
+
 
     /**
      * @brief Scores an oral speaking practice submission extracting speech rate, accuracy, and pacing metrics.

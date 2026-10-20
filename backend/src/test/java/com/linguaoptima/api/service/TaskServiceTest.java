@@ -210,6 +210,81 @@ class TaskServiceTest {
     }
 
     /**
+     * @brief Verifies that generating an essay task serializes target rules and vocabulary into answerKey JSON.
+     */
+    @Test
+    void testGenerateEssayTaskWithTargetRulesAndVocabulary() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.C1)
+            .grammarTopic("Urban Sustainability")
+            .domain("Environment")
+            .taskType(TaskType.ESSAY)
+            .difficulty(DifficultyLevel.HARD)
+            .customRule("Inverted Conditionals (Had we known...)")
+            .customVocabulary("infrastructure, sprawling, mitigate")
+            .build();
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(studentUser))).thenReturn(
+            "{\"content\":\"Write an essay on modern green cities...\",\"questions\":[]}"
+        );
+        final Task[] capturedTask = new Task[1];
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            capturedTask[0] = t;
+            return t;
+        });
+
+        TaskResponse res = taskService.generateTask(req, studentUser);
+        assertNotNull(res);
+        assertEquals(TaskType.ESSAY, res.getType());
+        assertNotNull(capturedTask[0]);
+        assertTrue(capturedTask[0].getAnswerKey().contains("Inverted Conditionals"));
+        assertTrue(capturedTask[0].getAnswerKey().contains("infrastructure, sprawling, mitigate"));
+    }
+
+    /**
+     * @brief Verifies that creating a custom essay task serializes target rules and vocabulary into answerKey JSON.
+     */
+    @Test
+    void testCreateCustomEssayTaskWithTargetRulesAndVocabulary() {
+        CustomQuestionRequest q = CustomQuestionRequest.builder()
+            .questionOrder(1)
+            .questionText("Discuss the economic impact of artificial intelligence.")
+            .correctAnswer("Open-ended essay response")
+            .points(100)
+            .build();
+
+        CreateCustomTaskRequest req = CreateCustomTaskRequest.builder()
+            .cefrLevel(CefrLevel.C1)
+            .grammarTopic("AI and Automation")
+            .domain("Economy")
+            .taskType(TaskType.ESSAY)
+            .difficulty(DifficultyLevel.HARD)
+            .content("Write a 300-word essay discussing the economic impact of AI.")
+            .questions(List.of(q))
+            .totalPoints(100)
+            .customRule("Passive Voice with Modal Verbs")
+            .customVocabulary("disruption, obsolete, productivity")
+            .build();
+
+        final Task[] capturedCustom = new Task[1];
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            capturedCustom[0] = t;
+            return t;
+        });
+
+        TaskResponse res = taskService.createCustomTask(req, teacherUser);
+        assertNotNull(res);
+        assertEquals(TaskType.ESSAY, res.getType());
+        assertNotNull(capturedCustom[0]);
+        assertTrue(capturedCustom[0].getAnswerKey().contains("Passive Voice with Modal Verbs"));
+        assertTrue(capturedCustom[0].getAnswerKey().contains("disruption, obsolete, productivity"));
+    }
+
+    /**
      * @brief Verifies unit test scenario: save as template non teacher throws.
      */
     @Test

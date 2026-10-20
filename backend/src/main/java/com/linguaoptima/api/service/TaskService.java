@@ -299,7 +299,19 @@ public class TaskService {
             answerKeyList.add(akItem);
         }
 
-        task.setAnswerKey(objectMapper.writeValueAsString(answerKeyList));
+        if (request.getTaskType() == TaskType.ESSAY) {
+            Map<String, String> essayMeta = new LinkedHashMap<>();
+            essayMeta.put("topic", topic);
+            if (request.getCustomRule() != null && !request.getCustomRule().isBlank()) {
+                essayMeta.put("targetRule", request.getCustomRule().trim());
+            }
+            if (request.getCustomVocabulary() != null && !request.getCustomVocabulary().isBlank()) {
+                essayMeta.put("targetVocabulary", request.getCustomVocabulary().trim());
+            }
+            task.setAnswerKey(objectMapper.writeValueAsString(essayMeta));
+        } else {
+            task.setAnswerKey(objectMapper.writeValueAsString(answerKeyList));
+        }
         task.setQuestions(questions);
         Task saved = taskRepository.save(task);
 
@@ -826,6 +838,31 @@ public class TaskService {
                 if (sumPoints > 0) {
                     task.setTotalPoints(sumPoints);
                 }
+            }
+            if (params.getTaskType() == TaskType.ESSAY) {
+                Map<String, String> essayMeta = new LinkedHashMap<>();
+                essayMeta.put("topic", params.getGrammarTopic() != null ? params.getGrammarTopic() : "");
+                String rule = (params.getCustomRule() != null && !params.getCustomRule().isBlank()) ? params.getCustomRule().trim() : "";
+                String vocab = (params.getCustomVocabulary() != null && !params.getCustomVocabulary().isBlank()) ? params.getCustomVocabulary().trim() : "";
+                if (rule.isBlank() && vocab.isBlank() && curriculumStorageService != null && !Boolean.TRUE.equals(params.getEcoMode())) {
+                    String[] resolved = curriculumStorageService.resolvePromptCurriculumContext(
+                        params.getCefrLevel(),
+                        params.getGrammarTopic(),
+                        params.getCustomRule(),
+                        params.getCustomVocabulary()
+                    );
+                    if (resolved != null) {
+                        if (resolved[0] != null) rule = resolved[0].trim();
+                        if (resolved[1] != null) vocab = resolved[1].trim();
+                    }
+                }
+                if (!rule.isBlank()) {
+                    essayMeta.put("targetRule", rule);
+                }
+                if (!vocab.isBlank()) {
+                    essayMeta.put("targetVocabulary", vocab);
+                }
+                task.setAnswerKey(objectMapper.writeValueAsString(essayMeta));
             }
             task.setQuestions(questions);
         } catch (Exception e) {

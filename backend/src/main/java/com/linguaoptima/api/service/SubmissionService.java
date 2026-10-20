@@ -137,8 +137,17 @@ public class SubmissionService {
                 || (assignment != null && assignment.getTask() != null && assignment.getTask().getType() == TaskType.SPEAKING)
                 || (request.getText() != null && request.getText().startsWith("[SPEAKING_PRACTICE]"));
 
-        if ("ESSAY".equalsIgnoreCase(request.getType())) {
-            scoring = scoringService.scoreEssay(request.getText(), student.getCefrLevel().name(), student);
+        if ("ESSAY".equalsIgnoreCase(request.getType())
+                || (assignment != null && assignment.getTask() != null && assignment.getTask().getType() == TaskType.ESSAY)) {
+            Map<String, String> essayMeta = parseEssayMetadata(answerKey, grammarTopic);
+            scoring = scoringService.scoreEssay(
+                request.getText(),
+                student.getCefrLevel().name(),
+                essayMeta.get("topic"),
+                essayMeta.get("targetRule"),
+                essayMeta.get("targetVocabulary"),
+                student
+            );
         } else if (isSpeaking) {
             scoring = scoringService.scoreSpeakingTask(request.getText(), answerKey, student);
         } else {
@@ -295,7 +304,20 @@ public class SubmissionService {
             }
         }
 
-        Map<String, Object> scoring = scoringService.scoreGrammarTask(extractedText, answerKey, student);
+        Map<String, Object> scoring;
+        if (assignment != null && assignment.getTask() != null && assignment.getTask().getType() == TaskType.ESSAY) {
+            Map<String, String> essayMeta = parseEssayMetadata(answerKey, grammarTopic);
+            scoring = scoringService.scoreEssay(
+                extractedText,
+                student.getCefrLevel().name(),
+                essayMeta.get("topic"),
+                essayMeta.get("targetRule"),
+                essayMeta.get("targetVocabulary"),
+                student
+            );
+        } else {
+            scoring = scoringService.scoreGrammarTask(extractedText, answerKey, student);
+        }
         Double score = scoringService.extractScore(scoring);
         String feedback = String.valueOf(scoring.getOrDefault("feedback", "OCR text successfully scored."));
         String feedbackToStore = feedback;
@@ -1406,6 +1428,37 @@ public class SubmissionService {
         double errorRate() {
             return attempted > 0 ? (double) incorrect / attempted : 0.0;
         }
+    }
+
+    /**
+     * @brief Extracts essay scoring metadata (assigned topic, target grammar rule, target vocabulary)
+     * stored in the task's answerKey JSON.
+     * @param answerKey Raw JSON string from task answerKey.
+     * @param fallbackTopic Topic fallback if not present in answerKey.
+     * @return Map containing topic, targetRule, and targetVocabulary.
+     */
+    private Map<String, String> parseEssayMetadata(String answerKey, String fallbackTopic) {
+        Map<String, String> meta = new HashMap<>();
+        meta.put("topic", fallbackTopic);
+        meta.put("targetRule", null);
+        meta.put("targetVocabulary", null);
+        if (answerKey != null && !answerKey.isBlank()) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode root = objectMapper.readTree(answerKey);
+                if (root.isObject()) {
+                    if (root.has("topic") && !root.path("topic").asText().isBlank()) {
+                        meta.put("topic", root.path("topic").asText());
+                    }
+                    if (root.has("targetRule") && !root.path("targetRule").asText().isBlank()) {
+                        meta.put("targetRule", root.path("targetRule").asText());
+                    }
+                    if (root.has("targetVocabulary") && !root.path("targetVocabulary").asText().isBlank()) {
+                        meta.put("targetVocabulary", root.path("targetVocabulary").asText());
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        return meta;
     }
 
     /**

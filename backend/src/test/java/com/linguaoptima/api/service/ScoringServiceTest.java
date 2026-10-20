@@ -124,6 +124,31 @@ class ScoringServiceTest {
     }
 
     /**
+     * @brief Verifies unit test scenario: score essay with topic, target rule, and vocabulary.
+     */
+    @Test
+    void testScoreEssayWithTargetRuleAndVocabulary() {
+        String json = """
+            {
+              "taskAchievement": 9.0,
+              "coherence": 8.5,
+              "lexicalResource": 8.0,
+              "grammarRange": 9.0,
+              "overallScore": 8.625,
+              "feedback": "Outstanding use of targeted inversion and vocabulary."
+            }
+            """;
+        when(aiBrokerService.scoreEssay(anyString(), eq(user))).thenReturn(json);
+
+        Map<String, Object> result = scoringService.scoreEssay(
+            "Essay body with inversion...", "C1", "AI Ethics", "Inversion", "mitigate, lucrative", user
+        );
+        assertNotNull(result);
+        assertEquals(86.25, scoringService.extractScore(result));
+        assertEquals("Outstanding use of targeted inversion and vocabulary.", result.get("feedback"));
+    }
+
+    /**
      * @brief Verifies unit test scenario: score essay with markdown fences and prompt leak in feedback.
      */
     @Test

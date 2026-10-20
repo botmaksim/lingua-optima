@@ -32,6 +32,19 @@ class PromptTemplatesTest {
         assertTrue(essayPrompt.contains("Essay text here"));
         assertTrue(essayPrompt.contains("taskAchievement"));
 
+        // Test essay scoring prompt with topic, targetRule, and targetVocabulary
+        String essayEnforcedPrompt = PromptTemplates.buildEssayScoringPrompt(
+            "C1", "Essay with inversion...", "Impact of AI", "Inversion with Seldom/Hardly", "ubiquitous, indispensable"
+        );
+        assertTrue(essayEnforcedPrompt.contains("ASSIGNED ESSAY TOPIC / PROMPT:"));
+        assertTrue(essayEnforcedPrompt.contains("Impact of AI"));
+        assertTrue(essayEnforcedPrompt.contains("TARGET GRAMMAR RULES TO BE ACTIVELY DEMONSTRATED:"));
+        assertTrue(essayEnforcedPrompt.contains("Inversion with Seldom/Hardly"));
+        assertTrue(essayEnforcedPrompt.contains("TARGET VOCABULARY WORDS & COLLOCATIONS TO INCORPORATE:"));
+        assertTrue(essayEnforcedPrompt.contains("ubiquitous, indispensable"));
+        assertTrue(essayEnforcedPrompt.contains("TARGET RULES & VOCABULARY EVALUATION CONTRACT:"));
+        assertTrue(essayEnforcedPrompt.contains("Penalize the \"grammarRange\" and \"taskAchievement\" scores"));
+
         String grammarPrompt = PromptTemplates.buildGrammarCheckingPrompt("Student text", "Answer key");
         assertTrue(grammarPrompt.contains("Student text"));
         assertTrue(grammarPrompt.contains("Answer key"));

@@ -70,4 +70,10 @@ public class CreateCustomTaskRequest {
 
     /** @brief Optional maximum allowed attempts for direct assignment. */
     private Integer maxAttempts;
+
+    /** @brief Optional target grammar rule for essay or grammar tasks. */
+    private String customRule;
+
+    /** @brief Optional target vocabulary for essay or reading tasks. */
+    private String customVocabulary;
 }

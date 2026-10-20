@@ -223,7 +223,7 @@ class SubmissionServiceTest {
             .type("ESSAY")
             .build();
 
-        when(scoringService.scoreEssay(anyString(), anyString(), eq(student)))
+        when(scoringService.scoreEssay(anyString(), anyString(), any(), any(), any(), eq(student)))
             .thenReturn(Map.of("overallScore", 8.0, "feedback", "Strong arguments"));
         when(scoringService.extractScore(any())).thenReturn(80.0);
         when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> {
@@ -235,7 +235,84 @@ class SubmissionServiceTest {
         SubmissionResultResponse res = submissionService.submitText(req, student);
         assertNotNull(res);
         assertEquals(80.0, res.getScore());
-        verify(scoringService).scoreEssay(anyString(), eq("B1"), eq(student));
+        verify(scoringService).scoreEssay(anyString(), eq("B1"), any(), any(), any(), eq(student));
+    }
+
+    /**
+     * @brief Verifies essay submission parses topic, targetRule, and targetVocabulary from task answerKey.
+     */
+    @Test
+    void testSubmitTextEssayWithTargetRulesAndVocabulary() {
+        Task essayTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(com.linguaoptima.api.domain.enums.TaskType.ESSAY)
+            .grammarTopic("Inversion")
+            .answerKey("{\"topic\":\"Future of Work\",\"targetRule\":\"Negative Inversion\",\"targetVocabulary\":\"telecommuting, paradigm\"}")
+            .build();
+        TaskAssignment essayAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(essayTask)
+            .student(student)
+            .build();
+        when(taskAssignmentRepository.findById(essayAssignment.getId())).thenReturn(java.util.Optional.of(essayAssignment));
+
+        TextSubmissionRequest req = TextSubmissionRequest.builder()
+            .assignmentId(essayAssignment.getId())
+            .text("Seldom have workers witnessed such a paradigm shift...")
+            .type("ESSAY")
+            .build();
+
+        when(scoringService.scoreEssay(
+            eq("Seldom have workers witnessed such a paradigm shift..."),
+            eq("B1"),
+            eq("Future of Work"),
+            eq("Negative Inversion"),
+            eq("telecommuting, paradigm"),
+            eq(student)
+        )).thenReturn(Map.of("overallScore", 9.0, "feedback", "Superb rule demonstration"));
+        when(scoringService.extractScore(any())).thenReturn(90.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        SubmissionResultResponse res = submissionService.submitText(req, student);
+        assertNotNull(res);
+        assertEquals(90.0, res.getScore());
+    }
+
+    /**
+     * @brief Verifies image submission for an essay assignment scores as essay with metadata.
+     */
+    @Test
+    void testSubmitImagesEssayWithTargetRules() {
+        Task essayTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(com.linguaoptima.api.domain.enums.TaskType.ESSAY)
+            .grammarTopic("Inversion")
+            .answerKey("{\"topic\":\"Future of Work\",\"targetRule\":\"Negative Inversion\",\"targetVocabulary\":\"telecommuting, paradigm\"}")
+            .build();
+        TaskAssignment essayAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(essayTask)
+            .student(student)
+            .build();
+        when(taskAssignmentRepository.findById(essayAssignment.getId())).thenReturn(java.util.Optional.of(essayAssignment));
+
+        MockMultipartFile file = new MockMultipartFile("files", "essay.png", "image/png", new byte[]{1, 2, 3});
+        when(ocrService.extractText(any())).thenReturn("Seldom have workers witnessed such a paradigm shift...");
+
+        when(scoringService.scoreEssay(
+            eq("Seldom have workers witnessed such a paradigm shift..."),
+            eq("B1"),
+            eq("Future of Work"),
+            eq("Negative Inversion"),
+            eq("telecommuting, paradigm"),
+            eq(student)
+        )).thenReturn(Map.of("overallScore", 9.0, "feedback", "Superb handwritten essay"));
+        when(scoringService.extractScore(any())).thenReturn(90.0);
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        SubmissionResultResponse res = submissionService.submitImages(List.of(file), essayAssignment.getId(), student);
+        assertNotNull(res);
+        assertEquals(90.0, res.getScore());
     }
 
     /**
@@ -1299,7 +1376,7 @@ class SubmissionServiceTest {
         // 1. Student with preferred provider
         student.setPreferredProvider(com.linguaoptima.api.domain.enums.AIProvider.GEMINI);
         Map<String, Object> essayResult = Map.of("score", 85.0);
-        when(scoringService.scoreEssay(anyString(), anyString(), eq(student))).thenReturn(essayResult);
+        when(scoringService.scoreEssay(anyString(), anyString(), any(), any(), any(), eq(student))).thenReturn(essayResult);
         when(scoringService.extractScore(essayResult)).thenReturn(85.0);
         when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
 
