@@ -39,6 +39,8 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -313,6 +315,72 @@ class SubmissionServiceTest {
         SubmissionResultResponse res = submissionService.submitImages(List.of(file), essayAssignment.getId(), student);
         assertNotNull(res);
         assertEquals(90.0, res.getScore());
+    }
+
+    /**
+     * @brief Verifies that late text submission sets isLate=true, assigns 0.0 pts, and adds late feedback notice.
+     */
+    @Test
+    void testSubmitTextOverdueAssignment() {
+        Task overdueTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.MCQ)
+            .grammarTopic("Conditionals")
+            .answerKey("[]")
+            .build();
+        TaskAssignment overdueAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(overdueTask)
+            .student(student)
+            .dueDate(LocalDateTime.now().minusDays(2))
+            .build();
+        when(taskAssignmentRepository.findById(overdueAssignment.getId())).thenReturn(Optional.of(overdueAssignment));
+        when(scoringService.scoreGrammarTask(anyString(), anyString(), eq(student)))
+            .thenReturn(new HashMap<>(Map.of("score", 95.0, "feedback", "Excellent accuracy")));
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TextSubmissionRequest req = TextSubmissionRequest.builder()
+            .assignmentId(overdueAssignment.getId())
+            .text("If I had known, I would have submitted earlier.")
+            .type("GRAMMAR")
+            .build();
+
+        SubmissionResultResponse res = submissionService.submitText(req, student);
+        assertNotNull(res);
+        assertTrue(Boolean.TRUE.equals(res.getIsLate()));
+        assertEquals(0.0, res.getScore());
+        assertTrue(res.getFeedback().contains("[LATE SUBMISSION]"));
+    }
+
+    /**
+     * @brief Verifies that late OCR homework submission sets isLate=true, assigns 0.0 pts, and adds late feedback notice.
+     */
+    @Test
+    void testSubmitImagesOverdueAssignment() {
+        Task overdueTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.MCQ)
+            .grammarTopic("Modals")
+            .answerKey("[]")
+            .build();
+        TaskAssignment overdueAssignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(overdueTask)
+            .student(student)
+            .dueDate(LocalDateTime.now().minusHours(5))
+            .build();
+        when(taskAssignmentRepository.findById(overdueAssignment.getId())).thenReturn(Optional.of(overdueAssignment));
+        when(ocrService.extractText(any())).thenReturn("Handwritten homework modals");
+        when(scoringService.scoreGrammarTask(anyString(), anyString(), eq(student)))
+            .thenReturn(new HashMap<>(Map.of("score", 88.0, "feedback", "Good usage")));
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        MockMultipartFile file = new MockMultipartFile("files", "hw.png", "image/png", new byte[]{1, 2, 3});
+        SubmissionResultResponse res = submissionService.submitImages(List.of(file), overdueAssignment.getId(), student);
+        assertNotNull(res);
+        assertTrue(Boolean.TRUE.equals(res.getIsLate()));
+        assertEquals(0.0, res.getScore());
+        assertTrue(res.getFeedback().contains("[LATE SUBMISSION]"));
     }
 
     /**
@@ -658,6 +726,29 @@ class SubmissionServiceTest {
         assertNotNull(resp.getAiAnalysis());
         assertTrue(resp.getAiAnalysis().getWeaknesses().contains("Past Simple Auxiliary Usage"));
         assertTrue(resp.getAiAnalysis().getStrengths().contains("Past Simple Irregular Verbs"));
+
+        // Test wrapped answerKey object with answers array
+        Task taskWrapped = Task.builder()
+            .id(UUID.randomUUID())
+            .grammarTopic("Past Simple")
+            .answerKey("{\"answers\":[{\"questionOrder\":1,\"explanation\":\"Irregular past form of wake\"}],\"targetVocabulary\":\"wake, dawn\"}")
+            .build();
+        TaskAssignment assignWrapped = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(taskWrapped)
+            .student(student)
+            .build();
+        Submission subWrapped = Submission.builder()
+            .id(UUID.randomUUID())
+            .assignment(assignWrapped)
+            .student(student)
+            .studentText("Q1: woke")
+            .submissionType(SubmissionType.TEXT)
+            .build();
+        taskWrapped.setQuestions(List.of(q1));
+        SubmissionResultResponse wrappedResp = SubmissionResultResponse.fromEntity(subWrapped);
+        submissionService.enrichSubmissionResult(wrappedResp, subWrapped, null);
+        assertEquals("Irregular past form of wake", wrappedResp.getItems().get(0).getExplanation());
 
         // Test CAT session enrichment
         com.linguaoptima.api.domain.SessionState catSession = com.linguaoptima.api.domain.SessionState.builder()

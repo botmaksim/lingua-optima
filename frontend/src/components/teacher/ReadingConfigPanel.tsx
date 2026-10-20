@@ -10,6 +10,8 @@ import { BookOpen, Award, CheckSquare, AlignLeft, Hash, Sparkles, Shuffle } from
 import { CefrLevel } from '../../types/user';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { VocabularySelector } from '../common/VocabularySelector';
+import { AutoExpandingTextarea } from '../common/AutoExpandingTextarea';
+import { NumberStepper } from '../common/NumberStepper';
 
 export interface ReadingConfig {
   readingTitle: string;
@@ -140,12 +142,12 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
             Assignment Title
           </label>
-          <input
-            type="text"
+          <AutoExpandingTextarea
             value={config.readingTitle}
-            onChange={(e) => onChange({ readingTitle: e.target.value })}
+            onChange={(val) => onChange({ readingTitle: val })}
+            minRows={1}
             placeholder="e.g. The Green Transition & Clean Energy"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
+            className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400"
           />
           <p className="text-[11px] text-slate-400 mt-1">
             Leave blank to use the selected topic name.
@@ -201,21 +203,18 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
           {config.readingLength && config.readingLength.startsWith('Custom') && (
             <div className="mt-2.5 p-3 rounded-xl bg-indigo-50/60 border border-indigo-200 flex items-center justify-between text-xs animate-in fade-in duration-200">
               <span className="font-semibold text-slate-700">Target Word Count:</span>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  min="50"
-                  max="1000"
-                  step="25"
+              <div>
+                <NumberStepper
                   value={customWordCount}
-                  onChange={(e) => {
-                    const val = Math.max(50, Math.min(1000, parseInt(e.target.value) || 300));
+                  onChange={(val) => {
                     setCustomWordCount(val);
                     onChange({ readingLength: `Custom (${val} words)` });
                   }}
-                  className="w-20 px-2 py-1 rounded-lg border border-slate-300 bg-white font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                  min={50}
+                  max={1000}
+                  step={25}
+                  unit="words"
                 />
-                <span className="text-slate-500 font-medium">words</span>
               </div>
             </div>
           )}
@@ -378,18 +377,17 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                   <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Questions:
                   </span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
+                  <NumberStepper
                     value={config.mcqQuestionsCount}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       onChange({
-                        mcqQuestionsCount: Math.max(0, parseInt(e.target.value) || 0),
+                        mcqQuestionsCount: val,
                         isRandomMode: false,
                       })
                     }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                    min={0}
+                    max={10}
+                    step={1}
                   />
                 </div>
 
@@ -398,15 +396,13 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                     <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                       Pts / Question:
                     </span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
+                    <NumberStepper
                       value={config.mcqPoints}
-                      onChange={(e) =>
-                        onChange({ mcqPoints: Math.max(1, parseInt(e.target.value) || 1) })
-                      }
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                      onChange={(val) => onChange({ mcqPoints: val })}
+                      min={1}
+                      max={100}
+                      step={5}
+                      unit="pts"
                     />
                   </div>
                 )}
@@ -436,18 +432,17 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                   <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Questions:
                   </span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
+                  <NumberStepper
                     value={config.trueFalseQuestionsCount}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       onChange({
-                        trueFalseQuestionsCount: Math.max(0, parseInt(e.target.value) || 0),
+                        trueFalseQuestionsCount: val,
                         isRandomMode: false,
                       })
                     }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                    min={0}
+                    max={10}
+                    step={1}
                   />
                 </div>
 
@@ -456,17 +451,13 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                     <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                       Pts / Question:
                     </span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
+                    <NumberStepper
                       value={config.trueFalsePoints}
-                      onChange={(e) =>
-                        onChange({
-                          trueFalsePoints: Math.max(1, parseInt(e.target.value) || 1),
-                        })
-                      }
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                      onChange={(val) => onChange({ trueFalsePoints: val })}
+                      min={1}
+                      max={100}
+                      step={5}
+                      unit="pts"
                     />
                   </div>
                 )}
@@ -496,18 +487,17 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                   <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                     Questions:
                   </span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="10"
+                  <NumberStepper
                     value={config.openQuestionsCount}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       onChange({
-                        openQuestionsCount: Math.max(0, parseInt(e.target.value) || 0),
+                        openQuestionsCount: val,
                         isRandomMode: false,
                       })
                     }
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-slate-800 text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                    min={0}
+                    max={10}
+                    step={1}
                   />
                 </div>
 
@@ -516,15 +506,13 @@ export const ReadingConfigPanel: React.FC<ReadingConfigPanelProps> = ({
                     <span className="block text-[11px] font-semibold text-slate-500 mb-1">
                       Pts / Question:
                     </span>
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
+                    <NumberStepper
                       value={config.openPoints}
-                      onChange={(e) =>
-                        onChange({ openPoints: Math.max(1, parseInt(e.target.value) || 1) })
-                      }
-                      className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 font-bold text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                      onChange={(val) => onChange({ openPoints: val })}
+                      min={1}
+                      max={100}
+                      step={5}
+                      unit="pts"
                     />
                   </div>
                 )}

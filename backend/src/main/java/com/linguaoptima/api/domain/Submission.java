@@ -70,6 +70,11 @@ public class Submission {
     @Column(name = "provider_used")
     private String providerUsed;
 
+    /** @brief Field indicating whether homework was submitted after the due date. */
+    @Column(name = "is_late")
+    @Builder.Default
+    private Boolean isLate = false;
+
     /** @brief Field representing submitted at in Submission. */
     @Column(name = "submitted_at", nullable = false, updatable = false)
     @Builder.Default

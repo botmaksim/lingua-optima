@@ -30,6 +30,7 @@ import {
   Target,
   Shuffle,
   ArrowRight,
+  GripVertical,
 } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { taskApi } from '../../api/taskApi';
@@ -59,12 +60,18 @@ import {
 import { useUIStore } from '../../store/uiStore';
 import { customCurriculumApi } from '../../api/customCurriculumApi';
 import { CustomCurriculumEntry } from '../../types/curriculum';
-import { DEFAULT_CEFR_TOPICS, DEFAULT_ESSAY_TOPICS } from '../../constants/topics';
+import {
+  DEFAULT_CEFR_TOPICS,
+  getRandomThematicTopic,
+  findThematicTopicByTitle,
+} from '../../constants/topics';
 import { ReadingConfigPanel, ReadingConfig } from './ReadingConfigPanel';
 import { SpeakingConfigPanel, TARGET_SOUND_PRESETS } from './SpeakingConfigPanel';
 import { GrammarConfigPanel, UploadedCurriculumFile } from './GrammarConfigPanel';
 import { EssayConfigPanel } from './EssayConfigPanel';
 import { QuickModePanel, QuickGenerateParams } from '../common/QuickModePanel';
+import { AutoExpandingTextarea } from '../common/AutoExpandingTextarea';
+import { NumberStepper } from '../common/NumberStepper';
 import { speakText } from '../../utils/phonetics';
 
 /**
@@ -135,6 +142,72 @@ export const ConfigureTask: React.FC = () => {
   const [savedVocabSets, setSavedVocabSets] = useState<CustomCurriculumEntry[]>([]);
   const [isSavingRule, setIsSavingRule] = useState<boolean>(false);
   const [isSavingVocab, setIsSavingVocab] = useState<boolean>(false);
+
+  // Resizable layout split state (percentage for left generator column on desktop)
+  const [splitRatio, setSplitRatio] = useState<number>(55);
+  const [isDraggingSplitter, setIsDraggingSplitter] = useState<boolean>(false);
+  const [isDesktop, setIsDesktop] = useState<boolean>(
+    () => typeof window !== 'undefined' && window.innerWidth >= 1024
+  );
+  const layoutContainerRef = React.useRef<HTMLDivElement>(null);
+
+  // Drag-and-drop question card reordering state
+  const [draggedQIndex, setDraggedQIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (!isDraggingSplitter) return;
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!layoutContainerRef.current) return;
+      const rect = layoutContainerRef.current.getBoundingClientRect();
+      const raw = ((e.clientX - rect.left) / rect.width) * 100;
+      setSplitRatio(Math.min(75, Math.max(25, Math.round(raw))));
+    };
+    const handleMouseUp = () => {
+      setIsDraggingSplitter(false);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingSplitter]);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedQIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    const emptyImg = new Image();
+    emptyImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(emptyImg, 0, 0);
+  };
+
+  const handleDragOver = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (draggedQIndex === null || draggedQIndex === targetIndex) return;
+
+    setPreviewTask((prev) => {
+      if (!prev || !prev.questions) return prev;
+      const list = [...prev.questions];
+      const [moved] = list.splice(draggedQIndex, 1);
+      list.splice(targetIndex, 0, moved);
+      const reindexed = list.map((q, idx) => ({ ...q, questionOrder: idx + 1 }));
+      return { ...prev, questions: reindexed };
+    });
+    setDraggedQIndex(targetIndex);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedQIndex(null);
+  };
 
   const [searchParams] = useSearchParams();
   const urlGroupId = searchParams.get('groupId');
@@ -428,7 +501,7 @@ export const ConfigureTask: React.FC = () => {
   };
 
   /**
-   * @brief Fills the weakest student gap or foundational topic into the active topic field.
+   * @brief Fills the weakest student gap or foundational topic and thematic vocabulary into the active fields.
    */
   const handleFillRecommended = async () => {
     try {
@@ -436,45 +509,80 @@ export const ConfigureTask: React.FC = () => {
       if (gaps && gaps.length > 0) {
         const weakest = [...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0];
         setGrammarTopic(weakest.grammarTopic);
+        const thematic = findThematicTopicByTitle(weakest.grammarTopic) || getRandomThematicTopic(cefrLevel, domain);
+        if (thematic) {
+          if (thematic.vocabulary && thematic.vocabulary.length > 0) {
+            setCustomVocabulary(thematic.vocabulary.join(', '));
+          }
+          if (thematic.grammarFocus) {
+            setCustomRule(thematic.grammarFocus);
+          }
+          if (taskType === 'READING') {
+            setReadingConfig((prev) => ({ ...prev, readingTitle: thematic.title }));
+          } else if (taskType === 'SPEAKING') {
+            setSpeakingTitle(thematic.title);
+          }
+        }
         addToast({
           type: 'info',
-          title: 'Topic Auto-Filled',
-          message: `Recommended gap: ${weakest.grammarTopic} (${Math.round(weakest.masteryScore)}% mastery). You can edit it freely.`,
+          title: 'Topic & Context Auto-Filled',
+          message: `Recommended gap: ${weakest.grammarTopic} (${Math.round(weakest.masteryScore)}% mastery). Context populated.`,
         });
         return;
       }
     } catch (_) {}
-    const defaultList = catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel];
-    if (defaultList && defaultList.length > 0) {
-      setGrammarTopic(defaultList[0]);
+    const thematic = getRandomThematicTopic(cefrLevel, domain);
+    if (thematic) {
+      if (taskType === 'ESSAY') {
+        setGrammarTopic(thematic.prompt || thematic.title);
+      } else {
+        setGrammarTopic(thematic.grammarFocus || thematic.title);
+      }
+      if (thematic.vocabulary && thematic.vocabulary.length > 0) {
+        setCustomVocabulary(thematic.vocabulary.join(', '));
+      }
+      if (thematic.grammarFocus) {
+        setCustomRule(thematic.grammarFocus);
+      }
+      if (taskType === 'READING') {
+        setReadingConfig((prev) => ({ ...prev, readingTitle: thematic.title }));
+      } else if (taskType === 'SPEAKING') {
+        setSpeakingTitle(thematic.title);
+      }
       addToast({
         type: 'info',
-        title: 'Topic Auto-Filled',
-        message: `Syllabus foundation: ${defaultList[0]}`,
+        title: 'Topic & Context Auto-Filled',
+        message: `Syllabus foundation: ${thematic.title}. Title, grammar and vocabulary filled.`,
       });
     }
   };
 
   /**
-   * @brief Fills a random topic from the syllabus or essay pool into the active topic field.
+   * @brief Fills a random topic and thematic vocabulary matching format and CEFR level.
    */
   const handleFillRandom = () => {
-    let pool: string[] = [];
-    if (taskType === 'ESSAY') {
-      pool = DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
-    } else {
-      pool = [
-        ...(catalog?.topicsByLevel?.[cefrLevel] || DEFAULT_CEFR_TOPICS[cefrLevel] || []),
-        ...(catalog?.mixedTopicsByLevel?.[cefrLevel] || []),
-      ];
-    }
-    if (pool.length > 0) {
-      const rolled = pool[Math.floor(Math.random() * pool.length)];
-      setGrammarTopic(rolled);
+    const thematic = getRandomThematicTopic(cefrLevel, domain);
+    if (thematic) {
+      if (taskType === 'ESSAY') {
+        setGrammarTopic(thematic.prompt || thematic.title);
+      } else {
+        setGrammarTopic(thematic.grammarFocus || thematic.title);
+      }
+      if (thematic.vocabulary && thematic.vocabulary.length > 0) {
+        setCustomVocabulary(thematic.vocabulary.join(', '));
+      }
+      if (thematic.grammarFocus) {
+        setCustomRule(thematic.grammarFocus);
+      }
+      if (taskType === 'READING') {
+        setReadingConfig((prev) => ({ ...prev, readingTitle: thematic.title }));
+      } else if (taskType === 'SPEAKING') {
+        setSpeakingTitle(thematic.title);
+      }
       addToast({
         type: 'info',
         title: 'Random Topic Rolled',
-        message: `Rolled: ${rolled}. You can edit it freely.`,
+        message: `Rolled: ${thematic.title}. Title, grammar and vocabulary filled.`,
       });
     }
   };
@@ -903,8 +1011,40 @@ export const ConfigureTask: React.FC = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      {/* Preset width controls (desktop only) */}
+      <div className="hidden lg:flex items-center justify-between py-1 text-xs text-slate-500">
+        <div className="flex items-center space-x-2">
+          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Layout split:</span>
+          <span className="font-mono font-bold text-primary">{splitRatio}% / {100 - splitRatio}%</span>
+        </div>
+        <div className="flex items-center space-x-1.5">
+          {[
+            { label: '50 / 50', val: 50 },
+            { label: '55 / 45', val: 55 },
+            { label: '40 / 60', val: 40 },
+            { label: '30 / 70', val: 30 },
+          ].map((preset) => (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() => setSplitRatio(preset.val)}
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-semibold transition border ${
+                splitRatio === preset.val
+                  ? 'bg-indigo-50 border-primary text-primary font-bold'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+              }`}
+            >
+              {preset.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div ref={layoutContainerRef} className="flex flex-col lg:flex-row gap-0 lg:gap-3 items-stretch relative">
+        <div
+          className="w-full lg:shrink-0 space-y-6"
+          style={isDesktop ? { flex: `0 0 ${splitRatio}%`, maxWidth: `${splitRatio}%`, width: `${splitRatio}%` } : undefined}
+        >
           {generationMode === 'QUICK' ? (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
               {/* Cohort Groups */}
@@ -961,7 +1101,8 @@ export const ConfigureTask: React.FC = () => {
                             : 'border-slate-200 hover:border-slate-300 text-slate-600'
                         }`}
                       >
-                        <span>{isSelected ? '✓ ' : ''}{g.name}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-sky-700 stroke-[3]" />}
+                        <span>{g.name}</span>
                         <span className="text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
                           {g.studentCount}
                         </span>
@@ -1011,7 +1152,7 @@ export const ConfigureTask: React.FC = () => {
                     className="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 text-amber-900 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
                   >
                     <Target className="w-3.5 h-3.5 text-amber-600" />
-                    <span>🎯 Recommended</span>
+                    <span>Recommended</span>
                   </button>
                   <button
                     type="button"
@@ -1019,7 +1160,7 @@ export const ConfigureTask: React.FC = () => {
                     className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-white hover:bg-indigo-50 text-indigo-900 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
                   >
                     <Shuffle className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>🎲 Surprise Topic</span>
+                    <span>Surprise Topic</span>
                   </button>
                 </div>
               </div>
@@ -1147,7 +1288,8 @@ export const ConfigureTask: React.FC = () => {
                             : 'border-slate-200 hover:border-slate-300 text-slate-600'
                         }`}
                       >
-                        <span>{isSelected ? '✓ ' : ''}{g.name}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-sky-700 stroke-[3]" />}
+                        <span>{g.name}</span>
                         <span className="text-[10px] bg-white/80 px-1.5 py-0.5 rounded-full text-slate-500 font-mono">
                           {g.studentCount}
                         </span>
@@ -1172,15 +1314,16 @@ export const ConfigureTask: React.FC = () => {
                       onClick={() => {
                         setAiEngineMode('PLATFORM');
                         setProvider('GEMINI');
-                        setModelName('gemini-3.8-flash');
+                        setModelName('gemini-flash-latest');
                       }}
-                      className={`px-3 py-1.5 rounded-lg transition ${
+                      className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
                         aiEngineMode === 'PLATFORM'
                           ? 'bg-white text-slate-900 shadow-xs'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      ⚡ Platform AI (Gemini)
+                      <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                      <span>Platform AI (Gemini)</span>
                     </button>
                     <button
                       type="button"
@@ -1191,13 +1334,14 @@ export const ConfigureTask: React.FC = () => {
                           setModelName(savedKeys[0].modelName || getDefaultModelForProvider(savedKeys[0].provider));
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-lg transition ${
+                      className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
                         aiEngineMode === 'BYOK'
                           ? 'bg-white text-slate-900 shadow-xs'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      🔑 Custom Key (BYOK)
+                      <Key className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Custom Key (BYOK)</span>
                     </button>
                   </div>
                 </div>
@@ -1209,7 +1353,7 @@ export const ConfigureTask: React.FC = () => {
                         <Sparkles className="w-4 h-4" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-slate-800">Google Gemini 3.8 Flash</span>
+                        <span className="text-xs font-bold text-slate-800">Google Gemini Flash (Latest)</span>
                         <span className="text-[11px] text-slate-500 block">Fast, reliable educator generation included in your tier</span>
                       </div>
                     </div>
@@ -1440,7 +1584,10 @@ export const ConfigureTask: React.FC = () => {
 
               {/* Switch to Quick Mode Callout */}
               <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-amber-900 gap-2">
-                <span>⚡ Prefer 1-Click Practice without adjusting manual parameters?</span>
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Prefer 1-Click Practice without adjusting manual parameters?</span>
+                </div>
                 <button
                   type="button"
                   onClick={() => setGenerationMode('QUICK')}
@@ -1513,26 +1660,20 @@ export const ConfigureTask: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <div className="relative w-36">
-                      <input
-                        type="number"
-                        min="1"
-                        max="1000"
-                        aria-label="Total Assignment Points"
-                        value={totalPoints}
-                        onChange={(e) => {
-                          const val = Math.max(1, parseInt(e.target.value) || 100);
-                          setTotalPoints(val);
-                          if (previewTask) {
-                            setPreviewTask({ ...previewTask, totalPoints: val });
-                          }
-                        }}
-                        className="w-full pl-3 pr-9 py-2 rounded-xl border border-indigo-200 bg-white text-xs font-black text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
-                        pts
-                      </span>
-                    </div>
+                    <NumberStepper
+                      value={totalPoints}
+                      min={1}
+                      max={1000}
+                      step={10}
+                      onChange={(val) => {
+                        setTotalPoints(val);
+                        if (previewTask) {
+                          setPreviewTask({ ...previewTask, totalPoints: val });
+                        }
+                      }}
+                      size="sm"
+                      ariaLabel="Total Assignment Points"
+                    />
                     <p className="text-[11px] text-slate-500 leading-snug">
                       Overall maximum score for this homework. Automatically distributed across questions during preview.
                     </p>
@@ -1576,8 +1717,25 @@ export const ConfigureTask: React.FC = () => {
           )}
         </div>
 
+        {/* Draggable Vertical Splitter Bar (Desktop only) */}
+        <div
+          onMouseDown={() => setIsDraggingSplitter(true)}
+          className={`hidden lg:flex flex-col items-center justify-center w-3 cursor-col-resize select-none shrink-0 group relative z-10 transition-colors ${
+            isDraggingSplitter ? 'opacity-100' : 'hover:opacity-100'
+          }`}
+          title="Drag to resize columns"
+        >
+          <div
+            className={`w-1.5 h-36 rounded-full transition-all duration-150 ${
+              isDraggingSplitter
+                ? 'bg-primary ring-4 ring-primary/20 scale-y-110'
+                : 'bg-slate-200 group-hover:bg-primary/60'
+            }`}
+          />
+        </div>
+
         {/* Live Preview Column */}
-        <div className="space-y-4">
+        <div className="w-full lg:min-w-0 flex-1 space-y-4 mt-6 lg:mt-0">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
               Live Preview & Customizer
@@ -1620,18 +1778,15 @@ export const ConfigureTask: React.FC = () => {
                     <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
                       Total Points:
                     </span>
-                    <div className="flex items-center space-x-1">
-                      <input
-                        type="number"
-                        min="1"
-                        max="1000"
-                        aria-label="Preview Total Points"
-                        value={previewTask.totalPoints ?? totalPoints}
-                        onChange={(e) => handleUpdateTotalPoints(parseInt(e.target.value) || 100)}
-                        className="w-20 px-2.5 py-1 rounded-xl border border-indigo-300 bg-white text-xs font-black text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                      />
-                      <span className="text-xs font-bold text-slate-500">pts</span>
-                    </div>
+                    <NumberStepper
+                      value={previewTask.totalPoints ?? totalPoints}
+                      min={1}
+                      max={1000}
+                      step={10}
+                      onChange={handleUpdateTotalPoints}
+                      size="sm"
+                      ariaLabel="Preview Total Points"
+                    />
                   </div>
 
                   {/* Question Points Sum Indicator & Quick Balance Tools */}
@@ -1722,10 +1877,10 @@ export const ConfigureTask: React.FC = () => {
                     )}
                   </div>
                 </div>
-                <textarea
-                  rows={previewTask.type === 'READING' ? 9 : previewTask.type === 'SPEAKING' ? 6 : 3}
+                <AutoExpandingTextarea
+                  minRows={previewTask.type === 'READING' ? 8 : previewTask.type === 'SPEAKING' ? 5 : 3}
                   value={previewTask.content}
-                  onChange={(e) => handleUpdateInstruction(e.target.value)}
+                  onChange={handleUpdateInstruction}
                   placeholder={
                     previewTask.type === 'SPEAKING'
                       ? 'Review and edit the oral speech passage text here...'
@@ -1762,11 +1917,27 @@ export const ConfigureTask: React.FC = () => {
                     {previewTask.questions.map((q, qIdx) => (
                       <div
                         key={q.id || `q-${qIdx}`}
-                        className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-3.5 transition hover:border-slate-300"
+                        onDragOver={(e) => handleDragOver(e, qIdx)}
+                        className={`rounded-2xl border p-4 space-y-3.5 transition-all duration-150 ${
+                          draggedQIndex === qIdx
+                            ? 'border-primary ring-2 ring-primary/40 bg-indigo-50/70 shadow-lg scale-[1.01]'
+                            : 'border-slate-200 bg-slate-50/50 hover:border-slate-300'
+                        }`}
                       >
-                        {/* Question Card Header with Question Points Price */}
+                        {/* Question Card Header with Drag Handle & Points Price Stepper */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
+                            {/* Grip Drag Handle */}
+                            <div
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, qIdx)}
+                              onDragEnd={handleDragEnd}
+                              className="p-1 text-slate-400 hover:text-slate-700 cursor-grab active:cursor-grabbing rounded-lg hover:bg-slate-200/60 transition"
+                              title="Drag to reorder question"
+                            >
+                              <GripVertical className="w-4 h-4" />
+                            </div>
+
                             <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary text-xs font-black flex items-center justify-center">
                               {qIdx + 1}
                             </span>
@@ -1785,23 +1956,20 @@ export const ConfigureTask: React.FC = () => {
                           </div>
 
                           <div className="flex items-center space-x-2">
-                            {/* Question Point Price Input */}
+                            {/* Question Point Price Stepper */}
                             <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-xl bg-white border border-slate-200 shadow-xs">
                               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                                 Points:
                               </span>
-                              <input
-                                type="number"
-                                min="1"
-                                max="500"
-                                aria-label={`Question ${qIdx + 1} Points`}
+                              <NumberStepper
                                 value={q.points ?? 20}
-                                onChange={(e) =>
-                                  handleUpdateQuestionPoints(qIdx, parseInt(e.target.value) || 1)
-                                }
-                                className="w-14 px-1 py-0.5 rounded text-xs font-black text-primary text-center focus:outline-none focus:ring-1 focus:ring-primary border-b border-indigo-200"
+                                min={1}
+                                max={500}
+                                step={5}
+                                onChange={(val) => handleUpdateQuestionPoints(qIdx, val)}
+                                size="sm"
+                                ariaLabel={`Question ${qIdx + 1} Points`}
                               />
-                              <span className="text-[11px] font-semibold text-slate-400">pts</span>
                             </div>
 
                             <button
@@ -1820,11 +1988,11 @@ export const ConfigureTask: React.FC = () => {
                           <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                             Prompt / Sentence
                           </label>
-                          <textarea
-                            rows={2}
+                          <AutoExpandingTextarea
+                            minRows={2}
                             value={q.questionText}
-                            onChange={(e) =>
-                              handleUpdateQuestion(qIdx, { questionText: e.target.value })
+                            onChange={(val) =>
+                              handleUpdateQuestion(qIdx, { questionText: val })
                             }
                             placeholder="Enter the question sentence or prompt..."
                             className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
@@ -1885,11 +2053,11 @@ export const ConfigureTask: React.FC = () => {
                                       )}
                                     </button>
 
-                                    <input
-                                      type="text"
+                                    <AutoExpandingTextarea
+                                      minRows={1}
                                       value={opt}
-                                      onChange={(e) =>
-                                        handleOptionChange(qIdx, optIdx, e.target.value)
+                                      onChange={(val) =>
+                                        handleOptionChange(qIdx, optIdx, val)
                                       }
                                       className={`flex-1 px-3 py-1.5 rounded-xl border text-xs font-medium focus:outline-none transition ${
                                         isCorrect
@@ -1934,10 +2102,10 @@ export const ConfigureTask: React.FC = () => {
                                 </button>
                               )}
                             </div>
-                            <input
-                              type="text"
+                            <AutoExpandingTextarea
+                              minRows={1}
                               value={q.correctAnswer}
-                              onChange={(e) => handleSetCorrectAnswer(qIdx, e.target.value)}
+                              onChange={(val) => handleSetCorrectAnswer(qIdx, val)}
                               placeholder="e.g. clean electricity / renewable resources"
                               className="w-full px-3 py-2 rounded-xl border border-emerald-300 bg-emerald-50/20 text-emerald-950 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition"
                             />
@@ -1952,11 +2120,11 @@ export const ConfigureTask: React.FC = () => {
                           <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                             Grammar Rule / Explanatory Hint
                           </label>
-                          <input
-                            type="text"
+                          <AutoExpandingTextarea
+                            minRows={1}
                             value={q.grammarRule || ''}
-                            onChange={(e) =>
-                              handleUpdateQuestion(qIdx, { grammarRule: e.target.value })
+                            onChange={(val) =>
+                              handleUpdateQuestion(qIdx, { grammarRule: val })
                             }
                             placeholder="e.g. Present Perfect: subject + have/has + V3"
                             className="w-full px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"

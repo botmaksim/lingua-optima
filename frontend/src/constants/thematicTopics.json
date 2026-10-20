@@ -1,0 +1,2323 @@
+[
+  {
+    "id": "daily_routines_habits",
+    "title": "Daily Routines, Habits, and Time Management",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "alarm clock",
+      "wake up",
+      "commute",
+      "routine",
+      "healthy habit",
+      "schedule",
+      "breakfast"
+    ],
+    "grammarFocus": "Present Simple (to be & common verbs)",
+    "prompt": "Describe your typical morning routine and explain how you manage your daily schedule."
+  },
+  {
+    "id": "my_neighborhood_city",
+    "title": "My Hometown, Neighborhood, and Local Places",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "neighborhood",
+      "grocery store",
+      "peaceful",
+      "convenient",
+      "subway station",
+      "park",
+      "avenue"
+    ],
+    "grammarFocus": "Basic Prepositions of Place & Time (in, at, on)",
+    "prompt": "Describe your neighborhood or town. What facilities and places do you visit most often?"
+  },
+  {
+    "id": "shopping_groceries",
+    "title": "Grocery Shopping and Essential Food Choices",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "supermarket",
+      "fresh vegetables",
+      "receipt",
+      "discount",
+      "cashier",
+      "ingredients",
+      "basket"
+    ],
+    "grammarFocus": "Countable vs Uncountable Nouns (some, any, much, many)",
+    "prompt": "Write about your typical grocery shopping trip. What food items do you buy regularly?"
+  },
+  {
+    "id": "family_relationships",
+    "title": "Family Members, Home Traditions, and Hobbies",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "relative",
+      "gathering",
+      "tradition",
+      "celebrate",
+      "hobby",
+      "supportive",
+      "household"
+    ],
+    "grammarFocus": "Possessive Adjectives & Possessive 's",
+    "prompt": "Introduce your family or close friends and describe a favorite hobby you enjoy together."
+  },
+  {
+    "id": "weekend_leisure",
+    "title": "Weekend Leisure Activities and Sports",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "outdoor",
+      "exercise",
+      "weekend",
+      "relax",
+      "jogging",
+      "board games",
+      "cinema"
+    ],
+    "grammarFocus": "Can / Can't for Ability & Permission",
+    "prompt": "What do you usually do on weekends? Discuss your favorite ways to unwind and relax."
+  },
+  {
+    "id": "weather_seasons",
+    "title": "Weather, Changing Seasons, and Outdoor Clothes",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "forecast",
+      "sunny",
+      "raincoat",
+      "chilly",
+      "autumn",
+      "temperature",
+      "breeze"
+    ],
+    "grammarFocus": "Present Simple & Adjectives",
+    "prompt": "Which season is your favorite and what clothes or activities suit this weather best?"
+  },
+  {
+    "id": "travel_getting_around",
+    "title": "Public Transportation and Getting Around Town",
+    "level": "A1",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "ticket",
+      "platform",
+      "passenger",
+      "bus route",
+      "transfer",
+      "on time",
+      "journey"
+    ],
+    "grammarFocus": "Imperatives & Basic Question Formation",
+    "prompt": "Give directions to an important landmark in your city using public transport."
+  },
+  {
+    "id": "eating_out_restaurants",
+    "title": "Dining Out and Ordering at a Cafe",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "menu",
+      "order",
+      "waiter",
+      "delicious",
+      "bill",
+      "appetizer",
+      "beverage"
+    ],
+    "grammarFocus": "Would like / Can I have",
+    "prompt": "Describe a visit to a cafe or restaurant. What food do you like to order?"
+  },
+  {
+    "id": "unforgettable_journey",
+    "title": "An Unforgettable Journey and Holiday Adventure",
+    "level": "A2",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "itinerary",
+      "souvenir",
+      "landmark",
+      "delayed flight",
+      "scenic view",
+      "memorable",
+      "explore"
+    ],
+    "grammarFocus": "Past Simple (Regular & Irregular Verbs)",
+    "prompt": "Narrate an exciting vacation or trip you took in the past. What unexpected things happened?"
+  },
+  {
+    "id": "city_vs_countryside",
+    "title": "Living in a Bustling Metropolis vs Quiet Countryside",
+    "level": "A2",
+    "domain": "Society",
+    "vocabulary": [
+      "pollution",
+      "pace of life",
+      "tranquility",
+      "amenities",
+      "traffic jam",
+      "greenery",
+      "crowded"
+    ],
+    "grammarFocus": "Comparative and Superlative Adjectives",
+    "prompt": "Compare life in a big metropolitan city with life in a peaceful rural village."
+  },
+  {
+    "id": "future_career_goals",
+    "title": "Future Career Aspirations and Job Interviews",
+    "level": "A2",
+    "domain": "Business",
+    "vocabulary": [
+      "qualification",
+      "ambition",
+      "promotion",
+      "resume",
+      "colleague",
+      "interview",
+      "skills"
+    ],
+    "grammarFocus": "Future with 'Going to' vs 'Will'",
+    "prompt": "What career are you planning to pursue, and what qualifications will you need to succeed?"
+  },
+  {
+    "id": "smartphones_digital_habits",
+    "title": "Smartphones and Healthy Screen Time Habits",
+    "level": "A2",
+    "domain": "Technology",
+    "vocabulary": [
+      "notifications",
+      "social media",
+      "screen time",
+      "device",
+      "distraction",
+      "application",
+      "text message"
+    ],
+    "grammarFocus": "Have to & Must (Basic Rules)",
+    "prompt": "How do smartphones change our daily habits? Discuss the pros and cons of frequent phone use."
+  },
+  {
+    "id": "healthy_nutrition_fitness",
+    "title": "Nutritional Choices, Cooking, and Staying Fit",
+    "level": "A2",
+    "domain": "Health",
+    "vocabulary": [
+      "balanced diet",
+      "vitamins",
+      "workout",
+      "hydration",
+      "home-cooked",
+      "calorie",
+      "stamina"
+    ],
+    "grammarFocus": "Should / Shouldn't for Advice",
+    "prompt": "What lifestyle changes can a person make to improve their health and energy levels?"
+  },
+  {
+    "id": "learning_languages_online",
+    "title": "Mastering Foreign Languages Through Modern Apps",
+    "level": "A2",
+    "domain": "Education",
+    "vocabulary": [
+      "vocabulary set",
+      "pronunciation",
+      "fluent",
+      "flashcards",
+      "practice daily",
+      "accent",
+      "progress"
+    ],
+    "grammarFocus": "Present Continuous for Temporary Actions & Future Arrangements",
+    "prompt": "Explain the methods you use to study English and how digital tools assist your progress."
+  },
+  {
+    "id": "festivals_cultural_traditions",
+    "title": "National Celebrations and Folk Traditions",
+    "level": "A2",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "costume",
+      "heritage",
+      "spectacle",
+      "feast",
+      "generations",
+      "symbolic",
+      "fireworks"
+    ],
+    "grammarFocus": "Past Simple vs Past Continuous",
+    "prompt": "Describe a traditional national holiday in your country. How do people celebrate it?"
+  },
+  {
+    "id": "pets_animal_companionship",
+    "title": "The Joy and Responsibilities of Having Pets",
+    "level": "A2",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "veterinarian",
+      "companion",
+      "responsibility",
+      "adopt",
+      "training",
+      "affection",
+      "shelter"
+    ],
+    "grammarFocus": "Modal Verbs (must, have to, need to)",
+    "prompt": "Why are pets important in many households? What responsibilities do pet owners have?"
+  },
+  {
+    "id": "remote_work_productivity",
+    "title": "The Dynamics of Remote Work and Virtual Teams",
+    "level": "B1",
+    "domain": "Business",
+    "vocabulary": [
+      "work-life balance",
+      "telecommuting",
+      "productivity",
+      "isolation",
+      "videoconference",
+      "flexibility",
+      "ergonomic"
+    ],
+    "grammarFocus": "Present Perfect vs Past Simple",
+    "prompt": "Analyze the advantages and disadvantages of working or studying remotely from home."
+  },
+  {
+    "id": "sustainable_consumerism",
+    "title": "Eco-Friendly Living and Waste Reduction",
+    "level": "B1",
+    "domain": "Environment",
+    "vocabulary": [
+      "carbon footprint",
+      "single-use plastic",
+      "renewable",
+      "biodegradable",
+      "compost",
+      "consumption",
+      "zero-waste"
+    ],
+    "grammarFocus": "Conditionals 0, 1, 2",
+    "prompt": "What practical steps can individuals take to minimize household waste and protect nature?"
+  },
+  {
+    "id": "public_transit_urban_mobility",
+    "title": "Urban Transit, Bicycle Lanes, and Traffic Congestion",
+    "level": "B1",
+    "domain": "Society",
+    "vocabulary": [
+      "commuter",
+      "infrastructure",
+      "emissions",
+      "pedestrian zone",
+      "congestion",
+      "affordability",
+      "transit pass"
+    ],
+    "grammarFocus": "Comparatives and Superlatives (as...as, the more...the more)",
+    "prompt": "Should city authorities prioritize expanding public transit over building roads for private cars?"
+  },
+  {
+    "id": "school_uniforms_equity",
+    "title": "Dress Codes and School Uniform Policies",
+    "level": "B1",
+    "domain": "Education",
+    "vocabulary": [
+      "individuality",
+      "equality",
+      "distraction",
+      "peer pressure",
+      "dress code",
+      "belonging",
+      "expenses"
+    ],
+    "grammarFocus": "Passive Voice (Present & Past Simple)",
+    "prompt": "Do school uniforms encourage discipline and equality, or do they suppress self-expression?"
+  },
+  {
+    "id": "social_media_friendships",
+    "title": "The Impact of Digital Networks on True Friendships",
+    "level": "B1",
+    "domain": "Society",
+    "vocabulary": [
+      "superficial",
+      "genuine connection",
+      "social comparison",
+      "empathy",
+      "online community",
+      "alienation",
+      "direct messaging"
+    ],
+    "grammarFocus": "Used to / Would for Past Habits",
+    "prompt": "How has social media transformed interpersonal relationships compared to previous generations?"
+  },
+  {
+    "id": "fast_fashion_impact",
+    "title": "The Hidden Costs of Fast Fashion and Apparel Waste",
+    "level": "B1",
+    "domain": "Environment",
+    "vocabulary": [
+      "textile waste",
+      "garment",
+      "ethical labor",
+      "sustainability",
+      "thrift store",
+      "consumer trend",
+      "durability"
+    ],
+    "grammarFocus": "Modal Verbs (obligation, advice, prohibition)",
+    "prompt": "Discuss the environmental and ethical consequences of buying cheap, disposable clothing."
+  },
+  {
+    "id": "cybersecurity_personal_data",
+    "title": "Protecting Personal Privacy in the Digital Age",
+    "level": "B1",
+    "domain": "Technology",
+    "vocabulary": [
+      "phishing",
+      "encryption",
+      "two-factor authentication",
+      "sensitive data",
+      "breach",
+      "password manager",
+      "privacy policy"
+    ],
+    "grammarFocus": "Relative Clauses (defining and non-defining)",
+    "prompt": "What precautions should everyday internet users take to protect their personal credentials online?"
+  },
+  {
+    "id": "travel_broadening_perspectives",
+    "title": "How International Travel Shapes Cultural Perspectives",
+    "level": "B1",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "culture shock",
+      "open-minded",
+      "hospitality",
+      "stereotypes",
+      "immersion",
+      "global citizen",
+      "customs"
+    ],
+    "grammarFocus": "Past Continuous vs Past Simple in Narrative",
+    "prompt": "In what ways does traveling to foreign countries challenge cultural preconceptions?"
+  },
+  {
+    "id": "cinema_storytelling_culture",
+    "title": "Cinema, Streaming Platforms, and Visual Storytelling",
+    "level": "B1",
+    "domain": "Culture",
+    "vocabulary": [
+      "cinematography",
+      "blockbuster",
+      "streaming service",
+      "character arc",
+      "binge-watch",
+      "subtitles",
+      "critically acclaimed"
+    ],
+    "grammarFocus": "Present Perfect Continuous",
+    "prompt": "How have on-demand streaming services changed how audiences experience cinema and TV shows?"
+  },
+  {
+    "id": "volunteering_civic_duty",
+    "title": "Community Volunteering and Civic Engagement",
+    "level": "B1",
+    "domain": "Society",
+    "vocabulary": [
+      "non-profit",
+      "philanthropy",
+      "solidarity",
+      "underprivileged",
+      "mentor",
+      "fundraiser",
+      "initiative"
+    ],
+    "grammarFocus": "Conditionals (First and Second)",
+    "prompt": "Why is youth volunteering essential for community building and personal character development?"
+  },
+  {
+    "id": "music_mental_health",
+    "title": "The Therapeutic Effects of Music on Stress Relief",
+    "level": "B1",
+    "domain": "Health",
+    "vocabulary": [
+      "soundtrack",
+      "melodic",
+      "stress relief",
+      "mood enhancer",
+      "tempo",
+      "resonance",
+      "emotional outlet"
+    ],
+    "grammarFocus": "Gerunds and Infinitives as Subjects/Objects",
+    "prompt": "How does listening to or playing musical instruments affect our mood and cognitive wellbeing?"
+  },
+  {
+    "id": "financial_literacy_youth",
+    "title": "Financial Literacy, Budgeting, and Smart Saving",
+    "level": "B1",
+    "domain": "Business",
+    "vocabulary": [
+      "budgeting",
+      "interest rate",
+      "savings account",
+      "investment",
+      "debt",
+      "expenses",
+      "emergency fund"
+    ],
+    "grammarFocus": "Modal Verbs of Deduction (Present)",
+    "prompt": "Why should schools teach young people practical money management and investment fundamentals?"
+  },
+  {
+    "id": "ai_workplace_automation",
+    "title": "Artificial Intelligence and the Future of Employment",
+    "level": "B2",
+    "domain": "Technology",
+    "vocabulary": [
+      "automation",
+      "disruptive technology",
+      "algorithmic efficiency",
+      "reskilling",
+      "job displacement",
+      "human capital",
+      "productivity gain"
+    ],
+    "grammarFocus": "Third Conditional & Mixed Conditionals",
+    "prompt": "To what extent will artificial intelligence displace routine jobs versus creating higher-value roles?"
+  },
+  {
+    "id": "renewable_energy_transition",
+    "title": "The Global Transition to Renewable Energy Systems",
+    "level": "B2",
+    "domain": "Environment",
+    "vocabulary": [
+      "photovoltaic",
+      "grid reliability",
+      "decarbonization",
+      "fossil fuel subsidy",
+      "wind turbine",
+      "storage battery",
+      "energy sovereignty"
+    ],
+    "grammarFocus": "Passive Voice (Continuous & Perfect Tenses)",
+    "prompt": "Analyze the technical and economic obstacles countries face when transitioning to clean power."
+  },
+  {
+    "id": "mass_tourism_sustainability",
+    "title": "Overtourism and Heritage Preservation in Historic Cities",
+    "level": "B2",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "overtourism",
+      "gentrification",
+      "local populace",
+      "cultural commodification",
+      "carrying capacity",
+      "heritage preservation",
+      "sustainable tourism"
+    ],
+    "grammarFocus": "Wish / If Only & Unreal Past",
+    "prompt": "Discuss whether municipal authorities should impose visitor caps and tourist taxes on historic districts."
+  },
+  {
+    "id": "higher_ed_vocational_value",
+    "title": "Higher Education: Academic Theory vs Vocational Readiness",
+    "level": "B2",
+    "domain": "Education",
+    "vocabulary": [
+      "tuition fees",
+      "curriculum relevance",
+      "vocational training",
+      "critical thinking",
+      "employability",
+      "credentialism",
+      "internship"
+    ],
+    "grammarFocus": "Reported Speech with Complex Reporting Verbs",
+    "prompt": "Evaluate whether modern universities focus sufficiently on practical industry skills or abstract theory."
+  },
+  {
+    "id": "consumerism_targeted_ads",
+    "title": "Micro-Targeted Advertising and Algorithmic Consumerism",
+    "level": "B2",
+    "domain": "Business",
+    "vocabulary": [
+      "behavioral profiling",
+      "targeted marketing",
+      "impulsive buying",
+      "consumer sovereignty",
+      "brand loyalty",
+      "monetization",
+      "e-commerce"
+    ],
+    "grammarFocus": "Inversion with Negative Adverbials (Not only... but also, Rarely)",
+    "prompt": "How do algorithmic tracking and personalized digital ads influence modern spending decisions?"
+  },
+  {
+    "id": "space_exploration_priorities",
+    "title": "Space Exploration vs Terrestrial Environmental Spending",
+    "level": "B2",
+    "domain": "Science",
+    "vocabulary": [
+      "interplanetary",
+      "astrophysics",
+      "resource allocation",
+      "terrestrial crisis",
+      "scientific payoff",
+      "privatization of space",
+      "technological spin-off"
+    ],
+    "grammarFocus": "Modal Verbs of Past Deduction (Must have, Could have, Should have)",
+    "prompt": "Should governments invest billions into Mars exploration while pressing ecological issues remain on Earth?"
+  },
+  {
+    "id": "mental_health_workplace_culture",
+    "title": "Burnout Prevention and Psychological Safety at Work",
+    "level": "B2",
+    "domain": "Business",
+    "vocabulary": [
+      "burnout",
+      "psychological safety",
+      "unrealistic deadlines",
+      "workplace culture",
+      "wellbeing initiative",
+      "absenteeism",
+      "retention"
+    ],
+    "grammarFocus": "Gerunds vs Infinitives with Shift in Meaning",
+    "prompt": "What institutional strategies can corporate leaders adopt to combat employee chronic burnout?"
+  },
+  {
+    "id": "cryptocurrency_financial_systems",
+    "title": "Decentralized Finance, Blockchain, and Central Banks",
+    "level": "B2",
+    "domain": "Business",
+    "vocabulary": [
+      "cryptocurrency",
+      "blockchain ledger",
+      "speculative bubble",
+      "regulatory framework",
+      "decentralization",
+      "fiat currency",
+      "volatility"
+    ],
+    "grammarFocus": "Relative Clauses with Prepositions (in which, to whom)",
+    "prompt": "Examine whether digital decentralized currencies pose a genuine challenge to established central banking."
+  },
+  {
+    "id": "urban_architecture_green_spaces",
+    "title": "Sustainable Urban Architecture and Biophilic Design",
+    "level": "B2",
+    "domain": "Environment",
+    "vocabulary": [
+      "biophilic design",
+      "urban sprawl",
+      "rooftop garden",
+      "energy efficiency",
+      "walkability",
+      "public infrastructure",
+      "microclimate"
+    ],
+    "grammarFocus": "Participle Clauses (Present and Past Participles)",
+    "prompt": "How does incorporating greenery and natural sunlight into architecture improve public wellbeing?"
+  },
+  {
+    "id": "fake_news_media_literacy",
+    "title": "Combating Misinformation in the Age of Clickbait",
+    "level": "B2",
+    "domain": "Society",
+    "vocabulary": [
+      "misinformation",
+      "echo chamber",
+      "fact-checking",
+      "sensationalism",
+      "source credibility",
+      "media literacy",
+      "disinformation campaign"
+    ],
+    "grammarFocus": "Mixed Conditionals (Type 2 + Type 3)",
+    "prompt": "Why has critical media literacy become an indispensable democratic survival skill for young citizens?"
+  },
+  {
+    "id": "genetic_engineering_ethics",
+    "title": "CRISPR, Gene Editing, and Bioethical Boundaries",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "germline editing",
+      "therapeutic intervention",
+      "eugenics",
+      "bioethics",
+      "unintended mutation",
+      "genetic discrimination",
+      "precautionary principle"
+    ],
+    "grammarFocus": "Subjunctive Mood & Mandative Constructions",
+    "prompt": "Delineate the bioethical boundaries between curing congenital illnesses and engineering human enhancements."
+  },
+  {
+    "id": "surveillance_state_digital_privacy",
+    "title": "National Security Surveillance vs Inviolable Digital Privacy",
+    "level": "C1",
+    "domain": "Society",
+    "vocabulary": [
+      "mass surveillance",
+      "civil liberties",
+      "backdoor encryption",
+      "panopticon",
+      "counter-terrorism",
+      "unwarranted scrutiny",
+      "constitutional safeguards"
+    ],
+    "grammarFocus": "Advanced Inversion & Rhetorical Fronting",
+    "prompt": "Critique the proposition that citizens must sacrifice digital privacy to guarantee state security."
+  },
+  {
+    "id": "linguistic_imperialism_indigenous",
+    "title": "The Global Dominance of English and Language Extinction",
+    "level": "C1",
+    "domain": "Culture",
+    "vocabulary": [
+      "linguistic imperialism",
+      "lingua franca",
+      "indigenous dialects",
+      "cultural hegemony",
+      "language revitalization",
+      "cognitive diversity",
+      "homogenization"
+    ],
+    "grammarFocus": "Cleft Sentences (It was... that, What... is)",
+    "prompt": "Does the unchecked ascendancy of English inevitably accelerate the tragic erosion of indigenous tongues?"
+  },
+  {
+    "id": "growth_vs_degrowth_economics",
+    "title": "Economic Growth vs Degrowth: Reevaluating GDP",
+    "level": "C1",
+    "domain": "Business",
+    "vocabulary": [
+      "perpetual growth",
+      "ecological footprint",
+      "degrowth paradigm",
+      "planetary boundaries",
+      "consumerist ethos",
+      "decoupling",
+      "circular economy"
+    ],
+    "grammarFocus": "Hypothetical Meaning & Unreal Past Constructions",
+    "prompt": "Interrogate the feasibility of transitioning from GDP-centric growth models to steady-state ecological economics."
+  },
+  {
+    "id": "algorithmic_polarization_democracy",
+    "title": "Recommendation Algorithms and the Fragmented Public Sphere",
+    "level": "C1",
+    "domain": "Technology",
+    "vocabulary": [
+      "algorithmic amplification",
+      "epistemic bubbles",
+      "hyper-polarization",
+      "democratic deliberation",
+      "engagement metrics",
+      "sensationalist bias",
+      "civic fragmentation"
+    ],
+    "grammarFocus": "Ellipsis and Substitution in Complex Argumentation",
+    "prompt": "Analyze how engagement-driven algorithmic curation imperils nuanced consensus in democratic discourse."
+  },
+  {
+    "id": "neurotechnology_cognitive_liberty",
+    "title": "Brain-Computer Interfaces and Cognitive Liberty",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "neural telemetry",
+      "cognitive liberty",
+      "non-invasive BCI",
+      "neuro-privacy",
+      "subconscious profiling",
+      "agency",
+      "neuromorphic computation"
+    ],
+    "grammarFocus": "Nuanced Modal Idioms (bound to, liable to, had best)",
+    "prompt": "What novel legal and philosophical protections are required to preserve mental inviolability against neurotechnology?"
+  },
+  {
+    "id": "intellectual_property_open_source",
+    "title": "Patent Monopolies vs Open Science and Source Collaboration",
+    "level": "C1",
+    "domain": "Business",
+    "vocabulary": [
+      "patent thicket",
+      "open-source consortium",
+      "commons-based peer production",
+      "monopolistic rent",
+      "knowledge dissemination",
+      "collaborative ethos",
+      "proprietary lock-in"
+    ],
+    "grammarFocus": "Participle Clauses with Reduced Adverbials",
+    "prompt": "Assess whether existing intellectual property regimes incentivize genuine innovation or entrench rent-seeking monopolies."
+  },
+  {
+    "id": "artificial_general_intelligence_alignment",
+    "title": "The Alignment Problem: Value Specification in Superintelligence",
+    "level": "C1",
+    "domain": "Technology",
+    "vocabulary": [
+      "value alignment",
+      "existential risk",
+      "instrumental convergence",
+      "orthogonality thesis",
+      "interpretability",
+      "containment protocol",
+      "heuristic safety"
+    ],
+    "grammarFocus": "Advanced Discourse Markers & Cohesion Chains",
+    "prompt": "Evaluate the principal technical hurdles encountered when attempting to align frontier artificial agents with human values."
+  },
+  {
+    "id": "quantum_computing_paradigm",
+    "title": "Quantum Supremacy and the Cryptographic Landscape",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "quantum superposition",
+      "entanglement",
+      "post-quantum cryptography",
+      "computational complexity",
+      "RSA decipherment",
+      "qubit fidelity",
+      "algorithmic acceleration"
+    ],
+    "grammarFocus": "Passive Constructions with Verbs of Perception & Cognition",
+    "prompt": "Discuss the transformative implications of scalable quantum hardware for global financial cryptography."
+  },
+  {
+    "id": "meritocracy_and_social_mobility",
+    "title": "The Tyranny of Merit and the Mirage of Equal Opportunity",
+    "level": "C1",
+    "domain": "Society",
+    "vocabulary": [
+      "meritocratic illusion",
+      "social stratification",
+      "inherited capital",
+      "systemic disparity",
+      "credential inflation",
+      "egalitarian ethos",
+      "upward mobility"
+    ],
+    "grammarFocus": "Inversion after Restrictive Prepositional Phrases",
+    "prompt": "To what degree does modern meritocracy mask structural inequalities while moralizing socioeconomic failure?"
+  },
+  {
+    "id": "post_truth_populism_academia",
+    "title": "The Epistemic Mandate of Academia Amidst Post-Truth Populism",
+    "level": "C2",
+    "domain": "Academic",
+    "vocabulary": [
+      "epistemic authority",
+      "institutional delegitimization",
+      "hermeneutics of suspicion",
+      "scientism",
+      "ideological entrenchment",
+      "pedagogical neutrality",
+      "intellectual rigor"
+    ],
+    "grammarFocus": "Stylistic Inversion & Rhetorical Fronting",
+    "prompt": "How can higher learning institutions defend rigorous peer validation without succumbing to elitist detachment?"
+  },
+  {
+    "id": "surveillance_capitalism_agency",
+    "title": "Surveillance Capitalism and the Subjugation of Human Agency",
+    "level": "C2",
+    "domain": "Technology",
+    "vocabulary": [
+      "behavioral surplus",
+      "instrumentarian power",
+      "epistemic inequality",
+      "psychometric manipulation",
+      "ubiquitous datafication",
+      "autonomous subjectivity",
+      "hegemonic extraction"
+    ],
+    "grammarFocus": "Subtle Modal Nuances & Epistemic Speculative Stance",
+    "prompt": "Deconstruct how behavioral prediction markets imperceptibly modify human autonomy into commodity streams."
+  },
+  {
+    "id": "cultural_relativism_universalism",
+    "title": "Cultural Relativism vs Universal Human Rights Norms",
+    "level": "C2",
+    "domain": "Philosophy",
+    "vocabulary": [
+      "moral universalism",
+      "ethnocentric bias",
+      "normative hegemony",
+      "incommensurability",
+      "cosmopolitan ethics",
+      "cultural self-determination",
+      "foundational axioms"
+    ],
+    "grammarFocus": "Complex Cleft Constructions & Focalization",
+    "prompt": "Can universal human rights escape charges of Western cultural imperialism without collapsing into moral nihilism?"
+  },
+  {
+    "id": "aesthetics_in_anthropocene",
+    "title": "Aesthetic Significance in the Anthropocene: Art and Commodification",
+    "level": "C2",
+    "domain": "Culture",
+    "vocabulary": [
+      "anthropogenic disruption",
+      "hyperobjects",
+      "aesthetic contemplation",
+      "transience",
+      "commodification",
+      "ecological mourning",
+      "ephemeral media"
+    ],
+    "grammarFocus": "Idiomatic Phrasal Collocations & Register Shifts",
+    "prompt": "Examine the philosophical function of contemporary art in confronting irreversible ecological transformations."
+  },
+  {
+    "id": "technological_determinism_governance",
+    "title": "Technological Determinism vs Societal Sovereignty in Governance",
+    "level": "C2",
+    "domain": "Society",
+    "vocabulary": [
+      "technological imperative",
+      "democratic sovereignty",
+      "socio-technical trajectory",
+      "regulatory inertia",
+      "path dependency",
+      "teleological presumption",
+      "institutional recalibration"
+    ],
+    "grammarFocus": "Advanced Ellipsis, Substitution & Cohesive Ties",
+    "prompt": "Refute the fatalistic assertion that technological evolution is an autonomous vector immune to democratic steering."
+  },
+  {
+    "id": "posthumanism_and_identity",
+    "title": "Posthumanism, Transhumanist Ambitions, and Existential Boundaries",
+    "level": "C2",
+    "domain": "Philosophy",
+    "vocabulary": [
+      "embodiment",
+      "cyborgian symbiosis",
+      "existential finitude",
+      "ontological rupture",
+      "anthropocentrism",
+      "transhumanist teleology",
+      "phenomenological consciousness"
+    ],
+    "grammarFocus": "Figurative Language & Lexical Precision",
+    "prompt": "Critically interrogate whether transcending biological limitations obliterates the very preconditions of human moral agency."
+  },
+  {
+    "id": "deglobalization_geopolitical_fracture",
+    "title": "Deglobalization, Economic Nationalism, and Supply Chain Balkanization",
+    "level": "C2",
+    "domain": "Business",
+    "vocabulary": [
+      "mercantilist resurgence",
+      "autarky",
+      "geoeconomic fragmentation",
+      "supply chain resilience",
+      "multilateral decay",
+      "strategic decoupling",
+      "hegemonic confrontation"
+    ],
+    "grammarFocus": "Adverbial Clauses of Concession & Contrast",
+    "prompt": "Assess the long-term socioeconomic fallout of fragmented multilateral trade pacts and weaponized economic interdependence."
+  },
+  {
+    "id": "consciousness_qualia_and_machines",
+    "title": "The Hard Problem of Consciousness: Computationalism and Qualia",
+    "level": "C2",
+    "domain": "Philosophy",
+    "vocabulary": [
+      "subjective qualia",
+      "functionalism",
+      "computational substrate",
+      "explanatory gap",
+      "panpsychism",
+      "intentionality",
+      "synthetic sentience"
+    ],
+    "grammarFocus": "Rhetorical Subjunctive & Inversion",
+    "prompt": "Can sophisticated neural computation ever generate phenomenal experience, or is silicon sentience an ontological impossibility?"
+  },
+  {
+    "id": "climate_geoengineering_governance",
+    "title": "Stratospheric Aerosol Injection: Planetary Risk and Moral Hazard",
+    "level": "C2",
+    "domain": "Science",
+    "vocabulary": [
+      "solar radiation management",
+      "termination shock",
+      "unilateral deployment",
+      "moral hazard",
+      "geopolitical rogue actor",
+      "planetary climate tipping",
+      "radiative forcing"
+    ],
+    "grammarFocus": "Complex Subordination & Discourse Markers",
+    "prompt": "Analyze the geopolitical peril of unilateral solar geoengineering as a surrogate for genuine decarbonization."
+  },
+  {
+    "id": "language_thought_sapir_whorf",
+    "title": "Linguistic Relativity: Does Syntax Dictate Worldview?",
+    "level": "C2",
+    "domain": "Academic",
+    "vocabulary": [
+      "linguistic relativity",
+      "determinism",
+      "cognitive architecture",
+      "lexical granularity",
+      "spatial conceptualization",
+      "perceptual categorization",
+      "incommensurable epistemologies"
+    ],
+    "grammarFocus": "Stylistic Inversion & Fronting",
+    "prompt": "To what extent do the structural peculiarities of natural languages circumscribe the outer limits of conceptual thought?"
+  },
+  {
+    "id": "urban_revitalization_placemaking",
+    "title": "Urban Revitalization, Creative Placemaking, and Social Cohesion",
+    "level": "B2",
+    "domain": "Society",
+    "vocabulary": [
+      "placemaking",
+      "inclusive zoning",
+      "civic pride",
+      "brownfield redevelopment",
+      "pedestrian-centric",
+      "social fabric",
+      "urban vibrancy"
+    ],
+    "grammarFocus": "Participle Clauses for Cause and Effect",
+    "prompt": "How can creative public spaces revitalize post-industrial downtowns without displacing long-term residents?"
+  },
+  {
+    "id": "telemedicine_and_healthcare_access",
+    "title": "Telemedicine, Remote Diagnostics, and Rural Healthcare Parity",
+    "level": "B2",
+    "domain": "Health",
+    "vocabulary": [
+      "teleconsultation",
+      "digital divide",
+      "preventative care",
+      "diagnostic accuracy",
+      "underserved communities",
+      "broadband infrastructure",
+      "patient portal"
+    ],
+    "grammarFocus": "Passive Voice with Modal Auxiliaries",
+    "prompt": "Evaluate whether virtual consultations bridge the healthcare divide between urban centers and remote countryside communities."
+  },
+  {
+    "id": "sustainable_agriculture_vertical_farms",
+    "title": "Hydroponics, Vertical Farming, and Future Food Security",
+    "level": "B2",
+    "domain": "Environment",
+    "vocabulary": [
+      "aeroponics",
+      "soil depletion",
+      "crop yield",
+      "water conservation",
+      "pesticide-free",
+      "controlled-environment agriculture",
+      "food security"
+    ],
+    "grammarFocus": "Conditionals with Provided that / As long as",
+    "prompt": "Can urban vertical farming realistically replace traditional soil-based agriculture on a global scale?"
+  },
+  {
+    "id": "corporate_social_responsibility",
+    "title": "Corporate Social Responsibility: True Ethics or Public Relations?",
+    "level": "B2",
+    "domain": "Business",
+    "vocabulary": [
+      "greenwashing",
+      "ethical stewardship",
+      "stakeholder governance",
+      "transparency",
+      "supply chain audit",
+      "corporate philanthropy",
+      "accountability"
+    ],
+    "grammarFocus": "Reported Speech with Evaluative Reporting Verbs",
+    "prompt": "Is corporate social responsibility a genuine commitment to public welfare or merely a calculated public relations veneer?"
+  },
+  {
+    "id": "biotechnology_in_modern_medicine",
+    "title": "Monoclonal Antibodies and Precision Oncology Therapies",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "targeted therapy",
+      "immuno-oncology",
+      "clinical efficacy",
+      "biomarker",
+      "personalized medicine",
+      "adverse reaction",
+      "molecular pathology"
+    ],
+    "grammarFocus": "Subjunctive Constructions with Demands and Recommendations",
+    "prompt": "Analyze how personalized genetic therapies are revolutionizing survival rates in modern oncology."
+  },
+  {
+    "id": "gamification_in_education",
+    "title": "Gamification, Intrinsic Motivation, and Modern Classrooms",
+    "level": "B1",
+    "domain": "Education",
+    "vocabulary": [
+      "gamification",
+      "leaderboard",
+      "intrinsic motivation",
+      "interactive learning",
+      "engagement",
+      "feedback loop",
+      "badges"
+    ],
+    "grammarFocus": "Zero and First Conditionals with Imperatives",
+    "prompt": "Does introducing game mechanics into school lessons stimulate genuine curiosity or create superficial distractions?"
+  },
+  {
+    "id": "cyberbullying_and_youth_safety",
+    "title": "Online Harassment, Cyberbullying, and Digital Well-Being",
+    "level": "B1",
+    "domain": "Society",
+    "vocabulary": [
+      "cyberbullying",
+      "anonymity",
+      "bystander effect",
+      "mental health",
+      "reporting tool",
+      "empathy",
+      "moderation"
+    ],
+    "grammarFocus": "Modal Verbs for Past Advice and Regret (Should have + V3)",
+    "prompt": "What preventative measures can schools and parents adopt to curb cyberbullying among teenagers?"
+  },
+  {
+    "id": "minimalism_and_intentional_living",
+    "title": "Minimalism, Decluttering, and Intentional Consumer Choices",
+    "level": "B1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "declutter",
+      "intentional living",
+      "material possessions",
+      "mindfulness",
+      "consumer trap",
+      "simplification",
+      "gratitude"
+    ],
+    "grammarFocus": "Used to vs Be used to vs Get used to",
+    "prompt": "How does adopting a minimalist lifestyle alter one's relationship with possessions and stress levels?"
+  },
+  {
+    "id": "renewable_transport_electric_vehicles",
+    "title": "Electric Vehicles, Charging Infrastructure, and Grid Capacity",
+    "level": "B2",
+    "domain": "Technology",
+    "vocabulary": [
+      "lithium battery",
+      "charging station",
+      "range anxiety",
+      "tailpipe emissions",
+      "grid capacity",
+      "subsidies",
+      "lifecycle footprint"
+    ],
+    "grammarFocus": "Conditionals (Second and Third Mixed)",
+    "prompt": "Discuss the primary bottlenecks preventing the universal adoption of consumer electric vehicles."
+  },
+  {
+    "id": "remote_work_global_nomadism",
+    "title": "Digital Nomadism: Visa Regimes, Co-Living, and Local Economies",
+    "level": "B2",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "digital nomad",
+      "co-living space",
+      "nomad visa",
+      "cost of living",
+      "tax residency",
+      "local displacement",
+      "remote freelance"
+    ],
+    "grammarFocus": "Gerunds and Infinitives as Subjects/Complements",
+    "prompt": "What are the benefits and drawbacks of the rise of digital nomad communities for host tourist towns?"
+  },
+  {
+    "id": "podcast_revolution_journalism",
+    "title": "Podcasting, Long-Form Audio, and the Evolution of Journalism",
+    "level": "B2",
+    "domain": "Culture",
+    "vocabulary": [
+      "long-form interview",
+      "podcast host",
+      "audio storytelling",
+      "listenership",
+      "intimacy",
+      "syndication",
+      "monetization"
+    ],
+    "grammarFocus": "Relative Clauses with Quantifiers (all of which, none of whom)",
+    "prompt": "Why has long-form audio conversation surpassed soundbite television journalism in public credibility?"
+  },
+  {
+    "id": "sleep_hygiene_and_circadian_rhythms",
+    "title": "Sleep Architecture, Blue Light, and Circadian Health",
+    "level": "B1",
+    "domain": "Health",
+    "vocabulary": [
+      "circadian rhythm",
+      "blue light filter",
+      "melatonin",
+      "insomnia",
+      "sleep hygiene",
+      "restorative rest",
+      "REM cycle"
+    ],
+    "grammarFocus": "Modal Verbs (Ought to, Must, Needn't)",
+    "prompt": "Explain the biological importance of regular sleep cycles and outline effective bedtime habits."
+  },
+  {
+    "id": "e_sports_and_digital_athletics",
+    "title": "Competitive Gaming: Professional Esports and Cultural Legitimacy",
+    "level": "B1",
+    "domain": "Culture",
+    "vocabulary": [
+      "esports tournament",
+      "professional gamer",
+      "reaction time",
+      "sponsorship",
+      "team synergy",
+      "spectator sport",
+      "gaming arena"
+    ],
+    "grammarFocus": "Comparatives with Far / Much / Significantly",
+    "prompt": "Should competitive electronic gaming be acknowledged with the same sporting status as traditional athletics?"
+  },
+  {
+    "id": "smart_cities_iot_governance",
+    "title": "Smart Cities: IoT Sensors, Traffic Optimization, and Civic Governance",
+    "level": "B2",
+    "domain": "Technology",
+    "vocabulary": [
+      "IoT sensor",
+      "traffic telemetry",
+      "smart grid",
+      "data analytics",
+      "public surveillance",
+      "urban efficiency",
+      "municipal dashboard"
+    ],
+    "grammarFocus": "Passive Voice with Prepositional Verbs",
+    "prompt": "How do connected municipal sensors optimize resource distribution while raising privacy questions?"
+  },
+  {
+    "id": "wilderness_conservation_rewilding",
+    "title": "Rewilding Ecosystems and Restoring Apex Predators",
+    "level": "C1",
+    "domain": "Environment",
+    "vocabulary": [
+      "rewilding",
+      "apex predator",
+      "trophic cascade",
+      "ecological balance",
+      "wildlife corridor",
+      "biodiversity restoration",
+      "endangered habitat"
+    ],
+    "grammarFocus": "Inversion after Seldom / Little / In no way",
+    "prompt": "Analyze the ecological rationale and rural resistance surrounding the reintroduction of apex predators to native forests."
+  },
+  {
+    "id": "microplastics_food_chain",
+    "title": "Microplastics in Oceanic Food Webs and Human Tissues",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "microplastic particle",
+      "bioaccumulation",
+      "oceanic gyre",
+      "endocrine disruptor",
+      "nanoplastics",
+      "water filtration",
+      "toxicological footprint"
+    ],
+    "grammarFocus": "Participle Clauses Expressing Condition and Result",
+    "prompt": "Examine the pervasive infiltration of synthetic polymers across trophic chains and evaluate potential biological hazards."
+  },
+  {
+    "id": "algorithmic_justice_bail_systems",
+    "title": "Predictive Policing, Algorithmic Sentencing, and Judicial Bias",
+    "level": "C1",
+    "domain": "Society",
+    "vocabulary": [
+      "recidivism prediction",
+      "judicial bias",
+      "algorithmic accountability",
+      "due process",
+      "discriminatory data",
+      "probabilistic sentencing",
+      "procedural justice"
+    ],
+    "grammarFocus": "Subjunctive Constructions in Legal and Official Registers",
+    "prompt": "To what extent does relying on automated risk-assessment tools in penal sentencing institutionalize historical biases?"
+  },
+  {
+    "id": "space_debris_orbital_commons",
+    "title": "Space Debris, Low-Earth Orbit Congestion, and the Kessler Syndrome",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "orbital debris",
+      "Kessler syndrome",
+      "decommissioning protocol",
+      "satellite constellation",
+      "space situational awareness",
+      "collision avoidance",
+      "astro-governance"
+    ],
+    "grammarFocus": "Hypothetical Inversion (Were it to happen, Had they known)",
+    "prompt": "Evaluate the urgent governance mechanisms required to avert runaway catastrophic debris cascades in low-Earth orbit."
+  },
+  {
+    "id": "epistemic_humility_scientific_inquiry",
+    "title": "Epistemic Humility, Paradigm Shifts, and Scientific Falsification",
+    "level": "C2",
+    "domain": "Academic",
+    "vocabulary": [
+      "epistemic humility",
+      "falsificationism",
+      "paradigm shift",
+      "anomalous data",
+      "incommensurability",
+      "methodological rigor",
+      "dogmatic adherence"
+    ],
+    "grammarFocus": "Complex Fronting and Focal Inversion",
+    "prompt": "Assess why epistemic humility remains the bedrock of genuine scientific advancement in an era of politicized claims."
+  },
+  {
+    "id": "linguistic_prescriptivism_vs_descriptivism",
+    "title": "Linguistic Prescriptivism vs Descriptivism: Grammar Wars and Evolution",
+    "level": "C1",
+    "domain": "Culture",
+    "vocabulary": [
+      "prescriptivism",
+      "descriptivism",
+      "lexical innovation",
+      "grammatical purity",
+      "semantic drift",
+      "sociolinguistic prestige",
+      "dialectal variance"
+    ],
+    "grammarFocus": "Cleft Sentences with Wh-Clauses and All that",
+    "prompt": "Debate whether grammar custodians preserve clarity and tradition or enforce arbitrary socioeconomic status markers."
+  },
+  {
+    "id": "sovereign_wealth_funds_state_capitalism",
+    "title": "Sovereign Wealth Funds, Strategic Reserves, and Global Assets",
+    "level": "C1",
+    "domain": "Business",
+    "vocabulary": [
+      "sovereign wealth fund",
+      "fiscal buffer",
+      "asset allocation",
+      "state capitalism",
+      "geoeconomic leverage",
+      "intergenerational equity",
+      "fiduciary duty"
+    ],
+    "grammarFocus": "Past Participle Clauses functioning as Adjectives",
+    "prompt": "How do national sovereign wealth funds balance long-term citizen intergenerational equity with geopolitical foreign asset risk?"
+  },
+  {
+    "id": "circular_bioeconomy_materials",
+    "title": "Mycelium Packaging, Algae Plastics, and Circular Bio-Materials",
+    "level": "B2",
+    "domain": "Environment",
+    "vocabulary": [
+      "mycelium composite",
+      "biopolymer",
+      "compostable packaging",
+      "circular bioeconomy",
+      "petrochemical substitute",
+      "cradle-to-cradle",
+      "biodegradation"
+    ],
+    "grammarFocus": "Passive Voice with Infinitive Complements",
+    "prompt": "Can fungal mycelium and algae-based materials scale sufficiently to supplant commercial petrochemical packaging?"
+  },
+  {
+    "id": "music_streaming_royalties_artists",
+    "title": "Streaming Platforms, Algorithmic Playlists, and Artist Royalties",
+    "level": "B2",
+    "domain": "Culture",
+    "vocabulary": [
+      "streaming royalty",
+      "pro-rata model",
+      "independent artist",
+      "algorithmic curation",
+      "monopolistic distributor",
+      "live touring",
+      "music licensing"
+    ],
+    "grammarFocus": "Mixed Conditionals (Unreal Past and Present State)",
+    "prompt": "Analyze how digitized micro-royalty payout structures have reshaped the financial viability of independent musicians."
+  },
+  {
+    "id": "digital_detox_attention_economy",
+    "title": "The Attention Economy, Dopamine Loops, and Intentional Disconnection",
+    "level": "B1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "dopamine loop",
+      "attention span",
+      "notification fatigue",
+      "digital detox",
+      "cognitive overload",
+      "mindful presence",
+      "deep work"
+    ],
+    "grammarFocus": "Gerunds after Prepositions and Fixed Expressions",
+    "prompt": "Why do individuals struggle to maintain long periods of focused concentration in an app-saturated environment?"
+  },
+  {
+    "id": "heritage_cuisine_culinary_diplomacy",
+    "title": "Gastrodiplomacy: Food Heritage as Soft Power",
+    "level": "B2",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "gastrodiplomacy",
+      "culinary heritage",
+      "soft power",
+      "authenticity",
+      "cultural ambassador",
+      "indigenous recipe",
+      "cross-cultural bridge"
+    ],
+    "grammarFocus": "Defining vs Non-defining Relative Clauses",
+    "prompt": "In what ways do nation-states deploy their national gastronomic traditions as instruments of foreign cultural diplomacy?"
+  },
+  {
+    "id": "nuclear_fusion_future_energy",
+    "title": "Nuclear Fusion, Tokamaks, and the Quest for Limitless Clean Energy",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "nuclear fusion",
+      "tokamak reactor",
+      "plasma confinement",
+      "net energy gain",
+      "tritium breeding",
+      "limitless energy",
+      "magnetic containment"
+    ],
+    "grammarFocus": "Advanced Conditionals with Inversion (Should fusion succeed...)",
+    "prompt": "Examine the technological hurdles that must be conquered before commercial nuclear fusion can reliably power city grids."
+  },
+  {
+    "id": "ageism_in_modern_workplace",
+    "title": "Ageism, Career Longevity, and Intergenerational Collaboration",
+    "level": "B2",
+    "domain": "Business",
+    "vocabulary": [
+      "ageism",
+      "career longevity",
+      "institutional knowledge",
+      "digital agility",
+      "intergenerational mentorship",
+      "stereotyping",
+      "retention"
+    ],
+    "grammarFocus": "Passive Voice with Reporting Verbs (is said to, are thought to)",
+    "prompt": "How can modern enterprises actively leverage institutional memory from senior staff while mentoring junior digital natives?"
+  },
+  {
+    "id": "dark_skies_light_pollution",
+    "title": "Light Pollution, Nocturnal Wildlife, and the Loss of Dark Skies",
+    "level": "B2",
+    "domain": "Environment",
+    "vocabulary": [
+      "light pollution",
+      "sky glow",
+      "nocturnal ecology",
+      "dark sky reserve",
+      "circadian disruption",
+      "astronomical observation",
+      "shielded fixtures"
+    ],
+    "grammarFocus": "Conditionals with In case / Unless / Provided that",
+    "prompt": "Discuss the biological and cultural repercussions of ubiquitous nighttime artificial illumination across metropolitan belts."
+  },
+  {
+    "id": "civic_deliberation_citizen_assemblies",
+    "title": "Citizens' Assemblies, Sortition, and Participatory Democracy",
+    "level": "C1",
+    "domain": "Society",
+    "vocabulary": [
+      "sortition",
+      "citizens' assembly",
+      "deliberative democracy",
+      "consensus building",
+      "polarization antidote",
+      "representative cross-section",
+      "policy recommendation"
+    ],
+    "grammarFocus": "Rhetorical Subjunctive in High-Level Proposals",
+    "prompt": "Can randomly selected citizen assemblies deliberate complex social policy more constructively than partisan parliaments?"
+  },
+  {
+    "id": "biomimicry_engineering_design",
+    "title": "Biomimetic Architecture: Learning from Termite Mounds and Lotus Leaves",
+    "level": "B2",
+    "domain": "Technology",
+    "vocabulary": [
+      "biomimicry",
+      "passive cooling",
+      "lotus effect",
+      "structural efficiency",
+      "natural adaptation",
+      "sustainable engineering",
+      "evolutionary blueprint"
+    ],
+    "grammarFocus": "Complex Comparatives (not so much X as Y, nowhere near as)",
+    "prompt": "Explain how studying architectural adaptations in animal habitats inspires energy-efficient structural designs in modern civil engineering."
+  },
+  {
+    "id": "deepfakes_epistemic_security",
+    "title": "Synthetic Media, Deepfakes, and the Erosion of Photographic Truth",
+    "level": "C1",
+    "domain": "Technology",
+    "vocabulary": [
+      "deepfake technology",
+      "cryptographic watermark",
+      "epistemic security",
+      "synthetic voice",
+      "plausible deniability",
+      "defamation",
+      "forensic verification"
+    ],
+    "grammarFocus": "Subjunctive and Inversion with Little did they know / Under no circumstances",
+    "prompt": "How does the proliferation of hyper-realistic generative synthetic media challenge foundational evidentiary standards in courtrooms and journalism?"
+  },
+  {
+    "id": "urban_foraging_wild_edibles",
+    "title": "Urban Foraging, Edible Plants, and Wild Botanical Knowledge",
+    "level": "B1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "foraging",
+      "botanical identification",
+      "edible weeds",
+      "seasonal harvest",
+      "sustainability",
+      "toxic lookalike",
+      "urban biodiversity"
+    ],
+    "grammarFocus": "Can / May / Might for Degrees of Probability",
+    "prompt": "What are the rules and ethical precautions one must follow when identifying and gathering edible plants in city parks?"
+  },
+  {
+    "id": "philosophical_stoicism_modern_anxiety",
+    "title": "Ancient Stoic Philosophy as an Antidote to Modern Anxiety",
+    "level": "B2",
+    "domain": "Philosophy",
+    "vocabulary": [
+      "dichotomy of control",
+      "equanimity",
+      "resilience",
+      "mindfulness",
+      "stoic philosophy",
+      "adversity",
+      "cognitive restructuring"
+    ],
+    "grammarFocus": "Wishes and Regrets about Present and Past States",
+    "prompt": "How can ancient Stoic principles such as the 'dichotomy of control' help individuals navigate contemporary psychological stressors?"
+  },
+  {
+    "id": "indie_game_narratives",
+    "title": "Independent Video Games as Mediums for Empathy and Narrative Art",
+    "level": "B2",
+    "domain": "Culture",
+    "vocabulary": [
+      "indie developer",
+      "interactive narrative",
+      "environmental storytelling",
+      "emotional resonance",
+      "art direction",
+      "player agency",
+      "allegory"
+    ],
+    "grammarFocus": "Participle Clauses used as Modifiers",
+    "prompt": "How do independent game studios utilize mechanics and player choices to communicate profound philosophical and emotional themes?"
+  },
+  {
+    "id": "nanotechnology_targeted_drug_delivery",
+    "title": "Nanoparticles in Targeted Cancer Therapeutics and Precision Medicine",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "nanoparticle carrier",
+      "blood-brain barrier",
+      "targeted drug delivery",
+      "cytotoxicity",
+      "therapeutic index",
+      "bio-distribution",
+      "macromolecule"
+    ],
+    "grammarFocus": "Passive Voice with Complex Phrasal Prepositions",
+    "prompt": "Describe the physiological mechanisms enabling lipid nanoparticles to deliver therapeutic payloads directly to malignant cells."
+  },
+  {
+    "id": "microbiome_gut_brain_axis",
+    "title": "The Gut-Brain Axis: How the Microbiome Governs Mood and Cognition",
+    "level": "B2",
+    "domain": "Health",
+    "vocabulary": [
+      "gut microbiome",
+      "enteric nervous system",
+      "gut-brain axis",
+      "serotonin synthesis",
+      "probiotics",
+      "microbial diversity",
+      "neurotransmitter"
+    ],
+    "grammarFocus": "Cleft Sentences (It is X that determines Y)",
+    "prompt": "Summarize recent biochemical findings on how microbial gut diversity influences psychological resilience and emotional stability."
+  },
+  {
+    "id": "anti_consumption_buy_nothing",
+    "title": "The 'Buy Nothing' Movement and Hyper-Local Gifting Economies",
+    "level": "B1",
+    "domain": "Society",
+    "vocabulary": [
+      "gift economy",
+      "mutual aid",
+      "excess consumerism",
+      "neighborhood barter",
+      "reusability",
+      "solidarity",
+      "zero-cost"
+    ],
+    "grammarFocus": "Conditionals (Type 1 and 2)",
+    "prompt": "Discuss how localized gift economies reduce consumption while fostering trust among neighborhood residents."
+  },
+  {
+    "id": "archaeological_lidar_discoveries",
+    "title": "LiDAR Remote Sensing and the Uncovering of Lost Civilizations",
+    "level": "B2",
+    "domain": "Science",
+    "vocabulary": [
+      "LiDAR scanning",
+      "remote sensing",
+      "canopy penetration",
+      "settlement mapping",
+      "archaeological excavation",
+      "ancient civilization",
+      "topography"
+    ],
+    "grammarFocus": "Past Perfect vs Past Simple in Scientific Discovery",
+    "prompt": "How has airborne laser scanning transformed archaeologists' understanding of vast pre-Columbian urban settlements under dense jungle canopies?"
+  },
+  {
+    "id": "open_source_governance_wikipedia",
+    "title": "Collaborative Knowledge: Wikipedia, Open Source, and Digital Commons",
+    "level": "B2",
+    "domain": "Technology",
+    "vocabulary": [
+      "crowdsourced",
+      "editorial consensus",
+      "vandalism rollback",
+      "citation required",
+      "peer-reviewed",
+      "open encyclopedia",
+      "collaborative neutrality"
+    ],
+    "grammarFocus": "Passive Voice with Modal Auxiliaries (must be cited, should be verified)",
+    "prompt": "Evaluate how volunteer editorial hierarchies preserve factual accuracy and neutrality on open crowdsourced knowledge platforms."
+  },
+  {
+    "id": "cognitive_biases_decision_making",
+    "title": "Confirmation Bias, Anchoring, and the Flaws in Human Reason",
+    "level": "B2",
+    "domain": "Philosophy",
+    "vocabulary": [
+      "confirmation bias",
+      "anchoring heuristic",
+      "cognitive distortion",
+      "irrational exuberance",
+      "critical detachment",
+      "metacognition",
+      "decision matrix"
+    ],
+    "grammarFocus": "Adverbial Clauses of Contrast (Whereas, While, In spite of)",
+    "prompt": "Analyze two prevalent cognitive biases and suggest practical debiasing techniques for executive business choices."
+  },
+  {
+    "id": "ocean_acidification_coral_bleaching",
+    "title": "Ocean Acidification, Carbon Sequestration, and Coral Bleaching",
+    "level": "B2",
+    "domain": "Environment",
+    "vocabulary": [
+      "ocean acidification",
+      "calcium carbonate",
+      "coral bleaching",
+      "marine calcifiers",
+      "carbon sink",
+      "thermal stress",
+      "symbiotic algae"
+    ],
+    "grammarFocus": "Mixed Conditionals and Cause-Effect Discourse Connectors",
+    "prompt": "Explain the chemical cascade of ocean acidification and its immediate hazard to marine biodiversity hotspots."
+  },
+  {
+    "id": "vintage_technology_analog_revival",
+    "title": "Vinyl Records, Film Photography, and the Analog Tactile Revival",
+    "level": "B1",
+    "domain": "Culture",
+    "vocabulary": [
+      "analog audio",
+      "vinyl warmth",
+      "tactile experience",
+      "film photography",
+      "tangible media",
+      "digital detachment",
+      "nostalgia"
+    ],
+    "grammarFocus": "Used to vs Present Simple Habitual",
+    "prompt": "Why are young digital natives increasingly drawn to physical vinyl records, film cameras, and mechanical typewriters?"
+  },
+  {
+    "id": "wildfire_management_prescribed_burns",
+    "title": "Megafires, Indigenous Forestry, and Controlled Prescribed Burns",
+    "level": "B2",
+    "domain": "Environment",
+    "vocabulary": [
+      "prescribed burn",
+      "fuel load",
+      "wildfire suppression",
+      "indigenous forestry",
+      "fire ecology",
+      "defensible space",
+      "pyro-diversity"
+    ],
+    "grammarFocus": "Passive Voice with Perfect Modal Auxiliaries",
+    "prompt": "Why has total wildfire suppression proven counterproductive, and how do controlled cool burns revitalize fire-adapted forest landscapes?"
+  },
+  {
+    "id": "future_of_meat_cellular_agriculture",
+    "title": "Cultivated Meat, Cellular Bioreactors, and the Future of Protein",
+    "level": "B2",
+    "domain": "Science",
+    "vocabulary": [
+      "cellular agriculture",
+      "bioreactor",
+      "slaughter-free",
+      "nutrient broth",
+      "scale-up viability",
+      "taste parity",
+      "methane reduction"
+    ],
+    "grammarFocus": "Future Perfect & Future Continuous Tenses",
+    "prompt": "Assess the technological and consumer acceptance challenges facing laboratory-grown cultivated meat alternatives."
+  },
+  {
+    "id": "dialect_endangerment_revival",
+    "title": "Dialect Endangerment, Linguistic Pride, and Regional Heritage",
+    "level": "B2",
+    "domain": "Culture",
+    "vocabulary": [
+      "regional dialect",
+      "standardized language",
+      "oral history",
+      "linguistic pride",
+      "phonetic preservation",
+      "accent prejudice",
+      "cultural heritage"
+    ],
+    "grammarFocus": "Relative Clauses with Whom / Which / Whose",
+    "prompt": "Should regional schools incorporate localized dialects alongside the standardized national curriculum to prevent linguistic homogenization?"
+  },
+  {
+    "id": "smart_home_automation_ethics",
+    "title": "Smart Home IoT: Convenience vs Domestic Data Harvesting",
+    "level": "B1",
+    "domain": "Technology",
+    "vocabulary": [
+      "smart speaker",
+      "voice recording",
+      "home automation",
+      "data harvesting",
+      "user consent",
+      "device telemetry",
+      "cyber hygiene"
+    ],
+    "grammarFocus": "Modal Verbs of Obligation and Prohibition",
+    "prompt": "Examine the privacy tradeoffs families accept when installing connected smart microphones and cameras inside their homes."
+  },
+  {
+    "id": "slow_living_and_work_reduction",
+    "title": "The Four-Day Workweek, Slow Living, and Societal Rest",
+    "level": "B2",
+    "domain": "Society",
+    "vocabulary": [
+      "four-day workweek",
+      "worker productivity",
+      "compressed schedule",
+      "slow living",
+      "burnout reduction",
+      "societal rest",
+      "workplace trial"
+    ],
+    "grammarFocus": "Conditionals (Second and Third Type)",
+    "prompt": "Analyze empirical findings from trials testing a four-day working week on worker happiness and company output."
+  },
+  {
+    "id": "synthetic_biology_and_metabolic_engineering",
+    "title": "Synthetic Biology: Programming Microbes for Industrial Enzymes",
+    "level": "C1",
+    "domain": "Science",
+    "vocabulary": [
+      "metabolic pathway",
+      "synthetic genome",
+      "microbial fermentation",
+      "chassis organism",
+      "directed evolution",
+      "bio-manufacturing",
+      "genetic circuit"
+    ],
+    "grammarFocus": "Complex Participle Clauses and Passive Modals",
+    "prompt": "Evaluate the industrial potential of engineered yeast and bacteria in synthesizing carbon-neutral chemicals and pharmaceuticals."
+  },
+  {
+    "id": "subconscious_influence_in_architecture",
+    "title": "Neuroarchitecture: How Ceiling Heights and Angles Shape Mood",
+    "level": "C1",
+    "domain": "Health",
+    "vocabulary": [
+      "neuroarchitecture",
+      "spatial cognition",
+      "ceiling height effect",
+      "biophilic geometry",
+      "stress modulation",
+      "acoustic comfort",
+      "environmental psychology"
+    ],
+    "grammarFocus": "Cleft Sentences and Fronted Prepositional Phrases",
+    "prompt": "How do subtle structural variables like ceiling elevation, natural light angles, and material textures alter human neurological states?"
+  },
+  {
+    "id": "space_law_and_lunar_mining_rights",
+    "title": "The Artemis Accords, Lunar Regolith Mining, and Space Law",
+    "level": "C1",
+    "domain": "Business",
+    "vocabulary": [
+      "Outer Space Treaty",
+      "Artemis Accords",
+      "space resource extraction",
+      "lunar regolith",
+      "celestial sovereignty",
+      "non-appropriation",
+      "astro-politics"
+    ],
+    "grammarFocus": "Subjunctive Constructions and Modal Auxiliaries in Legal Treaties",
+    "prompt": "Analyze the legal ambiguity in the 1967 Outer Space Treaty regarding commercial claims to lunar water ice and mineral extraction."
+  },
+  {
+    "id": "the_philosophy_of_time_presentism",
+    "title": "The Philosophy of Time: Presentism, Eternalism, and the Block Universe",
+    "level": "C2",
+    "domain": "Philosophy",
+    "vocabulary": [
+      "presentism",
+      "eternalism",
+      "block universe",
+      "spacetime continuum",
+      "phenomenological flow",
+      "temporal ontology",
+      "entropy vector"
+    ],
+    "grammarFocus": "Stylistic Inversion & Rhetorical Conditional Clauses",
+    "prompt": "Contrast the presentist intuition of temporal flow with the relativistic eternalist conception of an invariant four-dimensional block universe."
+  },
+  {
+    "id": "a1_favorite_foods",
+    "title": "Favorite Foods, Meals, and Cooking at Home",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "breakfast",
+      "dinner",
+      "vegetables",
+      "delicious",
+      "cook",
+      "kitchen",
+      "recipe"
+    ],
+    "grammarFocus": "Present Simple (like, love, prefer)",
+    "prompt": "What are your favorite foods? Describe a simple meal you know how to cook.",
+    "speakingFocus": "Short vowels /ɪ/ and /e/ in food names"
+  },
+  {
+    "id": "a1_hobbies_free_time",
+    "title": "Hobbies, Sports, and Free Time Activities",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "swimming",
+      "guitar",
+      "photography",
+      "weekend",
+      "enjoy",
+      "outdoor",
+      "relaxing"
+    ],
+    "grammarFocus": "Can / Can't for Abilities",
+    "prompt": "What hobbies do you enjoy in your spare time? When and where do you do them?",
+    "speakingFocus": "Sentence stress on action verbs"
+  },
+  {
+    "id": "a1_best_friends",
+    "title": "My Best Friend: Personality and Appearance",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "friendly",
+      "funny",
+      "helpful",
+      "hair",
+      "tall",
+      "classmate",
+      "laugh"
+    ],
+    "grammarFocus": "Adjectives of personality and appearance",
+    "prompt": "Describe your best friend. What do they look like and why do you like spending time with them?",
+    "speakingFocus": "Final -s and -es pronunciation (/s/, /z/, /ɪz/)"
+  },
+  {
+    "id": "a1_school_subjects",
+    "title": "School Subjects and Classroom Life",
+    "level": "A1",
+    "domain": "Education",
+    "vocabulary": [
+      "mathematics",
+      "history",
+      "teacher",
+      "homework",
+      "desk",
+      "interesting",
+      "exam"
+    ],
+    "grammarFocus": "Prepositions of Time (at 9 o'clock, on Mondays, in September)",
+    "prompt": "Which school subjects do you find most interesting and which are difficult for you?",
+    "speakingFocus": "Word stress on multi-syllable school subjects"
+  },
+  {
+    "id": "a1_clothes_and_style",
+    "title": "Clothes, Colors, and Dressing for the Weather",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "jacket",
+      "sweater",
+      "sneakers",
+      "comfortable",
+      "scarf",
+      "umbrella",
+      "cotton"
+    ],
+    "grammarFocus": "Present Continuous for current clothing (I am wearing...)",
+    "prompt": "What clothes do you usually wear in winter versus summer? Describe your outfit today.",
+    "speakingFocus": "Consonant contrasts /ʃ/ vs /tʃ/ (shirt, jacket)"
+  },
+  {
+    "id": "a1_doctor_basic_health",
+    "title": "Visiting the Doctor and Basic Symptoms",
+    "level": "A1",
+    "domain": "Health",
+    "vocabulary": [
+      "headache",
+      "medicine",
+      "temperature",
+      "doctor",
+      "rest",
+      "pharmacy",
+      "water"
+    ],
+    "grammarFocus": "Have got / Have a headache, Have to rest",
+    "prompt": "Write about a time you felt sick. What advice did the doctor or your parents give you?",
+    "speakingFocus": "Aspiration of voiceless plosives /p/, /t/, /k/"
+  },
+  {
+    "id": "a1_daily_housework",
+    "title": "Housework, Cleaning, and Helping at Home",
+    "level": "A1",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "tidy up",
+      "wash dishes",
+      "vacuum",
+      "dust",
+      "laundry",
+      "trash",
+      "roommate"
+    ],
+    "grammarFocus": "Adverbs of Frequency (always, usually, sometimes, never)",
+    "prompt": "How do you share household chores with family members or roommates?",
+    "speakingFocus": "Adverb placement and rhythm"
+  },
+  {
+    "id": "a1_animals_and_pets",
+    "title": "Animals in the Wild and at the Zoo",
+    "level": "A1",
+    "domain": "Environment",
+    "vocabulary": [
+      "dolphin",
+      "elephant",
+      "jungle",
+      "ocean",
+      "wildlife",
+      "feathers",
+      "protect"
+    ],
+    "grammarFocus": "Comparative Adjectives (-er than, bigger than)",
+    "prompt": "What is your favorite wild animal? Where does it live and what does it eat?",
+    "speakingFocus": "Animal names and natural rhythm"
+  },
+  {
+    "id": "a1_birthday_party",
+    "title": "Birthday Celebrations and Giving Gifts",
+    "level": "A1",
+    "domain": "Culture",
+    "vocabulary": [
+      "birthday cake",
+      "candles",
+      "invitation",
+      "present",
+      "party",
+      "balloons",
+      "celebrate"
+    ],
+    "grammarFocus": "Past Simple of 'to be' (was / were)",
+    "prompt": "Describe a memorable birthday celebration you had or attended.",
+    "speakingFocus": "Intonation in birthday greetings and questions"
+  },
+  {
+    "id": "a1_seasons_holidays",
+    "title": "Winter Holidays and Festive Traditions",
+    "level": "A1",
+    "domain": "Culture",
+    "vocabulary": [
+      "snow",
+      "decorations",
+      "holiday",
+      "greeting",
+      "family dinner",
+      "winter",
+      "lights"
+    ],
+    "grammarFocus": "Prepositions of Place (under the tree, on the wall)",
+    "prompt": "How do people celebrate New Year or winter holidays in your country?",
+    "speakingFocus": "Vowel length distinctions"
+  },
+  {
+    "id": "a2_learning_driving",
+    "title": "Learning to Drive and Road Safety",
+    "level": "A2",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "driver license",
+      "seatbelt",
+      "traffic light",
+      "pedestrian",
+      "speed limit",
+      "steering wheel",
+      "mirror"
+    ],
+    "grammarFocus": "Modal Verbs of Obligation and Prohibition (must, mustn't, can't)",
+    "prompt": "Why is learning to drive a car an important milestone, and what safety rules must drivers follow?",
+    "speakingFocus": "Connected speech in modal phrases (must wear, have to stop)"
+  },
+  {
+    "id": "a2_visiting_museum",
+    "title": "Visiting Art Museums and Historical Galleries",
+    "level": "A2",
+    "domain": "Culture",
+    "vocabulary": [
+      "exhibition",
+      "sculpture",
+      "masterpiece",
+      "audio guide",
+      "historical artifact",
+      "admission fee",
+      "curator"
+    ],
+    "grammarFocus": "Past Simple vs Past Continuous (While I was looking...)",
+    "prompt": "Describe your visit to a museum or art gallery. Which exhibit caught your attention most?",
+    "speakingFocus": "Weak forms of 'was' and 'were' (/wəz/, /wə/)"
+  },
+  {
+    "id": "a2_weekend_mountain_trip",
+    "title": "A Weekend Hiking Trip to the Mountains",
+    "level": "A2",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "backpack",
+      "hiking trail",
+      "campfire",
+      "mountain peak",
+      "compass",
+      "sleeping bag",
+      "fresh air"
+    ],
+    "grammarFocus": "Future with 'Going to' for Plans & Intentions",
+    "prompt": "Plan an ideal outdoor weekend trip with friends. What equipment will you pack?",
+    "speakingFocus": "Consonant clusters in /st/, /sp/, /sk/ (backpack, compass)"
+  },
+  {
+    "id": "a2_baking_cooking_recipe",
+    "title": "Following a Recipe: Baking and Cooking Instructions",
+    "level": "A2",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "bake",
+      "flour",
+      "mix",
+      "preheat",
+      "tablespoon",
+      "delicious aroma",
+      "oven"
+    ],
+    "grammarFocus": "Imperatives and Sequence Adverbs (First, Then, After that, Finally)",
+    "prompt": "Explain the step-by-step instructions for preparing your favorite homemade dish or dessert.",
+    "speakingFocus": "Sequence marker pause and rising-falling intonation"
+  },
+  {
+    "id": "a2_family_far_away",
+    "title": "Staying Connected with Relatives Far Away",
+    "level": "A2",
+    "domain": "Daily Life",
+    "vocabulary": [
+      "video call",
+      "distance",
+      "reunion",
+      "postcard",
+      "timezone",
+      "miss",
+      "relationship"
+    ],
+    "grammarFocus": "Present Perfect Simple for Life Experiences (Have you ever...?)",
+    "prompt": "How do you keep in touch with relatives or friends who live in different cities or countries?",
+    "speakingFocus": "Contractions in have/has (I've called, She's moved)"
+  },
+  {
+    "id": "a2_pocket_money_budget",
+    "title": "Pocket Money, Savings, and Financial Responsibility",
+    "level": "A2",
+    "domain": "Business",
+    "vocabulary": [
+      "pocket money",
+      "piggy bank",
+      "spend wisely",
+      "save up",
+      "allowance",
+      "price tag",
+      "afford"
+    ],
+    "grammarFocus": "Too vs Enough (not enough money, too expensive)",
+    "prompt": "Should parents give teenagers an allowance, and what does it teach them about spending?",
+    "speakingFocus": "Voiced vs voiceless /θ/ and /ð/ (worth, them)"
+  },
+  {
+    "id": "a2_green_school_habits",
+    "title": "Eco-Friendly Habits in Schools and Classrooms",
+    "level": "A2",
+    "domain": "Environment",
+    "vocabulary": [
+      "recycle bin",
+      "save paper",
+      "turn off lights",
+      "reusable bottle",
+      "waste reduction",
+      "cleanup",
+      "green club"
+    ],
+    "grammarFocus": "Zero Conditional for General Truths (If you turn off..., you save...)",
+    "prompt": "What practical green habits can students introduce in their school to reduce waste?",
+    "speakingFocus": "Conditional clause pause and intonation curve"
+  },
+  {
+    "id": "a2_public_libraries",
+    "title": "Public Libraries: Quiet Study Spaces and Digital Books",
+    "level": "A2",
+    "domain": "Education",
+    "vocabulary": [
+      "librarian",
+      "borrow a book",
+      "quiet zone",
+      "bookshelf",
+      "e-reader",
+      "membership card",
+      "research"
+    ],
+    "grammarFocus": "Modal Verbs of Permission and Prohibition (can, may, are allowed to)",
+    "prompt": "Why are public libraries still relevant in the era of internet searches and electronic tablets?",
+    "speakingFocus": "Soft palatal /l/ and clear articulation"
+  },
+  {
+    "id": "a2_hotel_stay_inquiry",
+    "title": "Checking In at a Hotel and Travel Inquiries",
+    "level": "A2",
+    "domain": "Travel & Culture",
+    "vocabulary": [
+      "receptionist",
+      "check-in",
+      "double room",
+      "reservation",
+      "complimentary breakfast",
+      "key card",
+      "wake-up call"
+    ],
+    "grammarFocus": "Polite Requests with Could, Would, May",
+    "prompt": "Role-play or describe checking into a hotel and asking about local sightseeing options.",
+    "speakingFocus": "Polite rising intonation on question tags and requests"
+  },
+  {
+    "id": "a2_music_concerts_festivals",
+    "title": "Live Concerts, Music Festivals, and Crowds",
+    "level": "A2",
+    "domain": "Culture",
+    "vocabulary": [
+      "live performance",
+      "stage lights",
+      "crowd",
+      "cheering",
+      "favorite band",
+      "merchandise",
+      "atmosphere"
+    ],
+    "grammarFocus": "Past Simple with Time Adverbs (yesterday, last month, ago)",
+    "prompt": "Describe attending a live concert or school performance. What was the atmosphere like?",
+    "speakingFocus": "Expressive sentence stress on emotions (incredible, thrilling)"
+  },
+  {
+    "id": "c2_panpsychism_synthetic_mind",
+    "title": "Panpsychism, Physicalism, and Synthetic Sentience",
+    "level": "C2",
+    "domain": "Philosophy",
+    "vocabulary": [
+      "panpsychism",
+      "integrated information theory",
+      "phenomenological substrate",
+      "emergentism",
+      "epiphenomenalism",
+      "qualia gap",
+      "teleological agency"
+    ],
+    "grammarFocus": "Stylistic Inversion with Negative Adverbials & Participles",
+    "prompt": "Interrogate whether synthetic neural architectures can transcend functional computation to manifest genuine phenomenal interiority.",
+    "speakingFocus": "Subtle rhythmic pauses and rhetorical focalization"
+  },
+  {
+    "id": "c2_legal_rights_of_nature",
+    "title": "Earth Jurisprudence and the Legal Personhood of Ecosystems",
+    "level": "C2",
+    "domain": "Society",
+    "vocabulary": [
+      "juridical personhood",
+      "rights of nature",
+      "ecocentric jurisprudence",
+      "standing in court",
+      "anthropocentric bias",
+      "intergenerational stewardship",
+      "riparian rights"
+    ],
+    "grammarFocus": "Subjunctive Constructions in High Judicial Proclamations",
+    "prompt": "Deconstruct the legal innovation of granting rivers and ancient biomes formal legal personhood to hold industrial polluters accountable.",
+    "speakingFocus": "Authoritative cadence and balanced clauses"
+  },
+  {
+    "id": "c2_post_structuralist_hermeneutics",
+    "title": "Deconstruction, Hermeneutics, and the Instability of Textual Meaning",
+    "level": "C2",
+    "domain": "Academic",
+    "vocabulary": [
+      "differance",
+      "hermeneutic circle",
+      "semiotic flux",
+      "authorial intent",
+      "aporia",
+      "textual polysemy",
+      "logocentrism"
+    ],
+    "grammarFocus": "Complex Cleft Sentences & Fronted Nominal Clauses",
+    "prompt": "Evaluate the post-structuralist contention that literary texts possess an infinite deferral of definitive communicative closure.",
+    "speakingFocus": "Nuanced modulation of register and parenthetical asides"
+  },
+  {
+    "id": "c2_de_extinction_mammoths",
+    "title": "De-Extinction Biotechnology: Pleistocene Colossuses and Trophic Re-Engineering",
+    "level": "C2",
+    "domain": "Science",
+    "vocabulary": [
+      "de-extinction",
+      "CRISPR resurrection",
+      "Pleistocene megafauna",
+      "ecological proxy",
+      "ethical hubris",
+      "permafrost thawing",
+      "conservation triage"
+    ],
+    "grammarFocus": "Mixed Unreal Conditionals & Inverted Conditionals",
+    "prompt": "Critically assess whether resurrecting genetically proximate woolly mammoth proxies represents visionary eco-restoration or reckless bio-spectacle.",
+    "speakingFocus": "Precision in technical jargon and rapid transitions"
+  },
+  {
+    "id": "c2_weaponized_interdependence_trade",
+    "title": "Geoeconomic Chokepoints and Weaponized Interdependence",
+    "level": "C2",
+    "domain": "Business",
+    "vocabulary": [
+      "weaponized interdependence",
+      "hub-and-spoke network",
+      "chokepoint jurisdiction",
+      "semiconductor embargo",
+      "mercantilist coercion",
+      "decoupling vector",
+      "extraterritoriality"
+    ],
+    "grammarFocus": "Elliptical Clauses and Parallel Stance Markers",
+    "prompt": "Examine how globalized nodal supply networks, originally designed for cost optimization, have been transformed into instruments of state coercion.",
+    "speakingFocus": "Deliberate emphasis on structural contrasts"
+  },
+  {
+    "id": "c2_the_epistemic_commons_ai",
+    "title": "Synthetic Content Saturation and the Collapse of the Epistemic Commons",
+    "level": "C2",
+    "domain": "Technology",
+    "vocabulary": [
+      "model autophagous collapse",
+      "synthetic data laundering",
+      "epistemic commons",
+      "hallucination drift",
+      "cultural entropy",
+      "verifiability crisis",
+      "epistemological rot"
+    ],
+    "grammarFocus": "Complex Periodic Sentences with Suspended Main Verbs",
+    "prompt": "Investigate the hazard of automated recursive feedback loops as generative language models consume their own synthetic artifacts online.",
+    "speakingFocus": "Rhetorical pacing and gravitas in intellectual discourse"
+  }
+]

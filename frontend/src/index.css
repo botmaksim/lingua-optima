@@ -23,6 +23,23 @@ body {
   touch-action: manipulation;
 }
 
+/* Remove default browser spinner arrows on number inputs globally */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Modern field-sizing content utility */
+.field-sizing-content {
+  field-sizing: content;
+  resize: none;
+}
+
 code, pre {
   font-family: 'JetBrains Mono', monospace;
 }

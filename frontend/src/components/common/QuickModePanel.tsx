@@ -30,6 +30,7 @@ import {
   DEFAULT_MIXED_TOPICS,
   DOMAINS,
 } from '../../constants/topics';
+import { AutoExpandingTextarea } from './AutoExpandingTextarea';
 
 export type QuickPracticeFormat = 'RECOMMENDED' | 'SURPRISE' | 'GRAMMAR' | 'ESSAY' | 'READING' | 'SPEAKING';
 
@@ -218,24 +219,38 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
     }
   }, [cefrLevel, format, detectedWeakness]);
 
-  const shuffleTopic = () => {
-    let pool: string[] = [];
-    if (format === 'ESSAY') {
-      pool = DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
-    } else if (format === 'SPEAKING') {
-      pool = [
-        'Natural Speech Flow & Connected Speech',
-        'Consonant Contrasts & Minimal Pairs',
+  const getTopicPoolForFormat = (fmt: QuickPracticeFormat): string[] => {
+    if (fmt === 'ESSAY') {
+      return DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
+    }
+    if (fmt === 'SPEAKING') {
+      return [
+        'Natural Speech Flow, Connected Rhythm & Articulation',
+        'Consonant Contrasts & Minimal Pairs (/θ/ vs /ð/, /r/ vs /l/)',
         'Intonation Patterns in Questions & Assertions',
-        'Expressive Pacing & Sentence Stress',
-      ];
-    } else {
-      pool = [
-        ...(DEFAULT_CEFR_TOPICS[cefrLevel] || []),
-        ...(DEFAULT_MIXED_TOPICS[cefrLevel] || []),
+        'Expressive Pacing, Linking Sounds & Sentence Stress',
+        'Silent Letters & Consonant Cluster Reductions',
+        'Vowel Contrasts: Long vs Short (/iː/ vs /ɪ/)',
       ];
     }
+    if (fmt === 'READING') {
+      return [
+        'Digital Privacy & Ethical Artificial Intelligence',
+        'The Evolution of Sustainable Architecture',
+        'Sleep Deprivation & Cognitive Function',
+        'Global Supply Chains & Economic Interdependence',
+        'Urban Green Spaces and Mental Well-being',
+        'Language Preservation in the Modern Digital Era',
+      ];
+    }
+    return [
+      ...(DEFAULT_CEFR_TOPICS[cefrLevel] || []),
+      ...(DEFAULT_MIXED_TOPICS[cefrLevel] || []),
+    ];
+  };
 
+  const shuffleTopic = () => {
+    const pool = getTopicPoolForFormat(format);
     if (pool.length > 0) {
       const randomTopic = pool[Math.floor(Math.random() * pool.length)];
       setTopic(randomTopic);
@@ -246,18 +261,16 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
 
   const handleFormatChange = (selectedFormat: QuickPracticeFormat) => {
     setFormat(selectedFormat);
+    setIsCustomTopic(false);
+    setCustomTopicInput('');
+
     if (selectedFormat === 'RECOMMENDED') {
       setTopic(detectedWeakness.suggestedTopic);
-      setIsCustomTopic(false);
-    } else if (selectedFormat === 'ESSAY') {
-      const essayList = DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
-      if (essayList.length > 0) {
-        setTopic(essayList[Math.floor(Math.random() * essayList.length)]);
+    } else {
+      const pool = getTopicPoolForFormat(selectedFormat);
+      if (pool.length > 0) {
+        setTopic(pool[Math.floor(Math.random() * pool.length)]);
       }
-      setIsCustomTopic(false);
-    } else if (selectedFormat === 'SPEAKING') {
-      setTopic('Natural Speech Flow, Connected Rhythm & Articulation');
-      setIsCustomTopic(false);
     }
   };
 
@@ -355,7 +368,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
     onQuickGenerate(quickParams);
   };
 
-  const topicSuggestions = (DEFAULT_CEFR_TOPICS[cefrLevel] || []).slice(0, 3);
+  const topicSuggestions = getTopicPoolForFormat(format).slice(0, 4);
 
   return (
     <div className="rounded-3xl border border-amber-200/90 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 p-6 sm:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
@@ -602,12 +615,12 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
 
         {/* Custom Topic Input if toggled */}
         {isCustomTopic && (
-          <input
-            type="text"
+          <AutoExpandingTextarea
+            minRows={1}
             value={customTopicInput}
-            onChange={(e) => setCustomTopicInput(e.target.value)}
+            onChange={setCustomTopicInput}
             placeholder="e.g. Past Continuous vs Past Simple in crime stories"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-amber-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20 focus:border-amber-500 transition"
+            className="w-full text-xs text-slate-800 placeholder:text-slate-400"
           />
         )}
 

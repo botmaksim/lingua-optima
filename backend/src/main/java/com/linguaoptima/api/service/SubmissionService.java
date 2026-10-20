@@ -157,8 +157,18 @@ public class SubmissionService {
         long estimatedTokens = UsageService.estimateTokens(request.getText()) + 600L;
         usageService.consumeTokens(student, estimatedTokens);
 
-        Double score = scoringService.extractScore(scoring);
+        LocalDateTime now = LocalDateTime.now();
+        boolean isOverdue = assignment != null && assignment.getDueDate() != null && now.isAfter(assignment.getDueDate());
+        Double score = isOverdue ? Double.valueOf(0.0) : scoringService.extractScore(scoring);
         String feedback = String.valueOf(scoring.getOrDefault("feedback", "Submission evaluated successfully."));
+        if (isOverdue) {
+            String lateNotice = "[LATE SUBMISSION] Submitted after the deadline. Official score is recorded as 0 pts.";
+            feedback = lateNotice + " " + feedback;
+            scoring.put("feedback", feedback);
+            scoring.put("isLate", true);
+            scoring.put("score", 0.0);
+            scoring.put("effectiveScore", 0.0);
+        }
         String feedbackToStore = feedback;
         try {
             feedbackToStore = objectMapper.writeValueAsString(scoring);
@@ -172,7 +182,8 @@ public class SubmissionService {
             .aiScore(score)
             .aiFeedback(feedbackToStore)
             .providerUsed(provider)
-            .submittedAt(LocalDateTime.now())
+            .isLate(isOverdue)
+            .submittedAt(now)
             .build();
 
         Submission saved = submissionRepository.save(submission);
@@ -318,8 +329,18 @@ public class SubmissionService {
         } else {
             scoring = scoringService.scoreGrammarTask(extractedText, answerKey, student);
         }
-        Double score = scoringService.extractScore(scoring);
+        LocalDateTime now = LocalDateTime.now();
+        boolean isOverdue = assignment != null && assignment.getDueDate() != null && now.isAfter(assignment.getDueDate());
+        Double score = isOverdue ? Double.valueOf(0.0) : scoringService.extractScore(scoring);
         String feedback = String.valueOf(scoring.getOrDefault("feedback", "OCR text successfully scored."));
+        if (isOverdue) {
+            String lateNotice = "[LATE SUBMISSION] Submitted after the deadline. Official score is recorded as 0 pts.";
+            feedback = lateNotice + " " + feedback;
+            scoring.put("feedback", feedback);
+            scoring.put("isLate", true);
+            scoring.put("score", 0.0);
+            scoring.put("effectiveScore", 0.0);
+        }
         String feedbackToStore = feedback;
         try {
             feedbackToStore = objectMapper.writeValueAsString(scoring);
@@ -333,7 +354,8 @@ public class SubmissionService {
             .aiScore(score)
             .aiFeedback(feedbackToStore)
             .providerUsed("TESSERACT_OCR+AI")
-            .submittedAt(LocalDateTime.now())
+            .isLate(isOverdue)
+            .submittedAt(now)
             .build();
 
         Submission saved = submissionRepository.save(submission);
@@ -1094,9 +1116,10 @@ public class SubmissionService {
         if (answerKeyJson == null || answerKeyJson.isBlank()) return explanations;
         try {
             JsonNode root = objectMapper.readTree(answerKeyJson);
-            if (root.isArray()) {
+            JsonNode answersNode = root.isArray() ? root : (root.has("answers") && root.get("answers").isArray() ? root.get("answers") : null);
+            if (answersNode != null && answersNode.isArray()) {
                 int idx = 1;
-                for (JsonNode node : root) {
+                for (JsonNode node : answersNode) {
                     int order = node.path("questionOrder").asInt(node.path("questionId").asInt(idx++));
                     String exp = node.path("explanation").asText("");
                     if (!exp.isBlank()) {

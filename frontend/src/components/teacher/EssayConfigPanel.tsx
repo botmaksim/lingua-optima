@@ -12,6 +12,8 @@ import { CustomCurriculumEntry } from '../../types/curriculum';
 import { DEFAULT_ESSAY_TOPICS, DOMAINS } from '../../constants/topics';
 import { VocabularySelector } from '../common/VocabularySelector';
 import { RuleSelector } from '../common/RuleSelector';
+import { AutoExpandingTextarea } from '../common/AutoExpandingTextarea';
+import { NumberStepper } from '../common/NumberStepper';
 
 export interface EssayConfigPanelProps {
   cefrLevel: CefrLevel;
@@ -152,12 +154,12 @@ export const EssayConfigPanel: React.FC<EssayConfigPanelProps> = ({
 
         {/* Custom Editable Topic Input */}
         <div>
-          <input
-            type="text"
+          <AutoExpandingTextarea
+            minRows={2}
             value={topic}
-            onChange={(e) => onTopicChange(e.target.value)}
+            onChange={onTopicChange}
             placeholder="e.g. Discuss the advantages and disadvantages of remote work..."
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+            className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400"
           />
           <div className="flex flex-wrap items-center justify-between gap-2 mt-1.5 text-[11px] text-slate-400">
             <span>Recommended Length: <strong className="text-slate-600">{wordCountGuideline}</strong></span>
@@ -223,17 +225,15 @@ export const EssayConfigPanel: React.FC<EssayConfigPanelProps> = ({
               Allocated score for this essay assignment in gradebook
             </span>
           </div>
-          <div className="flex items-center space-x-2">
-            <input
-              type="number"
+          <div>
+            <NumberStepper
+              value={totalPoints}
+              onChange={onTotalPointsChange}
               min={10}
               max={100}
               step={5}
-              value={totalPoints}
-              onChange={(e) => onTotalPointsChange(Math.max(10, Math.min(100, parseInt(e.target.value) || 100)))}
-              className="w-20 px-2.5 py-1.5 rounded-xl border border-slate-200 bg-white font-bold text-primary text-center focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-xs"
+              unit="pts"
             />
-            <span className="text-xs font-bold text-slate-500">pts</span>
           </div>
         </div>
       )}

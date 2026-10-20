@@ -384,6 +384,44 @@ class TaskServiceTest {
     }
 
     /**
+     * @brief Verifies that custom vocabulary and rules are wrapped and saved into task answerKey for non-essay tasks.
+     */
+    @Test
+    void testCreateCustomTaskWithCustomVocabularyAndRule() {
+        CustomQuestionRequest q = CustomQuestionRequest.builder()
+            .questionOrder(1)
+            .questionText("Choose the correct option.")
+            .options(List.of("resilient", "fragile"))
+            .correctAnswer("resilient")
+            .points(15)
+            .build();
+
+        CreateCustomTaskRequest req = CreateCustomTaskRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Adjectives & Collocations")
+            .taskType(TaskType.MCQ)
+            .customVocabulary("resilient, endurance, fortitude")
+            .customRule("Compound Adjectives")
+            .questions(List.of(q))
+            .build();
+
+        final java.util.concurrent.atomic.AtomicReference<Task> savedRef = new java.util.concurrent.atomic.AtomicReference<>();
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            savedRef.set(t);
+            return t;
+        });
+
+        TaskResponse res = taskService.createCustomTask(req, teacherUser);
+        assertNotNull(res);
+        assertNotNull(savedRef.get());
+        assertTrue(savedRef.get().getAnswerKey().contains("resilient, endurance, fortitude"));
+        assertTrue(savedRef.get().getAnswerKey().contains("Compound Adjectives"));
+        assertTrue(savedRef.get().getAnswerKey().contains("answers"));
+    }
+
+    /**
      * @brief Verifies unit test scenario: create custom task with group assignment.
      */
     @Test

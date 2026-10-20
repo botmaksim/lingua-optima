@@ -28,6 +28,7 @@ import {
   Sparkles,
   Mic,
   Volume2,
+  AlertTriangle,
 } from 'lucide-react';
 import { submissionApi } from '../../api/submissionApi';
 import { userApi } from '../../api/userApi';
@@ -93,7 +94,9 @@ export const SubmissionsReview: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [groupFilter, setGroupFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'AI_GRADED' | 'TEACHER_GRADED'>('ALL');
+  const [lateFilter, setLateFilter] = useState<'ALL' | 'ON_TIME' | 'LATE'>('ALL');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'highest_score' | 'lowest_score'>('newest');
+  const [isFiltersExpanded, setIsFiltersExpanded] = useState<boolean>(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -533,6 +536,10 @@ export const SubmissionsReview: React.FC = () => {
         if (statusFilter === 'AI_GRADED' && sub.overrideScore != null) return false;
         if (statusFilter === 'TEACHER_GRADED' && sub.overrideScore == null) return false;
 
+        // Overdue / Late submission filter
+        if (lateFilter === 'LATE' && !sub.isLate) return false;
+        if (lateFilter === 'ON_TIME' && sub.isLate) return false;
+
         // Search query
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase().trim();
@@ -574,12 +581,12 @@ export const SubmissionsReview: React.FC = () => {
         }
         return 0;
       });
-  }, [submissions, hiddenIds, activeTab, groupFilter, statusFilter, searchQuery, studentGroupsMap, sortBy]);
+  }, [submissions, hiddenIds, activeTab, groupFilter, statusFilter, lateFilter, searchQuery, studentGroupsMap, sortBy]);
 
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, groupFilter, statusFilter, sortBy, activeTab, pageSize]);
+  }, [searchQuery, groupFilter, statusFilter, lateFilter, sortBy, activeTab, pageSize]);
 
   // Pagination calculation
   const totalPages = Math.max(1, Math.ceil(filteredSubmissions.length / pageSize));
@@ -588,12 +595,20 @@ export const SubmissionsReview: React.FC = () => {
     return filteredSubmissions.slice(start, start + pageSize);
   }, [filteredSubmissions, currentPage, pageSize]);
 
-  const hasActiveFilters = searchQuery.trim() !== '' || groupFilter !== 'ALL' || statusFilter !== 'ALL' || sortBy !== 'newest';
+  const activeFilterCount =
+    (searchQuery.trim() !== '' ? 1 : 0) +
+    (groupFilter !== 'ALL' ? 1 : 0) +
+    (statusFilter !== 'ALL' ? 1 : 0) +
+    (lateFilter !== 'ALL' ? 1 : 0) +
+    (sortBy !== 'newest' ? 1 : 0);
+
+  const hasActiveFilters = activeFilterCount > 0;
 
   const resetFilters = () => {
     setSearchQuery('');
     setGroupFilter('ALL');
     setStatusFilter('ALL');
+    setLateFilter('ALL');
     setSortBy('newest');
   };
 
@@ -652,9 +667,10 @@ export const SubmissionsReview: React.FC = () => {
 
       {/* Search & Filter Toolbar */}
       <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-100 shadow-sm space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Top Single Row Toolbar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Search Input */}
-          <div className="relative">
+          <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
@@ -674,49 +690,102 @@ export const SubmissionsReview: React.FC = () => {
             )}
           </div>
 
-          {/* Group Filter */}
-          <div className="flex items-center">
-            <select
-              value={groupFilter}
-              onChange={(e) => setGroupFilter(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+          <div className="flex items-center space-x-2 shrink-0">
+            {/* Filters Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsFiltersExpanded((prev) => !prev)}
+              className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 border cursor-pointer ${
+                isFiltersExpanded || hasActiveFilters
+                  ? 'bg-indigo-50 border-primary text-primary shadow-xs'
+                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+              }`}
             >
-              <option value="ALL">All Cohorts / Groups</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.name}>
-                  {g.name} ({g.studentCount})
-                </option>
-              ))}
-            </select>
-          </div>
+              <Filter className="w-3.5 h-3.5" />
+              <span>Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-primary text-white text-[10px] font-black flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  isFiltersExpanded ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
 
-          {/* Status Filter */}
-          <div className="flex items-center">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="AI_GRADED">Auto-graded · Pending Review</option>
-              <option value="TEACHER_GRADED">Teacher Graded · Reviewed</option>
-            </select>
-          </div>
-
-          {/* Sort Selector */}
-          <div className="flex items-center">
+            {/* Sort Selector */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
             >
-              <option value="newest">Sort: Newest First</option>
-              <option value="oldest">Sort: Oldest First</option>
-              <option value="highest_score">Sort: Highest Score</option>
-              <option value="lowest_score">Sort: Lowest Score</option>
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="highest_score">Highest Score</option>
+              <option value="lowest_score">Lowest Score</option>
             </select>
           </div>
         </div>
+
+        {/* Expandable Advanced Filters Panel */}
+        {isFiltersExpanded && (
+          <div className="pt-3 border-t border-slate-100 animate-in fade-in slide-in-from-top-2 duration-150">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Group Filter */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Cohort Group
+                </label>
+                <select
+                  value={groupFilter}
+                  onChange={(e) => setGroupFilter(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                >
+                  <option value="ALL">All Cohorts / Groups</option>
+                  {groups.map((g) => (
+                    <option key={g.id} value={g.name}>
+                      {g.name} ({g.studentCount})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status Filter */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Grading Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                >
+                  <option value="ALL">All Grading Statuses</option>
+                  <option value="AI_GRADED">Auto-graded · Pending Review</option>
+                  <option value="TEACHER_GRADED">Teacher Graded · Reviewed</option>
+                </select>
+              </div>
+
+              {/* Overdue / Late Submission Filter */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  Submission Deadline
+                </label>
+                <select
+                  value={lateFilter}
+                  onChange={(e) => setLateFilter(e.target.value as any)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+                >
+                  <option value="ALL">All Submissions</option>
+                  <option value="ON_TIME">On-time Submissions Only</option>
+                  <option value="LATE">Overdue / Late Submissions (0 pts)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filter bar footer info & actions */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
@@ -851,6 +920,16 @@ export const SubmissionsReview: React.FC = () => {
                           {formatDate(sub.submittedAt)}
                         </span>
 
+                        {sub.isLate && (
+                          <span
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 border border-rose-200/80 inline-flex items-center space-x-1"
+                            title="Submitted after assignment deadline · automatically assigned 0 points"
+                          >
+                            <AlertTriangle className="w-3 h-3 text-rose-600" />
+                            <span>LATE · 0 PTS</span>
+                          </span>
+                        )}
+
                         {sub.overrideScore != null ? (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">
                             Teacher Graded
@@ -869,7 +948,13 @@ export const SubmissionsReview: React.FC = () => {
 
                     <div className="flex items-center space-x-3 self-end sm:self-center">
                       <div className="text-right">
-                        <div className="text-lg font-black text-primary font-mono">
+                        <div
+                          className={`text-lg font-black font-mono ${
+                            sub.isLate && sub.overrideScore == null
+                              ? 'text-rose-600'
+                              : 'text-primary'
+                          }`}
+                        >
                           {Math.round(effectiveScore)}
                         </div>
                         <span className="text-[10px] text-slate-400 font-bold uppercase">
@@ -936,6 +1021,15 @@ export const SubmissionsReview: React.FC = () => {
                   {/* Detailed Expanded Breakdown */}
                   {isExpanded && (
                     <div className="pt-4 border-t border-slate-100 space-y-4 text-xs animate-in fade-in duration-150">
+                      {/* Overdue Submission Notice */}
+                      {sub.isLate && (
+                        <div className="p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-center space-x-2.5 text-rose-800">
+                          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                          <span className="leading-snug">
+                            <strong>Overdue Submission:</strong> This assignment was completed after the deadline and automatically assigned 0 points. You can adjust the score at any time using the <em>Override</em> tool above.
+                          </span>
+                        </div>
+                      )}
                       {/* Assignment Task & Context Passage */}
                       {sub.taskContent && (
                         <div className="p-4 bg-indigo-50/40 rounded-2xl border border-indigo-100/70 space-y-1.5">

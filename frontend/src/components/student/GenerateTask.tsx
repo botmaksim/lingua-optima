@@ -568,7 +568,7 @@ export const GenerateTask: React.FC = () => {
                 className="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50/90 hover:bg-amber-100 text-amber-900 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
               >
                 <Target className="w-3.5 h-3.5 text-amber-600" />
-                <span>🎯 Recommended</span>
+                <span>Recommended</span>
               </button>
               <button
                 type="button"
@@ -576,7 +576,7 @@ export const GenerateTask: React.FC = () => {
                 className="px-3 py-1.5 rounded-xl border border-indigo-200 bg-white hover:bg-indigo-50 text-indigo-900 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer shadow-2xs"
               >
                 <Shuffle className="w-3.5 h-3.5 text-indigo-600" />
-                <span>🎲 Surprise Topic</span>
+                <span>Surprise Topic</span>
               </button>
             </div>
           </div>
@@ -596,15 +596,16 @@ export const GenerateTask: React.FC = () => {
                   onClick={() => {
                     setAiEngineMode('PLATFORM');
                     setProvider('GEMINI');
-                    setModelName('gemini-3.8-flash');
+                    setModelName('gemini-flash-latest');
                   }}
-                  className={`px-3 py-1.5 rounded-lg transition ${
+                  className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
                     aiEngineMode === 'PLATFORM'
                       ? 'bg-white text-slate-900 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  ⚡ Platform AI (Gemini)
+                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span>Platform AI (Gemini)</span>
                 </button>
                 <button
                   type="button"
@@ -615,13 +616,14 @@ export const GenerateTask: React.FC = () => {
                       setModelName(savedKeys[0].modelName || getDefaultModelForProvider(savedKeys[0].provider));
                     }
                   }}
-                  className={`px-3 py-1.5 rounded-lg transition ${
+                  className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition ${
                     aiEngineMode === 'BYOK'
                       ? 'bg-white text-slate-900 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  🔑 Custom Key (BYOK)
+                  <Key className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Custom Key (BYOK)</span>
                 </button>
               </div>
             </div>
@@ -633,7 +635,7 @@ export const GenerateTask: React.FC = () => {
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-bold text-slate-800">Google Gemini 3.8 Flash</span>
+                    <span className="text-xs font-bold text-slate-800">Google Gemini Flash (Latest)</span>
                     <span className="text-[11px] text-slate-500 block">Fast, balanced platform model included in your tier</span>
                   </div>
                 </div>

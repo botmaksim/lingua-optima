@@ -59,8 +59,8 @@ export const TaskView: React.FC = () => {
   const [showUnansweredConfirm, setShowUnansweredConfirm] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  // View modes: List, Step-by-Step Card Focus, and Smartboard Presentation Mode
-  const [viewMode, setViewMode] = useState<TaskViewMode>('LIST');
+  // View modes: Step-by-Step Card Focus (default), List, and Smartboard Presentation Mode
+  const [viewMode, setViewMode] = useState<TaskViewMode>('CARDS');
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [instantFeedback, setInstantFeedback] = useState<boolean>(false);
   const [revealedAnswers, setRevealedAnswers] = useState<Record<string, boolean>>({});
@@ -90,6 +90,11 @@ export const TaskView: React.FC = () => {
           return;
         }
         setTask(data);
+        if (data.type === 'READING') {
+          setViewMode('LIST');
+        } else {
+          setViewMode('CARDS');
+        }
 
         const draft = await getDraftLocal(`task_${taskId}`);
         if (draft) {
@@ -174,13 +179,38 @@ export const TaskView: React.FC = () => {
       }
     };
 
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target?.closest('button') || target?.closest('input') || target?.closest('textarea') || target?.closest('[role="button"]') || target?.closest('[data-dismiss-selection="true"]')) {
+        setFloatingSelection(null);
+      }
+    };
+
+    const handleDocKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setFloatingSelection(null);
+        window.getSelection()?.removeAllRanges();
+      }
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
     document.addEventListener('mouseup', handleSelectionChange);
     document.addEventListener('touchend', handleSelectionChange);
+    document.addEventListener('click', handleDocumentClick);
+    document.addEventListener('keydown', handleDocKeyDown);
     return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
       document.removeEventListener('mouseup', handleSelectionChange);
       document.removeEventListener('touchend', handleSelectionChange);
+      document.removeEventListener('click', handleDocumentClick);
+      document.removeEventListener('keydown', handleDocKeyDown);
     };
   }, []);
+
+  // Dismiss floating selection when changing view modes, question cards, or revealing answers
+  useEffect(() => {
+    setFloatingSelection(null);
+  }, [viewMode, currentCardIndex, revealedAnswers]);
 
   // Sync fullscreen state
   useEffect(() => {
@@ -233,6 +263,7 @@ export const TaskView: React.FC = () => {
    * @brief Event handler or helper executing handle select answer.
    */
   const handleSelectAnswer = (questionId: string, answer: string) => {
+    setFloatingSelection(null);
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
   };
 
@@ -1457,14 +1488,31 @@ export const TaskView: React.FC = () => {
       {/* Floating Selection Action Pill */}
       {floatingSelection != null && !explainingSentence && (
         <div className="fixed bottom-6 right-6 z-40 animate-in slide-in-from-bottom-3 duration-200">
-          <button
-            type="button"
-            onClick={() => handleExplainSentence(floatingSelection)}
-            className="flex items-center space-x-2 py-3 px-4 rounded-2xl bg-slate-900 text-white font-bold text-xs shadow-xl shadow-slate-900/30 hover:bg-slate-800 transition ring-2 ring-primary/40"
-          >
-            <Lightbulb className="w-4 h-4 text-amber-400" />
-            <span>Пояснить выделенное: &laquo;{floatingSelection.slice(0, 24)}...&raquo;</span>
-          </button>
+          <div className="flex items-center space-x-1 p-1 bg-slate-900 rounded-2xl shadow-xl shadow-slate-900/40 ring-2 ring-primary/40 text-white">
+            <button
+              type="button"
+              onClick={() => handleExplainSentence(floatingSelection)}
+              className="flex items-center space-x-2 py-2 px-3.5 hover:text-primary-light transition font-bold text-xs"
+            >
+              <Lightbulb className="w-4 h-4 text-amber-400 flex-shrink-0" />
+              <span className="truncate max-w-[200px] sm:max-w-[280px]">
+                Пояснить: &laquo;{floatingSelection.slice(0, 24)}...&raquo;
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setFloatingSelection(null);
+                window.getSelection()?.removeAllRanges();
+              }}
+              className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition"
+              title="Закрыть"
+              aria-label="Dismiss selection"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 

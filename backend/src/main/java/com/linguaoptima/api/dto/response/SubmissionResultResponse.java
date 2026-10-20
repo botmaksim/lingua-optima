@@ -69,6 +69,9 @@ public class SubmissionResultResponse {
     /** @brief Identifier of the AI provider that evaluated the submission. */
     private String providerUsed;
 
+    /** @brief Flag indicating if the submission was made after the assignment deadline. */
+    private Boolean isLate;
+
     /** @brief Timestamp when the submission was recorded. */
     private LocalDateTime submittedAt;
 
@@ -126,6 +129,11 @@ public class SubmissionResultResponse {
             resolvedTotalPoints = task.getTotalPoints();
         }
 
+        boolean late = Boolean.TRUE.equals(submission.getIsLate());
+        if (!late && submission.getAssignment() != null && submission.getAssignment().getDueDate() != null && submission.getSubmittedAt() != null) {
+            late = submission.getSubmittedAt().isAfter(submission.getAssignment().getDueDate());
+        }
+
         return SubmissionResultResponse.builder()
             .id(submission.getId())
             .assignmentId(submission.getAssignment() != null ? submission.getAssignment().getId() : null)
@@ -140,6 +148,7 @@ public class SubmissionResultResponse {
             .overrideScore(submission.getOverrideScore())
             .teacherComment(submission.getTeacherComment())
             .providerUsed(submission.getProviderUsed())
+            .isLate(late)
             .submittedAt(submission.getSubmittedAt())
             .taskId(resolvedTaskId)
             .taskType(resolvedTaskType)

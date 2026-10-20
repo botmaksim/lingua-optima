@@ -110,6 +110,8 @@ export interface SubmissionResult {
   teacherComment?: string;
   /** @brief Property representing provider used in SubmissionResult. */
   providerUsed?: string;
+  /** @brief Flag indicating if the submission was made after the assignment deadline. */
+  isLate?: boolean;
   /** @brief Property representing submitted at in SubmissionResult. */
   submittedAt: string;
   /** @brief Associated task ID if linked. */

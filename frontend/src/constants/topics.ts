@@ -200,3 +200,62 @@ export const STANDARD_VOCABULARY_PRESETS: StandardVocabularyPreset[] = [
     words: ['convenient', 'lifestyle', 'commute', 'work-life balance', 'community', 'mindfulness', 'leisure'],
   },
 ];
+
+import thematicTopicsData from './thematicTopics.json';
+
+/**
+ * @brief High-yield thematic preset containing curated vocabulary, grammar targets, and prompts.
+ */
+export interface ThematicTopic {
+  id: string;
+  title: string;
+  level: CefrLevel;
+  domain: string;
+  vocabulary: string[];
+  grammarFocus: string;
+  prompt: string;
+  speakingFocus?: string;
+}
+
+export const THEMATIC_TOPICS_CATALOG: ThematicTopic[] = thematicTopicsData as ThematicTopic[];
+
+/**
+ * @brief Retrieves all thematic topics calibrated for a specific CEFR level.
+ */
+export const getThematicTopicsByLevel = (level: CefrLevel): ThematicTopic[] => {
+  return THEMATIC_TOPICS_CATALOG.filter((t) => t.level === level);
+};
+
+/**
+ * @brief Selects a random thematic topic matching optional CEFR level and domain.
+ */
+export const getRandomThematicTopic = (level?: CefrLevel, domain?: string): ThematicTopic => {
+  let filtered = THEMATIC_TOPICS_CATALOG;
+  if (level) {
+    const levelFiltered = filtered.filter((t) => t.level === level);
+    if (levelFiltered.length > 0) {
+      filtered = levelFiltered;
+    }
+  }
+  if (domain && domain !== 'All') {
+    const domainFiltered = filtered.filter((t) => t.domain.toLowerCase() === domain.toLowerCase());
+    if (domainFiltered.length > 0) {
+      filtered = domainFiltered;
+    }
+  }
+  return filtered[Math.floor(Math.random() * filtered.length)];
+};
+
+/**
+ * @brief Resolves a thematic preset from a free-text topic string.
+ */
+export const findThematicTopicByTitle = (title: string): ThematicTopic | undefined => {
+  if (!title) return undefined;
+  const lower = title.toLowerCase().trim();
+  return THEMATIC_TOPICS_CATALOG.find(
+    (t) =>
+      t.title.toLowerCase().trim() === lower ||
+      lower.includes(t.title.toLowerCase().trim()) ||
+      t.title.toLowerCase().includes(lower)
+  );
+};

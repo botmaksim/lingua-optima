@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { Sparkles, Bookmark, HelpCircle } from 'lucide-react';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { STANDARD_VOCABULARY_PRESETS, StandardVocabularyPreset } from '../../constants/topics';
+import { AutoExpandingTextarea } from './AutoExpandingTextarea';
 
 export interface VocabularySelectorProps {
   customVocabulary: string;
@@ -125,12 +126,12 @@ export const VocabularySelector: React.FC<VocabularySelectorProps> = ({
       </div>
 
       {/* Custom Vocabulary Input */}
-      <input
-        type="text"
+      <AutoExpandingTextarea
+        minRows={1}
         value={customVocabulary}
-        onChange={(e) => onCustomVocabularyChange(e.target.value)}
+        onChange={onCustomVocabularyChange}
         placeholder={placeholder}
-        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+        className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400"
       />
       {helperText && <p className="text-[11px] text-slate-400">{helperText}</p>}
     </div>

@@ -9,6 +9,7 @@ import { Bookmark, Check, AlertCircle, HelpCircle } from 'lucide-react';
 import { CefrLevel } from '../../types/user';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { DEFAULT_CEFR_TOPICS } from '../../constants/topics';
+import { AutoExpandingTextarea } from './AutoExpandingTextarea';
 
 export interface RuleSelectorProps {
   cefrLevel: CefrLevel;
@@ -131,12 +132,12 @@ export const RuleSelector: React.FC<RuleSelectorProps> = ({
       </div>
 
       {/* Target Rule Input */}
-      <input
-        type="text"
+      <AutoExpandingTextarea
+        minRows={1}
         value={customRule}
-        onChange={(e) => onCustomRuleChange(e.target.value)}
+        onChange={onCustomRuleChange}
         placeholder={placeholder}
-        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+        className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400"
       />
     </div>
   );

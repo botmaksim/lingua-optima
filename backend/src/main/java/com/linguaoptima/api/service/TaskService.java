@@ -171,6 +171,9 @@ public class TaskService {
      */
     public TaskResponse previewTask(TaskParamsRequest params, User user, String deviceId) {
         subscriptionService.validateCefrLevelAccess(user, params.getCefrLevel());
+        if (usageService != null && user != null) {
+            usageService.incrementEvaluation(user);
+        }
         String leaseId = null;
         if (generationProtectionService != null && user != null) {
             generationProtectionService.verifyDevice(user.getId(), deviceId);
@@ -182,6 +185,10 @@ public class TaskService {
             user.setPreferredModel(params.getModelName());
 
             String rawJson = aiBrokerService.generateTaskContent(prompt, user);
+            long estimatedTokens = UsageService.estimateTokens(prompt) + UsageService.estimateTokens(rawJson);
+            if (usageService != null && user != null) {
+                usageService.consumeTokens(user, estimatedTokens);
+            }
             Task task = parseAndBuildTask(rawJson, params, user, false);
             task.setId(UUID.randomUUID());
             return TaskResponse.fromEntity(task);
@@ -204,12 +211,19 @@ public class TaskService {
         if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
             throw new ForbiddenException("Only educators can save tasks as templates.");
         }
+        if (usageService != null && teacher != null) {
+            usageService.incrementEvaluation(teacher);
+        }
 
         String prompt = buildPromptFromParams(params);
         teacher.setPreferredProvider(params.getProvider());
         teacher.setPreferredModel(params.getModelName());
 
         String rawJson = aiBrokerService.generateTaskContent(prompt, teacher);
+        long estimatedTokens = UsageService.estimateTokens(prompt) + UsageService.estimateTokens(rawJson);
+        if (usageService != null && teacher != null) {
+            usageService.consumeTokens(teacher, estimatedTokens);
+        }
         Task task = parseAndBuildTask(rawJson, params, teacher, true);
         Task saved = taskRepository.save(task);
         return TaskResponse.fromEntity(saved);
@@ -310,7 +324,21 @@ public class TaskService {
             }
             task.setAnswerKey(objectMapper.writeValueAsString(essayMeta));
         } else {
-            task.setAnswerKey(objectMapper.writeValueAsString(answerKeyList));
+            boolean hasExtraMeta = (request.getCustomVocabulary() != null && !request.getCustomVocabulary().isBlank())
+                || (request.getCustomRule() != null && !request.getCustomRule().isBlank());
+            if (hasExtraMeta) {
+                Map<String, Object> wrapper = new LinkedHashMap<>();
+                wrapper.put("answers", answerKeyList);
+                if (request.getCustomVocabulary() != null && !request.getCustomVocabulary().isBlank()) {
+                    wrapper.put("targetVocabulary", request.getCustomVocabulary().trim());
+                }
+                if (request.getCustomRule() != null && !request.getCustomRule().isBlank()) {
+                    wrapper.put("targetRule", request.getCustomRule().trim());
+                }
+                task.setAnswerKey(objectMapper.writeValueAsString(wrapper));
+            } else {
+                task.setAnswerKey(objectMapper.writeValueAsString(answerKeyList));
+            }
         }
         task.setQuestions(questions);
         Task saved = taskRepository.save(task);
@@ -1032,7 +1060,15 @@ public class TaskService {
             level.name()
         );
 
+        if (usageService != null && user != null) {
+            usageService.incrementEvaluation(user);
+        }
+
         String rawJson = aiBrokerService.generateTaskContent(prompt, user);
+        long estimatedTokens = UsageService.estimateTokens(prompt) + UsageService.estimateTokens(rawJson);
+        if (usageService != null && user != null) {
+            usageService.consumeTokens(user, estimatedTokens);
+        }
         try {
             JsonNode root = objectMapper.readTree(rawJson);
             String orig = root.path("originalSentence").asText(request.getSentence());

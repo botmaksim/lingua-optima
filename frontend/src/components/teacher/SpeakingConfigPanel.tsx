@@ -11,6 +11,8 @@ import { Mic, Volume2, Sparkles, HelpCircle, Edit3, Leaf, Dices } from 'lucide-r
 import { CefrLevel, PronunciationPack } from '../../types/task';
 import { taskApi } from '../../api/taskApi';
 import { speakWord } from '../../utils/phonetics';
+import { AutoExpandingTextarea } from '../common/AutoExpandingTextarea';
+import { NumberStepper } from '../common/NumberStepper';
 
 /**
  * @brief Predefined target phoneme fallback presets if offline or loading.
@@ -191,12 +193,12 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
           Assignment Title
         </label>
-        <input
-          type="text"
+        <AutoExpandingTextarea
           value={speakingTitle}
-          onChange={(e) => onTitleChange(e.target.value)}
+          onChange={onTitleChange}
+          minRows={1}
           placeholder="e.g. Master the Dental Fricatives: /θ/ and /ð/"
-          className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition bg-white"
+          className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400"
         />
         <p className="text-[11px] text-slate-400 mt-1">
           Leave blank to use the target sound focus as the title.
@@ -232,16 +234,19 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
                   key={pack.id}
                   type="button"
                   onClick={() => handlePackSelect(pack)}
-                  className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between ${
+                  className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between overflow-hidden ${
                     isSelected
                       ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
                       : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
                   }`}
                 >
-                  <div>
-                    <div className="flex items-center justify-between gap-1">
-                      <div className="text-xs font-bold leading-tight line-clamp-1">{pack.title}</div>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-indigo-100/70 text-indigo-700 flex-shrink-0 font-semibold">
+                  <div className="w-full min-w-0">
+                    <div className="flex items-center justify-between gap-1.5 min-w-0 overflow-hidden">
+                      <div className="text-xs font-bold leading-tight truncate min-w-0 flex-1">{pack.title}</div>
+                      <span
+                        className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-indigo-100/70 text-indigo-700 font-semibold truncate max-w-[45%] flex-shrink-0"
+                        title={pack.phonemes?.join(' ') || pack.category}
+                      >
                         {pack.phonemes?.join(' ') || pack.category}
                       </span>
                     </div>
@@ -338,12 +343,12 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
             </span>
             <span className="text-[10px] text-slate-400">Expandable editor</span>
           </div>
-          <textarea
-            rows={2}
+          <AutoExpandingTextarea
+            minRows={2}
             value={targetSounds}
-            onChange={(e) => onTargetSoundsChange(e.target.value)}
+            onChange={onTargetSoundsChange}
             placeholder="e.g. /θ/, /ð/, rhythm, sentence stress, or custom tongue-twister words (e.g. thought, through, thirty-three, weather)"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-mono text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y min-h-[64px] leading-relaxed"
+            className="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400"
           />
           <p className="text-[11px] text-slate-400">
             Selected phoneme pack words are populated here. You can expand this box and freely type additional contrast words or pronunciation goals.
@@ -445,13 +450,13 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
                 <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Target Word Count:
                 </label>
-                <input
-                  type="number"
+                <NumberStepper
+                  value={activeWordCount}
+                  onChange={updateWordCount}
                   min={15}
                   max={300}
-                  value={activeWordCount}
-                  onChange={(e) => updateWordCount(Math.max(15, Math.min(300, parseInt(e.target.value) || 50)))}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-bold text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center"
+                  step={10}
+                  unit="words"
                 />
               </div>
 
@@ -459,12 +464,12 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
                 <label className="block text-[11px] font-semibold text-slate-600 mb-1">
                   Custom Speaking Topic / Monologue Scenario:
                 </label>
-                <input
-                  type="text"
+                <AutoExpandingTextarea
+                  minRows={1}
                   value={activeInstructions}
-                  onChange={(e) => updateInstructions(e.target.value)}
+                  onChange={updateInstructions}
                   placeholder="e.g. A job interview opening or short tech pitch emphasizing sentence stress..."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full text-xs text-slate-800 placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -483,17 +488,15 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
               Awarded based on word-level pronunciation accuracy, speech rate (WPM), and completeness
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <input
-              type="number"
+          <div>
+            <NumberStepper
+              value={totalPoints}
+              onChange={onTotalPointsChange}
               min={10}
               max={500}
               step={5}
-              value={totalPoints}
-              onChange={(e) => onTotalPointsChange(Math.max(1, parseInt(e.target.value) || 100))}
-              className="w-24 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-center text-sm font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              unit="pts"
             />
-            <span className="text-xs font-semibold text-slate-400">pts</span>
           </div>
         </div>
       )}
