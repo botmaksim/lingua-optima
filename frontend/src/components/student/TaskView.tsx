@@ -28,6 +28,9 @@ import {
   X,
   XCircle,
   Check,
+  Keyboard,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { taskApi } from '../../api/taskApi';
 import { submissionApi } from '../../api/submissionApi';
@@ -39,6 +42,8 @@ import { saveDraftLocal, getDraftLocal } from '../../utils/offlineSync';
 import { sanitizeTaskContent } from '../../utils/textSanitizer';
 import { SpeakingPracticeView } from '../common/SpeakingPracticeView';
 import { triggerConfetti } from '../../utils/confetti';
+import { speakText, stopSpeech } from '../../utils/phonetics';
+import { HotkeysModal } from '../common/HotkeysModal';
 
 export type TaskViewMode = 'LIST' | 'CARDS' | 'PRESENTATION';
 
@@ -73,6 +78,8 @@ export const TaskView: React.FC = () => {
   const [explanationData, setExplanationData] = useState<ExplainSentenceResponse | null>(null);
   const [explanationError, setExplanationError] = useState<string | null>(null);
   const [floatingSelection, setFloatingSelection] = useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [showHotkeysModal, setShowHotkeysModal] = useState<boolean>(false);
 
   // Reading Comprehension view scaling preferences
   const [readingWidthPreset, setReadingWidthPreset] = useState<'compact' | 'balanced' | 'wide' | 'expanded'>('balanced');
@@ -119,53 +126,17 @@ export const TaskView: React.FC = () => {
     return () => clearInterval(timer);
   }, [taskId]);
 
-  // Keyboard navigation for Card Focus Mode
+  // Stop speech playback when switching questions or view modes
   useEffect(() => {
-    if (viewMode !== 'CARDS' || !task || !task.questions || task.questions.length === 0) return;
-    const questionsList = task.questions;
+    stopSpeech();
+    setIsSpeaking(false);
+  }, [currentCardIndex, viewMode]);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeTag = (document.activeElement?.tagName || '').toLowerCase();
-      const isInput = activeTag === 'input' || activeTag === 'textarea';
-
-      const currentQ = questionsList[currentCardIndex];
-      if (!currentQ) return;
-
-      if (!isInput) {
-        // Hotkeys 1-4 for options
-        if (['1', '2', '3', '4'].includes(e.key)) {
-          const optIdx = parseInt(e.key, 10) - 1;
-          if (currentQ.options && currentQ.options[optIdx]) {
-            e.preventDefault();
-            handleSelectAnswer(currentQ.id, currentQ.options[optIdx]);
-          }
-          return;
-        }
-
-        if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          if (currentCardIndex > 0) setCurrentCardIndex((prev) => prev - 1);
-          return;
-        }
-
-        if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          if (currentCardIndex < questionsList.length - 1) setCurrentCardIndex((prev) => prev + 1);
-          return;
-        }
-      }
-
-      if (e.key === 'Enter' && isInput) {
-        if (currentCardIndex < questionsList.length - 1) {
-          e.preventDefault();
-          setCurrentCardIndex((prev) => prev + 1);
-        }
-      }
+  useEffect(() => {
+    return () => {
+      stopSpeech();
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [viewMode, currentCardIndex, task]);
+  }, []);
 
   // Detect user text selection across passage and questions for quick AI explanation
   useEffect(() => {
@@ -374,6 +345,235 @@ export const TaskView: React.FC = () => {
     }
   };
 
+  /**
+   * @brief Toggles audio speech playback for a sentence or question text.
+   */
+  const handleToggleSpeech = (text: string) => {
+    if (!text || !text.trim()) return;
+    if (isSpeaking) {
+      stopSpeech();
+      setIsSpeaking(false);
+    } else {
+      setIsSpeaking(true);
+      speakText(text.trim(), 'en-US', () => setIsSpeaking(false));
+    }
+  };
+
+  // Comprehensive Keyboard Shortcuts (Hotkeys) for Exercise Navigation, Answering & Actions
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // 1. Always allow Escape to close active modals, dialogs, cheatsheet, or text selection
+      if (e.key === 'Escape') {
+        if (showHotkeysModal) {
+          e.preventDefault();
+          setShowHotkeysModal(false);
+          return;
+        }
+        if (explainingSentence != null) {
+          e.preventDefault();
+          setExplainingSentence(null);
+          return;
+        }
+        if (showUnansweredConfirm) {
+          e.preventDefault();
+          setShowUnansweredConfirm(false);
+          return;
+        }
+        if (floatingSelection != null) {
+          e.preventDefault();
+          setFloatingSelection(null);
+          window.getSelection()?.removeAllRanges();
+          return;
+        }
+        return;
+      }
+
+      // Check if user is currently typing in an input, textarea, or contentEditable
+      const activeEl = document.activeElement as HTMLElement | null;
+      const activeTag = (activeEl?.tagName || '').toLowerCase();
+      const isInput = activeTag === 'input' || activeTag === 'textarea' || !!activeEl?.isContentEditable;
+
+      // 2. Ctrl+Enter or Cmd+Enter: Instant submit anytime
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        handleSubmitClick();
+        return;
+      }
+
+      // If user is actively typing in an input/textarea:
+      if (isInput) {
+        // In single-line text input: pressing Enter advances to next question or submits if on last
+        if (activeTag === 'input' && e.key === 'Enter') {
+          e.preventDefault();
+          if (viewMode === 'CARDS' || viewMode === 'PRESENTATION') {
+            if (currentCardIndex < questions.length - 1) {
+              setCurrentCardIndex((prev) => prev + 1);
+            } else {
+              handleSubmitClick();
+            }
+          }
+        }
+        // Do not intercept other keystrokes while user is typing answers!
+        return;
+      }
+
+      // 3. Open Hotkeys cheatsheet modal: '?' or Shift+'/'
+      if (e.key === '?' || (e.shiftKey && (e.key === '/' || e.key === ','))) {
+        e.preventDefault();
+        setShowHotkeysModal((prev) => !prev);
+        return;
+      }
+
+      // For exercise navigation & answering, we need an active question
+      const currentQ = questions[currentCardIndex];
+      if (!currentQ) return;
+
+      const keyLower = e.key.toLowerCase();
+
+      // 4. Space: Pronounce question / target sentence (or stop playback)
+      if (e.code === 'Space' || e.key === ' ') {
+        e.preventDefault();
+        handleToggleSpeech(currentQ.questionText);
+        return;
+      }
+
+      // 5. Navigation: Previous card / slide (ArrowLeft, 'h', 'k')
+      if (e.key === 'ArrowLeft' || keyLower === 'h' || keyLower === 'k') {
+        e.preventDefault();
+        stopSpeech();
+        setIsSpeaking(false);
+        if (currentCardIndex > 0) {
+          setCurrentCardIndex((prev) => prev - 1);
+        }
+        return;
+      }
+
+      // 6. Navigation: Next card / slide (ArrowRight, 'l', 'j')
+      if (e.key === 'ArrowRight' || keyLower === 'l' || keyLower === 'j') {
+        e.preventDefault();
+        stopSpeech();
+        setIsSpeaking(false);
+        if (currentCardIndex < questions.length - 1) {
+          setCurrentCardIndex((prev) => prev + 1);
+        }
+        return;
+      }
+
+      // 7. Enter: Next question, or submit on last question
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (currentCardIndex < questions.length - 1) {
+          setCurrentCardIndex((prev) => prev + 1);
+        } else {
+          handleSubmitClick();
+        }
+        return;
+      }
+
+      // 8. AI Grammar & Vocabulary Sentence Explainer: 'e' / 'E' (or 'у' / 'У' in Russian layout)
+      if (keyLower === 'e' || keyLower === 'у') {
+        e.preventDefault();
+        handleExplainSentence(currentQ.questionText);
+        return;
+      }
+
+      // 9. Instant Feedback toggle: 'f' / 'F' (or 'а' / 'А' in Russian layout)
+      if (viewMode === 'CARDS' && (keyLower === 'f' || keyLower === 'а')) {
+        e.preventDefault();
+        setInstantFeedback((prev) => !prev);
+        return;
+      }
+
+      // 10. Reveal answer in Presentation mode: 'r' / 'R' (or 'к' / 'К' in Russian layout)
+      if (keyLower === 'r' || keyLower === 'к') {
+        e.preventDefault();
+        toggleRevealAnswer(currentQ.id);
+        return;
+      }
+
+      // 11. View mode toggle: 'v' / 'V' (or 'м' / 'М' in Russian layout)
+      if (task?.type !== 'SPEAKING' && (keyLower === 'v' || keyLower === 'м')) {
+        e.preventDefault();
+        setViewMode((prev) => {
+          if (prev === 'CARDS') return 'LIST';
+          if (prev === 'LIST') return 'PRESENTATION';
+          return 'CARDS';
+        });
+        return;
+      }
+
+      // 12. Multiple Choice & True/False answer selection
+      if (Array.isArray(currentQ.options) && currentQ.options.length > 0 && task?.canSubmit !== false) {
+        const isTF =
+          currentQ.options.length === 2 &&
+          (currentQ.options.some((o) => o.toLowerCase() === 'true') ||
+            currentQ.options.some((o) => o.toLowerCase() === 'false'));
+
+        if (isTF) {
+          // True: '1', 't', 'е'
+          if (e.key === '1' || keyLower === 't' || keyLower === 'е') {
+            e.preventDefault();
+            const trueOpt = currentQ.options.find((o) => o.toLowerCase() === 'true') || currentQ.options[0];
+            handleSelectAnswer(currentQ.id, trueOpt);
+            return;
+          }
+          // False: '2', 'f', 'а'
+          if (e.key === '2' || keyLower === 'f' || keyLower === 'а') {
+            e.preventDefault();
+            const falseOpt = currentQ.options.find((o) => o.toLowerCase() === 'false') || currentQ.options[1];
+            handleSelectAnswer(currentQ.id, falseOpt);
+            return;
+          }
+        }
+
+        // Number keys 1..9
+        const num = parseInt(e.key, 10);
+        if (!isNaN(num) && num >= 1 && num <= currentQ.options.length) {
+          e.preventDefault();
+          handleSelectAnswer(currentQ.id, currentQ.options[num - 1]);
+          return;
+        }
+
+        // Letter keys A, B, C, D, E and Russian keyboard equivalents
+        const letterMap: Record<string, number> = {
+          a: 0,
+          ф: 0,
+          b: 1,
+          и: 1,
+          c: 2,
+          с: 2,
+          d: 3,
+          в: 3,
+          e: 4,
+          у: 4,
+        };
+        if (keyLower in letterMap) {
+          const optIdx = letterMap[keyLower];
+          if (optIdx < currentQ.options.length) {
+            e.preventDefault();
+            handleSelectAnswer(currentQ.id, currentQ.options[optIdx]);
+            return;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    viewMode,
+    currentCardIndex,
+    questions,
+    task,
+    showHotkeysModal,
+    explainingSentence,
+    showUnansweredConfirm,
+    floatingSelection,
+    isSpeaking,
+    instantFeedback,
+    answers,
+  ]);
+
   if (isLoading) {
     return <LoadingSpinner size="lg" message="Loading practice task..." />;
   }
@@ -485,6 +685,16 @@ export const TaskView: React.FC = () => {
         )}
 
         <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={() => setShowHotkeysModal(true)}
+            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition flex items-center space-x-1"
+            title="Горячие клавиши (?)"
+            aria-label="Горячие клавиши"
+          >
+            <Keyboard className="w-4 h-4" />
+            <span className="hidden sm:inline text-[11px] font-mono font-bold text-slate-500">?</span>
+          </button>
           {viewMode === 'PRESENTATION' && (
             <button
               type="button"
@@ -778,12 +988,31 @@ export const TaskView: React.FC = () => {
                     )}
                     <button
                       type="button"
+                      onClick={() => handleToggleSpeech(currentQ.questionText)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition flex items-center space-x-1.5 ${
+                        isSpeaking
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/30 animate-pulse'
+                          : 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200/80 text-primary'
+                      }`}
+                      title="Прослушать произношение (Пробел)"
+                    >
+                      {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                      <span>{isSpeaking ? 'Пауза' : 'Озвучить'}</span>
+                      <kbd className="hidden sm:inline-block px-1 py-0.5 rounded bg-white/40 text-[10px] font-mono font-bold text-current">
+                        Space
+                      </kbd>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => handleExplainSentence(currentQ.questionText)}
                       className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-xs font-bold transition flex items-center space-x-1.5"
-                      title="Пояснить предложение и грамматику с помощью AI"
+                      title="Пояснить предложение и грамматику с помощью AI (E)"
                     >
                       <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
                       <span>Пояснить</span>
+                      <kbd className="hidden sm:inline-block px-1 py-0.5 rounded bg-amber-100/70 text-[10px] font-mono font-bold text-amber-900">
+                        E
+                      </kbd>
                     </button>
                   </div>
                 </div>
@@ -799,7 +1028,7 @@ export const TaskView: React.FC = () => {
                 {hasOptions ? (
                   <div className="space-y-3">
                     <div className="text-[11px] font-semibold text-slate-400">
-                      Используйте клавиши <kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">1</kbd>–<kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">{currentQ.options.length}</kbd> для быстрого выбора:
+                      Используйте клавиши <kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">1</kbd>–<kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">{currentQ.options.length}</kbd> или <kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">A</kbd>–<kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">{['A', 'B', 'C', 'D', 'E'][Math.min(currentQ.options.length - 1, 4)]}</kbd> для быстрого выбора:
                     </div>
                     <div className="grid grid-cols-1 gap-2.5">
                       {currentQ.options.map((opt, optIdx) => {
@@ -807,6 +1036,11 @@ export const TaskView: React.FC = () => {
                         const isThisCorrect = currentQ.correctAnswer
                           ? opt.trim().toLowerCase() === currentQ.correctAnswer.trim().toLowerCase()
                           : false;
+
+                        const letter = ['A', 'B', 'C', 'D', 'E'][optIdx] || `${optIdx + 1}`;
+                        const keyBadge = isTF
+                          ? (opt.toLowerCase() === 'true' ? '1 · T' : '2 · F')
+                          : `${optIdx + 1} · ${letter}`;
 
                         let styleClass = 'border-slate-200 hover:border-slate-300 text-slate-800 bg-white';
                         if (instantFeedback && isAnswered) {
@@ -830,8 +1064,14 @@ export const TaskView: React.FC = () => {
                             className={`w-full text-left p-4 rounded-2xl border text-sm transition flex items-center justify-between ${styleClass}`}
                           >
                             <div className="flex items-center space-x-3">
-                              <span className="w-6 h-6 rounded-lg bg-slate-100 text-slate-600 text-xs font-mono font-bold flex items-center justify-center flex-shrink-0">
-                                {optIdx + 1}
+                              <span
+                                className={`px-2 py-1 rounded-lg text-xs font-mono font-bold flex items-center justify-center flex-shrink-0 transition ${
+                                  isSelected
+                                    ? 'bg-primary text-white shadow-2xs'
+                                    : 'bg-slate-100 text-slate-700 border border-slate-200/80'
+                                }`}
+                              >
+                                {keyBadge}
                               </span>
                               <span>{opt}</span>
                             </div>
@@ -899,6 +1139,47 @@ export const TaskView: React.FC = () => {
                   </div>
                 )}
 
+                {/* Keyboard Navigation Cheatsheet Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-slate-50 border border-slate-200/70 rounded-2xl text-[11px] text-slate-500">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-semibold text-slate-400">Горячие клавиши:</span>
+                    <span className="inline-flex items-center space-x-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">1–{currentQ.options?.length || 4}</kbd>
+                      <span>/</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">A–D</kbd>
+                      <span className="text-slate-600 font-medium">Выбор</span>
+                    </span>
+                    <span className="text-slate-300">·</span>
+                    <span className="inline-flex items-center space-x-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">Пробел</kbd>
+                      <span className="text-slate-600 font-medium">Озвучить</span>
+                    </span>
+                    <span className="text-slate-300">·</span>
+                    <span className="inline-flex items-center space-x-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">← / →</kbd>
+                      <span className="text-slate-600 font-medium">Карточка</span>
+                    </span>
+                    <span className="text-slate-300">·</span>
+                    <span className="inline-flex items-center space-x-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">Enter</kbd>
+                      <span className="text-slate-600 font-medium">Далее</span>
+                    </span>
+                    <span className="text-slate-300">·</span>
+                    <span className="inline-flex items-center space-x-1">
+                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">E</kbd>
+                      <span className="text-slate-600 font-medium">Разбор</span>
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowHotkeysModal(true)}
+                    className="inline-flex items-center space-x-1 font-bold text-primary hover:text-primary-hover transition"
+                  >
+                    <Keyboard className="w-3.5 h-3.5" />
+                    <span>Все клавиши (?)</span>
+                  </button>
+                </div>
+
                 {/* Card Navigation Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 gap-3">
                   <button
@@ -942,48 +1223,70 @@ export const TaskView: React.FC = () => {
         </div>
       ) : viewMode === 'PRESENTATION' ? (
         <div className="space-y-6">
-          <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-            {/* Presentation Navigation Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <div className="flex items-center space-x-3">
-                <span className="px-3 py-1 rounded-xl bg-primary text-white text-xs font-black">
-                  Слайд {currentCardIndex + 1} из {questions.length}
-                </span>
-                <span className="text-xs text-slate-400 font-mono">
-                  {task.grammarTopic} · {task.cefrLevel}
-                </span>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setCurrentCardIndex((prev) => Math.max(0, prev - 1))}
-                  disabled={currentCardIndex === 0}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 transition"
-                  title="Предыдущий слайд"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentCardIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                  disabled={currentCardIndex === questions.length - 1}
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 transition"
-                  title="Следующий слайд"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Presentation Slide Content with Extra-Large Typography */}
-            {(() => {
-              const currentQ = questions[currentCardIndex];
-              if (!currentQ) return null;
-              const isRevealed = !!revealedAnswers[currentQ.id];
-              const hasOptions = Array.isArray(currentQ.options) && currentQ.options.length > 0;
-
+          {(() => {
+            const currentQ = questions[currentCardIndex];
+            if (!currentQ) {
               return (
+                <div className="bg-slate-900 text-white rounded-3xl p-12 text-center text-slate-400">
+                  Вопросы для презентации не найдены.
+                </div>
+              );
+            }
+
+            const isRevealed = !!revealedAnswers[currentQ.id];
+            const hasOptions = Array.isArray(currentQ.options) && currentQ.options.length > 0;
+            const isTF =
+              Array.isArray(currentQ.options) &&
+              currentQ.options.length === 2 &&
+              (currentQ.options.includes('True') || currentQ.options.includes('False'));
+
+            return (
+              <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+                {/* Presentation Navigation Header */}
+                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                  <div className="flex items-center space-x-3">
+                    <span className="px-3 py-1 rounded-xl bg-primary text-white text-xs font-black">
+                      Слайд {currentCardIndex + 1} из {questions.length}
+                    </span>
+                    <span className="text-xs text-slate-400 font-mono">
+                      {task?.grammarTopic} · {task?.cefrLevel}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleSpeech(currentQ.questionText)}
+                      className={`p-2 rounded-xl text-white transition flex items-center space-x-1.5 ${
+                        isSpeaking ? 'bg-indigo-600 ring-2 ring-indigo-400/40 animate-pulse' : 'bg-slate-800 hover:bg-slate-700'
+                      }`}
+                      title="Озвучить (Пробел)"
+                    >
+                      {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                      <span className="text-xs font-mono font-bold pr-1">Space</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentCardIndex((prev) => Math.max(0, prev - 1))}
+                      disabled={currentCardIndex === 0}
+                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 transition"
+                      title="Предыдущий слайд (←)"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCurrentCardIndex((prev) => Math.min(questions.length - 1, prev + 1))}
+                      disabled={currentCardIndex === questions.length - 1}
+                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 transition"
+                      title="Следующий слайд (→)"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Presentation Slide Content with Extra-Large Typography */}
                 <div className="space-y-6 py-4">
                   <h2 className="text-2xl sm:text-3xl font-black text-white leading-snug tracking-tight">
                     {currentCardIndex + 1}. {currentQ.questionText}
@@ -995,6 +1298,10 @@ export const TaskView: React.FC = () => {
                         const isCorrectOption = currentQ.correctAnswer
                           ? opt.trim().toLowerCase() === currentQ.correctAnswer.trim().toLowerCase()
                           : false;
+                        const letter = ['A', 'B', 'C', 'D', 'E'][optIdx] || `${optIdx + 1}`;
+                        const keyBadge = isTF
+                          ? (opt.toLowerCase() === 'true' ? '1 · T' : '2 · F')
+                          : `${optIdx + 1} · ${letter}`;
 
                         return (
                           <div
@@ -1006,8 +1313,8 @@ export const TaskView: React.FC = () => {
                             }`}
                           >
                             <div className="flex items-center space-x-3">
-                              <span className="w-7 h-7 rounded-lg bg-slate-700 text-slate-300 font-mono text-xs font-bold flex items-center justify-center">
-                                {optIdx + 1}
+                              <span className="px-2.5 py-1 rounded-lg bg-slate-700 text-slate-300 font-mono text-xs font-bold flex items-center justify-center">
+                                {keyBadge}
                               </span>
                               <span>{opt}</span>
                             </div>
@@ -1035,6 +1342,9 @@ export const TaskView: React.FC = () => {
                     >
                       {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       <span>{isRevealed ? 'Скрыть ответ' : 'Показать правильный ответ'}</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-black/20 text-xs font-mono font-bold ml-1">
+                        R
+                      </kbd>
                     </button>
 
                     <button
@@ -1044,6 +1354,9 @@ export const TaskView: React.FC = () => {
                     >
                       <Lightbulb className="w-4 h-4 text-amber-400" />
                       <span>Грамматический разбор</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-amber-400/20 text-xs font-mono font-bold ml-1">
+                        E
+                      </kbd>
                     </button>
                   </div>
 
@@ -1062,11 +1375,11 @@ export const TaskView: React.FC = () => {
                     </div>
                   )}
                 </div>
-              );
-            })()}
-          </div>
+              </div>
+            );
+          })()}
         </div>
-      ) : task.type === 'READING' ? (
+      ) : task?.type === 'READING' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Sticky Reading Article with Window Scaling & Typography Controls */}
           <div className={`${readingColSpans.passage} lg:sticky lg:top-6 rounded-3xl bg-white p-6 border border-slate-200/90 shadow-sm space-y-4 transition-all duration-200`}>
@@ -1527,6 +1840,11 @@ export const TaskView: React.FC = () => {
           executeSubmit();
         }}
         onCancel={() => setShowUnansweredConfirm(false)}
+      />
+
+      <HotkeysModal
+        isOpen={showHotkeysModal}
+        onClose={() => setShowHotkeysModal(false)}
       />
     </div>
   );

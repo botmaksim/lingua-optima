@@ -946,6 +946,26 @@ export const ConfigureTask: React.FC = () => {
     }
   };
 
+  // Keyboard shortcuts: Ctrl+Enter (Preview / Deploy) & Ctrl+S (Save Template)
+  useEffect(() => {
+    const handleConfigureKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (previewTask && previewTask.questions && previewTask.questions.length > 0) {
+          handleDeploy();
+        } else {
+          handlePreview();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'ы')) {
+        e.preventDefault();
+        handleSaveTemplate();
+      }
+    };
+
+    window.addEventListener('keydown', handleConfigureKeyDown);
+    return () => window.removeEventListener('keydown', handleConfigureKeyDown);
+  }, [previewTask, selectedGroupIds, grammarTopic, cefrLevel, taskType, difficulty, totalPoints, dueDate, maxAttempts, provider, modelName]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1691,6 +1711,9 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Eye className="w-4 h-4" />
                   <span>Preview</span>
+                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
+                    Ctrl+Enter
+                  </kbd>
                 </button>
 
                 <button
@@ -1701,6 +1724,9 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Bookmark className="w-4 h-4" />
                   <span>Save Template</span>
+                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
+                    Ctrl+S
+                  </kbd>
                 </button>
 
                 <button
@@ -1711,6 +1737,9 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Send className="w-4 h-4" />
                   <span>Deploy to Students</span>
+                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-mono font-bold ml-1">
+                    Ctrl+Enter
+                  </kbd>
                 </button>
               </div>
             </div>
@@ -2146,6 +2175,9 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Bookmark className="w-4 h-4" />
                   <span>Save Edited Template</span>
+                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-mono font-bold text-slate-500 ml-1">
+                    Ctrl+S
+                  </kbd>
                 </button>
 
                 <button
@@ -2156,6 +2188,9 @@ export const ConfigureTask: React.FC = () => {
                 >
                   <Send className="w-4 h-4" />
                   <span>Deploy Edited Task</span>
+                  <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-white/20 text-[10px] font-mono font-bold ml-1">
+                    Ctrl+Enter
+                  </kbd>
                 </button>
               </div>
             </div>

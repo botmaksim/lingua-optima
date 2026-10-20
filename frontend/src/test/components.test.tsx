@@ -18,6 +18,7 @@ import { TaskView } from '../components/student/TaskView';
 import { taskApi } from '../api/taskApi';
 import { submissionApi } from '../api/submissionApi';
 import { useAuthStore } from '../store/authStore';
+import { groupApi } from '../api/groupApi';
 import { Footer } from '../components/common/Footer';
 import { PrivacyPolicy } from '../pages/PrivacyPolicy';
 import { TermsOfService } from '../pages/TermsOfService';
@@ -434,7 +435,7 @@ describe('ConfigureTask component', () => {
     expect(screen.getByText('Live Preview & Customizer')).toBeInTheDocument();
     expect(screen.getByText(/Click "Preview" to inspect and customize/i)).toBeInTheDocument();
 
-    const previewBtn = screen.getByRole('button', { name: /^preview$/i });
+    const previewBtn = screen.getByRole('button', { name: /preview/i });
     fireEvent.click(previewBtn);
 
     const questionInput = await screen.findByDisplayValue('She _____ to London yesterday.');
@@ -673,8 +674,8 @@ describe('SubmissionsReview component', () => {
     // Verify questions and options
     expect(screen.getByText('Yesterday she ___ to London.')).toBeInTheDocument();
     expect(screen.getByText('She ___ never ___ there before.')).toBeInTheDocument();
-    expect(screen.getByText('Student Pick (✓)')).toBeInTheDocument();
-    expect(screen.getByText('Student Pick (✗)')).toBeInTheDocument();
+    expect(screen.getByText('Student Pick: Correct')).toBeInTheDocument();
+    expect(screen.getByText('Student Pick: Incorrect')).toBeInTheDocument();
     expect(screen.getAllByText('Expected Answer:').length).toBe(2);
 
     // Test inline edit of AI comment
@@ -1893,6 +1894,124 @@ describe('GrammarConfigPanel component', () => {
     expect(handleSaveVocab).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('Keyboard Hotkeys System', () => {
+  beforeEach(() => {
+    window.speechSynthesis = {
+      speak: vi.fn(),
+      cancel: vi.fn(),
+      getVoices: vi.fn().mockReturnValue([]),
+      paused: false,
+      pending: false,
+      speaking: false,
+      onvoiceschanged: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    } as any;
+    (window as any).SpeechSynthesisUtterance = vi.fn().mockImplementation((text) => ({
+      text,
+      lang: 'en-US',
+      rate: 1,
+      pitch: 1,
+    }));
+  });
+
+  it('navigates cards, selects options with number keys, triggers speech on space, and opens cheatsheet on ?', async () => {
+    vi.spyOn(taskApi, 'getTaskById').mockResolvedValue({
+      id: 'task-hotkey-1',
+      grammarTopic: 'Hotkeys Practice',
+      cefrLevel: 'B2',
+      type: 'MCQ',
+      totalPoints: 20,
+      questions: [
+        {
+          id: 'q-hk-1',
+          questionOrder: 1,
+          questionText: 'Which key is used to speak the sentence?',
+          correctAnswer: 'Space',
+          options: ['Enter', 'Space', 'Escape', 'Tab'],
+          difficulty: 1,
+          points: 10,
+        },
+        {
+          id: 'q-hk-2',
+          questionOrder: 2,
+          questionText: 'Second question for navigation test.',
+          correctAnswer: 'ArrowRight',
+          options: ['ArrowLeft', 'ArrowRight'],
+          difficulty: 1,
+          points: 10,
+        },
+      ],
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/student/task/task-hotkey-1']}>
+        <Routes>
+          <Route path="/student/task/:taskId" element={<TaskView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText('Which key is used to speak the sentence?')).toBeInTheDocument();
+    expect(screen.getByText('0 of 2 answered')).toBeInTheDocument();
+
+    // 1. Press '2' (number key) to select option 2 ('Space')
+    fireEvent.keyDown(window, { key: '2', code: 'Digit2' });
+    expect(screen.getByText('1 of 2 answered')).toBeInTheDocument();
+
+    // 2. Press 'Space' to trigger speech synthesis
+    fireEvent.keyDown(window, { key: ' ', code: 'Space' });
+    expect(window.speechSynthesis.speak).toHaveBeenCalled();
+
+    // 3. Press 'ArrowRight' to navigate to Question 2
+    fireEvent.keyDown(window, { key: 'ArrowRight', code: 'ArrowRight' });
+    expect(await screen.findByText('Second question for navigation test.')).toBeInTheDocument();
+
+    // 4. Press 'ArrowLeft' to navigate back to Question 1
+    fireEvent.keyDown(window, { key: 'ArrowLeft', code: 'ArrowLeft' });
+    expect(await screen.findByText('Which key is used to speak the sentence?')).toBeInTheDocument();
+
+    // 5. Press '?' to toggle Hotkeys modal cheatsheet
+    fireEvent.keyDown(window, { key: '?', code: 'Slash', shiftKey: true });
+    expect(await screen.findByText('Горячие клавиши (Hotkeys)')).toBeInTheDocument();
+    expect(screen.getByText('Управляйте процессотом решения заданий без мыши')).toBeInTheDocument();
+
+    // 6. Press 'Escape' to dismiss Hotkeys modal
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
+    await waitFor(() => {
+      expect(screen.queryByText('Горячие клавиши (Hotkeys)')).not.toBeInTheDocument();
+    });
+  });
+
+  it('SubmissionsReview focuses search input on / hotkey and clears on Escape', async () => {
+    const { SubmissionsReview } = await import('../components/teacher/SubmissionsReview');
+    vi.spyOn(submissionApi, 'getTeacherSubmissions').mockResolvedValue([]);
+    vi.spyOn(groupApi, 'getGroups').mockResolvedValue([]);
+
+    render(
+      <MemoryRouter>
+        <SubmissionsReview />
+      </MemoryRouter>
+    );
+
+    const searchInput = await screen.findByPlaceholderText(/Search student, cohort, topic... \(\/\)/i);
+    expect(searchInput).toBeInTheDocument();
+
+    // Press '/' when not typing in an input
+    fireEvent.keyDown(window, { key: '/', code: 'Slash' });
+    expect(document.activeElement).toBe(searchInput);
+
+    // Type text and press Escape
+    fireEvent.change(searchInput, { target: { value: 'B1 Upper' } });
+    expect(searchInput).toHaveValue('B1 Upper');
+
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
+    expect(searchInput).toHaveValue('');
+  });
+});
+
 
 
 

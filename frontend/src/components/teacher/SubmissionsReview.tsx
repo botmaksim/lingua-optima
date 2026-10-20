@@ -3,7 +3,7 @@
  * @brief Educator submission grading, search, filtering, hide/archive toggles, pagination, detailed question breakdown, and feedback editing interface.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   CheckCircle,
   CheckCircle2,
@@ -102,16 +102,38 @@ export const SubmissionsReview: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Global shortcuts: '/' to focus search, 'Esc' to clear search or close edit drawer
   useEffect(() => {
-    if (!editingSub) return;
     const handleKeyDown = (e: KeyboardEvent) => {
+      const activeEl = document.activeElement as HTMLElement | null;
+      const activeTag = (activeEl?.tagName || '').toLowerCase();
+      const isInput = activeTag === 'input' || activeTag === 'textarea' || !!activeEl?.isContentEditable;
+
       if (e.key === 'Escape') {
-        setEditingSub(null);
+        if (editingSub) {
+          e.preventDefault();
+          setEditingSub(null);
+          return;
+        }
+        if (searchQuery) {
+          e.preventDefault();
+          setSearchQuery('');
+          return;
+        }
+      }
+
+      if (e.key === '/' && !isInput) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editingSub]);
+  }, [editingSub, searchQuery]);
 
   /**
    * @brief Loads educator submissions queue and teacher cohort groups simultaneously.
@@ -673,20 +695,28 @@ export const SubmissionsReview: React.FC = () => {
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search student, cohort, topic..."
-              className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
+              placeholder="Search student, cohort, topic... (/)"
+              className="w-full pl-9 pr-10 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
             />
-            {searchQuery && (
+            {searchQuery ? (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded"
+                title="Очистить (Esc)"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
+            ) : (
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 hidden sm:inline-block pointer-events-none">
+                <kbd className="px-1.5 py-0.5 rounded bg-slate-200/70 border border-slate-300/70 text-[10px] font-mono font-bold text-slate-500">
+                  /
+                </kbd>
+              </span>
             )}
           </div>
 
@@ -1146,7 +1176,7 @@ export const SubmissionsReview: React.FC = () => {
                                               <span>{opt}</span>
                                               {isStudentChoice && (
                                                 <span className="text-[9px] px-1 py-0.2 rounded bg-black/10 font-bold">
-                                                  {isEffectivelyCorrect ? 'Student Pick (✓)' : 'Student Pick (✗)'}
+                                                  {isEffectivelyCorrect ? 'Student Pick: Correct' : 'Student Pick: Incorrect'}
                                                 </span>
                                               )}
                                               {!isStudentChoice && isCorrectChoice && (
