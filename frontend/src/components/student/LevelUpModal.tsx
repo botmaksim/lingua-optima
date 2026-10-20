@@ -45,9 +45,6 @@ export const LevelUpModal: React.FC = () => {
   if (currentLevel === 'C2') return null;
   const nextLevel = NEXT_LEVEL_MAP[currentLevel] || 'A2';
 
-  /**
-   * @brief Event handler or helper executing handle confirm.
-   */
   const handleConfirm = async () => {
     setIsSubmitting(true);
     try {

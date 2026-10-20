@@ -61,7 +61,7 @@ export const TaskView: React.FC = () => {
   const [showUnansweredConfirm, setShowUnansweredConfirm] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  // View modes: Step-by-Step Card Focus (default), List, and Smartboard Presentation Mode
+  // View modes: Step-by-Step Card Focus (default) or List
   const [viewMode, setViewMode] = useState<TaskViewMode>('CARDS');
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [instantFeedback, setInstantFeedback] = useState<boolean>(false);
@@ -213,9 +213,6 @@ export const TaskView: React.FC = () => {
     }
   };
 
-  /**
-   * @brief Event handler or helper executing handle select answer.
-   */
   const handleSelectAnswer = (questionId: string, answer: string) => {
     if (task?.canSubmit === false) return;
     if (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(questionId)) {
@@ -228,9 +225,6 @@ export const TaskView: React.FC = () => {
     }
   };
 
-  /**
-   * @brief Event handler or helper executing handle save draft.
-   */
   const handleSaveDraft = async () => {
     if (!taskId) return;
     await saveDraftLocal(`task_${taskId}`, JSON.stringify(answers));
@@ -238,9 +232,6 @@ export const TaskView: React.FC = () => {
     setTimeout(() => setSaveSuccess(false), 2000);
   };
 
-  /**
-   * @brief Event handler or helper executing handle submit.
-   */
   const questions: TaskQuestion[] = task?.questions || [];
   const answeredCount = questions.filter((q) => {
     const val = answers[q.id];
@@ -621,7 +612,6 @@ export const TaskView: React.FC = () => {
           <span>Назад</span>
         </button>
 
-        {/* View Mode Switcher: List vs Card Focus */}
         {task?.type !== 'SPEAKING' && (
           <div className="flex items-center bg-slate-100/90 p-1 rounded-2xl border border-slate-200 text-xs">
             <button
@@ -797,7 +787,6 @@ export const TaskView: React.FC = () => {
         </div>
       )}
 
-      {/* Main Content Area: Speaking vs Card Focus vs Presentation vs Standard List */}
       {task.type === 'SPEAKING' ? (
         <SpeakingPracticeView
           passageText={task.content || task.questions?.[0]?.questionText || ''}
@@ -816,7 +805,6 @@ export const TaskView: React.FC = () => {
         />
       ) : viewMode === 'CARDS' ? (
         <div className="space-y-6">
-          {/* Top Card Controls: Question Stepper & Instant Feedback Toggle */}
           <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
             <div className="flex items-center space-x-2 overflow-x-auto py-1">
               {questions.map((q, idx) => {
@@ -874,7 +862,6 @@ export const TaskView: React.FC = () => {
             </div>
           </div>
 
-          {/* Collapsible Reading Passage (if on reading task in card mode) */}
           {task.type === 'READING' && showReadingInCard && task.content && (
             <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-3 animate-in fade-in duration-200">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -899,7 +886,6 @@ export const TaskView: React.FC = () => {
             </div>
           )}
 
-          {/* Active Question Card */}
           {(() => {
             const currentQ = questions[currentCardIndex];
             if (!currentQ) {
@@ -924,14 +910,12 @@ export const TaskView: React.FC = () => {
             const selectedAnswer = answers[currentQ.id] || '';
             const isAnswered = selectedAnswer.trim() !== '';
 
-            // Instant feedback checks
             const isCorrect = isAnswered && currentQ.correctAnswer
               ? selectedAnswer.trim().toLowerCase() === currentQ.correctAnswer.trim().toLowerCase()
               : null;
 
             return (
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-md space-y-6">
-                {/* Card Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
                   <div className="flex items-center space-x-2.5">
                     <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary font-black text-sm flex items-center justify-center">
@@ -986,14 +970,12 @@ export const TaskView: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Question Text */}
                 <div className="space-y-2">
                   <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
                     {currentQ.questionText}
                   </h2>
                 </div>
 
-                {/* Answer Options or Inputs */}
                 {hasOptions ? (
                   <div className="space-y-3">
                     <div className="hidden md:block text-[11px] font-semibold text-slate-400">
@@ -1096,7 +1078,6 @@ export const TaskView: React.FC = () => {
                   </div>
                 )}
 
-                {/* Instant Feedback Explanation Block */}
                 {instantFeedback && isAnswered && currentQ.grammarRule && (
                   <div className={`p-4 rounded-2xl border text-xs leading-relaxed space-y-1 animate-in fade-in duration-200 ${
                     isCorrect ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : 'bg-amber-50/70 border-amber-200 text-amber-950'
@@ -1109,7 +1090,6 @@ export const TaskView: React.FC = () => {
                   </div>
                 )}
 
-                {/* Keyboard Navigation Cheatsheet Bar */}
                 <div className="kbd-shortcut hidden md:flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-slate-50 border border-slate-200/70 rounded-2xl text-[11px] text-slate-500">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="font-semibold text-slate-400">Горячие клавиши:</span>
@@ -1150,7 +1130,6 @@ export const TaskView: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Card Navigation Footer */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 gap-3">
                   <button
                     type="button"
@@ -1193,7 +1172,6 @@ export const TaskView: React.FC = () => {
         </div>
       ) : task?.type === 'READING' ? (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Left Column: Sticky Reading Article with Window Scaling & Typography Controls */}
           <div className={`${readingColSpans.passage} lg:sticky lg:top-6 rounded-3xl bg-white p-6 border border-slate-200/90 shadow-sm space-y-4 transition-all duration-200`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-slate-100">
               <div className="flex items-center space-x-2">
@@ -1206,9 +1184,7 @@ export const TaskView: React.FC = () => {
                 </span>
               </div>
 
-              {/* Interactive Window & Typography Scaling Controls */}
               <div className="flex flex-wrap items-center gap-1.5 self-start sm:self-auto">
-                {/* Font Size Adjuster */}
                 <div className="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200">
                   <button
                     type="button"
@@ -1235,7 +1211,6 @@ export const TaskView: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Split Width Presets */}
                 <div className="flex items-center bg-slate-100/90 rounded-xl p-0.5 border border-slate-200 text-[11px]">
                   {(
                     [
@@ -1264,7 +1239,6 @@ export const TaskView: React.FC = () => {
                   })}
                 </div>
 
-                {/* Height Expand Toggle */}
                 <button
                   type="button"
                   onClick={() => setIsFullHeight(!isFullHeight)}
@@ -1290,7 +1264,6 @@ export const TaskView: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Questions */}
           <div className={`${readingColSpans.questions} space-y-4 transition-all duration-200`}>
             {questions.length === 0 ? (
               <div className="bg-white p-6 rounded-2xl text-center text-slate-500 text-sm">
@@ -1507,7 +1480,6 @@ export const TaskView: React.FC = () => {
         </div>
       )}
 
-      {/* AI Sentence Explainer Slide-over Drawer / Modal */}
       {explainingSentence != null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-7 shadow-2xl border border-slate-100 space-y-5 animate-in zoom-in-95 duration-200">
@@ -1534,7 +1506,6 @@ export const TaskView: React.FC = () => {
               </button>
             </div>
 
-            {/* Original Sentence Quote */}
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
                 Предложение
@@ -1565,7 +1536,6 @@ export const TaskView: React.FC = () => {
 
             {explanationData && (
               <div className="space-y-4 animate-in fade-in duration-200">
-                {/* Russian Translation */}
                 <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-1">
                   <span className="text-[10px] uppercase font-bold text-primary block tracking-wider">
                     Перевод на русский
@@ -1575,7 +1545,6 @@ export const TaskView: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Grammar Breakdown */}
                 {explanationData.grammarBreakdown && (
                   <div className="space-y-1.5">
                     <span className="text-xs font-bold text-slate-700 block">Грамматический разбор:</span>
@@ -1585,7 +1554,6 @@ export const TaskView: React.FC = () => {
                   </div>
                 )}
 
-                {/* Pedagogical Explanation */}
                 {explanationData.explanation && (
                   <div className="space-y-1.5">
                     <span className="text-xs font-bold text-slate-700 block">Пояснение:</span>
@@ -1595,7 +1563,6 @@ export const TaskView: React.FC = () => {
                   </div>
                 )}
 
-                {/* Key Vocabulary */}
                 {explanationData.keyVocabulary && explanationData.keyVocabulary.length > 0 && (
                   <div className="space-y-2">
                     <span className="text-xs font-bold text-slate-700 block">Ключевая лексика:</span>
@@ -1614,7 +1581,6 @@ export const TaskView: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Selection Action Pill */}
       {floatingSelection != null && !explainingSentence && (
         <div className="fixed bottom-6 right-6 z-40 animate-in slide-in-from-bottom-3 duration-200">
           <div className="flex items-center space-x-1 p-1 bg-slate-900 rounded-2xl shadow-xl shadow-slate-900/40 ring-2 ring-primary/40 text-white">

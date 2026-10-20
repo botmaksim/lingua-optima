@@ -29,24 +29,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ScoringServiceTest {
 
-    /** @brief Test fixture or mock dependency for ai broker service. */
     @Mock
     private AIBrokerService aiBrokerService;
 
-    /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    /** @brief Test fixture or mock dependency for scoring service. */
     @InjectMocks
     private ScoringService scoringService;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in ScoringServiceTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();

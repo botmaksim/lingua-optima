@@ -29,37 +29,28 @@ import java.util.UUID;
 @AllArgsConstructor
 public class CreateCustomTaskRequest {
 
-    /** @brief Field representing cefr level in CreateCustomTaskRequest. */
     @NotNull(message = "CEFR level is required")
     private CefrLevel cefrLevel;
 
-    /** @brief Field representing grammar topic in CreateCustomTaskRequest. */
     private String grammarTopic;
 
-    /** @brief Field representing domain in CreateCustomTaskRequest. */
     private String domain;
 
-    /** @brief Field representing task type in CreateCustomTaskRequest. */
     @NotNull(message = "Task type is required")
     private TaskType taskType;
 
-    /** @brief Field representing difficulty in CreateCustomTaskRequest. */
     @Builder.Default
     private DifficultyLevel difficulty = DifficultyLevel.MEDIUM;
 
-    /** @brief Field representing content in CreateCustomTaskRequest. */
     private String content;
 
-    /** @brief Field representing questions in CreateCustomTaskRequest. */
     @Valid
     @NotEmpty(message = "At least one question is required")
     @Builder.Default
     private List<CustomQuestionRequest> questions = new ArrayList<>();
 
-    /** @brief Field representing total points / max score in CreateCustomTaskRequest. */
     private Integer totalPoints;
 
-    /** @brief Field representing is template in CreateCustomTaskRequest. */
     private boolean isTemplate;
 
     /** @brief Optional target cohort group IDs for direct assignment. */

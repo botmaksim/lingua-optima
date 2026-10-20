@@ -31,20 +31,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class NotificationControllerTest {
 
-    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 
-    /** @brief Test fixture or mock dependency for notification controller. */
     @InjectMocks
     private NotificationController notificationController;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in NotificationControllerTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();

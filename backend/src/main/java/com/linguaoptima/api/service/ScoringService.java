@@ -25,9 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ScoringService {
 
-    /** @brief Field representing ai broker service in ScoringService. */
     private final AIBrokerService aiBrokerService;
-    /** @brief Field representing object mapper in ScoringService. */
     private final ObjectMapper objectMapper;
 
     /**

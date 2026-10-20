@@ -30,20 +30,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ApiKeyControllerTest {
 
-    /** @brief Test fixture or mock dependency for api key service. */
     @Mock
     private ApiKeyService apiKeyService;
 
-    /** @brief Test fixture or mock dependency for api key controller. */
     @InjectMocks
     private ApiKeyController apiKeyController;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in ApiKeyControllerTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();

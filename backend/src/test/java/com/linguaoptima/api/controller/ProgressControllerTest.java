@@ -28,22 +28,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProgressControllerTest {
 
-    /** @brief Test fixture or mock dependency for progress service. */
     @Mock
     private ProgressService progressService;
 
-    /** @brief Test fixture or mock dependency for progress controller. */
     @InjectMocks
     private ProgressController progressController;
 
-    /** @brief Test fixture or mock dependency for student. */
     private User student;
-    /** @brief Test fixture or mock dependency for progress response. */
     private ProgressResponse progressResponse;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in ProgressControllerTest.
-     */
     @BeforeEach
     void setUp() {
         student = User.builder().id(UUID.randomUUID()).build();

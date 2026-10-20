@@ -39,13 +39,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class LeaderboardService {
 
-    /** @brief Field representing group repository in LeaderboardService. */
     private final GroupRepository groupRepository;
-    /** @brief Field representing group student repository in LeaderboardService. */
     private final GroupStudentRepository groupStudentRepository;
-    /** @brief Field representing submission repository in LeaderboardService. */
     private final SubmissionRepository submissionRepository;
-    /** @brief Field representing task assignment repository in LeaderboardService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
 
     /**

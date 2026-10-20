@@ -297,9 +297,6 @@ export const ConfigureTask: React.FC = () => {
   };
 
 
-  /**
-   * @brief Event handler or helper executing toggle group.
-   */
   const toggleGroup = (id: string) => {
     setSelectedGroupIds((prev) =>
       prev.includes(id) ? prev.filter((g) => g !== id) : [...prev, id]
@@ -563,9 +560,6 @@ export const ConfigureTask: React.FC = () => {
     }
   };
 
-  /**
-   * @brief Event handler executing preview generation.
-   */
   const handlePreview = async () => {
     setIsLoading(true);
     setStatusMessage(null);
@@ -766,9 +760,6 @@ export const ConfigureTask: React.FC = () => {
     });
   };
 
-  /**
-   * @brief Event handler executing save template.
-   */
   const handleSaveTemplate = async () => {
     setIsLoading(true);
     setStatusMessage(null);
@@ -821,9 +812,6 @@ export const ConfigureTask: React.FC = () => {
     }
   };
 
-  /**
-   * @brief Event handler executing assignment deployment to selected groups.
-   */
   const handleDeploy = async () => {
     if (selectedGroupIds.length === 0) {
       addToast({
@@ -957,7 +945,6 @@ export const ConfigureTask: React.FC = () => {
           </p>
         </div>
 
-        {/* Prominent Mode Switcher Tabs */}
         <div className="flex items-center p-1.5 rounded-2xl bg-slate-100 border border-slate-200/90 shadow-2xs self-start sm:self-auto gap-1">
           <button
             type="button"
@@ -1130,7 +1117,6 @@ export const ConfigureTask: React.FC = () => {
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
-              {/* Detailed Studio Header Callout & Quick Fills */}
               <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-white to-amber-50/50 border border-indigo-100/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-2">
@@ -1229,7 +1215,6 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               </div>
 
-              {/* AI Engine Selection */}
               <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center space-x-2">
@@ -1354,7 +1339,6 @@ export const ConfigureTask: React.FC = () => {
                 )}
               </div>
 
-              {/* CEFR Level */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   CEFR Level
@@ -1383,7 +1367,6 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               </div>
 
-              {/* Task Format / 4 Primary Modules */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
                   Task Format
@@ -1437,7 +1420,6 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               </div>
 
-              {/* Dynamic Module 1: Grammar Exercises */}
               {isGrammarTask && (
                 <GrammarConfigPanel
                   taskType={taskType}
@@ -1472,7 +1454,6 @@ export const ConfigureTask: React.FC = () => {
                 />
               )}
 
-              {/* Dynamic Module 2: Reading Comprehension Studio Panel */}
               {taskType === 'READING' && (
                 <div className="animate-in fade-in duration-200">
                   <ReadingConfigPanel
@@ -1487,7 +1468,6 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               )}
 
-              {/* Dynamic Module 3: Speaking Comprehension Studio Panel */}
               {taskType === 'SPEAKING' && (
                 <div className="animate-in fade-in duration-200">
                   <SpeakingConfigPanel
@@ -1513,7 +1493,6 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               )}
 
-              {/* Dynamic Module 4: Essay Studio */}
               {taskType === 'ESSAY' && (
                 <div className="animate-in fade-in duration-200">
                   <EssayConfigPanel
@@ -1535,7 +1514,6 @@ export const ConfigureTask: React.FC = () => {
                 </div>
               )}
 
-              {/* Switch to Quick Mode Callout */}
               <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-amber-900 gap-2">
                 <div className="flex items-center space-x-2">
                   <Zap className="w-4 h-4 text-amber-600 shrink-0" />
@@ -1945,7 +1923,6 @@ export const ConfigureTask: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Question Text */}
                         <div>
                           <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                             Prompt / Sentence
@@ -2135,7 +2112,6 @@ export const ConfigureTask: React.FC = () => {
         </div>
       </div>
 
-      {/* Concurrent Generation Transfer Modal */}
       {concurrentConflict && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white rounded-2xl shadow-2xl border border-amber-200/80 max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-150">

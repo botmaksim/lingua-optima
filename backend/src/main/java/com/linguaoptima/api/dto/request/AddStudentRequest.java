@@ -20,7 +20,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AddStudentRequest {
 
-    /** @brief Field representing email in AddStudentRequest. */
     @NotBlank(message = "Student email is required")
     @Email(message = "Invalid email format")
     private String email;

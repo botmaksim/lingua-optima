@@ -53,9 +53,6 @@ export const AdaptiveSession: React.FC = () => {
     initSession();
   }, [assignmentId]);
 
-  /**
-   * @brief Event handler or helper executing handle submit answer.
-   */
   const handleSubmitAnswer = async () => {
     if (!session || !currentQuestion || !selectedAnswer) return;
     setIsSubmitting(true);
@@ -73,9 +70,6 @@ export const AdaptiveSession: React.FC = () => {
     }
   };
 
-  /**
-   * @brief Event handler or helper executing handle next question.
-   */
   const handleNextQuestion = async () => {
     if (!session) return;
 

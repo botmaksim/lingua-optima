@@ -25,15 +25,10 @@ public class AnthropicProvider implements AIProvider {
     /** @brief Default Anthropic model identifier. */
     public static final String DEFAULT_MODEL = "claude-sonnet-5-5";
 
-    /** @brief Field representing api key in AnthropicProvider. */
     private final String apiKey;
-    /** @brief Field representing base url in AnthropicProvider. */
     private final String baseUrl;
-    /** @brief Field representing model name in AnthropicProvider. */
     private final String modelName;
-    /** @brief Field representing rest template in AnthropicProvider. */
     private final RestTemplate restTemplate;
-    /** @brief Field representing object mapper in AnthropicProvider. */
     private final ObjectMapper objectMapper;
 
     /**

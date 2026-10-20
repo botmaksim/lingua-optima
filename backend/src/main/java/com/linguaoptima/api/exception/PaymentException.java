@@ -13,7 +13,6 @@ import lombok.Getter;
 @Getter
 public class PaymentException extends RuntimeException {
 
-    /** @brief Field representing error code in PaymentException. */
     private final PaymentErrorCode errorCode;
 
     /**

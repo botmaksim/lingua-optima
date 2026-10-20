@@ -48,9 +48,6 @@ export const EssayEditor: React.FC = () => {
   const minWords = 250;
   const isWordCountMet = wordCount >= minWords;
 
-  /**
-   * @brief Event handler or helper executing handle submit.
-   */
   const handleSubmit = async () => {
     if (!content.trim()) {
       setError('Please write your essay before submitting.');

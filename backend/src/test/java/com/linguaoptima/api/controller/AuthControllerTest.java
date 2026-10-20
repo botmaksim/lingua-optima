@@ -42,26 +42,18 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
-    /** @brief Test fixture or mock dependency for auth service. */
     @Mock
     private AuthService authService;
 
-    /** @brief Test fixture or mock dependency for jwt service. */
     @Mock
     private JwtService jwtService;
 
-    /** @brief Test fixture or mock dependency for auth controller. */
     @InjectMocks
     private AuthController authController;
 
-    /** @brief Test fixture or mock dependency for sample token. */
     private TokenResponse sampleToken;
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in AuthControllerTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("auth@lingua.com").role(Role.STUDENT).build();

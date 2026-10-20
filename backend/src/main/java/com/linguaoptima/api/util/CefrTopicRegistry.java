@@ -15,7 +15,6 @@ public final class CefrTopicRegistry {
 
     private CefrTopicRegistry() {}
 
-    /** @brief Constant or enum value representing cefr grammar topics in CefrTopicRegistry. */
     private static final Map<CefrLevel, List<String>> CEFR_GRAMMAR_TOPICS = Map.of(
         CefrLevel.A1, List.of(
             "Present Simple (to be & common verbs)",
@@ -119,7 +118,6 @@ public final class CefrTopicRegistry {
         "IELTS / TOEFL: Advanced Mixed Grammar & Cohesion Challenge"
     );
 
-    /** @brief Constant or enum value representing common domains in CefrTopicRegistry. */
     private static final List<String> COMMON_DOMAINS = List.of(
         "Business & Work",
         "Travel & Tourism",

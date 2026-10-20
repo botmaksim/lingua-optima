@@ -50,17 +50,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class AuthService {
 
-    /** @brief Field representing user repository in AuthService. */
     private final UserRepository userRepository;
-    /** @brief Field representing subscription repository in AuthService. */
     private final SubscriptionRepository subscriptionRepository;
-    /** @brief Field representing password encoder in AuthService. */
     private final PasswordEncoder passwordEncoder;
-    /** @brief Field representing jwt service in AuthService. */
     private final JwtService jwtService;
-    /** @brief Field representing string redis template in AuthService. */
     private final StringRedisTemplate stringRedisTemplate;
-    /** @brief Field representing email service in AuthService. */
     private final EmailService emailService;
 
     /** @brief Cryptographically secure random generator for 6-digit confirmation codes. */

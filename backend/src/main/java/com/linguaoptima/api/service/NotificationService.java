@@ -36,12 +36,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    /** @brief Field representing notification repository in NotificationService. */
     private final NotificationRepository notificationRepository;
-    /** @brief Field representing group student repository in NotificationService. */
     private final GroupStudentRepository groupStudentRepository;
 
-    /** @brief Field representing emitters in NotificationService. */
     private final Map<UUID, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
     /**

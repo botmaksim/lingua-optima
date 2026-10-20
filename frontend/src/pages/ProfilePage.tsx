@@ -176,9 +176,6 @@ export const ProfilePage: React.FC = () => {
     setSelectedModel(getDefaultModelForProvider(provider));
   };
 
-  /**
-   * @brief Event handler or helper executing load keys.
-   */
   const loadKeys = async () => {
     try {
       const data = await apiKeyApi.getKeys();
@@ -194,9 +191,6 @@ export const ProfilePage: React.FC = () => {
     loadKeys();
   }, []);
 
-  /**
-   * @brief Event handler or helper executing handle save key.
-   */
   const handleSaveKey = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rawKey.trim()) return;
@@ -223,9 +217,6 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
-  /**
-   * @brief Event handler or helper executing handle delete key.
-   */
   const handleDeleteKey = (id: string) => {
     setKeyToDelete(id);
   };
@@ -437,7 +428,6 @@ export const ProfilePage: React.FC = () => {
           </div>
         </div>
 
-        {/* CEFR Level Ladder Selector */}
         <div className="pt-4 border-t border-slate-100 space-y-3">
           <div className="flex items-center justify-between">
             <div>

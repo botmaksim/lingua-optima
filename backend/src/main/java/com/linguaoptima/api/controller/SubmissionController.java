@@ -31,7 +31,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SubmissionController {
 
-    /** @brief Field representing submission service in SubmissionController. */
     private final SubmissionService submissionService;
 
     /**

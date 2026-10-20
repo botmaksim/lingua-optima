@@ -26,11 +26,8 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    /** @brief Field representing signing key in JwtService. */
     private final SecretKey signingKey;
-    /** @brief Field representing access token validity ms in JwtService. */
     private final long accessTokenValidityMs = 15 * 60 * 1000L;
-    /** @brief Field representing refresh token validity ms in JwtService. */
     private final long refreshTokenValidityMs = 30L * 24 * 60 * 60 * 1000L;
 
     /**

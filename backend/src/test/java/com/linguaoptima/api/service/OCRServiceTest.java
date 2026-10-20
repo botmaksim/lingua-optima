@@ -26,18 +26,12 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class OCRServiceTest {
 
-    /** @brief Test fixture or mock dependency for tesseract. */
     @Mock
     private ITesseract tesseract;
 
-    /** @brief Test fixture or mock dependency for ocr service. */
     private OCRService ocrService;
-    /** @brief Test fixture or mock dependency for sample image bytes. */
     private byte[] sampleImageBytes;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in OCRServiceTest.
-     */
     @BeforeEach
     void setUp() throws Exception {
         ocrService = new OCRService(tesseract);

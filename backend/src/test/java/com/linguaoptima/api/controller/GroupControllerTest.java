@@ -30,28 +30,19 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class GroupControllerTest {
 
-    /** @brief Test fixture or mock dependency for group service. */
     @Mock
     private GroupService groupService;
 
-    /** @brief Test fixture or mock dependency for task service. */
     @Mock
     private com.linguaoptima.api.service.TaskService taskService;
 
-    /** @brief Test fixture or mock dependency for group controller. */
     @InjectMocks
     private GroupController groupController;
 
-    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
-    /** @brief Test fixture or mock dependency for group response. */
     private GroupResponse groupResponse;
-    /** @brief Test fixture or mock dependency for group id. */
     private UUID groupId;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in GroupControllerTest.
-     */
     @BeforeEach
     void setUp() {
         teacher = User.builder().id(UUID.randomUUID()).build();

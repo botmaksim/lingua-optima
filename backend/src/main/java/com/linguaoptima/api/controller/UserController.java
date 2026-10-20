@@ -26,7 +26,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserController {
 
-    /** @brief Field representing user service in UserController. */
     private final UserService userService;
 
     /**

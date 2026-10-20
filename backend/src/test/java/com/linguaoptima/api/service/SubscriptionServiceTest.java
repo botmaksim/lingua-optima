@@ -33,28 +33,19 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SubscriptionServiceTest {
 
-    /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
-    /** @brief Test fixture or mock dependency for payment service. */
     @Mock
     private PaymentService paymentService;
-    /** @brief Test fixture or mock dependency for usage service. */
     @Mock
     private UsageService usageService;
 
-    /** @brief Test fixture or mock dependency for subscription service. */
     @InjectMocks
     private SubscriptionService subscriptionService;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
-    /** @brief Test fixture or mock dependency for subscription. */
     private Subscription subscription;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in SubscriptionServiceTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("sub@lingua.com").build();

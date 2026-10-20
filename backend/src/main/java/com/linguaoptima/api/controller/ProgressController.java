@@ -25,7 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ProgressController {
 
-    /** @brief Field representing progress service in ProgressController. */
     private final ProgressService progressService;
 
     /**

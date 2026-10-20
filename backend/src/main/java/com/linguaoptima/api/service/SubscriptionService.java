@@ -31,11 +31,8 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class SubscriptionService {
 
-    /** @brief Field representing subscription repository in SubscriptionService. */
     private final SubscriptionRepository subscriptionRepository;
-    /** @brief Field representing payment service in SubscriptionService. */
     private final PaymentService paymentService;
-    /** @brief Field representing usage service in SubscriptionService. */
     private final UsageService usageService;
 
     /**

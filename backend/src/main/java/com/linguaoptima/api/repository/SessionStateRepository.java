@@ -21,33 +21,10 @@ import java.util.UUID;
  */
 @Repository
 public interface SessionStateRepository extends JpaRepository<SessionState, UUID> {
-    /**
-     * @brief Queries repository via findFirstByStudentAndStatusOrderByStartedAtDesc.
-     * @param student Filter parameter student.
-     * @param status Filter parameter status.
-     * @return Query result (Optional&lt;SessionState&gt;).
-     */
     Optional<SessionState> findFirstByStudentAndStatusOrderByStartedAtDesc(User student, SessionStatus status);
-    /**
-     * @brief Queries repository via findFirstByStudentIdAndStatusOrderByStartedAtDesc.
-     * @param studentId Filter parameter studentId.
-     * @param status Filter parameter status.
-     * @return Query result (Optional&lt;SessionState&gt;).
-     */
     Optional<SessionState> findFirstByStudentIdAndStatusOrderByStartedAtDesc(UUID studentId, SessionStatus status);
-    /**
-     * @brief Queries repository via findByAssignmentId.
-     * @param assignmentId Filter parameter assignmentId.
-     * @return Query result (Optional&lt;SessionState&gt;).
-     */
     @Query("SELECT s FROM SessionState s WHERE s.assignment.id = :assignmentId")
     Optional<SessionState> findByAssignmentId(@Param("assignmentId") UUID assignmentId);
-    /**
-     * @brief Queries repository via findAllByStudentIdAndStatus.
-     * @param studentId Filter parameter studentId.
-     * @param status Filter parameter status.
-     * @return Query result (List&lt;SessionState&gt;).
-     */
     List<SessionState> findAllByStudentIdAndStatus(UUID studentId, SessionStatus status);
 
     /**

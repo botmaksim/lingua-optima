@@ -27,20 +27,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ExportControllerTest {
 
-    /** @brief Test fixture or mock dependency for export service. */
     @Mock
     private ExportService exportService;
 
-    /** @brief Test fixture or mock dependency for export controller. */
     @InjectMocks
     private ExportController exportController;
 
-    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in ExportControllerTest.
-     */
     @BeforeEach
     void setUp() {
         teacher = User.builder().id(UUID.randomUUID()).build();

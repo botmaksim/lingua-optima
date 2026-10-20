@@ -26,11 +26,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AIProvidersTest {
 
-    /** @brief Test fixture or mock dependency for rest template. */
     @Mock
     private RestTemplate restTemplate;
 
-    /** @brief Test fixture or mock dependency for object mapper. */
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**

@@ -27,15 +27,10 @@ public class GroqProvider implements AIProvider {
     /** @brief Default Groq model identifier. */
     public static final String DEFAULT_MODEL = "qwen/qwen3.8-27b";
 
-    /** @brief Field representing api key in GroqProvider. */
     private final String apiKey;
-    /** @brief Field representing base url in GroqProvider. */
     private final String baseUrl;
-    /** @brief Field representing model name in GroqProvider. */
     private final String modelName;
-    /** @brief Field representing rest template in GroqProvider. */
     private final RestTemplate restTemplate;
-    /** @brief Field representing object mapper in GroqProvider. */
     private final ObjectMapper objectMapper;
 
     /**

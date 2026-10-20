@@ -359,7 +359,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl max-w-4xl mx-auto space-y-6">
-      {/* Title & Target Sounds Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -381,7 +380,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           )}
         </div>
 
-        {/* Accent Selector & Audio Model Button */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="flex bg-slate-800 p-0.5 rounded-lg border border-slate-700 text-xs">
             <button
@@ -429,7 +427,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         </div>
       </div>
 
-      {/* Instructions Banner */}
       <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3.5 text-xs text-slate-300 flex items-start gap-3">
         <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
         <div>
@@ -446,14 +443,12 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         </div>
       </div>
 
-      {/* The Text Passage Display */}
       <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-6">
         <div className="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-3 flex items-center justify-between">
           <span>Speech Passage</span>
           <span className="text-[11px] text-slate-500 font-normal">Click any word to hear native pronunciation</span>
         </div>
 
-        {/* Word-by-Word Interactive Display */}
         <div className="leading-loose text-lg font-medium text-slate-100 flex flex-wrap gap-x-2 gap-y-3">
           {evaluationResult
             ? evaluationResult.words.map((item, idx) => {
@@ -479,7 +474,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                     >
                       {item.word}
                     </button>
-                    {/* IPA Subtitle */}
                     <span className="text-[10px] text-slate-400 font-mono tracking-tight select-none mt-0.5">
                       {item.ipa}
                     </span>
@@ -504,7 +498,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         </div>
       </div>
 
-      {/* Microphone Error Banner */}
       {micError && (
         <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 text-xs text-rose-300 flex items-start gap-3">
           <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
@@ -515,7 +508,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         </div>
       )}
 
-      {/* Recording Status / Live Transcription */}
       {isRecording && (
         <div className="bg-indigo-950/40 border border-indigo-500/50 rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
@@ -534,7 +526,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         </div>
       )}
 
-      {/* Recorded Audio Playback */}
       {recordedAudioUrl && (
         <div className="bg-slate-950/80 border border-indigo-500/30 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in duration-200">
           <div className="text-xs text-indigo-300 font-semibold flex items-center gap-2">
@@ -545,7 +536,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         </div>
       )}
 
-      {/* Pronunciation Diagnostics Summary Card */}
       {evaluationResult && (
         <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/70 pb-3">
@@ -577,7 +567,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             </div>
           </div>
 
-          {/* Stats Quad */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div className="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg">
               <div className="text-lg font-bold text-emerald-400">{evaluationResult.accuracyScore}%</div>
@@ -604,7 +593,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             </div>
           </div>
 
-          {/* Feedback Notes */}
           <div className="space-y-1.5">
             {evaluationResult.generalFeedback.map((tip, i) => (
               <div key={i} className="flex items-start gap-2 text-xs text-slate-300">
@@ -614,7 +602,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             ))}
           </div>
 
-          {/* Selected Word Diagnostic Details */}
           {activeWordTip && (
             <div className="bg-slate-900 border border-indigo-500/40 rounded-lg p-3.5 text-xs space-y-2 mt-2">
               <div className="flex items-center justify-between">
@@ -646,11 +633,9 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         </div>
       )}
 
-      {/* Control Actions Bottom Bar */}
       {!readOnly && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-800 pt-5">
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            {/* Main Record Button */}
             <button
               type="button"
               disabled={isSubmitting}
@@ -665,7 +650,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               <span>{isRecording ? 'Завершить и оценить' : evaluationResult ? 'Прочитать снова' : 'Начать запись'}</span>
             </button>
 
-            {/* Reset Button */}
             {evaluationResult && (
               <button
                 type="button"
@@ -678,7 +662,6 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             )}
           </div>
 
-          {/* Submit Evaluation Button */}
           {evaluationResult && (
             <button
               type="button"

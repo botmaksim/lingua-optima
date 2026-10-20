@@ -21,14 +21,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class SubscriptionResponse {
 
-    /** @brief Field representing tier in SubscriptionResponse. */
     private SubscriptionTier tier;
-    /** @brief Field representing expires at in SubscriptionResponse. */
     private LocalDateTime expiresAt;
-    /** @brief Field representing evaluations remaining in SubscriptionResponse. */
     private Integer evaluationsRemaining;
-    /** @brief Field representing ocr remaining in SubscriptionResponse. */
     private Integer ocrRemaining;
-    /** @brief Field representing unlimited in SubscriptionResponse. */
     private boolean unlimited;
 }

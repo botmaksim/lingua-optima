@@ -31,28 +31,19 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ApiKeyServiceTest {
 
-    /** @brief Test fixture or mock dependency for api key repository. */
     @Mock
     private ApiKeyRepository apiKeyRepository;
 
-    /** @brief Test fixture or mock dependency for encryption service. */
     @Mock
     private EncryptionService encryptionService;
 
-    /** @brief Test fixture or mock dependency for api key service. */
     @InjectMocks
     private ApiKeyService apiKeyService;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
-    /** @brief Test fixture or mock dependency for other user. */
     private User otherUser;
-    /** @brief Test fixture or mock dependency for api key. */
     private ApiKey apiKey;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in ApiKeyServiceTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("keyowner@lingua.com").build();

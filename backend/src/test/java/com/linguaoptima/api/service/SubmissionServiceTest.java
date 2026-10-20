@@ -58,58 +58,39 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SubmissionServiceTest {
 
-    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
-    /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Test fixture or mock dependency for task repository. */
     @Mock
     private TaskRepository taskRepository;
-    /** @brief Test fixture or mock dependency for session state repository. */
     @Mock
     private SessionStateRepository sessionStateRepository;
-    /** @brief Test fixture or mock dependency for ocr service. */
     @Mock
     private OCRService ocrService;
-    /** @brief Test fixture or mock dependency for scoring service. */
     @Mock
     private ScoringService scoringService;
-    /** @brief Test fixture or mock dependency for usage service. */
     @Mock
     private UsageService usageService;
-    /** @brief Test fixture or mock dependency for progress service. */
     @Mock
     private ProgressService progressService;
-    /** @brief Test fixture or mock dependency for gamification service. */
     @Mock
     private GamificationService gamificationService;
-    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
-    /** @brief Test fixture or mock dependency for teacher student alias repository. */
     @Mock
     private TeacherStudentAliasRepository teacherStudentAliasRepository;
 
-    /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    /** @brief Test fixture or mock dependency for submission service. */
     @InjectMocks
     private SubmissionService submissionService;
 
-    /** @brief Test fixture or mock dependency for student. */
     private User student;
-    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
-    /** @brief Test fixture or mock dependency for assignment. */
     private TaskAssignment assignment;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in SubmissionServiceTest.
-     */
     @BeforeEach
     void setUp() {
         student = User.builder()

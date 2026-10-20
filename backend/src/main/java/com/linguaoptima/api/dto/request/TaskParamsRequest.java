@@ -27,36 +27,27 @@ import java.util.UUID;
 @AllArgsConstructor
 public class TaskParamsRequest {
 
-    /** @brief Field representing cefr level in TaskParamsRequest. */
     @NotNull(message = "CEFR level is required")
     private CefrLevel cefrLevel;
 
-    /** @brief Field representing grammar topic in TaskParamsRequest. */
     private String grammarTopic;
 
-    /** @brief Field representing domain in TaskParamsRequest. */
     private String domain;
 
-    /** @brief Field representing task type in TaskParamsRequest. */
     @NotNull(message = "Task type is required")
     private TaskType taskType;
 
-    /** @brief Field representing difficulty in TaskParamsRequest. */
     @Builder.Default
     private DifficultyLevel difficulty = DifficultyLevel.MEDIUM;
 
-    /** @brief Field representing number of questions in TaskParamsRequest. */
     @Builder.Default
     private int numberOfQuestions = 5;
 
-    /** @brief Field representing total points / max score in TaskParamsRequest. */
     @Builder.Default
     private Integer totalPoints = 100;
 
-    /** @brief Field representing provider in TaskParamsRequest. */
     private AIProvider provider;
 
-    /** @brief Field representing model name in TaskParamsRequest. */
     private String modelName;
 
     /** @brief Optional user-provided custom grammar rules, formulas, or teaching notes. */

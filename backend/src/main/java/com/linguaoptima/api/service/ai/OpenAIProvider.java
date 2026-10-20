@@ -25,15 +25,10 @@ public class OpenAIProvider implements AIProvider {
     /** @brief Default OpenAI model identifier. */
     public static final String DEFAULT_MODEL = "gpt-6.1-sol";
 
-    /** @brief Field representing api key in OpenAIProvider. */
     private final String apiKey;
-    /** @brief Field representing base url in OpenAIProvider. */
     private final String baseUrl;
-    /** @brief Field representing model name in OpenAIProvider. */
     private final String modelName;
-    /** @brief Field representing rest template in OpenAIProvider. */
     private final RestTemplate restTemplate;
-    /** @brief Field representing object mapper in OpenAIProvider. */
     private final ObjectMapper objectMapper;
 
     /**

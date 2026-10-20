@@ -31,7 +31,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class SessionController {
 
-    /** @brief Field representing session service in SessionController. */
     private final SessionService sessionService;
 
     /**

@@ -28,7 +28,6 @@ import java.util.Arrays;
 @Service
 public class OCRService {
 
-    /** @brief Field representing tesseract in OCRService. */
     private final ITesseract tesseract;
 
     /**

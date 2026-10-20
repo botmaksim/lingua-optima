@@ -52,37 +52,26 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TaskServiceTest {
 
-    /** @brief Test fixture or mock dependency for task repository. */
     @Mock
     private TaskRepository taskRepository;
-    /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
-    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
-    /** @brief Test fixture or mock dependency for ai broker service. */
     @Mock
     private AIBrokerService aiBrokerService;
-    /** @brief Test fixture or mock dependency for subscription service. */
     @Mock
     private SubscriptionService subscriptionService;
-    /** @brief Test fixture or mock dependency for usage service. */
     @Mock
     private UsageService usageService;
-    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
-    /** @brief Test fixture or mock dependency for curriculum storage service. */
     @Mock
     private CurriculumStorageService curriculumStorageService;
-    /** @brief Test fixture or mock dependency for pronunciation pack service. */
     @Mock
     private PronunciationPackService pronunciationPackService;
-    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
     /** @brief Mock for single device and concurrency generation protection. */
@@ -92,22 +81,15 @@ class TaskServiceTest {
     @Mock
     private PricingProperties pricingProperties;
 
-    /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    /** @brief Test fixture or mock dependency for task service. */
     @InjectMocks
     private TaskService taskService;
 
-    /** @brief Test fixture or mock dependency for student user. */
     private User studentUser;
-    /** @brief Test fixture or mock dependency for teacher user. */
     private User teacherUser;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in TaskServiceTest.
-     */
     @BeforeEach
     void setUp() {
         studentUser = User.builder()

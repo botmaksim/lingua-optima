@@ -33,31 +33,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class UserService {
 
-    /** @brief Field representing user repository in UserService. */
     private final UserRepository userRepository;
-    /** @brief Field representing group repository in UserService. */
     private final GroupRepository groupRepository;
-    /** @brief Field representing api key repository in UserService. */
     private final ApiKeyRepository apiKeyRepository;
-    /** @brief Field representing progress record repository in UserService. */
     private final ProgressRecordRepository progressRecordRepository;
-    /** @brief Field representing notification repository in UserService. */
     private final NotificationRepository notificationRepository;
-    /** @brief Field representing subscription repository in UserService. */
     private final SubscriptionRepository subscriptionRepository;
-    /** @brief Field representing usage counter repository in UserService. */
     private final UsageCounterRepository usageCounterRepository;
-    /** @brief Field representing group student repository in UserService. */
     private final GroupStudentRepository groupStudentRepository;
-    /** @brief Field representing teacher student alias repository in UserService. */
     private final TeacherStudentAliasRepository teacherStudentAliasRepository;
-    /** @brief Field representing session state repository in UserService. */
     private final SessionStateRepository sessionStateRepository;
-    /** @brief Field representing submission repository in UserService. */
     private final SubmissionRepository submissionRepository;
-    /** @brief Field representing task assignment repository in UserService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Field representing password encoder in UserService. */
     private final PasswordEncoder passwordEncoder;
 
     /**

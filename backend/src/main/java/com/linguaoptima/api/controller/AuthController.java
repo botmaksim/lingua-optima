@@ -40,9 +40,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
 
-    /** @brief Field representing auth service in AuthController. */
     private final AuthService authService;
-    /** @brief Field representing jwt service in AuthController. */
     private final JwtService jwtService;
 
     /**

@@ -16,17 +16,6 @@ import java.util.UUID;
  */
 @Repository
 public interface TaskQuestionRepository extends JpaRepository<TaskQuestion, UUID> {
-    /**
-     * @brief Queries repository via findByTaskIdOrderByQuestionOrder.
-     * @param taskId Filter parameter taskId.
-     * @return Query result (List&lt;TaskQuestion&gt;).
-     */
     List<TaskQuestion> findByTaskIdOrderByQuestionOrder(UUID taskId);
-    /**
-     * @brief Queries repository via findByTaskIdAndDifficulty.
-     * @param taskId Filter parameter taskId.
-     * @param difficulty Filter parameter difficulty.
-     * @return Query result (List&lt;TaskQuestion&gt;).
-     */
     List<TaskQuestion> findByTaskIdAndDifficulty(UUID taskId, int difficulty);
 }

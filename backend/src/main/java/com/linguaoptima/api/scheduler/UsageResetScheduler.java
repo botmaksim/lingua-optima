@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UsageResetScheduler {
 
-    /** @brief Field representing usage service in UsageResetScheduler. */
     private final UsageService usageService;
 
     /**

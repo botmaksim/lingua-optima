@@ -31,13 +31,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProgressService {
 
-    /** @brief Field representing progress record repository in ProgressService. */
     private final ProgressRecordRepository progressRecordRepository;
-    /** @brief Field representing group student repository in ProgressService. */
     private final GroupStudentRepository groupStudentRepository;
-    /** @brief Field representing user repository in ProgressService. */
     private final UserRepository userRepository;
-    /** @brief Field representing notification service in ProgressService. */
     private final NotificationService notificationService;
 
     /**

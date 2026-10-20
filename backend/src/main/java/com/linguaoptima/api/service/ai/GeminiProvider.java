@@ -27,15 +27,10 @@ public class GeminiProvider implements AIProvider {
     /** @brief Default Gemini model identifier. */
     public static final String DEFAULT_MODEL = "gemini-3.8-flash";
 
-    /** @brief Field representing api key in GeminiProvider. */
     private final String apiKey;
-    /** @brief Field representing base url in GeminiProvider. */
     private final String baseUrl;
-    /** @brief Field representing model name in GeminiProvider. */
     private final String modelName;
-    /** @brief Field representing rest template in GeminiProvider. */
     private final RestTemplate restTemplate;
-    /** @brief Field representing object mapper in GeminiProvider. */
     private final ObjectMapper objectMapper;
 
     /**

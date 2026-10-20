@@ -34,7 +34,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TaskController {
 
-    /** @brief Field representing task service in TaskController. */
     private final TaskService taskService;
 
     /**

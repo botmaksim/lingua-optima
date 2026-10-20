@@ -41,41 +41,27 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AIBrokerServiceTest {
 
-    /** @brief Test fixture or mock dependency for groq provider. */
     @Mock
     private GroqProvider groqProvider;
-    /** @brief Test fixture or mock dependency for gemini provider. */
     @Mock
     private GeminiProvider geminiProvider;
-    /** @brief Test fixture or mock dependency for api key repository. */
     @Mock
     private ApiKeyRepository apiKeyRepository;
-    /** @brief Test fixture or mock dependency for encryption service. */
     @Mock
     private EncryptionService encryptionService;
-    /** @brief Test fixture or mock dependency for pending ai task repository. */
     @Mock
     private PendingAiTaskRepository pendingAiTaskRepository;
-    /** @brief Test fixture or mock dependency for rest template. */
     @Mock
     private RestTemplate restTemplate;
-    /** @brief Test fixture or mock dependency for string redis template. */
     @Mock
     private StringRedisTemplate stringRedisTemplate;
-    /** @brief Test fixture or mock dependency for value operations. */
     @Mock
     private ValueOperations<String, String> valueOperations;
 
-    /** @brief Test fixture or mock dependency for object mapper. */
     private final ObjectMapper objectMapper = new ObjectMapper();
-    /** @brief Test fixture or mock dependency for ai broker service. */
     private AIBrokerService aiBrokerService;
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in AIBrokerServiceTest.
-     */
     @BeforeEach
     void setUp() {
         when(groqProvider.getProviderName()).thenReturn("GROQ");

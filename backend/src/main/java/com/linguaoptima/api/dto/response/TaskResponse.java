@@ -28,25 +28,17 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class TaskResponse {
 
-    /** @brief Field representing id in TaskResponse. */
     private UUID id;
-    /** @brief Field representing type in TaskResponse. */
     private TaskType type;
-    /** @brief Field representing cefr level in TaskResponse. */
     private CefrLevel cefrLevel;
-    /** @brief Field representing grammar topic in TaskResponse. */
     private String grammarTopic;
-    /** @brief Field representing domain in TaskResponse. */
     private String domain;
-    /** @brief Field representing content in TaskResponse. */
     private String content;
     /** @brief Difficulty level of the task. */
     private DifficultyLevel difficulty;
     /** @brief Total points / max score for the task. */
     private Integer totalPoints;
-    /** @brief Field representing is template in TaskResponse. */
     private boolean isTemplate;
-    /** @brief Field representing created at in TaskResponse. */
     private LocalDateTime createdAt;
     /** @brief Optional task assignment ID for the student. */
     private UUID assignmentId;
@@ -68,7 +60,6 @@ public class TaskResponse {
     /** @brief Flag indicating whether this task was formally assigned by an educator. */
     @Builder.Default
     private Boolean isTeacherTask = false;
-    /** @brief Field representing questions in TaskResponse. */
     @Builder.Default
     private List<QuestionResponse> questions = new ArrayList<>();
 

@@ -18,18 +18,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AnswerFeedbackResponse {
 
-    /** @brief Field representing correct in AnswerFeedbackResponse. */
     private boolean correct;
-    /** @brief Field representing correct answer in AnswerFeedbackResponse. */
     private String correctAnswer;
-    /** @brief Field representing explanation in AnswerFeedbackResponse. */
     private String explanation;
-    /** @brief Field representing new difficulty in AnswerFeedbackResponse. */
     private int newDifficulty;
-    /** @brief Field representing current question index in AnswerFeedbackResponse. */
     private int currentQuestionIndex;
-    /** @brief Field representing completed in AnswerFeedbackResponse. */
     private boolean completed;
-    /** @brief Field representing mastery score in AnswerFeedbackResponse. */
     private Double masteryScore;
 }

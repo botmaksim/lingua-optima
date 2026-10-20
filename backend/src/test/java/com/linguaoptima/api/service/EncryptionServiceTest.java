@@ -14,12 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class EncryptionServiceTest {
 
-    /** @brief Test fixture or mock dependency for encryption service. */
     private EncryptionService encryptionService;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in EncryptionServiceTest.
-     */
     @BeforeEach
     void setUp() {
         encryptionService = new EncryptionService("test-key-32-bytes-long-super-secret!");

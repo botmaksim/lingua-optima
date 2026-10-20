@@ -24,21 +24,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
 
-    /** @brief Field representing email in RegisterRequest. */
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 
-    /** @brief Field representing password in RegisterRequest. */
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    /** @brief Field representing full name in RegisterRequest. */
     @NotBlank(message = "Full name is required")
     private String fullName;
 
-    /** @brief Field representing role in RegisterRequest. */
     @NotNull(message = "Role is required")
     private Role role;
 

@@ -25,15 +25,10 @@ public class KimiProvider implements AIProvider {
     /** @brief Default Kimi model identifier. */
     public static final String DEFAULT_MODEL = "kimi-k3";
 
-    /** @brief Field representing api key in KimiProvider. */
     private final String apiKey;
-    /** @brief Field representing base url in KimiProvider. */
     private final String baseUrl;
-    /** @brief Field representing model name in KimiProvider. */
     private final String modelName;
-    /** @brief Field representing rest template in KimiProvider. */
     private final RestTemplate restTemplate;
-    /** @brief Field representing object mapper in KimiProvider. */
     private final ObjectMapper objectMapper;
 
     /**

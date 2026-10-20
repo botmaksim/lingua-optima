@@ -395,7 +395,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
 
   return (
     <div className="rounded-3xl border border-amber-200/90 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 p-6 sm:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
-      {/* Quick Mode Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-amber-100">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-200 flex-shrink-0">
@@ -424,7 +423,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         </div>
       </div>
 
-      {/* 1. Target CEFR Level */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           1. Target CEFR Level
@@ -450,13 +448,11 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         </div>
       </div>
 
-      {/* 2. Format / Skill Grid (6 Cards including Essay Writing) */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
           2. Practice Skill / Format
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-          {/* Card 1: Recommended */}
           <button
             type="button"
             onClick={() => handleFormatChange('RECOMMENDED')}
@@ -478,7 +474,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             </span>
           </button>
 
-          {/* Card 2: Surprise Mix */}
           <button
             type="button"
             onClick={() => handleFormatChange('SURPRISE')}
@@ -500,7 +495,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             </span>
           </button>
 
-          {/* Card 3: Grammar Quiz */}
           <button
             type="button"
             onClick={() => handleFormatChange('GRAMMAR')}
@@ -522,7 +516,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             </span>
           </button>
 
-          {/* Card 4: Reading Article */}
           <button
             type="button"
             onClick={() => handleFormatChange('READING')}
@@ -544,7 +537,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             </span>
           </button>
 
-          {/* Card 5: Speaking Drill */}
           <button
             type="button"
             onClick={() => handleFormatChange('SPEAKING')}
@@ -566,7 +558,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             </span>
           </button>
 
-          {/* Card 6: Essay Writing */}
           <button
             type="button"
             onClick={() => handleFormatChange('ESSAY')}
@@ -590,7 +581,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         </div>
       </div>
 
-      {/* 3. Topic Selection & Instant Shuffle */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -606,7 +596,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
           </button>
         </div>
 
-        {/* Active Selected Topic Pill */}
         <div className="p-3.5 rounded-2xl bg-white border border-amber-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center space-x-2.5 min-w-0">
             <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center flex-shrink-0">
@@ -636,7 +625,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
           </button>
         </div>
 
-        {/* Custom Topic Input if toggled */}
         {isCustomTopic && (
           <AutoExpandingTextarea
             minRows={1}
@@ -653,7 +641,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
           />
         )}
 
-        {/* Quick Topic Suggestions */}
         {!isCustomTopic && topicSuggestions.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span className="text-[11px] font-semibold text-slate-400 mr-1">Suggestions:</span>
@@ -675,7 +662,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         )}
       </div>
 
-      {/* Start Button & Mode Switch Callout */}
       <div className="space-y-4 pt-2">
         <button
           type="button"
@@ -693,7 +679,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
           )}
         </button>
 
-        {/* Switch to Detailed Mode Directional Callout */}
         {onSwitchToDetailed && (
           <div className="p-3 bg-white/80 rounded-2xl border border-amber-200/70 flex items-center justify-between text-xs text-slate-600 gap-2">
             <span>

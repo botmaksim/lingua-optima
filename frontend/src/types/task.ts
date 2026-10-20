@@ -25,21 +25,13 @@ export type AssignmentStatus = 'PENDING' | 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED
  * @brief Individual question within a multi-item task.
  */
 export interface TaskQuestion {
-  /** @brief Property representing id in TaskQuestion. */
   id: string;
-  /** @brief Property representing question order in TaskQuestion. */
   questionOrder: number;
-  /** @brief Property representing question text in TaskQuestion. */
   questionText: string;
-  /** @brief Property representing correct answer in TaskQuestion. */
   correctAnswer: string;
-  /** @brief Property representing options in TaskQuestion. */
   options: string[];
-  /** @brief Property representing difficulty in TaskQuestion. */
   difficulty: number;
-  /** @brief Property representing points awarded in TaskQuestion. */
   points?: number;
-  /** @brief Property representing grammar rule in TaskQuestion. */
   grammarRule: string;
 }
 
@@ -47,31 +39,18 @@ export interface TaskQuestion {
  * @brief Language learning task or exercise template.
  */
 export interface Task {
-  /** @brief Property representing id in Task. */
   id: string;
-  /** @brief Property representing type in Task. */
   type: TaskType;
-  /** @brief Property representing cefr level in Task. */
   cefrLevel: CefrLevel;
-  /** @brief Property representing grammar topic in Task. */
   grammarTopic: string;
-  /** @brief Property representing domain in Task. */
   domain: string;
-  /** @brief Property representing difficulty in Task. */
   difficulty: DifficultyLevel;
-  /** @brief Property representing total points / max score in Task. */
   totalPoints?: number;
-  /** @brief Property representing content in Task. */
   content: string;
-  /** @brief Property representing answer key in Task. */
   answerKey: string;
-  /** @brief Property representing questions in Task. */
   questions?: TaskQuestion[];
-  /** @brief Property representing is template in Task. */
   isTemplate?: boolean;
-  /** @brief Property representing created by in Task. */
   createdBy?: User;
-  /** @brief Property representing created at in Task. */
   createdAt: string;
   /** @brief Optional task assignment ID for the student. */
   assignmentId?: string;
@@ -103,23 +82,14 @@ export interface Task {
  * @brief Parameters for generating or configuring a task.
  */
 export interface TaskParams {
-  /** @brief Property representing cefr level in TaskParams. */
   cefrLevel: CefrLevel;
-  /** @brief Property representing grammar topic in TaskParams. */
   grammarTopic?: string;
-  /** @brief Property representing domain in TaskParams. */
   domain?: string;
-  /** @brief Property representing task type in TaskParams. */
   taskType: TaskType;
-  /** @brief Property representing difficulty in TaskParams. */
   difficulty: DifficultyLevel;
-  /** @brief Property representing number of questions in TaskParams. */
   numberOfQuestions?: number;
-  /** @brief Property representing total points / max score in TaskParams. */
   totalPoints?: number;
-  /** @brief Property representing preferred AI provider in TaskParams. */
   provider?: string;
-  /** @brief Property representing preferred AI model identifier in TaskParams. */
   modelName?: string;
   /** @brief Optional custom grammar rule text to guide AI generation. */
   customRule?: string;
@@ -233,21 +203,13 @@ export interface TopicsCatalogResponse {
  * @brief Task assignment linking a student to an assigned exercise.
  */
 export interface TaskAssignment {
-  /** @brief Property representing id in TaskAssignment. */
   id: string;
-  /** @brief Property representing task id in TaskAssignment. */
   taskId: string;
-  /** @brief Property representing student id in TaskAssignment. */
   studentId: string;
-  /** @brief Property representing assigned by id in TaskAssignment. */
   assignedById: string;
-  /** @brief Property representing due date in TaskAssignment. */
   dueDate?: string;
-  /** @brief Property representing status in TaskAssignment. */
   status: AssignmentStatus;
-  /** @brief Property representing task in TaskAssignment. */
   task?: Task;
-  /** @brief Property representing created at in TaskAssignment. */
   createdAt: string;
 }
 

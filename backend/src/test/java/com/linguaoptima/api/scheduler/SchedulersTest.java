@@ -31,19 +31,14 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SchedulersTest {
 
-    /** @brief Test fixture or mock dependency for gamification service. */
     @Mock
     private GamificationService gamificationService;
-    /** @brief Test fixture or mock dependency for usage service. */
     @Mock
     private UsageService usageService;
-    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
-    /** @brief Test fixture or mock dependency for progress record repository. */
     @Mock
     private ProgressRecordRepository progressRecordRepository;
-    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 

@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class StreakScheduler {
 
-    /** @brief Field representing gamification service in StreakScheduler. */
     private final GamificationService gamificationService;
 
     /**

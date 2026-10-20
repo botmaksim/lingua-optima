@@ -27,12 +27,8 @@ import static org.mockito.Mockito.when;
  */
 class GlobalExceptionHandlerTest {
 
-    /** @brief Test fixture or mock dependency for handler. */
     private GlobalExceptionHandler handler;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in GlobalExceptionHandlerTest.
-     */
     @BeforeEach
     void setUp() {
         handler = new GlobalExceptionHandler();

@@ -8,16 +8,11 @@ package com.linguaoptima.api.domain.enums;
  * @brief Question and task difficulty levels used in Computerized Adaptive Testing (CAT).
  */
 public enum DifficultyLevel {
-    /** @brief Constant or enum value representing easy in DifficultyLevel. */
     EASY(1),
-    /** @brief Constant or enum value representing medium in DifficultyLevel. */
     MEDIUM(2),
-    /** @brief Constant or enum value representing hard in DifficultyLevel. */
     HARD(3),
-    /** @brief Constant or enum value representing expert in DifficultyLevel. */
     EXPERT(4);
 
-    /** @brief Field representing level in DifficultyLevel. */
     private final int level;
 
     /**

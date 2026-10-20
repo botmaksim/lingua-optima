@@ -20,12 +20,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateUserRequest {
 
-    /** @brief Field representing full name in UpdateUserRequest. */
     private String fullName;
-    /** @brief Field representing display alias in UpdateUserRequest. */
     private String displayAlias;
-    /** @brief Field representing cefr level in UpdateUserRequest. */
     private CefrLevel cefrLevel;
-    /** @brief Field representing user role (e.g. STUDENT or TEACHER) in UpdateUserRequest. */
     private Role role;
 }

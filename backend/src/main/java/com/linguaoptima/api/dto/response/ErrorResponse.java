@@ -21,16 +21,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ErrorResponse {
-    /** @brief Field representing status in ErrorResponse. */
     private int status;
-    /** @brief Field representing message in ErrorResponse. */
     private String message;
-    /** @brief Field representing error code in ErrorResponse. */
     private String errorCode;
-    /** @brief Field representing timestamp in ErrorResponse. */
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
-    /** @brief Field representing errors in ErrorResponse. */
     @Builder.Default
     private List<String> errors = new ArrayList<>();
 }

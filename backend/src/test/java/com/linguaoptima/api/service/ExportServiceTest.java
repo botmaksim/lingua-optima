@@ -49,44 +49,29 @@ import static org.mockito.Mockito.when;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class ExportServiceTest {
 
-    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
-    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
-    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
-    /** @brief Test fixture or mock dependency for progress record repository. */
     @Mock
     private ProgressRecordRepository progressRecordRepository;
-    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
-    /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Test fixture or mock dependency for teacher student alias repository. */
     @Mock
     private TeacherStudentAliasRepository teacherStudentAliasRepository;
 
-    /** @brief Test fixture or mock dependency for export service. */
     @InjectMocks
     private ExportService exportService;
 
-    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
-    /** @brief Test fixture or mock dependency for other teacher. */
     private User otherTeacher;
-    /** @brief Test fixture or mock dependency for student. */
     private User student;
-    /** @brief Test fixture or mock dependency for group. */
     private Group group;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in ExportServiceTest.
-     */
     @BeforeEach
     void setUp() {
         teacher = User.builder().id(UUID.randomUUID()).fullName("Professor Smith").role(Role.TEACHER).build();

@@ -27,7 +27,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class NotificationController {
 
-    /** @brief Field representing notification service in NotificationController. */
     private final NotificationService notificationService;
 
     /**

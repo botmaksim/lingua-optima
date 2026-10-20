@@ -31,9 +31,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class UsageService {
 
-    /** @brief Field representing usage counter repository in UsageService. */
     private final UsageCounterRepository usageCounterRepository;
-    /** @brief Field representing subscription repository in UsageService. */
     private final SubscriptionRepository subscriptionRepository;
     /** @brief Configurable pricing and quota rules externalized from code. */
     private final PricingProperties pricingProperties;

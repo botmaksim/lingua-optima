@@ -29,22 +29,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
-    /** @brief Test fixture or mock dependency for user service. */
     @Mock
     private UserService userService;
 
-    /** @brief Test fixture or mock dependency for user controller. */
     @InjectMocks
     private UserController userController;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
-    /** @brief Test fixture or mock dependency for user response. */
     private UserResponse userResponse;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in UserControllerTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("u@lingua.com").build();

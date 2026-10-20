@@ -17,29 +17,9 @@ import java.util.UUID;
  */
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
-    /**
-     * @brief Queries repository via findByUserAndIsReadFalse.
-     * @param user Filter parameter user.
-     * @return Query result (List&lt;Notification&gt;).
-     */
     List<Notification> findByUserAndIsReadFalse(User user);
-    /**
-     * @brief Queries repository via findByUserIdAndIsReadFalse.
-     * @param userId Filter parameter userId.
-     * @return Query result (List&lt;Notification&gt;).
-     */
     List<Notification> findByUserIdAndIsReadFalse(UUID userId);
-    /**
-     * @brief Queries repository via countByUserIdAndIsReadFalse.
-     * @param userId Filter parameter userId.
-     * @return Query result (int).
-     */
     int countByUserIdAndIsReadFalse(UUID userId);
-    /**
-     * @brief Queries repository via findByUserIdOrderByCreatedAtDesc.
-     * @param userId Filter parameter userId.
-     * @return Query result (List&lt;Notification&gt;).
-     */
     List<Notification> findByUserIdOrderByCreatedAtDesc(UUID userId);
 
     /**

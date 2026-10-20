@@ -21,43 +21,34 @@ import java.util.UUID;
 @Builder
 public class TaskQuestion {
 
-    /** @brief Field representing id in TaskQuestion. */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /** @brief Field representing task in TaskQuestion. */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
 
-    /** @brief Field representing question order in TaskQuestion. */
     @Column(name = "question_order", nullable = false)
     private int questionOrder;
 
-    /** @brief Field representing question text in TaskQuestion. */
     @Column(name = "question_text", columnDefinition = "TEXT", nullable = false)
     private String questionText;
 
-    /** @brief Field representing correct answer in TaskQuestion. */
     @Column(name = "correct_answer", columnDefinition = "TEXT", nullable = false)
     private String correctAnswer;
 
-    /** @brief Field representing options json in TaskQuestion. */
     @Column(name = "options_json", columnDefinition = "TEXT")
     private String optionsJson;
 
-    /** @brief Field representing difficulty in TaskQuestion. */
     @Column(nullable = false)
     @Builder.Default
     private int difficulty = 2;
 
-    /** @brief Field representing points / score weight in TaskQuestion. */
     @Column(nullable = false)
     @Builder.Default
     private int points = 10;
 
-    /** @brief Field representing grammar rule in TaskQuestion. */
     @Column(name = "grammar_rule")
     private String grammarRule;
 }

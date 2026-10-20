@@ -23,22 +23,18 @@ import java.util.UUID;
 @Builder
 public class Submission {
 
-    /** @brief Field representing id in Submission. */
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    /** @brief Field representing assignment in Submission. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignment_id")
     private TaskAssignment assignment;
 
-    /** @brief Field representing student in Submission. */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
 
-    /** @brief Field representing submission type in Submission. */
     @Enumerated(EnumType.STRING)
     @Column(name = "submission_type", nullable = false)
     private SubmissionType submissionType;
@@ -50,23 +46,18 @@ public class Submission {
     @Column(name = "student_text", columnDefinition = "TEXT", nullable = false)
     private String studentText;
 
-    /** @brief Field representing ai score in Submission. */
     @Column(name = "ai_score")
     private Double aiScore;
 
-    /** @brief Field representing ai feedback in Submission. */
     @Column(name = "ai_feedback", columnDefinition = "TEXT")
     private String aiFeedback;
 
-    /** @brief Field representing override score in Submission. */
     @Column(name = "override_score")
     private Double overrideScore;
 
-    /** @brief Field representing teacher comment in Submission. */
     @Column(name = "teacher_comment", columnDefinition = "TEXT")
     private String teacherComment;
 
-    /** @brief Field representing provider used in Submission. */
     @Column(name = "provider_used")
     private String providerUsed;
 
@@ -75,14 +66,10 @@ public class Submission {
     @Builder.Default
     private Boolean isLate = false;
 
-    /** @brief Field representing submitted at in Submission. */
     @Column(name = "submitted_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime submittedAt = LocalDateTime.now();
 
-    /**
-     * @brief JPA lifecycle callback invoked via prePersist to update entity state.
-     */
     @PrePersist
     public void prePersist() {
         if (submittedAt == null) {

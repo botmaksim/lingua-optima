@@ -21,14 +21,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateApiKeyRequest {
 
-    /** @brief Field representing provider in CreateApiKeyRequest. */
     @NotNull(message = "AI provider is required")
     private AIProvider provider;
 
-    /** @brief Field representing raw key in CreateApiKeyRequest. */
     @NotBlank(message = "API key is required")
     private String rawKey;
 
-    /** @brief Field representing model name in CreateApiKeyRequest. */
     private String modelName;
 }

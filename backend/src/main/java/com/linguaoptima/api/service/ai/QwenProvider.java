@@ -25,15 +25,10 @@ public class QwenProvider implements AIProvider {
     /** @brief Default Qwen model identifier. */
     public static final String DEFAULT_MODEL = "qwen3.8-max";
 
-    /** @brief Field representing api key in QwenProvider. */
     private final String apiKey;
-    /** @brief Field representing base url in QwenProvider. */
     private final String baseUrl;
-    /** @brief Field representing model name in QwenProvider. */
     private final String modelName;
-    /** @brief Field representing rest template in QwenProvider. */
     private final RestTemplate restTemplate;
-    /** @brief Field representing object mapper in QwenProvider. */
     private final ObjectMapper objectMapper;
 
     /**

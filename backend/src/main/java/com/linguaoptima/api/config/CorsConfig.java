@@ -20,7 +20,6 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    /** @brief Field representing allowed origins in CorsConfig. */
     @Value("${app.cors.allowed-origins:http://localhost:*,https://*}")
     private String allowedOrigins;
 

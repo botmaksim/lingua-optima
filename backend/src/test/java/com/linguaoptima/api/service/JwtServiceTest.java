@@ -16,18 +16,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JwtServiceTest {
 
-    /** @brief Test fixture or mock dependency for jwt service. */
     private JwtService jwtService;
-    /** @brief Test fixture or mock dependency for test user id. */
     private final UUID testUserId = UUID.randomUUID();
-    /** @brief Test fixture or mock dependency for test email. */
     private final String testEmail = "test@example.com";
-    /** @brief Test fixture or mock dependency for test role. */
     private final String testRole = "STUDENT";
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in JwtServiceTest.
-     */
     @BeforeEach
     void setUp() {
         jwtService = new JwtService("a-super-secret-key-that-is-at-least-256-bits-long-for-signing-jwt-tokens-safely");

@@ -27,7 +27,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ExportController {
 
-    /** @brief Field representing export service in ExportController. */
     private final ExportService exportService;
 
     /**

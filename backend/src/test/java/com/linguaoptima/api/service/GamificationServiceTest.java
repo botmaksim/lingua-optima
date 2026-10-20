@@ -28,24 +28,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class GamificationServiceTest {
 
-    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
 
-    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 
-    /** @brief Test fixture or mock dependency for gamification service. */
     @InjectMocks
     private GamificationService gamificationService;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in GamificationServiceTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder()

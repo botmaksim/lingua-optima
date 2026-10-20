@@ -17,12 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class PaymentServiceTest {
 
-    /** @brief Test fixture or mock dependency for payment service. */
     private PaymentService paymentService;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in PaymentServiceTest.
-     */
     @BeforeEach
     void setUp() {
         paymentService = new PaymentService();

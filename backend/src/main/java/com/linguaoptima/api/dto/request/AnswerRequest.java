@@ -22,11 +22,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AnswerRequest {
 
-    /** @brief Field representing question id in AnswerRequest. */
     @NotNull(message = "Question ID is required")
     private UUID questionId;
 
-    /** @brief Field representing answer in AnswerRequest. */
     @NotBlank(message = "Answer is required")
     private String answer;
 }

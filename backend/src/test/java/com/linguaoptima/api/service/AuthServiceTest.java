@@ -52,43 +52,31 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class AuthServiceTest {
 
-    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
 
-    /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
 
-    /** @brief Test fixture or mock dependency for password encoder. */
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    /** @brief Test fixture or mock dependency for jwt service. */
     @Mock
     private JwtService jwtService;
 
-    /** @brief Test fixture or mock dependency for string redis template. */
     @Mock
     private StringRedisTemplate stringRedisTemplate;
 
-    /** @brief Test fixture or mock dependency for value operations. */
     @Mock
     private ValueOperations<String, String> valueOperations;
 
-    /** @brief Test fixture or mock dependency for email service. */
     @Mock
     private EmailService emailService;
 
-    /** @brief Test fixture or mock dependency for auth service. */
     private AuthService authService;
 
-    /** @brief Test fixture or mock dependency for sample user. */
     private User sampleUser;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in AuthServiceTest.
-     */
     @BeforeEach
     void setUp() {
         when(stringRedisTemplate.opsForValue()).thenReturn(valueOperations);

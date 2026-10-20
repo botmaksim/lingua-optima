@@ -136,9 +136,6 @@ export const Navbar: React.FC = () => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  /**
-   * @brief Event handler or helper executing handle logout.
-   */
   const handleLogout = async () => {
     await logout();
     navigate('/login');

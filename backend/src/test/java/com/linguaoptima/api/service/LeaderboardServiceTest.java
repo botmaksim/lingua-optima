@@ -41,37 +41,24 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LeaderboardServiceTest {
 
-    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
-    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
-    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
-    /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
 
-    /** @brief Test fixture or mock dependency for leaderboard service. */
     @InjectMocks
     private LeaderboardService leaderboardService;
 
-    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
-    /** @brief Test fixture or mock dependency for student1. */
     private User student1;
-    /** @brief Test fixture or mock dependency for student2. */
     private User student2;
-    /** @brief Test fixture or mock dependency for stranger. */
     private User stranger;
-    /** @brief Test fixture or mock dependency for group. */
     private Group group;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in LeaderboardServiceTest.
-     */
     @BeforeEach
     void setUp() {
         teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();

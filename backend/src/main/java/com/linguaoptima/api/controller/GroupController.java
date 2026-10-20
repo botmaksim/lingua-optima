@@ -32,10 +32,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class GroupController {
 
-    /** @brief Field representing group service in GroupController. */
     private final GroupService groupService;
 
-    /** @brief Field representing task service in GroupController. */
     private final TaskService taskService;
 
     /**

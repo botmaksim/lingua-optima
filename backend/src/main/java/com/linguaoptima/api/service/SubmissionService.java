@@ -57,29 +57,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SubmissionService {
 
-    /** @brief Field representing submission repository in SubmissionService. */
     private final SubmissionRepository submissionRepository;
-    /** @brief Field representing task assignment repository in SubmissionService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Field representing task repository in SubmissionService. */
     private final TaskRepository taskRepository;
-    /** @brief Field representing session state repository in SubmissionService. */
     private final SessionStateRepository sessionStateRepository;
-    /** @brief Field representing ocr service in SubmissionService. */
     private final OCRService ocrService;
-    /** @brief Field representing scoring service in SubmissionService. */
     private final ScoringService scoringService;
-    /** @brief Field representing usage service in SubmissionService. */
     private final UsageService usageService;
-    /** @brief Field representing progress service in SubmissionService. */
     private final ProgressService progressService;
-    /** @brief Field representing gamification service in SubmissionService. */
     private final GamificationService gamificationService;
-    /** @brief Field representing notification service in SubmissionService. */
     private final NotificationService notificationService;
-    /** @brief Field representing teacher student alias repository in SubmissionService. */
     private final TeacherStudentAliasRepository teacherStudentAliasRepository;
-    /** @brief Field representing object mapper in SubmissionService. */
     private final ObjectMapper objectMapper;
 
     /**

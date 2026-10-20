@@ -27,13 +27,9 @@ import java.util.Base64;
 @Service
 public class EncryptionService {
 
-    /** @brief Constant or enum value representing algorithm in EncryptionService. */
     private static final String ALGORITHM = "AES/GCM/NoPadding";
-    /** @brief Constant or enum value representing gcm tag length in EncryptionService. */
     private static final int GCM_TAG_LENGTH = 128;
-    /** @brief Constant or enum value representing iv length in EncryptionService. */
     private static final int IV_LENGTH = 12;
-    /** @brief Field representing secret key in EncryptionService. */
     private final SecretKey secretKey;
 
     /**

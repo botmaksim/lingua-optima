@@ -858,7 +858,6 @@ export const StudentGroups: React.FC = () => {
                         )}
                       </div>
 
-                      {/* CEFR Level Filter */}
                       <select
                         value={studentCefrFilter}
                         onChange={(e) => setStudentCefrFilter(e.target.value as any)}

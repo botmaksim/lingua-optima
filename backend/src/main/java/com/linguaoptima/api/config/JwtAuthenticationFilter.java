@@ -32,9 +32,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    /** @brief Field representing jwt service in JwtAuthenticationFilter. */
     private final JwtService jwtService;
-    /** @brief Field representing user repository in JwtAuthenticationFilter. */
     private final UserRepository userRepository;
 
     /**

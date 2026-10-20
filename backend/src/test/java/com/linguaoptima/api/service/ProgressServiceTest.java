@@ -36,29 +36,20 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ProgressServiceTest {
 
-    /** @brief Test fixture or mock dependency for progress record repository. */
     @Mock
     private ProgressRecordRepository progressRecordRepository;
-    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
-    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
-    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
 
-    /** @brief Test fixture or mock dependency for progress service. */
     @InjectMocks
     private ProgressService progressService;
 
-    /** @brief Test fixture or mock dependency for student. */
     private User student;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in ProgressServiceTest.
-     */
     @BeforeEach
     void setUp() {
         student = User.builder()

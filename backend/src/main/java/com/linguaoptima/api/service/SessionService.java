@@ -37,21 +37,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class SessionService {
 
-    /** @brief Field representing session state repository in SessionService. */
     private final SessionStateRepository sessionStateRepository;
-    /** @brief Field representing task assignment repository in SessionService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Field representing task repository in SessionService. */
     private final TaskRepository taskRepository;
-    /** @brief Field representing task question repository in SessionService. */
     private final TaskQuestionRepository taskQuestionRepository;
-    /** @brief Field representing submission repository in SessionService. */
     private final SubmissionRepository submissionRepository;
-    /** @brief Field representing progress service in SessionService. */
     private final ProgressService progressService;
-    /** @brief Field representing gamification service in SessionService. */
     private final GamificationService gamificationService;
-    /** @brief Field representing object mapper in SessionService. */
     private final ObjectMapper objectMapper;
     /** @brief Optional reference to SubmissionService for rich diagnostic enrichment upon completion. */
     @org.springframework.beans.factory.annotation.Autowired(required = false)

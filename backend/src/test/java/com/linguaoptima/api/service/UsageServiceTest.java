@@ -39,28 +39,19 @@ import static org.mockito.Mockito.*;
 class UsageServiceTest {
 
 
-    /** @brief Test fixture or mock dependency for usage counter repository. */
     @Mock
     private UsageCounterRepository usageCounterRepository;
-    /** @brief Test fixture or mock dependency for subscription repository. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
-    /** @brief Test fixture or mock dependency for pricing configuration properties. */
     @Spy
     private PricingProperties pricingProperties = new PricingProperties();
 
-    /** @brief Test fixture or mock dependency for usage service. */
     @InjectMocks
     private UsageService usageService;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
-    /** @brief Test fixture or mock dependency for counter. */
     private UsageCounter counter;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in UsageServiceTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();

@@ -27,9 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class SubscriptionController {
 
-    /** @brief Field representing subscription service in SubscriptionController. */
     private final SubscriptionService subscriptionService;
-    /** @brief Field representing usage service in SubscriptionController. */
     private final UsageService usageService;
 
     /**

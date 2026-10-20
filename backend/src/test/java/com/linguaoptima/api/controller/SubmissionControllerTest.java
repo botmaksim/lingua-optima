@@ -31,22 +31,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class SubmissionControllerTest {
 
-    /** @brief Test fixture or mock dependency for submission service. */
     @Mock
     private SubmissionService submissionService;
 
-    /** @brief Test fixture or mock dependency for submission controller. */
     @InjectMocks
     private SubmissionController submissionController;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
-    /** @brief Test fixture or mock dependency for result response. */
     private SubmissionResultResponse resultResponse;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in SubmissionControllerTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();

@@ -25,9 +25,6 @@ export const SubscriptionPage: React.FC = () => {
     fetchData();
   }, []);
 
-  /**
-   * @brief Event handler or helper executing fetch data.
-   */
   const fetchData = async () => {
     try {
       setIsLoading(true);
@@ -48,9 +45,6 @@ export const SubscriptionPage: React.FC = () => {
     }
   };
 
-  /**
-   * @brief Event handler or helper executing handle upgrade.
-   */
   const handleUpgrade = async (tier: SubscriptionTier) => {
     try {
       setIsUpgrading(true);

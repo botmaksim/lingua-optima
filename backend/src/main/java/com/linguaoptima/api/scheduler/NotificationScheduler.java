@@ -26,11 +26,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationScheduler {
 
-    /** @brief Field representing user repository in NotificationScheduler. */
     private final UserRepository userRepository;
-    /** @brief Field representing progress record repository in NotificationScheduler. */
     private final ProgressRecordRepository progressRecordRepository;
-    /** @brief Field representing notification service in NotificationScheduler. */
     private final NotificationService notificationService;
 
     /**

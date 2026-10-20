@@ -48,22 +48,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class GroupServiceTest {
 
-    /** @brief Test fixture or mock dependency for group repository. */
     @Mock
     private GroupRepository groupRepository;
-    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
-    /** @brief Test fixture or mock dependency for user repository. */
     @Mock
     private UserRepository userRepository;
-    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
-    /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
-    /** @brief Test fixture or mock dependency for notification repository. */
     @Mock
     private NotificationRepository notificationRepository;
     /** @brief Pricing properties mock for tiered quota testing. */
@@ -76,22 +70,14 @@ class GroupServiceTest {
     @Mock
     private TeacherStudentAliasRepository teacherStudentAliasRepository;
 
-    /** @brief Test fixture or mock dependency for group service. */
     @InjectMocks
     private GroupService groupService;
 
-    /** @brief Test fixture or mock dependency for teacher. */
     private User teacher;
-    /** @brief Test fixture or mock dependency for other teacher. */
     private User otherTeacher;
-    /** @brief Test fixture or mock dependency for student. */
     private User student;
-    /** @brief Test fixture or mock dependency for group. */
     private Group group;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in GroupServiceTest.
-     */
     @BeforeEach
     void setUp() {
         teacher = User.builder()

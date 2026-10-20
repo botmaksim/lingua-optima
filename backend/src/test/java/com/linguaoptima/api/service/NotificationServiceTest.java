@@ -43,24 +43,17 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class NotificationServiceTest {
 
-    /** @brief Test fixture or mock dependency for notification repository. */
     @Mock
     private NotificationRepository notificationRepository;
 
-    /** @brief Test fixture or mock dependency for group student repository. */
     @Mock
     private GroupStudentRepository groupStudentRepository;
 
-    /** @brief Test fixture or mock dependency for notification service. */
     @InjectMocks
     private NotificationService notificationService;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in NotificationServiceTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).email("note@lingua.com").build();

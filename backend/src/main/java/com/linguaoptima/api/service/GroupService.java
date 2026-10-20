@@ -55,17 +55,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class GroupService {
 
-    /** @brief Field representing group repository in GroupService. */
     private final GroupRepository groupRepository;
-    /** @brief Field representing group student repository in GroupService. */
     private final GroupStudentRepository groupStudentRepository;
-    /** @brief Field representing user repository in GroupService. */
     private final UserRepository userRepository;
-    /** @brief Field representing submission repository in GroupService. */
     private final SubmissionRepository submissionRepository;
-    /** @brief Field representing notification service in GroupService. */
     private final NotificationService notificationService;
-    /** @brief Field representing notification repository in GroupService. */
     private final NotificationRepository notificationRepository;
     /** @brief Pricing properties configuring tiered cohort quotas. */
     private final PricingProperties pricingProperties;

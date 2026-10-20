@@ -23,11 +23,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AssignTaskRequest {
 
-    /** @brief Field representing group ids in AssignTaskRequest. */
     @NotEmpty(message = "At least one group ID must be provided")
     private List<UUID> groupIds;
 
-    /** @brief Field representing due date in AssignTaskRequest. */
     private LocalDateTime dueDate;
 
     /** @brief Maximum allowed attempts (1 = single attempt default, 0 = unlimited attempts). */

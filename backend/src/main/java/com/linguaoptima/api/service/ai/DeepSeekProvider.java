@@ -25,15 +25,10 @@ public class DeepSeekProvider implements AIProvider {
     /** @brief Default DeepSeek model identifier. */
     public static final String DEFAULT_MODEL = "deepseek-flash";
 
-    /** @brief Field representing api key in DeepSeekProvider. */
     private final String apiKey;
-    /** @brief Field representing base url in DeepSeekProvider. */
     private final String baseUrl;
-    /** @brief Field representing model name in DeepSeekProvider. */
     private final String modelName;
-    /** @brief Field representing rest template in DeepSeekProvider. */
     private final RestTemplate restTemplate;
-    /** @brief Field representing object mapper in DeepSeekProvider. */
     private final ObjectMapper objectMapper;
 
     /**

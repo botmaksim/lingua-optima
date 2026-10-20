@@ -43,51 +43,34 @@ import static org.mockito.Mockito.*;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class SessionServiceTest {
 
-    /** @brief Test fixture or mock dependency for session state repository. */
     @Mock
     private SessionStateRepository sessionStateRepository;
-    /** @brief Test fixture or mock dependency for task assignment repository. */
     @Mock
     private TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Test fixture or mock dependency for task repository. */
     @Mock
     private TaskRepository taskRepository;
-    /** @brief Test fixture or mock dependency for task question repository. */
     @Mock
     private TaskQuestionRepository taskQuestionRepository;
-    /** @brief Test fixture or mock dependency for submission repository. */
     @Mock
     private SubmissionRepository submissionRepository;
-    /** @brief Test fixture or mock dependency for submission service. */
     @Mock
     private SubmissionService submissionService;
-    /** @brief Test fixture or mock dependency for progress service. */
     @Mock
     private ProgressService progressService;
-    /** @brief Test fixture or mock dependency for gamification service. */
     @Mock
     private GamificationService gamificationService;
 
-    /** @brief Test fixture or mock dependency for object mapper. */
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    /** @brief Test fixture or mock dependency for session service. */
     @InjectMocks
     private SessionService sessionService;
 
-    /** @brief Test fixture or mock dependency for student. */
     private User student;
-    /** @brief Test fixture or mock dependency for task. */
     private Task task;
-    /** @brief Test fixture or mock dependency for assignment. */
     private TaskAssignment assignment;
-    /** @brief Test fixture or mock dependency for session state. */
     private SessionState sessionState;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in SessionServiceTest.
-     */
     @BeforeEach
     void setUp() {
         student = User.builder()

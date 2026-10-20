@@ -29,7 +29,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class LeaderboardController {
 
-    /** @brief Field representing leaderboard service in LeaderboardController. */
     private final LeaderboardService leaderboardService;
 
     /**

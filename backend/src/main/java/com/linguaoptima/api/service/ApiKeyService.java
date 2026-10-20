@@ -30,9 +30,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApiKeyService {
 
-    /** @brief Field representing api key repository in ApiKeyService. */
     private final ApiKeyRepository apiKeyRepository;
-    /** @brief Field representing encryption service in ApiKeyService. */
     private final EncryptionService encryptionService;
 
     /**

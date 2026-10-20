@@ -51,29 +51,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TaskService {
 
-    /** @brief Field representing task repository in TaskService. */
     private final TaskRepository taskRepository;
-    /** @brief Field representing task assignment repository in TaskService. */
     private final TaskAssignmentRepository taskAssignmentRepository;
-    /** @brief Field representing group repository in TaskService. */
     private final GroupRepository groupRepository;
-    /** @brief Field representing group student repository in TaskService. */
     private final GroupStudentRepository groupStudentRepository;
-    /** @brief Field representing ai broker service in TaskService. */
     private final AIBrokerService aiBrokerService;
-    /** @brief Field representing subscription service in TaskService. */
     private final SubscriptionService subscriptionService;
-    /** @brief Field representing usage service in TaskService. */
     private final UsageService usageService;
-    /** @brief Field representing notification service in TaskService. */
     private final NotificationService notificationService;
-    /** @brief Field representing object mapper in TaskService. */
     private final ObjectMapper objectMapper;
-    /** @brief Field representing curriculum storage service for context injection. */
     private final CurriculumStorageService curriculumStorageService;
-    /** @brief Field representing pronunciation pack service for phonetics drill injection. */
     private final PronunciationPackService pronunciationPackService;
-    /** @brief Field representing submission repository for tracking student attempts. */
     private final SubmissionRepository submissionRepository;
     /** @brief Field enforcing single device and concurrency protection during generation. */
     private final GenerationProtectionService generationProtectionService;

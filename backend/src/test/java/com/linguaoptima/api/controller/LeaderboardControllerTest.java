@@ -28,20 +28,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class LeaderboardControllerTest {
 
-    /** @brief Test fixture or mock dependency for leaderboard service. */
     @Mock
     private LeaderboardService leaderboardService;
 
-    /** @brief Test fixture or mock dependency for leaderboard controller. */
     @InjectMocks
     private LeaderboardController leaderboardController;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in LeaderboardControllerTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();

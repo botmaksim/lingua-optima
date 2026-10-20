@@ -17,16 +17,6 @@ import java.util.UUID;
  */
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, UUID> {
-    /**
-     * @brief Queries repository via findByUser.
-     * @param user Filter parameter user.
-     * @return Query result (Optional&lt;Subscription&gt;).
-     */
     Optional<Subscription> findByUser(User user);
-    /**
-     * @brief Queries repository via findByUserId.
-     * @param userId Filter parameter userId.
-     * @return Query result (Optional&lt;Subscription&gt;).
-     */
     Optional<Subscription> findByUserId(UUID userId);
 }

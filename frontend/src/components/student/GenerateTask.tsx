@@ -446,7 +446,6 @@ export const GenerateTask: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300">
-      {/* Page Title & Mode Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -457,7 +456,6 @@ export const GenerateTask: React.FC = () => {
           </p>
         </div>
 
-        {/* Prominent Mode Switcher Tabs */}
         <div className="flex items-center p-1.5 rounded-2xl bg-slate-100 border border-slate-200/90 shadow-2xs self-start sm:self-auto gap-1">
           <button
             type="button"
@@ -558,7 +556,6 @@ export const GenerateTask: React.FC = () => {
         </div>
       )}
 
-      {/* QUICK MODE PANEL */}
       {generationMode === 'QUICK' && (
         <QuickModePanel
           cefrLevel={cefrLevel}
@@ -572,10 +569,8 @@ export const GenerateTask: React.FC = () => {
         />
       )}
 
-      {/* DETAILED STUDIO FORM */}
       {generationMode === 'DETAILED' && (
         <form onSubmit={handleGenerate} className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
-          {/* Detailed Studio Header Callout & Quick Fills */}
           <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-white to-amber-50/50 border border-indigo-100/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-0.5">
               <div className="flex items-center space-x-2">
@@ -609,7 +604,6 @@ export const GenerateTask: React.FC = () => {
             </div>
           </div>
 
-          {/* AI Engine Selection */}
           <div className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center space-x-2">
@@ -711,7 +705,6 @@ export const GenerateTask: React.FC = () => {
             )}
           </div>
 
-          {/* CEFR Level Selection */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Target CEFR Level
@@ -737,7 +730,6 @@ export const GenerateTask: React.FC = () => {
             </div>
           </div>
 
-          {/* Task Format / 4 Primary Modules */}
           <div>
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Task Format
@@ -791,7 +783,6 @@ export const GenerateTask: React.FC = () => {
             </div>
           </div>
 
-          {/* Dynamic Module 1: Grammar Exercises */}
           {isGrammarTask && (
             <GrammarConfigPanel
               taskType={taskType}
@@ -822,7 +813,6 @@ export const GenerateTask: React.FC = () => {
             />
           )}
 
-          {/* Dynamic Module 2: Reading Comprehension */}
           {taskType === 'READING' && (
             <ReadingConfigPanel
               config={readingConfig}
@@ -835,7 +825,6 @@ export const GenerateTask: React.FC = () => {
             />
           )}
 
-          {/* Dynamic Module 3: Speaking Practice */}
           {taskType === 'SPEAKING' && (
             <SpeakingConfigPanel
               cefrLevel={cefrLevel}
@@ -859,7 +848,6 @@ export const GenerateTask: React.FC = () => {
             />
           )}
 
-          {/* Dynamic Module 4: Essay Studio */}
           {taskType === 'ESSAY' && (
             <div className="animate-in fade-in duration-200">
               <EssayConfigPanel
@@ -881,7 +869,6 @@ export const GenerateTask: React.FC = () => {
             </div>
           )}
 
-          {/* Switch to Quick Mode Callout */}
           <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-amber-900 gap-2">
             <div className="flex items-center space-x-2">
               <Zap className="w-4 h-4 text-amber-600 fill-amber-500 shrink-0" />
@@ -897,7 +884,6 @@ export const GenerateTask: React.FC = () => {
             </button>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex items-center space-x-3 pt-4 border-t border-slate-100">
             <button
               type="submit"
@@ -926,7 +912,6 @@ export const GenerateTask: React.FC = () => {
         </form>
       )}
 
-      {/* Concurrent Generation Transfer Modal */}
       {concurrentConflict && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white rounded-2xl shadow-2xl border border-amber-200/80 max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 duration-150">

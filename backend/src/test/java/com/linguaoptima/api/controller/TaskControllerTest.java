@@ -31,22 +31,15 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TaskControllerTest {
 
-    /** @brief Test fixture or mock dependency for task service. */
     @Mock
     private TaskService taskService;
 
-    /** @brief Test fixture or mock dependency for task controller. */
     @InjectMocks
     private TaskController taskController;
 
-    /** @brief Test fixture or mock dependency for user. */
     private User user;
-    /** @brief Test fixture or mock dependency for task response. */
     private TaskResponse taskResponse;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in TaskControllerTest.
-     */
     @BeforeEach
     void setUp() {
         user = User.builder().id(UUID.randomUUID()).build();

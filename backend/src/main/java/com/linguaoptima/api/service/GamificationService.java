@@ -24,9 +24,7 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class GamificationService {
 
-    /** @brief Field representing user repository in GamificationService. */
     private final UserRepository userRepository;
-    /** @brief Field representing notification service in GamificationService. */
     private final NotificationService notificationService;
 
     /**

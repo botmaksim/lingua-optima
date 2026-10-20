@@ -17,9 +17,6 @@ export const useUsage = () => {
   const [usage, setUsage] = useState<UsageCounter | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  /**
-   * @brief Event handler or helper executing fetch usage.
-   */
   const fetchUsage = async () => {
     if (!isAuthenticated) return;
     setIsLoading(true);

@@ -25,25 +25,16 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuestionResponse {
 
-    /** @brief Field representing id in QuestionResponse. */
     private UUID id;
-    /** @brief Field representing question order in QuestionResponse. */
     private int questionOrder;
-    /** @brief Field representing question text in QuestionResponse. */
     private String questionText;
-    /** @brief Field representing options in QuestionResponse. */
     @Builder.Default
     private List<String> options = new ArrayList<>();
-    /** @brief Field representing correct answer in QuestionResponse. */
     private String correctAnswer;
-    /** @brief Field representing difficulty in QuestionResponse. */
     private int difficulty;
-    /** @brief Field representing points awarded in QuestionResponse. */
     private int points;
-    /** @brief Field representing grammar rule in QuestionResponse. */
     private String grammarRule;
 
-    /** @brief Constant or enum value representing mapper in QuestionResponse. */
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /**

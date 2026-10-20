@@ -19,7 +19,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateGroupRequest {
 
-    /** @brief Field representing name in CreateGroupRequest. */
     @NotBlank(message = "Group name is required")
     private String name;
 }

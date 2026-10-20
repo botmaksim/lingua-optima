@@ -28,7 +28,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ApiKeyController {
 
-    /** @brief Field representing api key service in ApiKeyController. */
     private final ApiKeyService apiKeyService;
 
     /**

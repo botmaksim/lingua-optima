@@ -34,24 +34,16 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SessionControllerTest {
 
-    /** @brief Test fixture or mock dependency for session service. */
     @Mock
     private SessionService sessionService;
 
-    /** @brief Test fixture or mock dependency for session controller. */
     @InjectMocks
     private SessionController sessionController;
 
-    /** @brief Test fixture or mock dependency for student. */
     private User student;
-    /** @brief Test fixture or mock dependency for session state. */
     private SessionState sessionState;
-    /** @brief Test fixture or mock dependency for session id. */
     private UUID sessionId;
 
-    /**
-     * @brief Initializes test fixtures and mock state before each test in SessionControllerTest.
-     */
     @BeforeEach
     void setUp() {
         student = User.builder().id(UUID.randomUUID()).build();

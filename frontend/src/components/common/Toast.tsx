@@ -15,15 +15,10 @@ export type ToastType = 'success' | 'warning' | 'error' | 'info';
  * @brief Props for individual Toast message.
  */
 interface ToastProps {
-  /** @brief Property representing id in ToastProps. */
   id: string;
-  /** @brief Property representing type in ToastProps. */
   type: ToastType;
-  /** @brief Property representing title in ToastProps. */
   title?: string;
-  /** @brief Property representing message in ToastProps. */
   message: string;
-  /** @brief Property representing on close in ToastProps. */
   onClose: (id: string) => void;
 }
 
