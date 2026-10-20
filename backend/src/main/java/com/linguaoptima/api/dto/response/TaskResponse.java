@@ -65,6 +65,9 @@ public class TaskResponse {
     /** @brief Flag indicating whether the student is allowed to submit another attempt. */
     @Builder.Default
     private Boolean canSubmit = true;
+    /** @brief Flag indicating whether this task was formally assigned by an educator. */
+    @Builder.Default
+    private Boolean isTeacherTask = false;
     /** @brief Field representing questions in TaskResponse. */
     @Builder.Default
     private List<QuestionResponse> questions = new ArrayList<>();

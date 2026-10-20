@@ -351,6 +351,91 @@ describe('TaskView component', () => {
       );
     });
   });
+
+  it('locks options upon selection when instant feedback is enabled to prevent option-hunting', async () => {
+    vi.spyOn(taskApi, 'getTaskById').mockResolvedValue({
+      id: 'task-instant-1',
+      grammarTopic: 'Present Simple',
+      cefrLevel: 'A1',
+      totalPoints: 10,
+      isTeacherTask: false,
+      questions: [
+        {
+          id: 'q-inst-1',
+          questionOrder: 1,
+          questionText: 'She ___ (work) in a bank.',
+          correctAnswer: 'works',
+          options: ['works', 'working', 'work'],
+          difficulty: 1,
+          points: 10,
+        },
+      ],
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/student/task/task-instant-1']}>
+        <Routes>
+          <Route path="/student/task/:taskId" element={<TaskView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/She ___ \(work\) in a bank\./i)).toBeInTheDocument();
+
+    // Toggle Instant Feedback checkbox
+    const instantCheckbox = screen.getByLabelText(/Мгновенная проверка/i);
+    fireEvent.click(instantCheckbox);
+    expect(instantCheckbox).toBeChecked();
+
+    // Select the first option
+    const optionBtn = screen.getByText('working');
+    fireEvent.click(optionBtn);
+
+    // After selection in instant feedback, options for this question should be permanently locked/disabled
+    await waitFor(() => {
+      const worksBtn = screen.getByText('works').closest('button');
+      const workingBtn = screen.getByText('working').closest('button');
+      expect(workingBtn).toBeDisabled();
+      expect(worksBtn).toBeDisabled();
+    });
+  });
+
+  it('strictly disables instant feedback and locks AI sentence explainer in teacher tasks', async () => {
+    vi.spyOn(taskApi, 'getTaskById').mockResolvedValue({
+      id: 'task-teacher-1',
+      grammarTopic: 'Past Simple',
+      cefrLevel: 'A2',
+      totalPoints: 10,
+      isTeacherTask: true,
+      canSubmit: true,
+      questions: [
+        {
+          id: 'q-teach-1',
+          questionOrder: 1,
+          questionText: 'They ___ to the store.',
+          options: ['went', 'gone', 'go'],
+          difficulty: 1,
+          points: 10,
+        },
+      ],
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/student/task/task-teacher-1']}>
+        <Routes>
+          <Route path="/student/task/:taskId" element={<TaskView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(await screen.findByText(/They ___ to the store\./i)).toBeInTheDocument();
+
+    // Instant feedback checkbox must be hidden for teacher tasks
+    expect(screen.queryByLabelText(/Мгновенная проверка/i)).not.toBeInTheDocument();
+
+    // Explain sentence button must NOT be present during active homework
+    expect(screen.queryByTitle(/Объяснить предложение с помощью ИИ \(E\)/i)).not.toBeInTheDocument();
+  });
 });
 
 import { CustomSelect } from '../components/common/CustomSelect';
@@ -1599,7 +1684,7 @@ describe('SpeakingPracticeView component', () => {
     expect(screen.getAllByText(/100%/i).length).toBeGreaterThan(0);
 
     // Click submit evaluation
-    const submitBtn = screen.getByRole('button', { name: /Submit Speaking Assessment/i });
+    const submitBtn = screen.getByRole('button', { name: /Отправить результат|Submit Speaking/i });
     fireEvent.click(submitBtn);
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);
@@ -1607,6 +1692,37 @@ describe('SpeakingPracticeView component', () => {
     expect(submittedPayload.accuracyScore).toBe(100);
     expect(submittedPayload.overallScore).toBe(100);
     expect(submittedPayload.wpm).toBe(140);
+  });
+
+  it('locks model audio listening in teacher tasks before submission', () => {
+    render(
+      <SpeakingPracticeView
+        passageText={samplePassage}
+        taskTitle="Teacher Speaking Drill"
+        points={100}
+        onSubmit={vi.fn()}
+        isTeacherTask={true}
+      />
+    );
+
+    const modelAudioBtn = screen.getByRole('button', { name: /Образец скрыт/i });
+    expect(modelAudioBtn).toBeDisabled();
+    expect(modelAudioBtn).toHaveAttribute('title', 'Прослушивание образца заблокировано до сдачи ответа (Задание преподавателя)');
+  });
+
+  it('allows starting recording via MediaRecorder fallback when SpeechRecognition is not supported', () => {
+    render(
+      <SpeakingPracticeView
+        passageText={samplePassage}
+        taskTitle="Firefox Speaking Drill"
+        points={100}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    // Record button should be enabled regardless of SpeechRecognition support
+    const recordBtn = screen.getByRole('button', { name: /Начать запись/i });
+    expect(recordBtn).not.toBeDisabled();
   });
 });
 

@@ -33,9 +33,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.linguaoptima.api.domain.TeacherStudentAlias;
+import com.linguaoptima.api.repository.TeacherStudentAliasRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -67,6 +71,8 @@ public class GroupService {
     private final PricingProperties pricingProperties;
     /** @brief Subscription repository to resolve educator tier. */
     private final SubscriptionRepository subscriptionRepository;
+    /** @brief Teacher-student alias repository for custom educator roster names. */
+    private final TeacherStudentAliasRepository teacherStudentAliasRepository;
 
     /**
      * @brief Resolves subscription tier for an educator.
@@ -360,13 +366,36 @@ public class GroupService {
      */
     private GroupResponse mapToGroupResponse(Group group) {
         List<GroupStudent> activeMembers = groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId());
+        List<GroupStudent> pendingMembers = groupStudentRepository.findByGroupIdAndStatus(group.getId(), EnrollmentStatus.PENDING);
+
+        Map<UUID, String> aliasMap = (group.getTeacher() != null && teacherStudentAliasRepository != null)
+            ? teacherStudentAliasRepository.findByTeacherId(group.getTeacher().getId())
+                .stream()
+                .collect(Collectors.toMap(
+                    a -> a.getStudent().getId(),
+                    TeacherStudentAlias::getCustomName,
+                    (existing, replacement) -> replacement
+                ))
+            : Collections.emptyMap();
+
         List<UserResponse> studentResponses = activeMembers.stream()
-            .map(gs -> UserResponse.fromEntity(gs.getStudent()))
+            .map(gs -> {
+                UserResponse ur = UserResponse.fromEntity(gs.getStudent());
+                if (ur != null && aliasMap.containsKey(gs.getStudent().getId())) {
+                    ur.setFullName(aliasMap.get(gs.getStudent().getId()));
+                }
+                return ur;
+            })
             .collect(Collectors.toList());
 
-        List<GroupStudent> pendingMembers = groupStudentRepository.findByGroupIdAndStatus(group.getId(), EnrollmentStatus.PENDING);
         List<UserResponse> pendingResponses = pendingMembers.stream()
-            .map(gs -> UserResponse.fromEntity(gs.getStudent()))
+            .map(gs -> {
+                UserResponse ur = UserResponse.fromEntity(gs.getStudent());
+                if (ur != null && aliasMap.containsKey(gs.getStudent().getId())) {
+                    ur.setFullName(aliasMap.get(gs.getStudent().getId()));
+                }
+                return ur;
+            })
             .collect(Collectors.toList());
 
         List<Submission> submissions = submissionRepository.findActiveGroupSubmissions(group.getId());

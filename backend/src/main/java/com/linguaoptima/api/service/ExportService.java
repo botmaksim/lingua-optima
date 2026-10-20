@@ -24,6 +24,7 @@ import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.ProgressRecordRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.TaskAssignmentRepository;
+import com.linguaoptima.api.repository.TeacherStudentAliasRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,6 +60,8 @@ public class ExportService {
     private final ProgressRecordRepository progressRecordRepository;
     /** @brief Field representing user repository in ExportService. */
     private final UserRepository userRepository;
+    /** @brief Field representing teacher student alias repository in ExportService. */
+    private final TeacherStudentAliasRepository teacherStudentAliasRepository;
 
     /**
      * @brief Generates an export report for a group in either CSV or PDF format with homework breakdown.
@@ -179,10 +182,16 @@ public class ExportService {
             }
         }
 
+        Map<UUID, String> aliasMap = teacher != null && teacherStudentAliasRepository != null
+            ? teacherStudentAliasRepository.findByTeacherId(teacher.getId()).stream()
+                .collect(Collectors.toMap(a -> a.getStudent().getId(), TeacherStudentAlias::getCustomName, (existing, replacement) -> replacement))
+            : Collections.emptyMap();
+
         // Student summaries
         List<GroupReportResponse.StudentSummaryDto> summaries = new ArrayList<>();
         for (GroupStudent gs : activeStudents) {
             User s = gs.getStudent();
+            String studentDisplayName = aliasMap.getOrDefault(s.getId(), s.getFullName());
             List<TaskAssignment> studentAssignments = studentAssignmentsMap.getOrDefault(s.getId(), List.of());
             int totalTasks = studentAssignments.size();
             int completedTasks = (int) studentAssignments.stream()
@@ -196,7 +205,7 @@ public class ExportService {
 
             summaries.add(GroupReportResponse.StudentSummaryDto.builder()
                 .studentId(s.getId())
-                .studentName(s.getFullName())
+                .studentName(studentDisplayName)
                 .email(s.getEmail())
                 .cefrLevel(s.getCefrLevel().name())
                 .completedTasks(completedTasks)
@@ -238,6 +247,7 @@ public class ExportService {
             List<GroupReportResponse.StudentHomeworkResultDto> results = new ArrayList<>();
             for (GroupStudent gs : activeStudents) {
                 User s = gs.getStudent();
+                String studentDisplayName = aliasMap.getOrDefault(s.getId(), s.getFullName());
                 TaskAssignment assignment = taskAssignments.stream()
                     .filter(a -> a.getStudent().getId().equals(s.getId()))
                     .findFirst()
@@ -256,7 +266,7 @@ public class ExportService {
 
                         results.add(GroupReportResponse.StudentHomeworkResultDto.builder()
                             .studentId(s.getId())
-                            .studentName(s.getFullName())
+                            .studentName(studentDisplayName)
                             .email(s.getEmail())
                             .status(status)
                             .score(effScore)
@@ -272,7 +282,7 @@ public class ExportService {
                         boolean isOverdue = assignment.getDueDate() != null && assignment.getDueDate().isBefore(LocalDateTime.now());
                         results.add(GroupReportResponse.StudentHomeworkResultDto.builder()
                             .studentId(s.getId())
-                            .studentName(s.getFullName())
+                            .studentName(studentDisplayName)
                             .email(s.getEmail())
                             .status(isOverdue ? "OVERDUE" : assignment.getStatus().name())
                             .score(null)
@@ -288,7 +298,7 @@ public class ExportService {
                 } else {
                     results.add(GroupReportResponse.StudentHomeworkResultDto.builder()
                         .studentId(s.getId())
-                        .studentName(s.getFullName())
+                        .studentName(studentDisplayName)
                         .email(s.getEmail())
                         .status("NOT_ASSIGNED")
                         .score(null)

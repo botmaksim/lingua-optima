@@ -40,7 +40,7 @@ public class WebConfig {
     public RestTemplate restTemplate() {
         org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(java.time.Duration.ofSeconds(10));
-        factory.setReadTimeout(java.time.Duration.ofSeconds(90));
+        factory.setReadTimeout(java.time.Duration.ofSeconds(40));
         return new RestTemplate(factory);
     }
 

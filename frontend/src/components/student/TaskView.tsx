@@ -18,9 +18,6 @@ import {
   Minimize2,
   Layers,
   List,
-  Tv,
-  Eye,
-  EyeOff,
   Lightbulb,
   ChevronLeft,
   ChevronRight,
@@ -45,7 +42,7 @@ import { triggerConfetti } from '../../utils/confetti';
 import { speakText, stopSpeech } from '../../utils/phonetics';
 import { HotkeysModal } from '../common/HotkeysModal';
 
-export type TaskViewMode = 'LIST' | 'CARDS' | 'PRESENTATION';
+export type TaskViewMode = 'LIST' | 'CARDS';
 
 /**
  * @brief Student task interactive view component.
@@ -68,9 +65,17 @@ export const TaskView: React.FC = () => {
   const [viewMode, setViewMode] = useState<TaskViewMode>('CARDS');
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
   const [instantFeedback, setInstantFeedback] = useState<boolean>(false);
-  const [revealedAnswers, setRevealedAnswers] = useState<Record<string, boolean>>({});
-  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [lockedInstantQuestions, setLockedInstantQuestions] = useState<Set<string>>(new Set());
   const [showReadingInCard, setShowReadingInCard] = useState<boolean>(false);
+
+  const isTeacherTask = Boolean(task?.isTeacherTask || task?.assignedByName);
+  const isExplanationLocked = Boolean(isTeacherTask && task?.canSubmit !== false);
+
+  useEffect(() => {
+    if (isTeacherTask && instantFeedback) {
+      setInstantFeedback(false);
+    }
+  }, [isTeacherTask, instantFeedback]);
 
   // Sentence explanation drawer & text selection state
   const [explainingSentence, setExplainingSentence] = useState<string | null>(null);
@@ -178,33 +183,15 @@ export const TaskView: React.FC = () => {
     };
   }, []);
 
-  // Dismiss floating selection when changing view modes, question cards, or revealing answers
+  // Dismiss floating selection when changing view modes or question cards
   useEffect(() => {
     setFloatingSelection(null);
-  }, [viewMode, currentCardIndex, revealedAnswers]);
-
-  // Sync fullscreen state
-  useEffect(() => {
-    const onFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-    document.addEventListener('fullscreenchange', onFsChange);
-    return () => document.removeEventListener('fullscreenchange', onFsChange);
-  }, []);
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-      setIsFullscreen(true);
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-      }
-      setIsFullscreen(false);
-    }
-  };
+  }, [viewMode, currentCardIndex]);
 
   const handleExplainSentence = async (sentenceText: string) => {
+    if (isExplanationLocked) {
+      return;
+    }
     if (!sentenceText.trim()) return;
     setExplainingSentence(sentenceText.trim());
     setIsExplaining(true);
@@ -226,16 +213,19 @@ export const TaskView: React.FC = () => {
     }
   };
 
-  const toggleRevealAnswer = (questionId: string) => {
-    setRevealedAnswers((prev) => ({ ...prev, [questionId]: !prev[questionId] }));
-  };
-
   /**
    * @brief Event handler or helper executing handle select answer.
    */
   const handleSelectAnswer = (questionId: string, answer: string) => {
+    if (task?.canSubmit === false) return;
+    if (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(questionId)) {
+      return;
+    }
     setFloatingSelection(null);
     setAnswers((prev) => ({ ...prev, [questionId]: answer }));
+    if (instantFeedback && !isTeacherTask) {
+      setLockedInstantQuestions((prev) => new Set(prev).add(questionId));
+    }
   };
 
   /**
@@ -405,7 +395,7 @@ export const TaskView: React.FC = () => {
         // In single-line text input: pressing Enter advances to next question or submits if on last
         if (activeTag === 'input' && e.key === 'Enter') {
           e.preventDefault();
-          if (viewMode === 'CARDS' || viewMode === 'PRESENTATION') {
+          if (viewMode === 'CARDS') {
             if (currentCardIndex < questions.length - 1) {
               setCurrentCardIndex((prev) => prev + 1);
             } else {
@@ -473,6 +463,7 @@ export const TaskView: React.FC = () => {
       // 8. AI Grammar & Vocabulary Sentence Explainer: 'e' / 'E' (or 'у' / 'У' in Russian layout)
       if (keyLower === 'e' || keyLower === 'у') {
         e.preventDefault();
+        if (isExplanationLocked) return;
         handleExplainSentence(currentQ.questionText);
         return;
       }
@@ -480,25 +471,15 @@ export const TaskView: React.FC = () => {
       // 9. Instant Feedback toggle: 'f' / 'F' (or 'а' / 'А' in Russian layout)
       if (viewMode === 'CARDS' && (keyLower === 'f' || keyLower === 'а')) {
         e.preventDefault();
+        if (isTeacherTask) return;
         setInstantFeedback((prev) => !prev);
         return;
       }
 
-      // 10. Reveal answer in Presentation mode: 'r' / 'R' (or 'к' / 'К' in Russian layout)
-      if (keyLower === 'r' || keyLower === 'к') {
-        e.preventDefault();
-        toggleRevealAnswer(currentQ.id);
-        return;
-      }
-
-      // 11. View mode toggle: 'v' / 'V' (or 'м' / 'М' in Russian layout)
+      // 10. View mode toggle: 'v' / 'V' (or 'м' / 'М' in Russian layout)
       if (task?.type !== 'SPEAKING' && (keyLower === 'v' || keyLower === 'м')) {
         e.preventDefault();
-        setViewMode((prev) => {
-          if (prev === 'CARDS') return 'LIST';
-          if (prev === 'LIST') return 'PRESENTATION';
-          return 'CARDS';
-        });
+        setViewMode((prev) => (prev === 'CARDS' ? 'LIST' : 'CARDS'));
         return;
       }
 
@@ -623,9 +604,7 @@ export const TaskView: React.FC = () => {
   }[readingFontSize];
 
   const containerMaxWidth =
-    viewMode === 'PRESENTATION'
-      ? 'max-w-5xl'
-      : task?.type === 'READING'
+    task?.type === 'READING'
       ? readingWidthPreset === 'expanded' || readingWidthPreset === 'wide'
         ? 'max-w-7xl'
         : 'max-w-6xl'
@@ -642,7 +621,7 @@ export const TaskView: React.FC = () => {
           <span>Назад</span>
         </button>
 
-        {/* View Mode Switcher: List vs Card Focus vs Presentation */}
+        {/* View Mode Switcher: List vs Card Focus */}
         {task?.type !== 'SPEAKING' && (
           <div className="flex items-center bg-slate-100/90 p-1 rounded-2xl border border-slate-200 text-xs">
             <button
@@ -669,18 +648,6 @@ export const TaskView: React.FC = () => {
               <Layers className="w-3.5 h-3.5" />
               <span>Карточки</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('PRESENTATION')}
-              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl font-bold transition ${
-                viewMode === 'PRESENTATION'
-                  ? 'bg-white text-primary shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              <Tv className="w-3.5 h-3.5" />
-              <span>Презентация</span>
-            </button>
           </div>
         )}
 
@@ -695,16 +662,6 @@ export const TaskView: React.FC = () => {
             <Keyboard className="w-4 h-4" />
             <span className="hidden sm:inline text-[11px] font-mono font-bold text-slate-500">?</span>
           </button>
-          {viewMode === 'PRESENTATION' && (
-            <button
-              type="button"
-              onClick={toggleFullscreen}
-              className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
-              title={isFullscreen ? 'Выйти из полноэкранного режима' : 'На весь экран'}
-            >
-              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            </button>
-          )}
           <div className="flex items-center space-x-2 text-xs font-mono bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl">
             <Clock className="w-3.5 h-3.5 text-slate-500" />
             <span>{formatTimer(elapsedSeconds)}</span>
@@ -844,12 +801,18 @@ export const TaskView: React.FC = () => {
       {task.type === 'SPEAKING' ? (
         <SpeakingPracticeView
           passageText={task.content || task.questions?.[0]?.questionText || ''}
-          taskTitle={task.grammarTopic || 'Speaking & Pronunciation Practice'}
+          taskTitle={
+            task.speakingTitle ||
+            (task.grammarTopic && !task.grammarTopic.includes('Voice') && !task.grammarTopic.includes('Passive') && !task.grammarTopic.includes('Tense')
+              ? task.grammarTopic
+              : 'Oral Reading & Pronunciation Assessment')
+          }
           targetSounds={task.targetSounds}
           points={task.totalPoints || 100}
           onSubmit={handleSpeakingSubmit}
           isSubmitting={isSubmitting}
           readOnly={task.canSubmit === false}
+          isTeacherTask={isTeacherTask}
         />
       ) : viewMode === 'CARDS' ? (
         <div className="space-y-6">
@@ -879,18 +842,20 @@ export const TaskView: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between sm:justify-end space-x-3">
-              <label className="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={instantFeedback}
-                  onChange={(e) => setInstantFeedback(e.target.checked)}
-                  className="rounded text-primary focus:ring-primary h-4 w-4"
-                />
-                <span className="flex items-center space-x-1">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Мгновенная проверка</span>
-                </span>
-              </label>
+              {!isTeacherTask && (
+                <label className="flex items-center space-x-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={instantFeedback}
+                    onChange={(e) => setInstantFeedback(e.target.checked)}
+                    className="rounded text-primary focus:ring-primary h-4 w-4"
+                  />
+                  <span className="flex items-center space-x-1">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Мгновенная проверка</span>
+                  </span>
+                </label>
+              )}
 
               {task.type === 'READING' && task.content && (
                 <button
@@ -917,14 +882,16 @@ export const TaskView: React.FC = () => {
                   <BookOpen className="w-4 h-4 text-primary" />
                   <span>Материал для чтения</span>
                 </h4>
-                <button
-                  type="button"
-                  onClick={() => handleExplainSentence(task.content || '')}
-                  className="text-xs font-semibold text-primary hover:underline flex items-center space-x-1"
-                >
-                  <Lightbulb className="w-3.5 h-3.5" />
-                  <span>Пояснить весь текст</span>
-                </button>
+                {!isExplanationLocked && (
+                  <button
+                    type="button"
+                    onClick={() => handleExplainSentence(task.content || '')}
+                    className="text-xs font-semibold text-primary hover:underline flex items-center space-x-1"
+                  >
+                    <Lightbulb className="w-3.5 h-3.5" />
+                    <span>Пояснить весь текст</span>
+                  </button>
+                )}
               </div>
               <div className="text-slate-800 text-sm leading-relaxed whitespace-pre-wrap font-serif max-h-60 overflow-y-auto pr-2">
                 {task.content}
@@ -1002,18 +969,20 @@ export const TaskView: React.FC = () => {
                         Space
                       </kbd>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleExplainSentence(currentQ.questionText)}
-                      className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-xs font-bold transition flex items-center space-x-1.5"
-                      title="Пояснить предложение и грамматику с помощью AI (E)"
-                    >
-                      <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Пояснить</span>
-                      <kbd className="kbd-shortcut hidden md:inline-block px-1 py-0.5 rounded bg-amber-100/70 text-[10px] font-mono font-bold text-amber-900">
-                        E
-                      </kbd>
-                    </button>
+                    {!isExplanationLocked && (
+                      <button
+                        type="button"
+                        onClick={() => handleExplainSentence(currentQ.questionText)}
+                        className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-xs font-bold transition flex items-center space-x-1.5"
+                        title="Пояснить предложение и грамматику с помощью AI (E)"
+                      >
+                        <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Пояснить</span>
+                        <kbd className="kbd-shortcut hidden md:inline-block px-1 py-0.5 rounded bg-amber-100/70 text-[10px] font-mono font-bold text-amber-900">
+                          E
+                        </kbd>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1059,7 +1028,7 @@ export const TaskView: React.FC = () => {
                           <button
                             type="button"
                             key={optIdx}
-                            disabled={task.canSubmit === false}
+                            disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(currentQ.id))}
                             onClick={() => handleSelectAnswer(currentQ.id, opt)}
                             className={`w-full text-left p-4 rounded-2xl border text-sm transition flex items-center justify-between ${styleClass}`}
                           >
@@ -1103,7 +1072,7 @@ export const TaskView: React.FC = () => {
                   <div className="space-y-2">
                     <textarea
                       rows={3}
-                      disabled={task.canSubmit === false}
+                      disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(currentQ.id))}
                       placeholder="Напишите полный перефразированный вариант предложения..."
                       value={selectedAnswer}
                       onChange={(e) => handleSelectAnswer(currentQ.id, e.target.value)}
@@ -1114,7 +1083,7 @@ export const TaskView: React.FC = () => {
                   <div className="space-y-2">
                     <input
                       type="text"
-                      disabled={task.canSubmit === false}
+                      disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(currentQ.id))}
                       placeholder={
                         task.type === 'OPEN_BRACKETS'
                           ? 'Введите правильную форму слова из скобок...'
@@ -1216,165 +1185,6 @@ export const TaskView: React.FC = () => {
                       <Send className="w-3.5 h-3.5" />
                       <span>Завершить задание</span>
                     </button>
-                  )}
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      ) : viewMode === 'PRESENTATION' ? (
-        <div className="space-y-6">
-          {(() => {
-            const currentQ = questions[currentCardIndex];
-            if (!currentQ) {
-              return (
-                <div className="bg-slate-900 text-white rounded-3xl p-12 text-center text-slate-400">
-                  Вопросы для презентации не найдены.
-                </div>
-              );
-            }
-
-            const isRevealed = !!revealedAnswers[currentQ.id];
-            const hasOptions = Array.isArray(currentQ.options) && currentQ.options.length > 0;
-            const isTF =
-              Array.isArray(currentQ.options) &&
-              currentQ.options.length === 2 &&
-              (currentQ.options.includes('True') || currentQ.options.includes('False'));
-
-            return (
-              <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-                {/* Presentation Navigation Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-                  <div className="flex items-center space-x-3">
-                    <span className="px-3 py-1 rounded-xl bg-primary text-white text-xs font-black">
-                      Слайд {currentCardIndex + 1} из {questions.length}
-                    </span>
-                    <span className="text-xs text-slate-400 font-mono">
-                      {task?.grammarTopic} · {task?.cefrLevel}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleSpeech(currentQ.questionText)}
-                      className={`p-2 rounded-xl text-white transition flex items-center space-x-1.5 ${
-                        isSpeaking ? 'bg-indigo-600 ring-2 ring-indigo-400/40 animate-pulse' : 'bg-slate-800 hover:bg-slate-700'
-                      }`}
-                      title="Озвучить (Пробел)"
-                    >
-                      {isSpeaking ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
-                      <span className="kbd-shortcut hidden md:inline text-xs font-mono font-bold pr-1">Space</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCurrentCardIndex((prev) => Math.max(0, prev - 1))}
-                      disabled={currentCardIndex === 0}
-                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 transition"
-                      title="Предыдущий слайд (←)"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCurrentCardIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                      disabled={currentCardIndex === questions.length - 1}
-                      className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 transition"
-                      title="Следующий слайд (→)"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Presentation Slide Content with Extra-Large Typography */}
-                <div className="space-y-6 py-4">
-                  <h2 className="text-2xl sm:text-3xl font-black text-white leading-snug tracking-tight">
-                    {currentCardIndex + 1}. {currentQ.questionText}
-                  </h2>
-
-                  {hasOptions && (
-                    <div className="grid grid-cols-1 gap-3 pt-2">
-                      {currentQ.options.map((opt, optIdx) => {
-                        const isCorrectOption = currentQ.correctAnswer
-                          ? opt.trim().toLowerCase() === currentQ.correctAnswer.trim().toLowerCase()
-                          : false;
-                        const letter = ['A', 'B', 'C', 'D', 'E'][optIdx] || `${optIdx + 1}`;
-                        const keyBadge = isTF
-                          ? (opt.toLowerCase() === 'true' ? '1 · T' : '2 · F')
-                          : `${optIdx + 1} · ${letter}`;
-
-                        return (
-                          <div
-                            key={optIdx}
-                            className={`p-4 sm:p-5 rounded-2xl border-2 text-base sm:text-lg font-semibold transition flex items-center justify-between ${
-                              isRevealed && isCorrectOption
-                                ? 'border-emerald-400 bg-emerald-950/40 text-emerald-200'
-                                : 'border-slate-700 bg-slate-800/80 text-slate-100'
-                            }`}
-                          >
-                            <div className="flex items-center space-x-3">
-                              <span className="px-2.5 py-1 rounded-lg bg-slate-700 text-slate-300 font-mono text-xs font-bold flex items-center justify-center">
-                                <span className="md:hidden">{isTF ? (opt.toLowerCase() === 'true' ? 'T' : 'F') : letter}</span>
-                                <span className="hidden md:inline">{keyBadge}</span>
-                              </span>
-                              <span>{opt}</span>
-                            </div>
-                            {isRevealed && isCorrectOption && (
-                              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-500 text-slate-950">
-                                Правильный ответ
-                              </span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Reveal Answer Toggle & Sentence Explainer */}
-                  <div className="pt-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-                    <button
-                      type="button"
-                      onClick={() => toggleRevealAnswer(currentQ.id)}
-                      className={`px-5 py-3 rounded-2xl font-black text-sm flex items-center justify-center space-x-2 transition shadow-md ${
-                        isRevealed
-                          ? 'bg-slate-700 hover:bg-slate-600 text-white'
-                          : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
-                      }`}
-                    >
-                      {isRevealed ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      <span>{isRevealed ? 'Скрыть ответ' : 'Показать правильный ответ'}</span>
-                      <kbd className="kbd-shortcut hidden md:inline-block px-1.5 py-0.5 rounded bg-black/20 text-xs font-mono font-bold ml-1">
-                        R
-                      </kbd>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleExplainSentence(currentQ.questionText)}
-                      className="px-4 py-2.5 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center justify-center space-x-2"
-                    >
-                      <Lightbulb className="w-4 h-4 text-amber-400" />
-                      <span>Грамматический разбор</span>
-                      <kbd className="kbd-shortcut hidden md:inline-block px-1.5 py-0.5 rounded bg-amber-400/20 text-xs font-mono font-bold ml-1">
-                        E
-                      </kbd>
-                    </button>
-                  </div>
-
-                  {/* Revealed Answer Box */}
-                  {isRevealed && (
-                    <div className="p-5 rounded-2xl bg-emerald-900/30 border border-emerald-500/40 text-emerald-100 space-y-2 animate-in fade-in duration-200">
-                      <div className="text-sm font-bold flex items-center space-x-2 text-emerald-300">
-                        <Check className="w-4 h-4" />
-                        <span>Ответ: {currentQ.correctAnswer || 'Ответ не указан'}</span>
-                      </div>
-                      {currentQ.grammarRule && (
-                        <p className="text-xs text-emerald-200 leading-relaxed">
-                          Правило: {currentQ.grammarRule}
-                        </p>
-                      )}
-                    </div>
                   )}
                 </div>
               </div>
@@ -1519,15 +1329,17 @@ export const TaskView: React.FC = () => {
                         </span>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handleExplainSentence(q.questionText)}
-                        className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-2 py-0.5 rounded-lg transition flex items-center space-x-1 flex-shrink-0"
-                        title="Пояснить предложение"
-                      >
-                        <Lightbulb className="w-3 h-3 text-amber-600" />
-                        <span>Пояснить</span>
-                      </button>
+                      {!isExplanationLocked && (
+                        <button
+                          type="button"
+                          onClick={() => handleExplainSentence(q.questionText)}
+                          className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-2 py-0.5 rounded-lg transition flex items-center space-x-1 flex-shrink-0"
+                          title="Пояснить предложение"
+                        >
+                          <Lightbulb className="w-3 h-3 text-amber-600" />
+                          <span>Пояснить</span>
+                        </button>
+                      )}
                     </div>
 
                     {isMCQ || isTF ? (
@@ -1538,7 +1350,7 @@ export const TaskView: React.FC = () => {
                             <button
                               type="button"
                               key={optIdx}
-                              disabled={task.canSubmit === false}
+                              disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(q.id))}
                               onClick={() => handleSelectAnswer(q.id, opt)}
                               className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
                                 isSelected
@@ -1555,7 +1367,7 @@ export const TaskView: React.FC = () => {
                     ) : (
                       <input
                         type="text"
-                        disabled={task.canSubmit === false}
+                        disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(q.id))}
                         placeholder="Complete the sentence or answer based on the reading text..."
                         value={answers[q.id] || ''}
                         onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
@@ -1588,15 +1400,17 @@ export const TaskView: React.FC = () => {
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500">
                       Diff: {q.difficulty}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleExplainSentence(q.questionText)}
-                      className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-2 py-0.5 rounded-lg transition flex items-center space-x-1"
-                      title="Пояснить предложение"
-                    >
-                      <Lightbulb className="w-3 h-3 text-amber-600" />
-                      <span>Пояснить</span>
-                    </button>
+                    {!isExplanationLocked && (
+                      <button
+                        type="button"
+                        onClick={() => handleExplainSentence(q.questionText)}
+                        className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-2 py-0.5 rounded-lg transition flex items-center space-x-1"
+                        title="Пояснить предложение"
+                      >
+                        <Lightbulb className="w-3 h-3 text-amber-600" />
+                        <span>Пояснить</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -1608,7 +1422,7 @@ export const TaskView: React.FC = () => {
                         <button
                           type="button"
                           key={optIdx}
-                          disabled={task.canSubmit === false}
+                          disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(q.id))}
                           onClick={() => handleSelectAnswer(q.id, opt)}
                           className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
                             isSelected
@@ -1625,7 +1439,7 @@ export const TaskView: React.FC = () => {
                 ) : task.type === 'REWRITE' ? (
                   <textarea
                     rows={2}
-                    disabled={task.canSubmit === false}
+                    disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(q.id))}
                     placeholder="Rewrite the complete sentence here..."
                     value={answers[q.id] || ''}
                     onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
@@ -1634,7 +1448,7 @@ export const TaskView: React.FC = () => {
                 ) : (
                   <input
                     type="text"
-                    disabled={task.canSubmit === false}
+                    disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(q.id))}
                     placeholder={
                       task.type === 'OPEN_BRACKETS'
                         ? 'Type the correct form of the word in brackets...'
@@ -1651,7 +1465,7 @@ export const TaskView: React.FC = () => {
         </div>
       )}
 
-      {task.type !== 'SPEAKING' && viewMode !== 'PRESENTATION' && (
+      {task.type !== 'SPEAKING' && (
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
           <div className="flex items-center space-x-3 text-xs font-semibold text-slate-500">
             <span>{answeredCount} of {questions.length} answered</span>

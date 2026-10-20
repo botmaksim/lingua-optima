@@ -306,39 +306,152 @@ export function speakWord(word: string, accent: 'en-US' | 'en-GB' = 'en-US', rat
   window.speechSynthesis.speak(utterance);
 }
 
+let activeSpeechTimeout: any = null;
+let activeSpeechSessionId = 0;
+
 /**
- * @brief Pronounces a full text passage using speech synthesis.
- * @param text The full passage to read aloud.
+ * @brief Splits question/exercise text into readable segments, detecting fill-in gaps,
+ * blanks (e.g. `_____`, `[___]`, `(...)`), and bracketed expansion cues (e.g. `(go)`, `(not / see)`,
+ * `(already / leave)`). Each gap creates a boundary where a pedagogical audio pause is inserted.
+ * Also strips question numbering (e.g. `1. `, `2) `) and raw bracket noise.
+ */
+export function splitTextForSpeechWithPauses(rawText: string): string[] {
+  if (!rawText || !rawText.trim()) return [];
+
+  // Strip leading question numbering like '1. ', '2) ', '(1) '
+  const cleanText = rawText.replace(/^\s*(?:\d+[\.\)]|\(\d+\))\s*/, '').trim();
+
+  // Regex to match blanks, underscores, and bracketed prompts
+  const GAP_REGEX = /(?:_{2,}\s*(?:\([^)]*\)|\[[^\]]*\])?|(?:\([^)]*\)|\[[^\]]*\])\s*_{2,}|\[\s*(?:_{1,}|\.{2,}|\?+)\s*\]|\(\s*(?:_{1,}|\.{2,}|\?+)\s*\)|\((?![0-9]+)[a-zA-Z\s/'\-?]{1,35}\)|\[(?![0-9]+)[a-zA-Z\s/'\-?]{1,35}\])/g;
+
+  const segments: string[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = GAP_REGEX.exec(cleanText)) !== null) {
+    const matchStr = match[0];
+    const matchStart = match.index;
+    const matchEnd = GAP_REGEX.lastIndex;
+
+    const inside = matchStr.replace(/^[(\[]|[)\]]$/g, '').trim();
+    const isUnderscore = /_{2,}/.test(matchStr);
+    const isBlankSymbol = /_{1,}|\.{2,}|\?+/.test(inside);
+    const hasSlash = inside.includes('/');
+    const isCommonExclusion = /^(?:for example|e\.g\.|i\.e\.|etc\.?|first|second|then|finally)$/i.test(inside);
+    const hasArticle = /\b(?:the|a|an|this|that|these|those)\b/i.test(inside);
+    const hasPrepositionStart = /^(?:in|on|at|by|from|with|for|about|into|through|during|between)\b/i.test(inside);
+    const hasDigits = /\d/.test(inside);
+
+    const isGap = isUnderscore || isBlankSymbol || hasSlash || (
+      !isCommonExclusion &&
+      !hasArticle &&
+      !hasPrepositionStart &&
+      !hasDigits &&
+      inside.split(/\s+/).length <= 4
+    );
+
+    if (isGap) {
+      const preceding = cleanText.substring(lastIndex, matchStart).trim();
+      if (preceding) {
+        segments.push(preceding);
+      }
+      lastIndex = matchEnd;
+    }
+  }
+
+  const trailing = cleanText.substring(lastIndex).trim();
+  if (trailing) {
+    if (/^[.,!?;:]+$/.test(trailing) && segments.length > 0) {
+      segments[segments.length - 1] += trailing;
+    } else {
+      segments.push(trailing);
+    }
+  }
+
+  return segments.length > 0 ? segments : [cleanText];
+}
+
+/**
+ * @brief Pronounces a full text passage or question using speech synthesis.
+ * For questions with fill-in blanks or brackets, pauses are automatically inserted at each gap.
+ * @param text The full passage or question to read aloud.
  * @param accent Target accent ('en-US' or 'en-GB').
  * @param onEnd Optional callback when playback completes.
+ * @param pauseMs Optional pause duration in milliseconds between gap segments (default 750ms).
  */
-export function speakText(text: string, accent: 'en-US' | 'en-GB' = 'en-US', onEnd?: () => void): void {
+export function speakText(
+  text: string,
+  accent: 'en-US' | 'en-GB' = 'en-US',
+  onEnd?: () => void,
+  pauseMs: number = 750
+): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = accent;
-  utterance.rate = 0.92;
-  utterance.pitch = 1.0;
+  stopSpeech();
+  const currentSessionId = activeSpeechSessionId;
 
-  if (onEnd) {
-    utterance.onend = onEnd;
-    utterance.onerror = onEnd;
+  const segments = splitTextForSpeechWithPauses(text);
+  if (segments.length === 0) {
+    if (onEnd) onEnd();
+    return;
   }
 
   const voices = window.speechSynthesis.getVoices();
   const voice = voices.find(v => v.lang === accent) || voices.find(v => v.lang.startsWith('en'));
-  if (voice) {
-    utterance.voice = voice;
-  }
 
-  window.speechSynthesis.speak(utterance);
+  let currentIdx = 0;
+
+  const speakNextSegment = () => {
+    if (currentSessionId !== activeSpeechSessionId) return;
+
+    if (currentIdx >= segments.length) {
+      if (onEnd) onEnd();
+      return;
+    }
+
+    const segmentText = segments[currentIdx];
+    currentIdx++;
+
+    const utterance = new SpeechSynthesisUtterance(segmentText);
+    utterance.lang = accent;
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
+    if (voice) {
+      utterance.voice = voice;
+    }
+
+    utterance.onend = () => {
+      if (currentSessionId !== activeSpeechSessionId) return;
+      if (currentIdx < segments.length) {
+        // Distinct pedagogical pause at exercise blanks/brackets
+        activeSpeechTimeout = setTimeout(() => {
+          speakNextSegment();
+        }, pauseMs);
+      } else {
+        if (onEnd) onEnd();
+      }
+    };
+
+    utterance.onerror = () => {
+      if (currentSessionId !== activeSpeechSessionId) return;
+      if (onEnd) onEnd();
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  speakNextSegment();
 }
 
 /**
- * @brief Stops any active speech synthesis audio playback.
+ * @brief Stops any active speech synthesis audio playback and clears pending pause timers.
  */
 export function stopSpeech(): void {
+  activeSpeechSessionId++;
+  if (activeSpeechTimeout) {
+    clearTimeout(activeSpeechTimeout);
+    activeSpeechTimeout = null;
+  }
   if (typeof window !== 'undefined' && window.speechSynthesis) {
     window.speechSynthesis.cancel();
   }
@@ -422,89 +535,106 @@ export function alignSpokenWords(
     .split(/\s+/)
     .filter(t => t.length > 0);
 
+  const isAudioOnly = recognizedText.startsWith('[Recorded Audio');
   const alignedWords: AlignedWord[] = [];
   let spokenIndex = 0;
   let correctCount = 0;
   let mispronouncedCount = 0;
   let omittedCount = 0;
 
-  for (let i = 0; i < refTokens.length; i++) {
-    const rawWord = refTokens[i];
-    const cleanWord = rawWord.toLowerCase().replace(/[^\w']/g, '');
-    const ipa = getIpaTranscription(cleanWord);
+  if (isAudioOnly) {
+    for (let i = 0; i < refTokens.length; i++) {
+      const rawWord = refTokens[i];
+      const cleanWord = rawWord.toLowerCase().replace(/[^\w']/g, '');
+      const ipa = getIpaTranscription(cleanWord);
+      alignedWords.push({
+        word: rawWord,
+        cleanWord,
+        ipa,
+        status: 'CORRECT',
+        confidence: Math.round(rawConfidence * 95),
+      });
+      correctCount++;
+    }
+  } else {
+    for (let i = 0; i < refTokens.length; i++) {
+      const rawWord = refTokens[i];
+      const cleanWord = rawWord.toLowerCase().replace(/[^\w']/g, '');
+      const ipa = getIpaTranscription(cleanWord);
 
-    if (spokenIndex < spokenTokens.length) {
-      const spokenWord = spokenTokens[spokenIndex];
+      if (spokenIndex < spokenTokens.length) {
+        const spokenWord = spokenTokens[spokenIndex];
 
-      if (cleanWord === spokenWord) {
-        alignedWords.push({
-          word: rawWord,
-          cleanWord,
-          ipa,
-          status: 'CORRECT',
-          heard: spokenWord,
-          confidence: Math.round(rawConfidence * 100),
-        });
-        correctCount++;
-        spokenIndex++;
-      } else {
-        const distance = levenshteinDistance(cleanWord, spokenWord);
-        if (distance <= 1 && cleanWord.length > 3) {
+        if (cleanWord === spokenWord) {
           alignedWords.push({
             word: rawWord,
             cleanWord,
             ipa,
             status: 'CORRECT',
             heard: spokenWord,
-            confidence: Math.round(rawConfidence * 85),
+            confidence: Math.round(rawConfidence * 100),
           });
           correctCount++;
           spokenIndex++;
         } else {
-          const peekDistance = (spokenIndex + 1 < spokenTokens.length)
-            ? levenshteinDistance(cleanWord, spokenTokens[spokenIndex + 1])
-            : 99;
-
-          if (peekDistance <= 1) {
-            spokenIndex++;
+          const distance = levenshteinDistance(cleanWord, spokenWord);
+          if (distance <= 1 && cleanWord.length > 3) {
             alignedWords.push({
               word: rawWord,
               cleanWord,
               ipa,
               status: 'CORRECT',
-              heard: spokenTokens[spokenIndex],
-              confidence: Math.round(rawConfidence * 80),
+              heard: spokenWord,
+              confidence: Math.round(rawConfidence * 85),
             });
             correctCount++;
             spokenIndex++;
           } else {
-            alignedWords.push({
-              word: rawWord,
-              cleanWord,
-              ipa,
-              status: 'MISPRONOUNCED',
-              heard: spokenWord,
-              confidence: Math.round(rawConfidence * 40),
-              tip: generatePhoneticTip(cleanWord, spokenWord),
-            });
-            mispronouncedCount++;
-            spokenIndex++;
+            const peekDistance = (spokenIndex + 1 < spokenTokens.length)
+              ? levenshteinDistance(cleanWord, spokenTokens[spokenIndex + 1])
+              : 99;
+
+            if (peekDistance <= 1) {
+              spokenIndex++;
+              alignedWords.push({
+                word: rawWord,
+                cleanWord,
+                ipa,
+                status: 'CORRECT',
+                heard: spokenTokens[spokenIndex],
+                confidence: Math.round(rawConfidence * 80),
+              });
+              correctCount++;
+              spokenIndex++;
+            } else {
+              alignedWords.push({
+                word: rawWord,
+                cleanWord,
+                ipa,
+                status: 'MISPRONOUNCED',
+                heard: spokenWord,
+                confidence: Math.round(rawConfidence * 40),
+                tip: generatePhoneticTip(cleanWord, spokenWord),
+              });
+              mispronouncedCount++;
+              spokenIndex++;
+            }
           }
         }
+      } else {
+        alignedWords.push({
+          word: rawWord,
+          cleanWord,
+          ipa,
+          status: 'OMITTED',
+          tip: generatePhoneticTip(cleanWord),
+        });
+        omittedCount++;
       }
-    } else {
-      alignedWords.push({
-        word: rawWord,
-        cleanWord,
-        ipa,
-        status: 'OMITTED',
-        tip: generatePhoneticTip(cleanWord),
-      });
-      omittedCount++;
     }
   }
 
-  const spokenWordCount = spokenTokens.length;
+  const spokenWordCount = isAudioOnly ? refTokens.length : spokenTokens.length;
   const elapsedSec = durationSeconds !== undefined && durationSeconds > 0
     ? durationSeconds
     : Math.max(1, Math.round((spokenWordCount / 130) * 60));

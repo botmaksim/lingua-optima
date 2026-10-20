@@ -191,7 +191,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         reason: scoresByModality.READING.length > 0
           ? `Reading comprehension average (${Math.round(readingAvg)}%)`
           : 'Reading comprehension & inference',
-        suggestedTopic: DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'Modern Technology & Society',
+        suggestedTopic: 'Digital Privacy & Ethical Artificial Intelligence',
       },
       {
         modality: 'ESSAY',
@@ -275,13 +275,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
   };
 
   const handleStartPractice = () => {
-    const activeTopic = isCustomTopic && customTopicInput.trim()
-      ? customTopicInput.trim()
-      : topic || DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'General Practice';
-
-    const randomDomain = DOMAINS[Math.floor(Math.random() * DOMAINS.length)] || 'Daily Life';
-
-    // Determine final task type
+    // Determine final task type first
     let chosenTaskType: TaskType;
     if (format === 'RECOMMENDED') {
       if (detectedWeakness.modality === 'SPEAKING') {
@@ -295,7 +289,6 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         chosenTaskType = gapTypes[Math.floor(Math.random() * gapTypes.length)];
       }
     } else if (format === 'SURPRISE') {
-      // Balanced uniform selection across all 4 major modalities
       const modalities: Array<'GRAMMAR' | 'READING' | 'SPEAKING' | 'ESSAY'> = [
         'GRAMMAR',
         'READING',
@@ -323,6 +316,36 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
     } else {
       chosenTaskType = 'ESSAY';
     }
+
+    // Resolve active topic calibrated to the chosen modality
+    let activeTopic = isCustomTopic && customTopicInput.trim()
+      ? customTopicInput.trim()
+      : topic;
+
+    if (chosenTaskType === 'SPEAKING') {
+      const isGrammarLike = !activeTopic ||
+        activeTopic.includes('Voice') ||
+        activeTopic.includes('Passive') ||
+        activeTopic.includes('Tense') ||
+        activeTopic.includes('Conditional') ||
+        activeTopic.includes('Articles');
+      if (isGrammarLike) {
+        activeTopic = getTopicPoolForFormat('SPEAKING')[0];
+      }
+    } else if (chosenTaskType === 'READING') {
+      const isGrammarLike = !activeTopic ||
+        activeTopic.includes('Voice') ||
+        activeTopic.includes('Passive') ||
+        activeTopic.includes('Present') ||
+        activeTopic.includes('Past');
+      if (isGrammarLike) {
+        activeTopic = getTopicPoolForFormat('READING')[0];
+      }
+    } else if (!activeTopic) {
+      activeTopic = DEFAULT_CEFR_TOPICS[cefrLevel]?.[0] || 'General Practice';
+    }
+
+    const randomDomain = DOMAINS[Math.floor(Math.random() * DOMAINS.length)] || 'Daily Life';
 
     const quickParams: QuickGenerateParams = {
       taskType: chosenTaskType,
@@ -397,7 +420,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
 
         <div className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center space-x-1.5">
           <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-          <span>⚡ Express 1-Click Practice</span>
+          <span>Express 1-Click Practice</span>
         </div>
       </div>
 
@@ -571,7 +594,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            3. Practice Topic
+            {format === 'SPEAKING' ? '3. Speech & Phonetic Focus' : format === 'READING' ? '3. Reading Article Topic' : format === 'ESSAY' ? '3. Essay Discursive Prompt' : '3. Practice Topic'}
           </label>
           <button
             type="button"
@@ -591,7 +614,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                Active Topic
+                {format === 'SPEAKING' ? 'Target Speech Focus' : 'Active Topic'}
               </span>
               <span className="text-xs font-bold text-slate-800 truncate block">
                 {isCustomTopic && customTopicInput ? customTopicInput : topic || 'General Practice'}
@@ -609,7 +632,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             }}
             className="text-xs font-semibold text-amber-700 hover:underline self-end sm:self-auto whitespace-nowrap"
           >
-            {isCustomTopic ? 'Use syllabus topic' : 'Type custom topic'}
+            {isCustomTopic ? 'Use preset topic' : (format === 'SPEAKING' ? 'Type custom speech drill' : 'Type custom topic')}
           </button>
         </div>
 
@@ -619,7 +642,13 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             minRows={1}
             value={customTopicInput}
             onChange={setCustomTopicInput}
-            placeholder="e.g. Past Continuous vs Past Simple in crime stories"
+            placeholder={
+              format === 'SPEAKING'
+                ? 'e.g. Minimal pairs /v/ vs /w/, Connected speech'
+                : format === 'READING'
+                ? 'e.g. Artificial Intelligence Ethics & Society'
+                : 'e.g. Past Continuous vs Past Simple in crime stories'
+            }
             className="w-full text-xs text-slate-800 placeholder:text-slate-400"
           />
         )}

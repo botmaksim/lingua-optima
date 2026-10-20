@@ -25,7 +25,7 @@ import java.util.Objects;
 public class GeminiProvider implements AIProvider {
 
     /** @brief Default Gemini model identifier. */
-    public static final String DEFAULT_MODEL = "gemini-flash-latest";
+    public static final String DEFAULT_MODEL = "gemini-3.8-flash";
 
     /** @brief Field representing api key in GeminiProvider. */
     private final String apiKey;
@@ -121,10 +121,13 @@ public class GeminiProvider implements AIProvider {
         if (modelName != null && !modelName.isBlank()) {
             modelsToTry.add(modelName);
         }
-        for (String m : List.of("gemini-flash-latest", "gemini-3.8-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-flash-lite-latest")) {
+        for (String m : List.of("gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-flash-latest")) {
             if (!modelsToTry.contains(m)) {
                 modelsToTry.add(m);
             }
+        }
+        if (modelsToTry.size() > 3) {
+            modelsToTry = modelsToTry.subList(0, 3);
         }
 
         Exception lastException = null;

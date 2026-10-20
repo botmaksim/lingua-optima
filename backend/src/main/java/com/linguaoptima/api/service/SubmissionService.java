@@ -12,6 +12,7 @@ import com.linguaoptima.api.domain.Submission;
 import com.linguaoptima.api.domain.Task;
 import com.linguaoptima.api.domain.TaskAssignment;
 import com.linguaoptima.api.domain.TaskQuestion;
+import com.linguaoptima.api.domain.TeacherStudentAlias;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.AssignmentStatus;
 import com.linguaoptima.api.domain.enums.NotificationType;
@@ -31,6 +32,7 @@ import com.linguaoptima.api.repository.SessionStateRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.TaskAssignmentRepository;
 import com.linguaoptima.api.repository.TaskRepository;
+import com.linguaoptima.api.repository.TeacherStudentAliasRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -75,6 +77,8 @@ public class SubmissionService {
     private final GamificationService gamificationService;
     /** @brief Field representing notification service in SubmissionService. */
     private final NotificationService notificationService;
+    /** @brief Field representing teacher student alias repository in SubmissionService. */
+    private final TeacherStudentAliasRepository teacherStudentAliasRepository;
     /** @brief Field representing object mapper in SubmissionService. */
     private final ObjectMapper objectMapper;
 
@@ -528,10 +532,18 @@ public class SubmissionService {
         if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
             throw new ForbiddenException("Only educators can view group submissions.");
         }
+        Map<UUID, String> aliasMap = teacherStudentAliasRepository != null
+            ? teacherStudentAliasRepository.findByTeacherId(teacher.getId()).stream()
+                .collect(Collectors.toMap(a -> a.getStudent().getId(), TeacherStudentAlias::getCustomName, (existing, replacement) -> replacement))
+            : Collections.emptyMap();
+
         return submissionRepository.findActiveGroupSubmissions(groupId).stream()
             .map(sub -> {
                 SubmissionResultResponse res = SubmissionResultResponse.fromEntity(sub);
                 enrichSubmissionResult(res, sub, null);
+                if (sub.getStudent() != null && aliasMap.containsKey(sub.getStudent().getId())) {
+                    res.setStudentName(aliasMap.get(sub.getStudent().getId()));
+                }
                 return res;
             })
             .collect(Collectors.toList());
@@ -550,10 +562,18 @@ public class SubmissionService {
         if (teacher.getRole() != Role.TEACHER && teacher.getRole() != Role.ADMIN) {
             throw new ForbiddenException("Only educators can access the educator submissions review queue.");
         }
+        Map<UUID, String> aliasMap = teacherStudentAliasRepository != null
+            ? teacherStudentAliasRepository.findByTeacherId(teacher.getId()).stream()
+                .collect(Collectors.toMap(a -> a.getStudent().getId(), TeacherStudentAlias::getCustomName, (existing, replacement) -> replacement))
+            : Collections.emptyMap();
+
         return submissionRepository.findTeacherStudentSubmissions(teacher.getId()).stream()
             .map(sub -> {
                 SubmissionResultResponse res = SubmissionResultResponse.fromEntity(sub);
                 enrichSubmissionResult(res, sub, null);
+                if (sub.getStudent() != null && aliasMap.containsKey(sub.getStudent().getId())) {
+                    res.setStudentName(aliasMap.get(sub.getStudent().getId()));
+                }
                 return res;
             })
             .collect(Collectors.toList());
@@ -581,6 +601,10 @@ public class SubmissionService {
 
         SubmissionResultResponse response = SubmissionResultResponse.fromEntity(submission);
         enrichSubmissionResult(response, submission, null);
+        if (isTeacher && submission.getStudent() != null && teacherStudentAliasRepository != null) {
+            teacherStudentAliasRepository.findByTeacherIdAndStudentId(user.getId(), submission.getStudent().getId())
+                .ifPresent(alias -> response.setStudentName(alias.getCustomName()));
+        }
         return response;
     }
 

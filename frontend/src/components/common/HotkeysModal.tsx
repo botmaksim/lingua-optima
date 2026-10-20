@@ -114,10 +114,6 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
           keys: ['F'],
           description: 'Включить или выключить режим мгновенной проверки ответов',
         },
-        {
-          keys: ['R'],
-          description: 'Показать или скрыть правильный ответ (в режиме интерактивной презентации)',
-        },
       ],
     },
     {
@@ -126,7 +122,7 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
       shortcuts: [
         {
           keys: ['V'],
-          description: 'Циклическое переключение вида: Карточки → Список → Презентация',
+          description: 'Переключение вида: Карточки ↔ Список',
         },
         {
           keys: ['?'],

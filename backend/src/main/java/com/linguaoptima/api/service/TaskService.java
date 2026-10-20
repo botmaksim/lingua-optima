@@ -25,6 +25,7 @@ import com.linguaoptima.api.dto.response.ExplainSentenceResponse;
 import com.linguaoptima.api.dto.response.GenerationStatusResponse;
 import com.linguaoptima.api.dto.response.GroupTaskResponse;
 import com.linguaoptima.api.dto.response.PronunciationPackResponse;
+import com.linguaoptima.api.dto.response.QuestionResponse;
 import com.linguaoptima.api.dto.response.TaskResponse;
 import com.linguaoptima.api.dto.response.TopicsCatalogResponse;
 import com.linguaoptima.api.exception.ForbiddenException;
@@ -740,7 +741,9 @@ public class TaskService {
             taskAssignmentRepository.findByStudentIdAndTaskId(user.getId(), task.getId())
                 .ifPresent(assignment -> {
                     response.setAssignmentId(assignment.getId());
-                    if (assignment.getAssignedBy() != null && !assignment.getAssignedBy().getId().equals(user.getId())) {
+                    boolean isTeacherTask = assignment.getAssignedBy() != null && !assignment.getAssignedBy().getId().equals(user.getId());
+                    response.setIsTeacherTask(isTeacherTask);
+                    if (isTeacherTask) {
                         response.setAssignedByName(assignment.getAssignedBy().getFullName());
                     }
                     response.setDueDate(assignment.getDueDate());
@@ -758,6 +761,19 @@ public class TaskService {
                         submissionRepository.findByAssignmentId(assignment.getId()).stream()
                             .max(Comparator.comparing(Submission::getSubmittedAt, Comparator.nullsFirst(Comparator.naturalOrder())))
                             .ifPresent(sub -> response.setLatestSubmissionId(sub.getId()));
+                    }
+
+                    // Academic Integrity & Anti-Cheating:
+                    // If task is assigned by an educator and student has not yet submitted it,
+                    // strictly redact correct answers and grammar rules from the client payload.
+                    boolean isCompleted = (st == AssignmentStatus.SUBMITTED || st == AssignmentStatus.GRADED);
+                    if (isTeacherTask && !isCompleted && user.getRole() == Role.STUDENT) {
+                        if (task.getQuestions() != null) {
+                            List<QuestionResponse> sanitized = task.getQuestions().stream()
+                                .map(QuestionResponse::fromEntityWithoutAnswer)
+                                .collect(Collectors.toList());
+                            response.setQuestions(sanitized);
+                        }
                     }
                 });
         }
@@ -777,10 +793,25 @@ public class TaskService {
             ? params.getTotalPoints()
             : 100;
 
+        String effectiveTopic = params.getGrammarTopic();
+        if (params.getTaskType() == TaskType.SPEAKING) {
+            if (params.getSpeakingTitle() != null && !params.getSpeakingTitle().isBlank()) {
+                effectiveTopic = params.getSpeakingTitle();
+            } else if (params.getTargetSounds() != null && !params.getTargetSounds().isBlank()) {
+                effectiveTopic = params.getTargetSounds();
+            } else if (effectiveTopic == null || effectiveTopic.isBlank() ||
+                       effectiveTopic.toLowerCase().contains("passive") ||
+                       effectiveTopic.toLowerCase().contains("voice") ||
+                       effectiveTopic.toLowerCase().contains("tense") ||
+                       effectiveTopic.toLowerCase().contains("conditional")) {
+                effectiveTopic = "Speech & Pronunciation Practice";
+            }
+        }
+
         Task task = Task.builder()
             .type(params.getTaskType())
             .cefrLevel(params.getCefrLevel())
-            .grammarTopic(params.getGrammarTopic())
+            .grammarTopic(effectiveTopic)
             .domain(params.getDomain())
             .difficulty(params.getDifficulty() != null ? params.getDifficulty() : DifficultyLevel.MEDIUM)
             .totalPoints(reqTotal)

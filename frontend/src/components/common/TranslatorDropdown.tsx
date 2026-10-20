@@ -15,17 +15,17 @@ import {
 interface LanguageOption {
   code: string;
   name: string;
-  flag: string;
+  badge: string;
 }
 
 const SUPPORTED_LANGUAGES: LanguageOption[] = [
-  { code: 'ru', name: 'Russian (Русский)', flag: '🇷🇺' },
-  { code: 'es', name: 'Spanish (Español)', flag: '🇪🇸' },
-  { code: 'de', name: 'German (Deutsch)', flag: '🇩🇪' },
-  { code: 'fr', name: 'French (Français)', flag: '🇫🇷' },
-  { code: 'zh-CN', name: 'Chinese (中文)', flag: '🇨🇳' },
-  { code: 'ar', name: 'Arabic (العربية)', flag: '🇸🇦' },
-  { code: 'tr', name: 'Turkish (Türkçe)', flag: '🇹🇷' },
+  { code: 'ru', name: 'Russian (Русский)', badge: 'RU' },
+  { code: 'es', name: 'Spanish (Español)', badge: 'ES' },
+  { code: 'de', name: 'German (Deutsch)', badge: 'DE' },
+  { code: 'fr', name: 'French (Français)', badge: 'FR' },
+  { code: 'zh-CN', name: 'Chinese (中文)', badge: 'ZH' },
+  { code: 'ar', name: 'Arabic (العربية)', badge: 'AR' },
+  { code: 'tr', name: 'Turkish (Türkçe)', badge: 'TR' },
 ];
 
 /**
@@ -272,7 +272,7 @@ export const TranslatorDropdown: React.FC = () => {
                   }`}
                 >
                   <span className="flex items-center gap-1.5">
-                    <span>🇷🇺</span>
+                    <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-mono text-[9px] font-bold">RU</span>
                     <span>Russian (Русский)</span>
                   </span>
                   {activeEngine === 'google' && currentLang === 'ru' ? (
@@ -307,7 +307,10 @@ export const TranslatorDropdown: React.FC = () => {
                             : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-100'
                         }`}
                       >
-                        <span className="truncate">{l.flag} {l.name.split(' ')[0]}</span>
+                        <span className="truncate flex items-center gap-1.5">
+                          <span className="px-1 py-0.2 rounded bg-slate-100 text-slate-700 font-mono text-[9px] font-bold">{l.badge}</span>
+                          <span>{l.name.split(' ')[0]}</span>
+                        </span>
                         {activeEngine === 'google' && currentLang === l.code && (
                           <Check className="w-2.5 h-2.5 text-blue-600 flex-shrink-0" />
                         )}

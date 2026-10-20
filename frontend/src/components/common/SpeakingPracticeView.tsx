@@ -20,7 +20,8 @@ import {
   Info,
   Award,
   Gauge,
-  Timer
+  Timer,
+  Lock
 } from 'lucide-react';
 import {
   speakWord,
@@ -77,6 +78,7 @@ interface SpeakingPracticeViewProps {
   isSubmitting?: boolean;
   readOnly?: boolean;
   initialResult?: PronunciationResult;
+  isTeacherTask?: boolean;
 }
 
 export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
@@ -88,6 +90,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   isSubmitting = false,
   readOnly = false,
   initialResult,
+  isTeacherTask = false,
 }) => {
   const [accent, setAccent] = useState<'en-US' | 'en-GB'>('en-US');
   const [isPlayingModel, setIsPlayingModel] = useState(false);
@@ -96,12 +99,18 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   const [recordedTranscript, setRecordedTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
   const [recognitionSupported, setRecognitionSupported] = useState(true);
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null);
   const [activeWordTip, setActiveWordTip] = useState<AlignedWord | null>(null);
   const [evaluationResult, setEvaluationResult] = useState<PronunciationResult | null>(initialResult || null);
   const [micError, setMicError] = useState<string | null>(null);
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  const isModelAudioLocked = Boolean(isTeacherTask && !evaluationResult && !readOnly);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
@@ -182,6 +191,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   }, [accent]);
 
   const handlePlayModelAudio = () => {
+    if (isModelAudioLocked) return;
     if (isPlayingModel) {
       stopSpeech();
       setIsPlayingModel(false);
@@ -193,16 +203,79 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
     }
   };
 
+  const stopAllRecording = () => {
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (ignored) {}
+    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      try {
+        mediaRecorderRef.current.stop();
+      } catch (ignored) {}
+    }
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      } catch (ignored) {}
+      mediaStreamRef.current = null;
+    }
+  };
+
+  const startMediaRecorderFallback = () => {
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setMicError('Запись микрофона не поддерживается в данном браузере.');
+      return;
+    }
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then((stream) => {
+        mediaStreamRef.current = stream;
+        const mr = new MediaRecorder(stream);
+        mr.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            audioChunksRef.current.push(e.data);
+          }
+        };
+        mr.onstop = () => {
+          if (audioChunksRef.current.length > 0) {
+            const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            setRecordedAudioUrl(URL.createObjectURL(blob));
+          }
+        };
+        mediaRecorderRef.current = mr;
+        mr.start(250);
+        setIsRecording(true);
+        setMicError(null);
+      })
+      .catch((err) => {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setMicError('Доступ к микрофону отклонен. Пожалуйста, разрешите доступ к микрофону в настройках браузера.');
+        } else {
+          setMicError(`Ошибка микрофона: ${err.message || 'Не удалось активировать микрофон'}`);
+        }
+        setIsRecording(false);
+      });
+  };
+
   const toggleRecording = () => {
     if (isRecording) {
       const elapsed = Math.max(1, Math.round((Date.now() - startTimeRef.current) / 1000));
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.stop();
-        } catch (ignored) {}
-      }
+      stopAllRecording();
       setIsRecording(false);
-      evaluateSpokenSpeech(undefined, elapsed);
+
+      setTimeout(() => {
+        const fullTranscript = (recordedTranscript + ' ' + interimTranscript).trim();
+        if (fullTranscript) {
+          evaluateSpokenSpeech(undefined, elapsed);
+        } else if (audioChunksRef.current.length > 0) {
+          const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          setRecordedAudioUrl(URL.createObjectURL(blob));
+          evaluateSpokenSpeech('[Recorded Audio Submission]', elapsed);
+        } else {
+          evaluateSpokenSpeech(undefined, elapsed);
+        }
+      }, 150);
     } else {
       stopSpeech();
       setIsPlayingModel(false);
@@ -212,15 +285,19 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       setActiveWordTip(null);
       setMicError(null);
       setRecordingSeconds(0);
+      setRecordedAudioUrl(null);
+      audioChunksRef.current = [];
       startTimeRef.current = Date.now();
 
-      if (recognitionRef.current) {
+      if (recognitionSupported && recognitionRef.current) {
         try {
           recognitionRef.current.lang = accent;
           recognitionRef.current.start();
         } catch {
-          setMicError('Could not start microphone. Please check browser permissions.');
+          startMediaRecorderFallback();
         }
+      } else {
+        startMediaRecorderFallback();
       }
     }
   };
@@ -238,6 +315,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
 
   const handleReset = () => {
     stopSpeech();
+    stopAllRecording();
     setIsPlayingModel(false);
     setIsRecording(false);
     setRecordedTranscript('');
@@ -246,12 +324,14 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
     setActiveWordTip(null);
     setMicError(null);
     setRecordingSeconds(0);
+    setRecordedAudioUrl(null);
+    audioChunksRef.current = [];
   };
 
   const handleSubmit = () => {
     if (!evaluationResult) return;
     onSubmit({
-      spokenTranscript: recordedTranscript || interimTranscript || 'Speech practice completed.',
+      spokenTranscript: recordedTranscript || interimTranscript || '[Recorded Audio Submission]',
       accuracyScore: evaluationResult.accuracyScore,
       overallScore: Math.round((evaluationResult.overallScore / 100) * points),
       wpm: evaluationResult.wpm,
@@ -271,6 +351,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
 
   // Quick word pronunciation click
   const handleWordClick = (word: string) => {
+    if (isModelAudioLocked) return;
     speakWord(word, accent);
   };
 
@@ -326,14 +407,24 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <button
             type="button"
             onClick={handlePlayModelAudio}
+            disabled={isModelAudioLocked}
+            title={isModelAudioLocked ? 'Прослушивание образца заблокировано до сдачи ответа (Задание преподавателя)' : undefined}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-              isPlayingModel
+              isModelAudioLocked
+                ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-60'
+                : isPlayingModel
                 ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse'
                 : 'bg-indigo-600/20 border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/30'
             }`}
           >
-            {isPlayingModel ? <Square className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-            <span>{isPlayingModel ? 'Stop Audio' : 'Listen to Model'}</span>
+            {isModelAudioLocked ? (
+              <Lock className="w-3.5 h-3.5 text-slate-400" />
+            ) : isPlayingModel ? (
+              <Square className="w-3.5 h-3.5" />
+            ) : (
+              <Volume2 className="w-3.5 h-3.5" />
+            )}
+            <span>{isModelAudioLocked ? 'Образец скрыт' : isPlayingModel ? 'Остановить' : 'Слушать образец'}</span>
           </button>
         </div>
       </div>
@@ -342,9 +433,16 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3.5 text-xs text-slate-300 flex items-start gap-3">
         <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-slate-200">How to practice: </span>
-          Click any individual word or icon to hear native audio and inspect IPA transcription. When ready, press{' '}
-          <strong className="text-indigo-300">Start Speaking</strong> and read the passage clearly aloud into your microphone.
+          <span className="font-semibold text-slate-200">Инструкция: </span>
+          {isModelAudioLocked ? (
+            <span>
+              Прочитайте отрывок вслух и запишите ваш голос. Прослушивание образца и аудиоподсказки станут доступны после записи.
+            </span>
+          ) : (
+            <span>
+              Нажмите <strong className="text-indigo-300">Начать запись</strong> и четко прочитайте текст в микрофон. Вы можете нажимать на слова для прослушивания IPA произношения.
+            </span>
+          )}
         </div>
       </div>
 
@@ -393,8 +491,11 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                   <button
                     type="button"
                     onClick={() => handleWordClick(w)}
-                    className="hover:text-indigo-300 hover:bg-indigo-500/10 px-1.5 py-0.5 rounded transition-colors text-slate-100 cursor-pointer"
-                    title="Click to pronounce"
+                    disabled={isModelAudioLocked}
+                    className={`px-1.5 py-0.5 rounded transition-colors text-slate-100 ${
+                      isModelAudioLocked ? 'cursor-default opacity-80' : 'hover:text-indigo-300 hover:bg-indigo-500/10 cursor-pointer'
+                    }`}
+                    title={isModelAudioLocked ? 'Озвучивание доступно после записи' : 'Нажмите для прослушивания'}
                   >
                     {w}
                   </button>
@@ -420,7 +521,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold">
               <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-              <span>Listening to your speech... Speak clearly now</span>
+              <span>Слушаем вашу речь... Читайте текст четко и внятно</span>
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-900/60 border border-indigo-500/30 text-indigo-200 text-xs font-mono font-bold">
               <Timer className="w-3.5 h-3.5 text-indigo-400" />
@@ -430,6 +531,17 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <div className="text-sm text-slate-200 italic font-medium min-h-[1.5rem] bg-slate-900/60 p-3 rounded-lg border border-slate-800">
             {recordedTranscript} <span className="text-indigo-400">{interimTranscript}</span>
           </div>
+        </div>
+      )}
+
+      {/* Recorded Audio Playback */}
+      {recordedAudioUrl && (
+        <div className="bg-slate-950/80 border border-indigo-500/30 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in duration-200">
+          <div className="text-xs text-indigo-300 font-semibold flex items-center gap-2">
+            <Mic className="w-4 h-4 text-indigo-400" />
+            <span>Ваша аудиозапись:</span>
+          </div>
+          <audio controls src={recordedAudioUrl} className="h-8 w-full sm:w-80" />
         </div>
       )}
 
@@ -541,7 +653,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             {/* Main Record Button */}
             <button
               type="button"
-              disabled={!recognitionSupported || isSubmitting}
+              disabled={isSubmitting}
               onClick={toggleRecording}
               className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${
                 isRecording
@@ -550,7 +662,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               }`}
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              <span>{isRecording ? 'Stop & Evaluate' : evaluationResult ? 'Read Again' : 'Start Speaking'}</span>
+              <span>{isRecording ? 'Завершить и оценить' : evaluationResult ? 'Прочитать снова' : 'Начать запись'}</span>
             </button>
 
             {/* Reset Button */}
@@ -561,7 +673,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                 className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset</span>
+                <span>Сбросить</span>
               </button>
             )}
           </div>
@@ -575,7 +687,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{isSubmitting ? 'Submitting...' : 'Submit Speaking Assessment'}</span>
+              <span>{isSubmitting ? 'Отправка...' : 'Отправить результат'}</span>
             </button>
           )}
         </div>

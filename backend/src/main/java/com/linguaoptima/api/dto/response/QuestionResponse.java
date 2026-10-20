@@ -94,7 +94,7 @@ public class QuestionResponse {
             .options(parsedOptions)
             .difficulty(question.getDifficulty())
             .points(question.getPoints())
-            .grammarRule(question.getGrammarRule())
+            .grammarRule(null)
             .build();
     }
 }

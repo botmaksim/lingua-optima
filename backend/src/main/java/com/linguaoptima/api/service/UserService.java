@@ -4,6 +4,7 @@
  */
 package com.linguaoptima.api.service;
 
+import com.linguaoptima.api.domain.TeacherStudentAlias;
 import com.linguaoptima.api.domain.User;
 import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.dto.request.ChangePasswordRequest;
@@ -48,6 +49,8 @@ public class UserService {
     private final UsageCounterRepository usageCounterRepository;
     /** @brief Field representing group student repository in UserService. */
     private final GroupStudentRepository groupStudentRepository;
+    /** @brief Field representing teacher student alias repository in UserService. */
+    private final TeacherStudentAliasRepository teacherStudentAliasRepository;
     /** @brief Field representing session state repository in UserService. */
     private final SessionStateRepository sessionStateRepository;
     /** @brief Field representing submission repository in UserService. */
@@ -124,9 +127,25 @@ public class UserService {
             }
         }
 
-        student.setFullName(request.getFullName().trim());
-        User saved = userRepository.save(student);
-        return UserResponse.fromEntity(saved);
+        String newCustomName = request.getFullName().trim();
+        TeacherStudentAlias alias = teacherStudentAliasRepository
+            .findByTeacherIdAndStudentId(teacher.getId(), studentId)
+            .orElse(null);
+
+        if (alias == null) {
+            alias = TeacherStudentAlias.builder()
+                .teacher(teacher)
+                .student(student)
+                .customName(newCustomName)
+                .build();
+        } else {
+            alias.setCustomName(newCustomName);
+        }
+        teacherStudentAliasRepository.save(alias);
+
+        UserResponse response = UserResponse.fromEntity(student);
+        response.setFullName(newCustomName);
+        return response;
     }
 
     /**

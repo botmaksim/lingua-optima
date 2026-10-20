@@ -27,6 +27,7 @@ import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.repository.SessionStateRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.TaskAssignmentRepository;
+import com.linguaoptima.api.repository.TeacherStudentAliasRepository;
 import com.linguaoptima.api.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,6 +88,9 @@ class SubmissionServiceTest {
     /** @brief Test fixture or mock dependency for notification service. */
     @Mock
     private NotificationService notificationService;
+    /** @brief Test fixture or mock dependency for teacher student alias repository. */
+    @Mock
+    private TeacherStudentAliasRepository teacherStudentAliasRepository;
 
     /** @brief Test fixture or mock dependency for object mapper. */
     @Spy

@@ -93,6 +93,10 @@ export interface Task {
   targetSounds?: string;
   /** @brief Passage length preset for speaking exercises. */
   speakingLength?: string;
+  /** @brief Flag indicating whether this task was assigned by an educator. */
+  isTeacherTask?: boolean;
+  /** @brief Custom title or drill topic for speaking tasks. */
+  speakingTitle?: string;
 }
 
 /**

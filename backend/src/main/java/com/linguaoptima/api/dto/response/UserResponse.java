@@ -31,6 +31,8 @@ public class UserResponse {
     private String email;
     /** @brief Field representing full name in UserResponse. */
     private String fullName;
+    /** @brief Field representing original account full name in UserResponse. */
+    private String originalFullName;
     /** @brief Field representing role in UserResponse. */
     private Role role;
     /** @brief Field representing cefr level in UserResponse. */
@@ -59,6 +61,7 @@ public class UserResponse {
             .id(user.getId())
             .email(user.getEmail())
             .fullName(user.getFullName())
+            .originalFullName(user.getFullName())
             .role(user.getRole())
             .cefrLevel(user.getCefrLevel())
             .displayAlias(user.getDisplayAlias())

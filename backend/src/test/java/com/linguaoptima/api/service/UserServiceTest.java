@@ -77,6 +77,9 @@ class UserServiceTest {
     /** @brief Test fixture or mock dependency for password encoder. */
     @Mock
     private PasswordEncoder passwordEncoder;
+    /** @brief Test fixture or mock dependency for teacher student alias repository. */
+    @Mock
+    private TeacherStudentAliasRepository teacherStudentAliasRepository;
 
     /** @brief Test fixture or mock dependency for user service. */
     @InjectMocks
@@ -230,14 +233,15 @@ class UserServiceTest {
         when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
         when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
         when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(teacherStudentAliasRepository.findByTeacherIdAndStudentId(teacher.getId(), student.getId())).thenReturn(Optional.empty());
 
         UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("New Name").build();
         UserResponse response = userService.updateStudentName(student.getId(), req, teacher);
 
         assertNotNull(response);
         assertEquals("New Name", response.getFullName());
-        verify(userRepository).save(argThat(u -> "New Name".equals(u.getFullName())));
+        verify(userRepository, never()).save(any(User.class));
+        verify(teacherStudentAliasRepository).save(argThat(a -> "New Name".equals(a.getCustomName())));
     }
 
     /**
@@ -249,13 +253,15 @@ class UserServiceTest {
         User student = User.builder().id(UUID.randomUUID()).fullName("Student Old").role(Role.STUDENT).build();
 
         when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(teacherStudentAliasRepository.findByTeacherIdAndStudentId(admin.getId(), student.getId())).thenReturn(Optional.empty());
 
         UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Student Renamed").build();
         UserResponse response = userService.updateStudentName(student.getId(), req, admin);
 
         assertNotNull(response);
         assertEquals("Student Renamed", response.getFullName());
+        verify(userRepository, never()).save(any(User.class));
+        verify(teacherStudentAliasRepository).save(argThat(a -> "Student Renamed".equals(a.getCustomName())));
     }
 
     /**
@@ -301,6 +307,29 @@ class UserServiceTest {
         UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Renamed").build();
 
         assertThrows(ResourceNotFoundException.class, () -> userService.updateStudentName(nonExistent, req, teacher));
+    }
+
+    /**
+     * @brief Verifies educator updating a student name creates or updates a custom alias without mutating student entity.
+     */
+    @Test
+    void testUpdateStudentNameByTeacherSavesAliasAndDoesNotMutateStudentFullName() {
+        User teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        User student = User.builder().id(UUID.randomUUID()).fullName("Private Real Name").role(Role.STUDENT).build();
+        Group group = Group.builder().id(UUID.randomUUID()).teacher(teacher).build();
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
+        when(teacherStudentAliasRepository.findByTeacherIdAndStudentId(teacher.getId(), student.getId())).thenReturn(Optional.empty());
+
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Teacher's Nickname").build();
+        UserResponse response = userService.updateStudentName(student.getId(), req, teacher);
+
+        assertEquals("Teacher's Nickname", response.getFullName());
+        assertEquals("Private Real Name", student.getFullName());
+        verify(teacherStudentAliasRepository).save(any());
+        verify(userRepository, never()).save(student);
     }
 }
 

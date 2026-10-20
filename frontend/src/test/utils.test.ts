@@ -8,6 +8,7 @@ import { getWordCount } from '../utils/wordCount';
 import { getCefrBadgeClasses } from '../utils/cefrColors';
 import { formatDate } from '../utils/formatDate';
 import { CefrLevel } from '../types/user';
+import { splitTextForSpeechWithPauses } from '../utils/phonetics';
 
 describe('wordCount utility', () => {
   it('returns 0 for empty or whitespace string', () => {
@@ -74,3 +75,37 @@ describe('formatDate utility', () => {
     expect(formatted).toContain('May');
   });
 });
+
+describe('splitTextForSpeechWithPauses utility', () => {
+  it('returns empty array for empty or whitespace text', () => {
+    expect(splitTextForSpeechWithPauses('')).toEqual([]);
+    expect(splitTextForSpeechWithPauses('   ')).toEqual([]);
+  });
+
+  it('preserves plain sentences without blanks', () => {
+    expect(splitTextForSpeechWithPauses('The weather is nice today.')).toEqual([
+      'The weather is nice today.'
+    ]);
+  });
+
+  it('splits at underscores with blanks', () => {
+    const result = splitTextForSpeechWithPauses('I _____ to the supermarket yesterday.');
+    expect(result).toEqual(['I', 'to the supermarket yesterday.']);
+  });
+
+  it('splits at bracketed verb prompts and strips leading question index', () => {
+    const result = splitTextForSpeechWithPauses('1. If heat increases, ice (melt) into liquid.');
+    expect(result).toEqual(['If heat increases, ice', 'into liquid.']);
+  });
+
+  it('handles multiple blanks and expansion cues with slashes', () => {
+    const result = splitTextForSpeechWithPauses('She (not / see) him because he (already / leave) _____ for work.');
+    expect(result).toEqual(['She', 'him because he', 'for work.']);
+  });
+
+  it('attaches trailing punctuation to the previous segment if there is no succeeding text', () => {
+    const result = splitTextForSpeechWithPauses('Where have you _____?');
+    expect(result).toEqual(['Where have you?']);
+  });
+});
+

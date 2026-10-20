@@ -24,6 +24,7 @@ import com.linguaoptima.api.repository.GroupStudentRepository;
 import com.linguaoptima.api.repository.NotificationRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.SubscriptionRepository;
+import com.linguaoptima.api.repository.TeacherStudentAliasRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -71,6 +72,9 @@ class GroupServiceTest {
     /** @brief Subscription repository mock for educator tier testing. */
     @Mock
     private SubscriptionRepository subscriptionRepository;
+    /** @brief Teacher-student alias repository mock. */
+    @Mock
+    private TeacherStudentAliasRepository teacherStudentAliasRepository;
 
     /** @brief Test fixture or mock dependency for group service. */
     @InjectMocks

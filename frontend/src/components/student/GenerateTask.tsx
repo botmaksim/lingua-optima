@@ -345,6 +345,20 @@ export const GenerateTask: React.FC = () => {
    * @brief Fills the weakest student gap or foundational topic into the active topic field.
    */
   const handleFillRecommended = async () => {
+    if (taskType === 'SPEAKING') {
+      const preset = TARGET_SOUND_PRESETS[0];
+      setSpeakingTitle('Oral Reading & Phonetic Clarity Drill');
+      setTargetSounds(preset.value);
+      setSpeakingLength('MEDIUM');
+      setGrammarTopic('Speech & Pronunciation Practice');
+      addToast({
+        type: 'info',
+        title: 'Рекомендованная фонетическая практика',
+        message: `Заполнен фокус произношения: ${preset.label} (${preset.value})`,
+      });
+      return;
+    }
+
     try {
       const gaps = await progressApi.getGaps();
       if (gaps && gaps.length > 0) {
@@ -373,6 +387,20 @@ export const GenerateTask: React.FC = () => {
    * @brief Fills a random topic from the syllabus or essay pool into the active topic field.
    */
   const handleFillRandom = () => {
+    if (taskType === 'SPEAKING') {
+      const randomPreset = TARGET_SOUND_PRESETS[Math.floor(Math.random() * TARGET_SOUND_PRESETS.length)];
+      setSpeakingTitle(randomPreset.label);
+      setTargetSounds(randomPreset.value);
+      setSpeakingLength(['SHORT', 'MEDIUM', 'LONG'][Math.floor(Math.random() * 3)]);
+      setGrammarTopic(randomPreset.label);
+      addToast({
+        type: 'info',
+        title: 'Случайный фонетический сет',
+        message: `Выбран фокус: ${randomPreset.label} (${randomPreset.value})`,
+      });
+      return;
+    }
+
     let pool: string[] = [];
     if (taskType === 'ESSAY') {
       pool = DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
@@ -855,7 +883,10 @@ export const GenerateTask: React.FC = () => {
 
           {/* Switch to Quick Mode Callout */}
           <div className="p-3.5 bg-amber-50/70 rounded-2xl border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-amber-900 gap-2">
-            <span>⚡ Prefer 1-Click Practice without adjusting manual parameters?</span>
+            <div className="flex items-center space-x-2">
+              <Zap className="w-4 h-4 text-amber-600 fill-amber-500 shrink-0" />
+              <span>Prefer 1-Click Practice without adjusting manual parameters?</span>
+            </div>
             <button
               type="button"
               onClick={() => setGenerationMode('QUICK')}
