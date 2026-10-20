@@ -465,6 +465,15 @@ erDiagram
         DateTime removed_at
     }
 
+    TeacherStudentAlias {
+        UUID id PK
+        UUID teacherId FK
+        UUID studentId FK
+        String customAlias
+        DateTime createdAt
+        DateTime updatedAt
+    }
+
     User ||--o{ ApiKey : "owns"
     User ||--o{ Task : "creates"
     User ||--o{ ProgressRecord : "tracks"
@@ -473,6 +482,7 @@ erDiagram
     User ||--o| UsageCounter : "has"
     User ||--o{ Group : "teaches (if TEACHER)"
     User ||--o{ GroupStudent : "belongs to"
+    User ||--o{ TeacherStudentAlias : "teacher creates / student target"
     
     Group ||--o{ GroupStudent : "contains students (group_students)"
     
@@ -695,7 +705,25 @@ The PostgreSQL relational database is version-controlled using an enterprise bas
 
 ---
 
+## 14. Academic Integrity & Educator Custom Student Aliases
+
+### 14.1 Academic Integrity & Server-Side Redaction (`TaskService.java`)
+- **Threat Vector**: In traditional client-side applications, full question models (including `correctAnswer` and `grammarRule`) are delivered to the browser, allowing students to inspect HTTP network responses or devtools to discover answers prior to submission.
+- **Server-Side Enforcement**: In `TaskService.getTaskById`, when an unsubmitted task assignment is accessed by a student (`assignment.getStatus() == AssignmentStatus.PENDING || IN_PROGRESS`), the server actively strips `correctAnswer` and `grammarRule` (setting them to `null`).
+- **Post-Submission Revelation**: Once the student submits their attempt (`AssignmentStatus.SUBMITTED`), subsequent queries reveal full answer keys and pedagogical grammar explanations for comprehensive review.
+
+### 14.2 Educator Custom Student Aliases (`TeacherStudentAlias`)
+- **Privacy Isolation Requirement**: Educators often assign internal tracking names, student numbers, or cohort tags to members (e.g. `Ivanov Ivan (Group 3)` or `Dmitry (Honor Scholar)`). Modifying the student's global user record (`users.full_name`) violates student privacy and corrupts their cross-platform account.
+- **Dedicated Schema (`teacher_student_aliases`)**:
+  - Flyway migration `V2__teacher_student_aliases.sql` establishes a dedicated join table with unique constraint `(teacher_id, student_id)`.
+- **Context-Aware Display Resolution**:
+  - When an educator queries `/api/groups/{id}`, `/api/submissions/group/{id}`, or exports group reports, `GroupService` and `SubmissionService` join with `teacher_student_aliases` to display `custom_alias` as `fullName` while retaining `originalFullName`.
+  - When the student views `/api/users/me` or interacts with other teachers, their personal profile remains completely untouched and private.
+
+---
+
 ## License and Copyright
 
 Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  
 Licensed under the **[MIT License](../LICENSE)**.
+

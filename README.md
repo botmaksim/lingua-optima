@@ -153,19 +153,25 @@ Lingua Optima structures all learning and assessment around four foundational pi
 - **Writing & Essay**: Authentic IELTS/Cambridge 4-criteria rubric evaluation (Task Achievement, Coherence & Cohesion, Lexical Resource, Grammatical Range) with autosaved drafts.
 
 ### 13. Card Focus Mode & Hotkey Navigation
-- **Distraction-Free Step-by-Step Solving**: Switch seamlessly between Classic List, Card Focus Mode, and Presentation Mode in `TaskView.tsx`.
+- **Distraction-Free Step-by-Step Solving**: Switch seamlessly between Classic List and Step-by-Step Card Focus Mode in `TaskView.tsx`.
 - **Keyboard Hotkeys**: Select options instantly with keys `1`–`4`, navigate cards with `ArrowLeft` and `ArrowRight`, and advance via `Enter`.
-- **Instant Feedback (`Мгновенная проверка`)**: Optional self-practice mode immediately validates selections with emerald/rose borders, checkmark/cross status icons, and underlying grammar rule insights.
+- **Instant Feedback (`Мгновенная проверка`)**: Optional self-practice mode immediately validates selections with emerald/rose borders, checkmark/cross status icons, and underlying grammar rule insights. Selecting an option locks choices for that question to prevent trial-and-error guessing.
 
-### 14. Sentence AI Explainer Engine (`POST /api/tasks/explain-sentence`)
-- **Real-Time Contextual Breakdown**: Highlight text or click `💡 Пояснить` on any reading sentence or exercise item to open an AI analysis drawer.
-- **Granular Linguistic Insights**: Delivers natural Russian translation, syntactic tense/pattern breakdown, and key vocabulary items without robotic AI filler.
+### 14. Academic Integrity & Anti-Cheating Architecture
+- **Server-Side Answer & Grammar Redaction**: In teacher-assigned homework, `correctAnswer` and `grammarRule` fields are strictly redacted from the API response payload until the student completes and submits their attempt.
+- **Hidden Instant Feedback**: The instant feedback toggle (`Мгновенная проверка`) is automatically disabled and hidden for teacher-assigned tasks.
+- **Locked Sentence Explainer & Vocabulary Hints**: Contextual AI sentence breakdown (`💡 Пояснить`) and vocabulary analysis drawers are locked on teacher homework until submission.
+- **Speaking Model Audio Lock**: The model audio preview for speaking exercises is locked until the student has recorded and submitted their speech attempt.
 
-### 15. Classroom Live & Presentation Mode
-- **Smartboard & Projector Ready**: Fullscreen viewport with high-contrast, scalable typography (`text-2xl` to `text-3xl`).
-- **Interactive Answer Revelation**: Educators can toggle `[ 👁️ Показать правильный ответ ]` / `[ 🙈 Скрыть ответ ]` per question during lectures or group reviews.
+### 15. Speaking & Pronunciation with Natural Audio Pauses
+- **Pedagogical Audio Pause Splitting (`splitTextForSpeechWithPauses`)**: Questions with fill-in blanks (`_____`, `[___]`, `...`) and bracket cues (`(melt)`, `(not / see)`) automatically pause for 750ms at each gap, allowing natural, clear listening comprehension without reading raw punctuation symbols.
+- **Cross-Browser MediaRecorder Fallback**: Automatic container fallback to `audio/ogg;codecs=opus` for seamless recording support across Chrome, Firefox, Edge, and Safari.
 
-### 16. Smart Recommendations, Confetti & Mastery Integrity
+### 16. Educator Custom Student Aliases (`teacher_student_aliases`)
+- **Cohort Display Isolation**: Educators can assign custom names to students in their groups (e.g. `Dmitry (Honor Student)`).
+- **Privacy Protection**: The custom alias is isolated in `teacher_student_aliases` and displayed across educator rosters, submissions, and report exports, while the student's personal account and profile remain intact and private.
+
+### 17. Smart Recommendations, Confetti & Mastery Integrity
 - **1-Click Gap Targeting**: "Recommended" practice mode automatically queries student mastery records (`/progress/gaps`) and directs learners toward their weakest CEFR grammar gaps.
 - **Non-Inflating Score Overrides**: Teacher grading overrides adjust error counters via mathematical deltas (`adjustFromOverride`) rather than creating duplicate attempt records.
 - **Celebration Confetti**: Zero-dependency HTML5 Canvas confetti engine triggers bursts on $\ge 90\%$ achievement scores.
