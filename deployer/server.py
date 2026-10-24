@@ -1009,6 +1009,9 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
         qs = parse_qs(parsed.query)
         return "pretty" in qs or qs.get("format", [""])[0] == "pretty"
 
+    def do_HEAD(self):
+        self.do_GET()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
