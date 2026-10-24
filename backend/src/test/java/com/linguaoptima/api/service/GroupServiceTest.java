@@ -477,4 +477,38 @@ class GroupServiceTest {
             groupService.validateGroupIsActive(group2.getId(), teacher)
         );
     }
+
+    @Test
+    void testMapToGroupResponse_WithCustomAliases() {
+        User activeStudent = User.builder().id(UUID.randomUUID()).fullName("Active Student Real").build();
+        User pendingStudent = User.builder().id(UUID.randomUUID()).fullName("Pending Student Real").build();
+
+        GroupStudent gsActive = GroupStudent.builder().group(group).student(activeStudent).isActive(true).status(EnrollmentStatus.ACCEPTED).build();
+        GroupStudent gsPending = GroupStudent.builder().group(group).student(pendingStudent).isActive(false).status(EnrollmentStatus.PENDING).build();
+
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(gsActive));
+        when(groupStudentRepository.findByGroupIdAndStatus(group.getId(), EnrollmentStatus.PENDING)).thenReturn(List.of(gsPending));
+
+        com.linguaoptima.api.domain.TeacherStudentAlias aliasActive = com.linguaoptima.api.domain.TeacherStudentAlias.builder()
+            .teacher(teacher)
+            .student(activeStudent)
+            .customName("Active Student Alias")
+            .build();
+        com.linguaoptima.api.domain.TeacherStudentAlias aliasPending = com.linguaoptima.api.domain.TeacherStudentAlias.builder()
+            .teacher(teacher)
+            .student(pendingStudent)
+            .customName("Pending Student Alias")
+            .build();
+
+        when(teacherStudentAliasRepository.findByTeacherId(teacher.getId()))
+            .thenReturn(List.of(aliasActive, aliasPending));
+
+        GroupResponse res = groupService.getGroupDetails(group.getId(), teacher);
+        assertNotNull(res);
+        assertEquals(1, res.getStudents().size());
+        assertEquals("Active Student Alias", res.getStudents().get(0).getFullName());
+        assertEquals(1, res.getPendingStudents().size());
+        assertEquals("Pending Student Alias", res.getPendingStudents().get(0).getFullName());
+    }
 }

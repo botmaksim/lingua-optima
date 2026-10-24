@@ -1834,5 +1834,96 @@ class SubmissionServiceTest {
         assertEquals(95.0, respOverride.getScore());
         assertEquals(99.0, respOverride.getEffectiveScore());
     }
+
+    @Test
+    void testGetGroupSubmissions_And_TeacherSubmissions_WithCustomAlias() {
+        UUID groupId = UUID.randomUUID();
+        Submission sub = Submission.builder().id(UUID.randomUUID()).student(student).build();
+        when(submissionRepository.findActiveGroupSubmissions(groupId)).thenReturn(List.of(sub));
+        when(submissionRepository.findTeacherStudentSubmissions(teacher.getId())).thenReturn(List.of(sub));
+
+        com.linguaoptima.api.domain.TeacherStudentAlias alias = com.linguaoptima.api.domain.TeacherStudentAlias.builder()
+            .teacher(teacher)
+            .student(student)
+            .customName("Dmitry Custom Nickname")
+            .build();
+        when(teacherStudentAliasRepository.findByTeacherId(teacher.getId())).thenReturn(List.of(alias));
+
+        List<SubmissionResultResponse> groupSubs = submissionService.getGroupSubmissions(groupId, teacher);
+        assertEquals(1, groupSubs.size());
+        assertEquals("Dmitry Custom Nickname", groupSubs.get(0).getStudentName());
+
+        List<SubmissionResultResponse> teacherSubs = submissionService.getTeacherSubmissions(teacher);
+        assertEquals(1, teacherSubs.size());
+        assertEquals("Dmitry Custom Nickname", teacherSubs.get(0).getStudentName());
+    }
+
+    @Test
+    void testGetSubmissionById_WithTeacherStudentAlias() {
+        Submission sub = Submission.builder()
+            .id(UUID.randomUUID())
+            .student(student)
+            .submissionType(SubmissionType.TEXT)
+            .studentText("Some text")
+            .build();
+        when(submissionRepository.findById(sub.getId())).thenReturn(Optional.of(sub));
+
+        com.linguaoptima.api.domain.TeacherStudentAlias alias = com.linguaoptima.api.domain.TeacherStudentAlias.builder()
+            .teacher(teacher)
+            .student(student)
+            .customName("Dmitry Custom Nickname")
+            .build();
+        when(teacherStudentAliasRepository.findByTeacherIdAndStudentId(teacher.getId(), student.getId()))
+            .thenReturn(Optional.of(alias));
+
+        SubmissionResultResponse resp = submissionService.getSubmissionById(sub.getId(), teacher);
+        assertNotNull(resp);
+        assertEquals("Dmitry Custom Nickname", resp.getStudentName());
+    }
+
+    @Test
+    void testOverrideScore_FullFeedbackAndNullAssignment() {
+        UUID subId = UUID.randomUUID();
+        Submission sub = Submission.builder()
+            .id(subId)
+            .student(student)
+            .submissionType(SubmissionType.TEXT)
+            .aiFeedback("Initial text feedback without json braces")
+            .studentText("Sample student text")
+            .assignment(null)
+            .aiScore(null)
+            .overrideScore(null)
+            .build();
+
+        when(submissionRepository.findById(subId)).thenReturn(Optional.of(sub));
+        when(submissionRepository.save(any(Submission.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        SentenceCorrectionResponse corr = SentenceCorrectionResponse.builder()
+            .original("Did you go?")
+            .corrected("Have you gone?")
+            .explanation("Use present perfect")
+            .grammarRule("Tenses")
+            .build();
+
+        OverrideRequest req = OverrideRequest.builder()
+            .overrideScore(85.0)
+            .teacherComment("Well done")
+            .feedback("Updated comprehensive review")
+            .corrections(List.of(corr))
+            .items(List.of(
+                com.linguaoptima.api.dto.response.SubmissionItemResponse.builder()
+                    .sentence("Did you go?")
+                    .isCorrect(false)
+                    .points(5)
+                    .build()
+            ))
+            .build();
+
+        SubmissionResultResponse res = submissionService.overrideScore(subId, req, teacher);
+        assertNotNull(res);
+        assertEquals(85.0, res.getEffectiveScore());
+        assertEquals("Well done", sub.getTeacherComment());
+        assertTrue(sub.getAiFeedback().contains("Updated comprehensive review"));
+    }
 }
 

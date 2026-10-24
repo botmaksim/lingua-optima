@@ -229,4 +229,33 @@ class PronunciationPackServiceTest {
         assertDoesNotThrow(corruptService::init);
         assertTrue(corruptService.getAllPacks().isEmpty());
     }
+
+    @Test
+    void testComprehensivePhoneticAndCategoryBranches() {
+        // Test all phonetic tokens and category triggers
+        assertNotNull(service.findMatchingPack(CefrLevel.A1, "dental fricative"));
+        assertNotNull(service.findMatchingPack(CefrLevel.A1, "sound /θ/"));
+        assertNotNull(service.findMatchingPack(CefrLevel.A2, "liquid consonants"));
+        assertNotNull(service.findMatchingPack(CefrLevel.A2, "/r/ sound"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B1, "labial articulation"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B1, "sound /v/"));
+        assertNotNull(service.findMatchingPack(CefrLevel.A1, "vowel contrasts"));
+        assertNotNull(service.findMatchingPack(CefrLevel.A1, "/iː/ vowels"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B1, "sibilant consonants"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B1, "/ʃ/ vs /tʃ/"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B2, "silent patterns"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B2, "irregular word forms"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B2, "reduction in speech"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B2, "connected speech flow"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B2, "sentence rhythm"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B2, "word stress"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B2, "linking words"));
+
+        // Single letter token match
+        assertNotNull(service.findMatchingPack(CefrLevel.A2, "focus on sound r"));
+        assertNotNull(service.findMatchingPack(CefrLevel.B1, "focus on sound v"));
+
+        // Direct title / term match
+        assertNotNull(service.findMatchingPack(CefrLevel.B1, "fricatives and plosives"));
+    }
 }

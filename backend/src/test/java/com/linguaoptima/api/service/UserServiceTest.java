@@ -313,5 +313,61 @@ class UserServiceTest {
         verify(teacherStudentAliasRepository).save(any());
         verify(userRepository, never()).save(student);
     }
+
+    @Test
+    void testUpdateStudentNameByTeacher_ExistingAliasUpdated() {
+        User teacher = User.builder().id(UUID.randomUUID()).role(Role.TEACHER).build();
+        User student = User.builder().id(UUID.randomUUID()).fullName("Private Real Name").role(Role.STUDENT).build();
+        Group group = Group.builder().id(UUID.randomUUID()).teacher(teacher).build();
+        com.linguaoptima.api.domain.TeacherStudentAlias existingAlias = com.linguaoptima.api.domain.TeacherStudentAlias.builder()
+            .id(UUID.randomUUID())
+            .teacher(teacher)
+            .student(student)
+            .customName("Old Nickname")
+            .build();
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
+        when(teacherStudentAliasRepository.findByTeacherIdAndStudentId(teacher.getId(), student.getId()))
+            .thenReturn(Optional.of(existingAlias));
+
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("New Nickname").build();
+        UserResponse response = userService.updateStudentName(student.getId(), req, teacher);
+
+        assertEquals("New Nickname", response.getFullName());
+        assertEquals("New Nickname", existingAlias.getCustomName());
+        verify(teacherStudentAliasRepository).save(existingAlias);
+    }
+
+    @Test
+    void testUpdateStudentNameByAdmin_BypassesCohortCheck() {
+        User admin = User.builder().id(UUID.randomUUID()).role(Role.ADMIN).build();
+        User student = User.builder().id(UUID.randomUUID()).fullName("Private Real Name").role(Role.STUDENT).build();
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(teacherStudentAliasRepository.findByTeacherIdAndStudentId(admin.getId(), student.getId()))
+            .thenReturn(Optional.empty());
+
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Admin Note").build();
+        UserResponse response = userService.updateStudentName(student.getId(), req, admin);
+
+        assertEquals("Admin Note", response.getFullName());
+        verify(teacherStudentAliasRepository).save(any());
+        verify(groupRepository, never()).findByTeacher(any());
+    }
+
+    @Test
+    void testUpdateStudentNameByStudent_ThrowsForbidden() {
+        User studentCaller = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
+        User student = User.builder().id(UUID.randomUUID()).role(Role.STUDENT).build();
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+
+        UpdateStudentNameRequest req = UpdateStudentNameRequest.builder().fullName("Hacker").build();
+        assertThrows(ForbiddenException.class, () ->
+            userService.updateStudentName(student.getId(), req, studentCaller)
+        );
+    }
 }
 

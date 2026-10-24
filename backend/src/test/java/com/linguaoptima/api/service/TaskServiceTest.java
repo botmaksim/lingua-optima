@@ -36,10 +36,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import org.mockito.ArgumentCaptor;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.linguaoptima.api.domain.TaskQuestion;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -1864,6 +1868,176 @@ class TaskServiceTest {
         com.linguaoptima.api.dto.response.ExplainSentenceResponse res = taskService.explainSentence(req, studentUser);
         assertNotNull(res);
         assertEquals("He lives in London.", res.getOriginalSentence());
+    }
+
+    @Test
+    void testGetTaskById_AntiCheatingSanitizesAnswersForUnsubmittedStudentAssignment() {
+        UUID taskId = UUID.randomUUID();
+        TaskQuestion tq = TaskQuestion.builder()
+            .id(UUID.randomUUID())
+            .questionOrder(1)
+            .questionText("Choose the correct form")
+            .correctAnswer("went")
+            .grammarRule("Past Simple irregular verb")
+            .optionsJson("[\"went\", \"go\"]")
+            .points(10)
+            .build();
+
+        Task task = Task.builder()
+            .id(taskId)
+            .type(TaskType.MCQ)
+            .cefrLevel(CefrLevel.B1)
+            .createdBy(teacherUser)
+            .questions(new ArrayList<>(List.of(tq)))
+            .build();
+
+        TaskAssignment assignment = TaskAssignment.builder()
+            .id(UUID.randomUUID())
+            .task(task)
+            .student(studentUser)
+            .assignedBy(teacherUser)
+            .status(AssignmentStatus.PENDING)
+            .maxAttempts(1)
+            .attemptsUsed(0)
+            .build();
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(studentUser.getId(), taskId))
+            .thenReturn(Optional.of(assignment));
+
+        // When student queries uncompleted assignment, answers and grammar rules must be null
+        TaskResponse resStudent = taskService.getTaskById(taskId, studentUser);
+        assertNotNull(resStudent);
+        assertTrue(Boolean.TRUE.equals(resStudent.getIsTeacherTask()));
+        assertNull(resStudent.getQuestions().get(0).getCorrectAnswer());
+        assertNull(resStudent.getQuestions().get(0).getGrammarRule());
+        assertEquals("Choose the correct form", resStudent.getQuestions().get(0).getQuestionText());
+
+        // When assignment status is SUBMITTED, student can review correct answers
+        assignment.setStatus(AssignmentStatus.SUBMITTED);
+        TaskResponse resSubmitted = taskService.getTaskById(taskId, studentUser);
+        assertEquals("went", resSubmitted.getQuestions().get(0).getCorrectAnswer());
+        assertEquals("Past Simple irregular verb", resSubmitted.getQuestions().get(0).getGrammarRule());
+
+        // When teacher queries, answers are always visible
+        TaskResponse resTeacher = taskService.getTaskById(taskId, teacherUser);
+        assertEquals("went", resTeacher.getQuestions().get(0).getCorrectAnswer());
+    }
+
+    @Test
+    void testGenerateTask_SpeakingWithSpecialTopicFallbacks() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .taskType(TaskType.SPEAKING)
+            .speakingTitle("Advanced Pronunciation")
+            .targetSounds("/θ/ vs /ð/")
+            .totalPoints(100)
+            .build();
+
+        String rawJson = """
+            {
+              "content": "This is a pronunciation passage about thorns and feathers.",
+              "answerKey": [],
+              "questions": []
+            }
+            """;
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(rawJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, teacherUser);
+        assertNotNull(res);
+        assertEquals("Advanced Pronunciation", res.getGrammarTopic());
+        assertEquals(1, res.getQuestions().size());
+        assertEquals(100, res.getQuestions().get(0).getPoints());
+    }
+
+    @Test
+    void testGenerateTask_EssayWithCustomCurriculumResolution() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.C1)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic("Inversion")
+            .customRule("Never have I ever")
+            .customVocabulary("seldom, scarcely")
+            .build();
+
+        String rawJson = """
+            {
+              "content": "Write an essay using negative inversion.",
+              "answerKey": {},
+              "questions": []
+            }
+            """;
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(rawJson);
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        when(taskRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, teacherUser);
+        assertNotNull(res);
+        Task savedTask = captor.getValue();
+        assertNotNull(savedTask.getAnswerKey());
+        assertTrue(savedTask.getAnswerKey().contains("Never have I ever"));
+        assertTrue(savedTask.getAnswerKey().contains("seldom, scarcely"));
+    }
+
+    @Test
+    void testGenerateTask_SpeakingWithGrammarFallbackTopic() {
+        TaskParamsRequest reqPassive = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .taskType(TaskType.SPEAKING)
+            .grammarTopic("Passive Voice")
+            .build();
+
+        String rawJson = """
+            {
+              "content": "Read aloud: The book was written in 1920.",
+              "questions": []
+            }
+            """;
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(rawJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(reqPassive, teacherUser);
+        assertNotNull(res);
+        assertEquals("Speech & Pronunciation Practice", res.getGrammarTopic());
+
+        TaskParamsRequest reqConditional = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B1)
+            .taskType(TaskType.SPEAKING)
+            .grammarTopic("Third Conditional")
+            .build();
+        TaskResponse resCond = taskService.generateTask(reqConditional, teacherUser);
+        assertEquals("Speech & Pronunciation Practice", resCond.getGrammarTopic());
+    }
+
+    @Test
+    void testGenerateTask_EssayWithCurriculumStorageResolution() {
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .taskType(TaskType.ESSAY)
+            .grammarTopic("Opinion Essay")
+            .build();
+
+        String rawJson = """
+            {
+              "content": "Write an opinion essay about climate change.",
+              "answerKey": {},
+              "questions": []
+            }
+            """;
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(rawJson);
+        when(curriculumStorageService.resolvePromptCurriculumContext(eq(CefrLevel.B2), eq("Opinion Essay"), isNull(), isNull()))
+            .thenReturn(new String[]{"State your thesis clearly", "moreover, furthermore"});
+
+        ArgumentCaptor<Task> captor = ArgumentCaptor.forClass(Task.class);
+        when(taskRepository.save(captor.capture())).thenAnswer(inv -> inv.getArgument(0));
+
+        TaskResponse res = taskService.generateTask(req, teacherUser);
+        assertNotNull(res);
+        Task saved = captor.getValue();
+        assertNotNull(saved.getAnswerKey());
+        assertTrue(saved.getAnswerKey().contains("State your thesis clearly"));
+        assertTrue(saved.getAnswerKey().contains("moreover, furthermore"));
     }
 }
 

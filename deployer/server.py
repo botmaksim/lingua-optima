@@ -841,14 +841,18 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
         if cf_email:
             return True
 
-        # 2. Check Authorization Header: Bearer <key>
+        # 2. Check X-Deploy-Secret header
+        if self.headers.get("X-Deploy-Secret") == DEPLOY_SECRET:
+            return True
+
+        # 3. Check Authorization Header: Bearer <key>
         auth_header = self.headers.get("Authorization", "")
         if auth_header.startswith("Bearer "):
             token = auth_header[7:].strip()
             if token == DEPLOY_SECRET:
                 return True
 
-        # 3. Check Cookie
+        # 4. Check Cookie
         cookie_header = self.headers.get("Cookie", "")
         if cookie_header:
             cookies = [c.strip() for c in cookie_header.split(";")]
@@ -858,7 +862,7 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
                     if k.strip() == COOKIE_NAME and v.strip() == SECRET_TOKEN_HASH:
                         return True
 
-        # 4. Check Query Param ?token=...
+        # 5. Check Query Param ?token=...
         parsed = urlparse(self.path)
         qs = parse_qs(parsed.query)
         if "token" in qs and qs["token"][0] == DEPLOY_SECRET:
@@ -881,6 +885,9 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
 
         # Unprotected or Login check
         if not self._is_authenticated():
+            if path.startswith("/api/"):
+                self._send_json({"error": "Unauthorized", "message": "Authentication required"}, 401)
+                return
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()

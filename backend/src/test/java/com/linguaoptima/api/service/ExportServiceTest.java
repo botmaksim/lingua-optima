@@ -17,6 +17,7 @@ import com.linguaoptima.api.domain.enums.Role;
 import com.linguaoptima.api.domain.enums.SubmissionType;
 import com.linguaoptima.api.domain.enums.TaskType;
 import com.linguaoptima.api.dto.response.GroupReportResponse;
+import com.linguaoptima.api.domain.TeacherStudentAlias;
 import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
@@ -436,5 +437,45 @@ class ExportServiceTest {
         assertNotNull(studentCsv);
         byte[] studentPdf = exportService.generateStudentReport(student.getId(), "pdf", teacher);
         assertNotNull(studentPdf);
+    }
+
+    @Test
+    void testGroupAndStudentReports_WithCustomAliases() {
+        TeacherStudentAlias alias = TeacherStudentAlias.builder()
+            .teacher(teacher)
+            .student(student)
+            .customName("Alias Alice")
+            .build();
+        when(teacherStudentAliasRepository.findByTeacherId(teacher.getId())).thenReturn(List.of(alias));
+        when(teacherStudentAliasRepository.findByTeacherIdAndStudentId(teacher.getId(), student.getId()))
+            .thenReturn(Optional.of(alias));
+
+        when(groupRepository.findById(group.getId())).thenReturn(Optional.of(group));
+        GroupStudent activeGs = GroupStudent.builder().group(group).student(student).isActive(true).build();
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(group.getId())).thenReturn(List.of(activeGs));
+        when(taskAssignmentRepository.findByStudentIdsWithTaskAndStudent(List.of(student.getId()))).thenReturn(List.of());
+        when(submissionRepository.findActiveGroupSubmissions(group.getId())).thenReturn(List.of());
+
+        GroupReportResponse rep = exportService.getGroupReportData(group.getId(), null, null, teacher);
+        assertNotNull(rep);
+        assertEquals(1, rep.getStudentSummaries().size());
+        assertEquals("Alias Alice", rep.getStudentSummaries().get(0).getStudentName());
+
+        byte[] csv = exportService.generateGroupCsv(rep);
+        assertNotNull(csv);
+        assertTrue(new String(csv).contains("Alias Alice"));
+
+        byte[] pdf = exportService.generateGroupPdf(rep);
+        assertNotNull(pdf);
+
+        when(userRepository.findById(student.getId())).thenReturn(Optional.of(student));
+        when(groupRepository.findByTeacher(teacher)).thenReturn(List.of(group));
+        when(groupStudentRepository.existsByGroupIdAndStudentIdAndIsActiveTrue(group.getId(), student.getId())).thenReturn(true);
+        when(progressRecordRepository.findByStudent(student)).thenReturn(List.of());
+        when(submissionRepository.findByStudentIdOrderBySubmittedAtDesc(student.getId())).thenReturn(List.of());
+
+        byte[] studentCsv = exportService.generateStudentReport(student.getId(), "csv", teacher);
+        assertNotNull(studentCsv);
+        assertTrue(new String(studentCsv).contains(student.getFullName()));
     }
 }

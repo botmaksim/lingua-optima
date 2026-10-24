@@ -892,16 +892,7 @@ public class SubmissionService {
 
     /**
      * @brief Enriches evaluation items and rule diagnostics from persisted task questions.
-     * @param task Associated educational task entity.
-     * @param studentText Raw submitted student text.
-     * @param items Target list of evaluated items.
-     * @param weaknesses Target list of detected grammar weaknesses.
-     * @param strengths Target list of detected grammar strengths.
      */
-    private void enrichFromTaskQuestions(Task task, String studentText, List<SubmissionItemResponse> items, List<String> weaknesses, List<String> strengths) {
-        enrichFromTaskQuestions(task, studentText, items, weaknesses, strengths, Collections.emptyMap());
-    }
-
     private void enrichFromTaskQuestions(Task task, String studentText, List<SubmissionItemResponse> items, List<String> weaknesses, List<String> strengths, Map<Integer, SubmissionItemResponse> aiItemsMap) {
         if (task.getQuestions() == null || task.getQuestions().isEmpty()) return;
 
