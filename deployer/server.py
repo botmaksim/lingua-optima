@@ -965,7 +965,7 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
                 history = history[-tail:]
 
             if fmt == "text" or "text/plain" in accept:
-                lines = [item.get("line", "") for item in history]
+                lines = [item.get("text", item.get("line", "")) for item in history]
                 self._send_text("\n".join(lines) + ("\n" if lines else ""))
             else:
                 self._send_json({
