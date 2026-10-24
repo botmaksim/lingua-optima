@@ -1,0 +1,23 @@
+[Unit]
+Description=Lingua Optima Web Deployer and Container Logs Service
+After=network.target docker.service
+Wants=docker.service
+
+[Service]
+Type=simple
+User=home
+Group=home
+WorkingDirectory=/home/home/lingua-optima
+ExecStart=/usr/bin/python3 /home/home/lingua-optima/deployer/server.py
+Restart=always
+RestartSec=5s
+Environment=DEPLOYER_PORT=7777
+Environment=DEPLOYER_HOST=0.0.0.0
+Environment=PROJECT_DIR=/home/home/lingua-optima
+EnvironmentFile=-/home/home/lingua-optima/.env
+
+# Security limits
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
