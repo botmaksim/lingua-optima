@@ -89,15 +89,15 @@ class DeployManager:
         self.broadcast({
             "type": "system",
             "time": datetime.now().strftime("%H:%M:%S"),
-            "text": f"🚀 Starting deployment workflow in {PROJECT_DIR}..."
+            "text": f"Starting deployment workflow in {PROJECT_DIR}..."
         })
 
         commands = [
-            ("🔄 [1/4] Pulling latest commits from GitHub (origin/main)...", "git fetch origin main && git reset --hard origin/main"),
-            ("🐳 [2/4] Building backend Docker image...", "docker compose build backend"),
-            ("🐳 [3/4] Building frontend Docker image...", "docker compose build frontend"),
-            ("🚀 [4/4] Starting & recreating containers...", "docker compose up -d --force-recreate"),
-            ("📋 Verifying active containers...", "docker compose ps")
+            ("[1/4] Pulling latest commits from GitHub origin/main...", "git fetch origin main && git reset --hard origin/main"),
+            ("[2/4] Building backend Docker image...", "docker compose build backend"),
+            ("[3/4] Building frontend Docker image...", "docker compose build frontend"),
+            ("[4/4] Starting and recreating containers...", "docker compose up -d --force-recreate"),
+            ("Verifying active containers...", "docker compose ps")
         ]
 
         exit_code = 0
@@ -140,7 +140,7 @@ class DeployManager:
                     self.broadcast({
                         "type": "error",
                         "time": datetime.now().strftime("%H:%M:%S"),
-                        "text": f"❌ Command failed with exit code {rc}"
+                        "text": f"Command failed with exit code {rc}"
                     })
                     break
             except Exception as e:
@@ -148,7 +148,7 @@ class DeployManager:
                 self.broadcast({
                     "type": "error",
                     "time": datetime.now().strftime("%H:%M:%S"),
-                    "text": f"❌ Execution error: {str(e)}"
+                    "text": f"Execution error: {str(e)}"
                 })
                 break
 
@@ -159,7 +159,7 @@ class DeployManager:
             self.last_exit_code = exit_code
             self.last_status = "success" if exit_code == 0 else "failed"
 
-        final_msg = f"✅ Deployment completed successfully in {duration}s!" if exit_code == 0 else f"❌ Deployment failed after {duration}s (exit code {exit_code})."
+        final_msg = f"Deployment completed successfully in {duration}s" if exit_code == 0 else f"Deployment failed after {duration}s (exit code {exit_code})"
         self.broadcast({
             "type": "done",
             "time": datetime.now().strftime("%H:%M:%S"),
@@ -319,17 +319,17 @@ HTML_PAGE = """<!DOCTYPE html>
   <header class="border-b border-slate-800/80 bg-[#0f172a]/70 backdrop-blur-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="w-9 h-9 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-200">
+          <svg class="w-5 h-5 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
           </svg>
         </div>
         <div>
           <div class="flex items-center space-x-2">
             <h1 class="text-base font-bold tracking-tight text-white">Lingua Optima</h1>
-            <span class="text-xs px-2 py-0.5 rounded-full font-mono font-semibold bg-brand-500/10 text-brand-400 border border-brand-500/20">DEPLOYER</span>
+            <span class="text-xs px-2 py-0.5 rounded font-mono font-semibold bg-slate-800 text-slate-300 border border-slate-700">DEPLOYER</span>
           </div>
-          <p class="text-xs text-slate-400 font-mono">host: tvbox · armbian</p>
+          <p class="text-xs text-slate-400 font-mono">tvbox · armbian</p>
         </div>
       </div>
 
@@ -338,7 +338,7 @@ HTML_PAGE = """<!DOCTYPE html>
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="text-slate-300" id="indicator-text">Idle</span>
         </div>
-        <button onclick="refreshAll()" class="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-lg border border-slate-700/50 transition" title="Обновить статус">
+        <button onclick="refreshAll()" class="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-800 rounded-lg border border-slate-700/50 transition" title="Обновить">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
@@ -360,7 +360,7 @@ HTML_PAGE = """<!DOCTYPE html>
       <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur flex flex-col justify-between">
         <div class="flex items-start justify-between">
           <div>
-            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Текущая версия Git</div>
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Версия Git</div>
             <div class="mt-2 flex items-center space-x-2">
               <span id="git-hash" class="font-mono text-base font-bold text-indigo-400 bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-500/30">------</span>
               <span id="git-branch" class="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded">main</span>
@@ -378,11 +378,11 @@ HTML_PAGE = """<!DOCTYPE html>
 
       <!-- Resource Card -->
       <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur flex flex-col justify-between">
-        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ресурсы Сервера (tvbox)</div>
+        <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Ресурсы Сервера</div>
         <div class="space-y-3 mt-2">
           <div>
             <div class="flex justify-between text-xs font-mono mb-1">
-              <span class="text-slate-400">ОЗУ (RAM)</span>
+              <span class="text-slate-400">ОЗУ</span>
               <span id="ram-text" class="text-slate-300">-- / --</span>
             </div>
             <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -391,7 +391,7 @@ HTML_PAGE = """<!DOCTYPE html>
           </div>
           <div>
             <div class="flex justify-between text-xs font-mono mb-1">
-              <span class="text-slate-400">Диск (Disk)</span>
+              <span class="text-slate-400">Диск</span>
               <span id="disk-text" class="text-slate-300">-- / --</span>
             </div>
             <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -403,13 +403,13 @@ HTML_PAGE = """<!DOCTYPE html>
       </div>
 
       <!-- Deploy Trigger Card -->
-      <div class="bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-indigo-950/30 border border-indigo-500/20 rounded-2xl p-5 backdrop-blur flex flex-col justify-between shadow-xl shadow-indigo-950/10">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur flex flex-col justify-between">
         <div>
-          <div class="text-xs font-semibold text-indigo-300 uppercase tracking-wider">Управление деплоем</div>
-          <p class="text-xs text-slate-400 mt-1">Стянуть свежий код из `origin/main` и безопасно пересобрать Docker-контейнеры.</p>
+          <div class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Управление деплоем</div>
+          <p class="text-xs text-slate-400 mt-1">Стянуть свежий код из origin/main и безопасно пересобрать Docker-контейнеры.</p>
         </div>
         <div class="pt-4">
-          <button id="btn-deploy" onclick="triggerDeploy()" class="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 active:scale-[0.98] transition shadow-lg shadow-brand-600/30 flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+          <button id="btn-deploy" onclick="triggerDeploy()" class="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition shadow-xs flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
@@ -424,7 +424,7 @@ HTML_PAGE = """<!DOCTYPE html>
     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 backdrop-blur">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center space-x-2">
-          <span>Статус Docker-контейнеров</span>
+          <span>Статус контейнеров</span>
           <span id="containers-count" class="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-slate-300 font-mono">0</span>
         </h2>
         <span class="text-xs text-slate-400 font-mono">docker-compose.yml</span>
@@ -446,11 +446,11 @@ HTML_PAGE = """<!DOCTYPE html>
             <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
           </div>
           <button id="tab-btn-build" onclick="switchTab('build')" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-white transition flex items-center space-x-2">
-            <span>🚀 Логи сборки (Deploy)</span>
+            <span>Логи сборки</span>
             <span id="build-status-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
           </button>
           <button id="tab-btn-docker" onclick="switchTab('docker')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition flex items-center space-x-2">
-            <span>📋 Логи сервисов (Docker)</span>
+            <span>Логи сервисов</span>
           </button>
         </div>
 
@@ -459,9 +459,9 @@ HTML_PAGE = """<!DOCTYPE html>
           <!-- Docker service selector (visible in docker tab) -->
           <div id="docker-controls" class="hidden flex items-center space-x-2">
             <select id="select-service" onchange="changeDockerService()" class="bg-slate-800 text-slate-200 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-brand-500">
-              <option value="backend">backend (Spring Boot)</option>
-              <option value="frontend">frontend (Nginx)</option>
-              <option value="db">db (PostgreSQL)</option>
+              <option value="backend">backend</option>
+              <option value="frontend">frontend</option>
+              <option value="db">db</option>
               <option value="redis">redis</option>
               <option value="adminer">adminer</option>
             </select>
@@ -734,7 +734,7 @@ HTML_PAGE = """<!DOCTYPE html>
       const service = document.getElementById('select-service').value;
       const tail = document.getElementById('select-tail').value;
       clearTerminal();
-      document.getElementById('term-status-left').innerText = `Просмотр логов: ${service} (последние ${tail} строк)...`;
+      document.getElementById('term-status-left').innerText = `Просмотр логов: ${service} · ${tail} строк...`;
 
       try {
         const res = await fetch(`/api/logs?service=${encodeURIComponent(service)}&tail=${tail}`);
@@ -764,14 +764,14 @@ HTML_PAGE = """<!DOCTYPE html>
         });
         const data = await res.json();
         if (res.ok) {
-          appendTerminal({ type: 'done', text: `✅ Контейнер ${service} успешно перезагружен!` });
+          appendTerminal({ type: 'done', text: 'Контейнер ' + service + ' успешно перезагружен' });
           setTimeout(fetchDockerLogs, 1500);
           refreshAll();
         } else {
-          appendTerminal({ type: 'error', text: `❌ Ошибка перезагрузки: ${data.error}` });
+          appendTerminal({ type: 'error', text: 'Ошибка перезагрузки: ' + data.error });
         }
       } catch (err) {
-        appendTerminal({ type: 'error', text: `❌ Ошибка: ${err.message}` });
+        appendTerminal({ type: 'error', text: 'Ошибка: ' + err.message });
       }
     }
 
@@ -801,10 +801,9 @@ LOGIN_PAGE = """<!DOCTYPE html>
 </head>
 <body class="bg-[#0b0f19] text-slate-100 min-h-screen flex items-center justify-center p-4">
   <div class="max-w-md w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-8 shadow-2xl backdrop-blur relative overflow-hidden">
-    <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
     <div class="text-center space-y-2">
-      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-400 mx-auto flex items-center justify-center shadow-lg shadow-indigo-500/20">
-        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 mx-auto flex items-center justify-center text-slate-200">
+        <svg class="w-5 h-5 text-slate-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
         </svg>
       </div>
@@ -814,10 +813,10 @@ LOGIN_PAGE = """<!DOCTYPE html>
 
     <form method="POST" action="/api/login" class="mt-6 space-y-4">
       <div>
-        <label class="block text-xs font-mono text-slate-400 mb-1.5">Ключ доступа (Access Key)</label>
+        <label class="block text-xs font-mono text-slate-400 mb-1.5">Ключ доступа</label>
         <input type="password" name="secret" required autofocus placeholder="••••••••••••" class="w-full bg-[#070b14] border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition font-mono">
       </div>
-      <button type="submit" class="w-full py-2.5 rounded-xl text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition shadow-lg shadow-indigo-600/30">
+      <button type="submit" class="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition shadow-xs">
         Войти в панель
       </button>
     </form>
@@ -871,7 +870,7 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
         return False
 
     def _send_json(self, data, status=200):
-        body = json.dumps(data).encode("utf-8")
+        body = json.dumps(data, indent=2 if self._is_pretty() else None).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -879,14 +878,39 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_text(self, text, status=200):
+        body = text.encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _is_pretty(self):
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
+        return "pretty" in qs or qs.get("format", [""])[0] == "pretty"
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
 
+        # Unauthenticated health check endpoint for monitoring & agents
+        if path == "/api/health":
+            self._send_json({
+                "ok": True,
+                "status": "UP",
+                "service": "lingua-deployer",
+                "is_deploying": deploy_manager.is_running,
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            })
+            return
+
         # Unprotected or Login check
         if not self._is_authenticated():
             if path.startswith("/api/"):
-                self._send_json({"error": "Unauthorized", "message": "Authentication required"}, 401)
+                self._send_json({"ok": False, "error": "Unauthorized", "message": "Authentication required. Use Authorization: Bearer <secret> or X-Deploy-Secret: <secret>"}, 401)
                 return
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
@@ -906,6 +930,7 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
             containers = get_docker_containers()
             sys_info = get_system_stats()
             self._send_json({
+                "ok": True,
                 "git": git_info,
                 "containers": containers,
                 "system": sys_info,
@@ -917,6 +942,40 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
                     "last_duration": deploy_manager.last_duration
                 }
             })
+            return
+
+        elif path == "/api/containers":
+            containers = get_docker_containers()
+            self._send_json({
+                "ok": True,
+                "count": len(containers),
+                "containers": containers
+            })
+            return
+
+        elif path in ("/api/deploy/logs", "/api/deploy/history"):
+            qs = parse_qs(parsed.query)
+            fmt = qs.get("format", ["json"])[0].lower()
+            accept = self.headers.get("Accept", "")
+            tail_param = qs.get("tail", ["200"])[0]
+            tail = int(tail_param) if tail_param.isdigit() else 200
+
+            history = list(deploy_manager.log_history)
+            if tail > 0:
+                history = history[-tail:]
+
+            if fmt == "text" or "text/plain" in accept:
+                lines = [item.get("line", "") for item in history]
+                self._send_text("\n".join(lines) + ("\n" if lines else ""))
+            else:
+                self._send_json({
+                    "ok": True,
+                    "is_running": deploy_manager.is_running,
+                    "last_status": deploy_manager.last_status,
+                    "last_duration": deploy_manager.last_duration,
+                    "count": len(history),
+                    "logs": history
+                })
             return
 
         elif path == "/api/deploy/stream":
@@ -957,22 +1016,35 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
             qs = parse_qs(parsed.query)
             service = qs.get("service", ["backend"])[0]
             tail = qs.get("tail", ["200"])[0]
+            fmt = qs.get("format", ["json"])[0].lower()
+            accept = self.headers.get("Accept", "")
             if not tail.isdigit():
                 tail = "200"
 
             try:
                 cmd = f"docker compose logs --tail={tail} {service}"
                 output = subprocess.check_output(cmd, shell=True, cwd=PROJECT_DIR, text=True, stderr=subprocess.STDOUT)
-                lines = [line.rstrip("\r\n") for line in output.splitlines()]
-                self._send_json({"service": service, "lines": len(lines), "logs": lines})
+                if fmt == "text" or "text/plain" in accept:
+                    self._send_text(output)
+                else:
+                    lines = [line.rstrip("\r\n") for line in output.splitlines()]
+                    self._send_json({
+                        "ok": True,
+                        "service": service,
+                        "lines": len(lines),
+                        "logs": lines
+                    })
             except subprocess.CalledProcessError as e:
-                self._send_json({"service": service, "error": e.output, "logs": []}, status=500)
+                if fmt == "text" or "text/plain" in accept:
+                    self._send_text(e.output, status=500)
+                else:
+                    self._send_json({"ok": False, "service": service, "error": e.output, "logs": []}, status=500)
             except Exception as e:
-                self._send_json({"error": str(e), "logs": []}, status=500)
+                self._send_json({"ok": False, "error": str(e), "logs": []}, status=500)
             return
 
         else:
-            self._send_json({"error": "Not Found"}, status=404)
+            self._send_json({"ok": False, "error": "Not Found"}, status=404)
 
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -998,13 +1070,18 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
 
         # Remaining endpoints require auth
         if not self._is_authenticated():
-            self._send_json({"error": "Unauthorized"}, status=401)
+            self._send_json({"ok": False, "error": "Unauthorized"}, status=401)
             return
 
         if path == "/api/deploy":
             success, msg = deploy_manager.start_deploy()
             status_code = 200 if success else 409
-            self._send_json({"success": success, "message": msg}, status=status_code)
+            self._send_json({
+                "ok": success,
+                "success": success,
+                "message": msg,
+                "is_running": deploy_manager.is_running
+            }, status=status_code)
             return
 
         elif path == "/api/restart":
@@ -1016,26 +1093,26 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
-            service = payload.get("service", "backend")
+            service = payload.get("service") or parse_qs(urlparse(self.path).query).get("service", ["backend"])[0]
             try:
                 cmd = f"docker compose restart {service}"
                 subprocess.check_call(cmd, shell=True, cwd=PROJECT_DIR)
-                self._send_json({"success": True, "message": f"Service {service} restarted successfully"})
+                self._send_json({"ok": True, "success": True, "service": service, "message": f"Service {service} restarted successfully"})
             except Exception as e:
-                self._send_json({"success": False, "error": str(e)}, status=500)
+                self._send_json({"ok": False, "success": False, "error": str(e)}, status=500)
             return
 
         else:
-            self._send_json({"error": "Not Found"}, status=404)
+            self._send_json({"ok": False, "error": "Not Found"}, status=404)
 
 
 def main():
     print("=" * 60)
-    print("🚀 Lingua Optima Deployment Server")
+    print("[DEPLOYER] Lingua Optima Deployment Server")
     print("=" * 60)
-    print(f"📁 Target Project Dir: {PROJECT_DIR}")
-    print(f"🌐 Listening on      : http://{HOST}:{PORT}")
-    print(f"🔑 Secret Key Set    : {'[CUSTOM]' if DEPLOY_SECRET != 'lingua2026' else 'lingua2026 (default)'}")
+    print(f"[DIR]  Target Project Dir : {PROJECT_DIR}")
+    print(f"[ADDR] Listening on       : http://{HOST}:{PORT}")
+    print(f"[AUTH] Secret Key Set     : {'[CUSTOM]' if DEPLOY_SECRET != 'lingua2026' else 'lingua2026 (default)'}")
     print("=" * 60)
 
     server = ThreadingHTTPServer((HOST, PORT), DeployRequestHandler)
