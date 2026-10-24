@@ -34,6 +34,100 @@ COOKIE_NAME = "deploy_auth"
 # Derive cookie verification token from DEPLOY_SECRET
 SECRET_TOKEN_HASH = hashlib.sha256(f"lingua_optima_salt_{DEPLOY_SECRET}".encode("utf-8")).hexdigest()
 
+import hmac
+
+# Security Constants & Enforcement
+ALLOWED_SERVICES = frozenset({"backend", "frontend", "db", "redis", "adminer"})
+FORBIDDEN_HOST_PATHS = frozenset({
+    "/", "/etc", "/home", "/root", "/bin", "/sbin", "/usr", "/lib",
+    "/dev", "/sys", "/proc", "/boot", "/opt", "/var", "/run", "/var/run",
+    "/var/run/docker.sock"
+})
+DANGEROUS_CAPS = frozenset({
+    "ALL", "SYS_ADMIN", "SYS_PTRACE", "SYS_MODULE", "SYS_RAWIO",
+    "DAC_OVERRIDE", "DAC_READ_SEARCH", "NET_ADMIN"
+})
+
+
+def validate_security_policy(project_dir):
+    """
+    Enforces strict Docker container isolation and defense against host escape:
+    1. Only whitelisted services (backend, frontend, db, redis, adminer).
+    2. No privileged mode.
+    3. No host networking or namespace sharing (network_mode, pid, ipc, userns).
+    4. No dangerous capabilities (cap_add).
+    5. No host root, docker.sock, or sensitive host path bind mounts.
+    6. No host device mappings.
+    """
+    try:
+        proc = subprocess.run(
+            ["docker", "compose", "config", "--format", "json"],
+            cwd=project_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=15
+        )
+        if proc.returncode != 0:
+            return False, f"Docker Compose configuration error: {proc.stderr.strip()}"
+
+        cfg = json.loads(proc.stdout)
+        services = cfg.get("services", {})
+
+        if not services:
+            return False, "No services defined in docker-compose"
+
+        for svc_name, svc_conf in services.items():
+            if svc_name not in ALLOWED_SERVICES:
+                return False, f"Unauthorized service '{svc_name}' detected. Only {sorted(ALLOWED_SERVICES)} are permitted."
+
+            if svc_conf.get("privileged") is True:
+                return False, f"Security violation: service '{svc_name}' has 'privileged: true'."
+
+            net_mode = svc_conf.get("network_mode", "")
+            if net_mode and (net_mode == "host" or net_mode.startswith("container:")):
+                return False, f"Security violation: service '{svc_name}' uses dangerous network_mode '{net_mode}'."
+
+            if svc_conf.get("pid") == "host":
+                return False, f"Security violation: service '{svc_name}' uses host PID namespace."
+
+            if svc_conf.get("ipc") == "host":
+                return False, f"Security violation: service '{svc_name}' uses host IPC namespace."
+
+            if svc_conf.get("userns_mode") == "host":
+                return False, f"Security violation: service '{svc_name}' uses host user namespace."
+
+            if svc_conf.get("devices"):
+                return False, f"Security violation: service '{svc_name}' attempts to map host devices."
+
+            cap_adds = svc_conf.get("cap_add", []) or []
+            for cap in cap_adds:
+                cap_norm = str(cap).upper().replace("CAP_", "")
+                if cap_norm in DANGEROUS_CAPS:
+                    return False, f"Security violation: service '{svc_name}' requests forbidden capability '{cap}'."
+
+            volumes = svc_conf.get("volumes", []) or []
+            for vol in volumes:
+                if isinstance(vol, dict):
+                    v_type = vol.get("type", "")
+                    v_source = vol.get("source", "")
+                    if v_type == "bind" or (v_source and ("/" in v_source or "\\" in v_source)):
+                        norm_source = os.path.normpath(v_source)
+                        if norm_source in FORBIDDEN_HOST_PATHS or norm_source.startswith(("/var/run", "/etc", "/home", "/root", "/proc", "/sys", "/dev")):
+                            return False, f"Security violation: service '{svc_name}' mounts forbidden host path '{v_source}'."
+                        if os.path.isabs(norm_source):
+                            if not norm_source.startswith(project_dir + os.sep):
+                                return False, f"Security violation: service '{svc_name}' mounts external host path '{v_source}'."
+                            rel = os.path.relpath(norm_source, project_dir)
+                            if rel in (".", ".git", ".env", "deployer"):
+                                return False, f"Security violation: service '{svc_name}' attempts to mount '{rel}' into container."
+
+        return True, "Security verification passed: all services strictly isolated within Docker."
+
+    except Exception as e:
+        return False, f"Security validator error: {str(e)}"
+
+
 # Global State
 class DeployManager:
     def __init__(self):
@@ -92,31 +186,53 @@ class DeployManager:
             "text": f"Starting deployment workflow in {PROJECT_DIR}..."
         })
 
-        commands = [
-            ("[1/4] Pulling latest commits from GitHub origin/main...", "git fetch origin main && git reset --hard origin/main"),
-            ("[2/4] Building backend Docker image...", "docker compose build backend"),
-            ("[3/4] Building frontend Docker image...", "docker compose build frontend"),
-            ("[4/4] Starting and recreating containers...", "docker compose up -d --force-recreate"),
-            ("Verifying active containers...", "docker compose ps")
+        workflow = [
+            ("[1/5] Pulling latest commits from GitHub origin/main...", ["git", "fetch", "origin", "main"]),
+            ("[1/5] Resetting working tree to origin/main...", ["git", "reset", "--hard", "origin/main"]),
+            ("[2/5] Running container isolation security compliance check...", None),
+            ("[3/5] Building backend Docker image...", ["docker", "compose", "build", "backend"]),
+            ("[4/5] Building frontend Docker image...", ["docker", "compose", "build", "frontend"]),
+            ("[5/5] Starting and recreating containers in isolated sandbox...", ["docker", "compose", "up", "-d", "--force-recreate"]),
+            ("Verifying active containers...", ["docker", "compose", "ps"])
         ]
 
         exit_code = 0
-        for desc, cmd in commands:
+        for desc, cmd_args in workflow:
             self.broadcast({
                 "type": "stage",
                 "time": datetime.now().strftime("%H:%M:%S"),
                 "text": f"\n─── {desc} ───"
             })
+
+            if cmd_args is None:
+                # Security policy verification
+                ok, sec_msg = validate_security_policy(PROJECT_DIR)
+                if not ok:
+                    exit_code = 1
+                    self.broadcast({
+                        "type": "error",
+                        "time": datetime.now().strftime("%H:%M:%S"),
+                        "text": f"[SECURITY REJECTION] {sec_msg}\nAborting deployment to protect host server."
+                    })
+                    break
+                else:
+                    self.broadcast({
+                        "type": "stdout",
+                        "time": datetime.now().strftime("%H:%M:%S"),
+                        "text": f"[SECURITY OK] {sec_msg}"
+                    })
+                continue
+
             self.broadcast({
                 "type": "cmd",
                 "time": datetime.now().strftime("%H:%M:%S"),
-                "text": f"$ {cmd}"
+                "text": f"$ {' '.join(cmd_args)}"
             })
 
             try:
                 proc = subprocess.Popen(
-                    cmd,
-                    shell=True,
+                    cmd_args,
+                    shell=False,
                     cwd=PROJECT_DIR,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -174,16 +290,16 @@ deploy_manager = DeployManager()
 
 def get_git_info():
     try:
-        cmd = "git log -1 --format='%h||%an||%ar||%s'"
-        res = subprocess.check_output(cmd, shell=True, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
+        cmd = ["git", "log", "-1", "--format=%h||%an||%ar||%s"]
+        res = subprocess.check_output(cmd, shell=False, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
         parts = res.split("||")
-        branch = subprocess.check_output("git branch --show-current", shell=True, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
+        branch = subprocess.check_output(["git", "branch", "--show-current"], shell=False, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
 
         # Check pending commits against remote if available
         pending_count = 0
         try:
-            subprocess.run("git fetch origin main --quiet", shell=True, cwd=PROJECT_DIR, timeout=5, stderr=subprocess.DEVNULL)
-            behind = subprocess.check_output("git rev-list HEAD..origin/main --count", shell=True, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
+            subprocess.run(["git", "fetch", "origin", "main", "--quiet"], shell=False, cwd=PROJECT_DIR, timeout=5, stderr=subprocess.DEVNULL)
+            behind = subprocess.check_output(["git", "rev-list", "HEAD..origin/main", "--count"], shell=False, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
             pending_count = int(behind) if behind.isdigit() else 0
         except Exception:
             pass
@@ -203,8 +319,8 @@ def get_git_info():
 def get_docker_containers():
     containers = []
     try:
-        cmd = "docker compose ps --format json"
-        output = subprocess.check_output(cmd, shell=True, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
+        cmd = ["docker", "compose", "ps", "--format", "json"]
+        output = subprocess.check_output(cmd, shell=False, cwd=PROJECT_DIR, text=True, stderr=subprocess.DEVNULL).strip()
         for line in output.splitlines():
             line = line.strip()
             if not line:
@@ -841,14 +957,15 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
             return True
 
         # 2. Check X-Deploy-Secret header
-        if self.headers.get("X-Deploy-Secret") == DEPLOY_SECRET:
+        secret_hdr = self.headers.get("X-Deploy-Secret", "")
+        if secret_hdr and hmac.compare_digest(secret_hdr, DEPLOY_SECRET):
             return True
 
         # 3. Check Authorization Header: Bearer <key>
         auth_header = self.headers.get("Authorization", "")
         if auth_header.startswith("Bearer "):
             token = auth_header[7:].strip()
-            if token == DEPLOY_SECRET:
+            if hmac.compare_digest(token, DEPLOY_SECRET):
                 return True
 
         # 4. Check Cookie
@@ -858,13 +975,13 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
             for c in cookies:
                 if "=" in c:
                     k, v = c.split("=", 1)
-                    if k.strip() == COOKIE_NAME and v.strip() == SECRET_TOKEN_HASH:
+                    if k.strip() == COOKIE_NAME and hmac.compare_digest(v.strip(), SECRET_TOKEN_HASH):
                         return True
 
         # 5. Check Query Param ?token=...
         parsed = urlparse(self.path)
         qs = parse_qs(parsed.query)
-        if "token" in qs and qs["token"][0] == DEPLOY_SECRET:
+        if "token" in qs and hmac.compare_digest(qs["token"][0], DEPLOY_SECRET):
             return True
 
         return False
@@ -1015,15 +1132,22 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
         elif path == "/api/logs":
             qs = parse_qs(parsed.query)
             service = qs.get("service", ["backend"])[0]
-            tail = qs.get("tail", ["200"])[0]
+            if service not in ALLOWED_SERVICES:
+                self._send_json({"ok": False, "error": f"Invalid service '{service}'. Allowed: {sorted(ALLOWED_SERVICES)}"}, status=400)
+                return
+
+            tail_param = qs.get("tail", ["200"])[0]
+            try:
+                tail = max(1, min(int(tail_param), 2000))
+            except ValueError:
+                tail = 200
+
             fmt = qs.get("format", ["json"])[0].lower()
             accept = self.headers.get("Accept", "")
-            if not tail.isdigit():
-                tail = "200"
 
             try:
-                cmd = f"docker compose logs --tail={tail} {service}"
-                output = subprocess.check_output(cmd, shell=True, cwd=PROJECT_DIR, text=True, stderr=subprocess.STDOUT)
+                cmd = ["docker", "compose", "logs", f"--tail={tail}", service]
+                output = subprocess.check_output(cmd, shell=False, cwd=PROJECT_DIR, text=True, stderr=subprocess.STDOUT, timeout=15)
                 if fmt == "text" or "text/plain" in accept:
                     self._send_text(output)
                 else:
@@ -1057,7 +1181,7 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
             form_data = parse_qs(body)
             secret_entered = form_data.get("secret", [""])[0]
 
-            if secret_entered == DEPLOY_SECRET:
+            if hmac.compare_digest(secret_entered, DEPLOY_SECRET):
                 self.send_response(303)
                 self.send_header("Location", "/")
                 self.send_header("Set-Cookie", f"{COOKIE_NAME}={SECRET_TOKEN_HASH}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000")
@@ -1094,9 +1218,13 @@ class DeployRequestHandler(BaseHTTPRequestHandler):
                     pass
 
             service = payload.get("service") or parse_qs(urlparse(self.path).query).get("service", ["backend"])[0]
+            if service not in ALLOWED_SERVICES:
+                self._send_json({"ok": False, "error": f"Invalid service '{service}'. Allowed: {sorted(ALLOWED_SERVICES)}"}, status=400)
+                return
+
             try:
-                cmd = f"docker compose restart {service}"
-                subprocess.check_call(cmd, shell=True, cwd=PROJECT_DIR)
+                cmd = ["docker", "compose", "restart", service]
+                subprocess.check_call(cmd, shell=False, cwd=PROJECT_DIR, timeout=30)
                 self._send_json({"ok": True, "success": True, "service": service, "message": f"Service {service} restarted successfully"})
             except Exception as e:
                 self._send_json({"ok": False, "success": False, "error": str(e)}, status=500)

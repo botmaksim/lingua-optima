@@ -12,8 +12,16 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 ARG SERVER_PORT=8080
 ENV SERVER_PORT=${SERVER_PORT}
-# Install Tesseract OCR and English language pack
-RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng
-COPY --from=build /app/build/libs/*.jar app.jar
+
+# Install Tesseract OCR and English language pack, create unprivileged user lingua (UID 10001)
+RUN apk add --no-cache tesseract-ocr tesseract-ocr-data-eng && \
+    addgroup -g 10001 -S lingua && \
+    adduser -u 10001 -S lingua -G lingua && \
+    mkdir -p /app/data/curriculum /tmp && \
+    chown -R lingua:lingua /app /tmp
+
+COPY --from=build --chown=lingua:lingua /app/build/libs/*.jar app.jar
+
+USER lingua:lingua
 EXPOSE ${SERVER_PORT}
 ENTRYPOINT ["java", "-jar", "app.jar"]
