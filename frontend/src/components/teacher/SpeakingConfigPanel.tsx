@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Mic, Volume2, Sparkles, HelpCircle, Edit3, Leaf, Dices } from 'lucide-react';
+import { Mic, Volume2, Target, Check, Sliders, HelpCircle, Edit3, Leaf, Dices } from 'lucide-react';
 import { CefrLevel, PronunciationPack } from '../../types/task';
 import { taskApi } from '../../api/taskApi';
 import { speakWord } from '../../utils/phonetics';
@@ -149,11 +149,11 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
   };
 
   return (
-    <div className="rounded-3xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 via-white to-violet-50/30 p-6 space-y-6 shadow-xs">
+    <div className="rounded-3xl border border-slate-200/90 bg-white p-6 space-y-6 shadow-xs">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-indigo-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md shadow-indigo-200 flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-xs flex-shrink-0">
             <Mic className="w-5 h-5" />
           </div>
           <div>
@@ -288,7 +288,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-xs space-y-3 animate-in fade-in duration-200">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-50 pb-2">
               <div className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4 text-primary" />
+                <Target className="w-4 h-4 text-primary" />
                 <span className="text-xs font-bold text-slate-800">
                   Target Words to Weave into Speech:
                 </span>
@@ -425,7 +425,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
                 <div>
                   <div className="text-xs font-bold flex items-center justify-between">
                     <span>{preset.label}</span>
-                    {isSelected && <Sparkles className="w-3.5 h-3.5 text-primary" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
                   </div>
                   <div className="text-[11px] text-slate-400 mt-1 leading-relaxed">{preset.desc}</div>
                 </div>
@@ -439,7 +439,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
           <div className="p-4 rounded-2xl border border-indigo-200/90 bg-indigo-50/40 space-y-3 animate-in fade-in duration-200">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <Sliders className="w-3.5 h-3.5 text-primary" />
                 <span>Custom Length & Instructions</span>
               </label>
               <span className="text-[11px] text-slate-500 font-medium">15–300 words</span>

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Award, Sparkles, X, ArrowRight } from 'lucide-react';
+import { Award, X, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { progressApi } from '../../api/progressApi';
 import { CefrBadge } from '../common/CefrBadge';
@@ -70,28 +70,27 @@ export const LevelUpModal: React.FC = () => {
         className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl shadow-slate-950/25 border border-slate-200/80 ring-1 ring-slate-900/5 text-center animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-amber-400 via-orange-500 to-indigo-600" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-amber-500" />
 
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 transition"
+          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
         </button>
 
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white mx-auto flex items-center justify-center mb-4 shadow-xl shadow-amber-500/25 ring-4 ring-amber-500/15">
-          <Award className="w-9 h-9" />
+        <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 border border-amber-200 mx-auto flex items-center justify-center mb-4">
+          <Award className="w-8 h-8" />
         </div>
 
-        <span className="inline-block text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
+        <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 mb-2">
           Milestone Unlocked
         </span>
 
-        <h3 id="levelup-modal-title" className="text-2xl font-black text-slate-900 tracking-tight mb-2 flex items-center justify-center gap-2">
-          <span>Congratulations!</span>
-          <Sparkles className="w-6 h-6 text-amber-500 animate-pulse" />
+        <h3 id="levelup-modal-title" className="text-xl font-bold text-slate-900 tracking-tight mb-2">
+          Congratulations!
         </h3>
         <p className="text-sm text-slate-600 mb-6 leading-relaxed">
           You have achieved an average mastery above 85% across all topics in level{' '}
@@ -99,7 +98,7 @@ export const LevelUpModal: React.FC = () => {
           <span className="font-bold text-primary">{nextLevel}</span>!
         </p>
 
-        <div className="bg-slate-50/80 border border-slate-200/70 rounded-2xl p-4 flex items-center justify-center gap-4 mb-6">
+        <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-center gap-4 mb-6">
           <CefrBadge level={currentLevel} size="lg" />
           <ArrowRight className="w-5 h-5 text-slate-400" />
           <CefrBadge level={nextLevel} size="lg" />
@@ -109,7 +108,7 @@ export const LevelUpModal: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="flex-1 py-3 px-4 rounded-xl border border-slate-200/90 text-slate-700 font-semibold hover:bg-slate-100/80 transition text-sm"
+            className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-medium hover:bg-slate-100 transition text-sm"
           >
             Stay on {currentLevel}
           </button>
@@ -117,9 +116,8 @@ export const LevelUpModal: React.FC = () => {
             type="button"
             onClick={handleConfirm}
             disabled={isSubmitting}
-            className="flex-1 flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold transition shadow-md shadow-indigo-500/20 disabled:opacity-50 text-sm"
+            className="flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold transition shadow-xs disabled:opacity-50 text-sm"
           >
-            <Sparkles className="w-4 h-4 text-amber-300" />
             <span>{isSubmitting ? 'Promoting...' : `Yes, Level Up!`}</span>
           </button>
         </div>

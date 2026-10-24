@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Sparkles, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { BarChart3, PlusCircle, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { progressApi } from '../../api/progressApi';
 import { ProgressRecord } from '../../types/progress';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -55,9 +55,9 @@ export const Progress: React.FC = () => {
 
         <button
           onClick={() => navigate('/student/generate')}
-          className="flex items-center space-x-2 py-3 px-5 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm transition shadow-md shadow-indigo-100"
+          className="flex items-center space-x-2 py-3 px-5 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm transition shadow-xs"
         >
-          <Sparkles className="w-4 h-4" />
+          <PlusCircle className="w-4 h-4" />
           <span>Generate Targeted Task</span>
         </button>
       </div>

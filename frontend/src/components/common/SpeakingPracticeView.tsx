@@ -16,7 +16,7 @@ import {
   RotateCcw,
   CheckCircle2,
   AlertTriangle,
-  Sparkles,
+  Target,
   Info,
   Award,
   Gauge,
@@ -374,7 +374,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           </h2>
           {targetSounds && (
             <div className="flex items-center gap-1.5 text-xs text-indigo-300 mt-1">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+              <Target className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
               <span>Phonetic Focus: <strong className="text-indigo-200">{targetSounds}</strong></span>
             </div>
           )}

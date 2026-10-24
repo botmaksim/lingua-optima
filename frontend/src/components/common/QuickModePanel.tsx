@@ -7,7 +7,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Zap,
-  Sparkles,
   BookOpen,
   Mic,
   Sliders,
@@ -394,10 +393,10 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
   const topicSuggestions = getTopicPoolForFormat(format).slice(0, 4);
 
   return (
-    <div className="rounded-3xl border border-amber-200/90 bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30 p-6 sm:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
+    <div className="rounded-3xl border border-amber-200/80 bg-amber-50/30 p-6 sm:p-8 space-y-6 shadow-xs animate-in fade-in duration-200">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-amber-100">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md shadow-amber-200 flex-shrink-0">
+          <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-xs flex-shrink-0">
             <Zap className="w-5 h-5 fill-white" />
           </div>
           <div>
@@ -418,7 +417,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         </div>
 
         <div className="text-[11px] font-semibold text-amber-800 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center space-x-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+          <Zap className="w-3.5 h-3.5 text-amber-600" />
           <span>Express 1-Click Practice</span>
         </div>
       </div>
@@ -458,7 +457,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             onClick={() => handleFormatChange('RECOMMENDED')}
             className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
               format === 'RECOMMENDED'
-                ? 'border-amber-600 bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm'
+                ? 'border-amber-600 bg-amber-600 text-white shadow-sm'
                 : 'border-amber-200/80 bg-amber-50/50 text-slate-800 hover:border-amber-300'
             }`}
           >
@@ -667,7 +666,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
           type="button"
           onClick={handleStartPractice}
           disabled={isLoading}
-          className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-black text-sm tracking-wide shadow-md shadow-amber-200/80 hover:shadow-lg transition flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+          className="w-full py-3.5 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm tracking-wide shadow-xs transition flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
         >
           {isLoading ? (
             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

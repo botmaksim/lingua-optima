@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2, XCircle, ArrowRight, Zap, Sparkles, FileText } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, Zap, PlusCircle, FileText } from 'lucide-react';
 import { sessionApi } from '../../api/sessionApi';
 import { taskApi } from '../../api/taskApi';
 import { Task } from '../../types/task';
@@ -105,15 +105,15 @@ export const AdaptiveSession: React.FC = () => {
   if (!session || !currentQuestion) {
     return (
       <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-200">
-        <div className="bg-gradient-to-r from-amber-500 to-indigo-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-amber-100 space-y-3">
-          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-amber-200">
-            <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
+        <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-sm space-y-3">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+            <Zap className="w-4 h-4 text-primary" />
             <span>Computerized Adaptive Testing (CAT)</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Dynamic CEFR Diagnostic Testing
           </h1>
-          <p className="text-amber-100 text-sm leading-relaxed max-w-xl">
+          <p className="text-slate-300 text-sm leading-relaxed max-w-xl">
             Our adaptive algorithm calibrates question difficulty in real time based on Item Response Theory (IRT). Each correct or incorrect answer immediately adjusts the subsequent item between Level 1 and Level 4.
           </p>
         </div>
@@ -139,7 +139,7 @@ export const AdaptiveSession: React.FC = () => {
         {availableTasks.length > 0 ? (
           <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm space-y-4">
             <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-              <Sparkles className="w-4 h-4 text-primary" />
+              <FileText className="w-4 h-4 text-primary" />
               <span>Available Tasks for Practice</span>
             </h2>
             <div className="space-y-3">
@@ -178,9 +178,9 @@ export const AdaptiveSession: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 pt-2">
           <button
             onClick={() => navigate('/student/generate')}
-            className="flex-1 sm:flex-initial py-3 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm shadow-md shadow-indigo-100 transition flex items-center justify-center space-x-2"
+            className="flex-1 sm:flex-initial py-3 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm shadow-xs transition flex items-center justify-center space-x-2"
           >
-            <Sparkles className="w-4 h-4" />
+            <PlusCircle className="w-4 h-4" />
             <span>Generate Adaptive Practice Task</span>
           </button>
           <button

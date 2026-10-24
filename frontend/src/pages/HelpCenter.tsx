@@ -138,10 +138,10 @@ export const HelpCenter: React.FC = () => {
       </div>
 
       {/* Search Header Banner */}
-      <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg space-y-4">
+      <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white border border-slate-800 shadow-sm space-y-4">
         <div>
-          <h2 className="text-xl font-black">How can we help you today?</h2>
-          <p className="text-xs text-indigo-100 mt-1">
+          <h2 className="text-xl font-bold tracking-tight">How can we help you today?</h2>
+          <p className="text-xs text-slate-300 mt-1">
             Search our knowledge base for answers regarding OCR submissions, grading, cohorts, and billing.
           </p>
         </div>
@@ -153,7 +153,7 @@ export const HelpCenter: React.FC = () => {
             placeholder="Search questions by keyword (e.g. OCR, CEFR, cohorts, override)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-4 focus:ring-indigo-300 shadow-sm"
+            className="w-full pl-11 pr-4 py-3 rounded-2xl bg-white text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary shadow-xs"
           />
         </div>
       </div>

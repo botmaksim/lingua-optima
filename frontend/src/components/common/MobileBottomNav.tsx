@@ -7,7 +7,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
-  Sparkles,
+  PlusCircle,
   BarChart3,
   BookOpen,
   User,
@@ -29,7 +29,7 @@ export const MobileBottomNav: React.FC = () => {
 
   const studentNavItems = [
     { to: '/student', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/student/generate', label: 'New Task', icon: Sparkles },
+    { to: '/student/generate', label: 'New Task', icon: PlusCircle },
     { to: '/student/progress', label: 'Progress', icon: BarChart3 },
     { to: '/student/my-units', label: 'My Units', icon: BookOpen },
     { to: '/profile', label: 'Profile', icon: User },
@@ -38,7 +38,7 @@ export const MobileBottomNav: React.FC = () => {
   const teacherNavItems = [
     { to: '/teacher', label: 'Dashboard', icon: LayoutDashboard },
     { to: '/teacher/groups', label: 'Cohorts', icon: Users },
-    { to: '/teacher/configure', label: 'Create', icon: Sparkles },
+    { to: '/teacher/configure', label: 'Create', icon: PlusCircle },
     { to: '/teacher/submissions', label: 'Grading', icon: CheckCircle },
     { to: '/teacher/export', label: 'Reports', icon: FileText },
   ];

@@ -12,7 +12,7 @@ import {
   CheckCircle2,
   Cpu,
   Trash2,
-  Sparkles,
+  Info,
   Plus,
   RefreshCw,
   Check,
@@ -951,7 +951,7 @@ export const ConfigureTask: React.FC = () => {
             onClick={() => setGenerationMode('QUICK')}
             className={`py-2 px-3.5 rounded-xl text-xs font-black transition flex items-center space-x-2 cursor-pointer ${
               generationMode === 'QUICK'
-                ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm ring-1 ring-amber-400/30'
+                ? 'bg-amber-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
@@ -1117,7 +1117,7 @@ export const ConfigureTask: React.FC = () => {
             </div>
           ) : (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-xs space-y-6">
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-indigo-50/70 via-white to-amber-50/50 border border-indigo-100/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="flex items-center space-x-2">
                     <span className="text-xs font-black text-slate-800">Quick Fill Topic & Goal</span>
@@ -1265,7 +1265,7 @@ export const ConfigureTask: React.FC = () => {
                   <div className="flex items-center justify-between p-3.5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-xl bg-indigo-50 text-primary flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="w-4 h-4" />
+                        <Cpu className="w-4 h-4" />
                       </div>
                       <div>
                         <span className="text-xs font-bold text-slate-800">Google Gemini Flash (Latest)</span>
@@ -1782,7 +1782,7 @@ export const ConfigureTask: React.FC = () => {
 
               {/* Informational Hint */}
               <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100/80 text-xs text-indigo-900 leading-relaxed flex items-start space-x-2">
-                <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
                 <p>
                   <span className="font-bold">Interactive Editor:</span> You can edit instructions, question prompts, option choices, question point prices, and switch correct answers before deploying.
                 </p>

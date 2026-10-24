@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { Sparkles, Bookmark, HelpCircle } from 'lucide-react';
+import { Bookmark, HelpCircle } from 'lucide-react';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { STANDARD_VOCABULARY_PRESETS, StandardVocabularyPreset } from '../../constants/topics';
 import { AutoExpandingTextarea } from './AutoExpandingTextarea';
@@ -100,7 +100,7 @@ export const VocabularySelector: React.FC<VocabularySelectorProps> = ({
               className="text-[11px] px-2.5 py-1 rounded-xl border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50 text-slate-700 font-medium transition flex items-center space-x-1"
               title={`Words: ${preset.words.join(', ')}`}
             >
-              <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+              <Bookmark className="w-2.5 h-2.5 text-primary" />
               <span>{preset.title}</span>
             </button>
           ))}

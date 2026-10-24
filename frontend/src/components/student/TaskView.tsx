@@ -21,7 +21,7 @@ import {
   Lightbulb,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
+  Zap,
   X,
   XCircle,
   Check,
@@ -839,7 +839,7 @@ export const TaskView: React.FC = () => {
                     className="rounded text-primary focus:ring-primary h-4 w-4"
                   />
                   <span className="flex items-center space-x-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
                     <span>Мгновенная проверка</span>
                   </span>
                 </label>
@@ -1083,7 +1083,7 @@ export const TaskView: React.FC = () => {
                     isCorrect ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : 'bg-amber-50/70 border-amber-200 text-amber-950'
                   }`}>
                     <div className="font-bold flex items-center space-x-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                      <BookOpen className="w-3.5 h-3.5 text-amber-600" />
                       <span>Грамматическое правило:</span>
                     </div>
                     <p>{currentQ.grammarRule}</p>

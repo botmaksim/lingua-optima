@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Sparkles,
+  PlusCircle,
   Share2,
   ArrowRight,
   BookmarkCheck,
@@ -365,7 +365,7 @@ export const AIReview: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-sky-50 border border-indigo-100 min-w-32 min-h-32 flex-shrink-0 text-center">
+        <div className="flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-50 border border-slate-200 min-w-32 min-h-32 flex-shrink-0 text-center">
           <div className={`text-4xl font-black tracking-tight ${effectiveScore >= 70 ? 'text-primary' : 'text-rose-600'}`}>
             {Math.round(effectiveScore)}
           </div>
@@ -614,16 +614,16 @@ export const AIReview: React.FC = () => {
         </div>
       )}
 
-      {/* 6. Dedicated AI Gap Analysis & Recommendations Card */}
-      <div className="bg-gradient-to-br from-indigo-50/60 via-white to-sky-50/60 rounded-3xl p-6 sm:p-8 border border-indigo-200/80 shadow-sm space-y-5">
-        <div className="flex items-center justify-between pb-3 border-b border-indigo-100">
+      {/* 6. Dedicated Diagnostic Analysis & Recommendations Card */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs space-y-5">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center space-x-2.5">
-            <BrainCircuit className="w-5 h-5 text-indigo-600" />
+            <BrainCircuit className="w-5 h-5 text-primary" />
             <h2 className="text-base font-bold text-slate-900">
-              AI Diagnostic Analysis: Areas for Improvement
+              Diagnostic Analysis: Areas for Improvement
             </h2>
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
             Targeted Gaps
           </span>
         </div>
@@ -757,9 +757,9 @@ export const AIReview: React.FC = () => {
 
         <button
           onClick={() => navigate('/student/generate')}
-          className="w-full sm:w-auto flex-1 flex items-center justify-center space-x-2 py-3 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm transition shadow-md shadow-indigo-100"
+          className="w-full sm:w-auto flex-1 flex items-center justify-center space-x-2 py-3 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm transition shadow-xs"
         >
-          <Sparkles className="w-4 h-4" />
+          <PlusCircle className="w-4 h-4" />
           <span>Try Another Task</span>
           <ArrowRight className="w-4 h-4" />
         </button>

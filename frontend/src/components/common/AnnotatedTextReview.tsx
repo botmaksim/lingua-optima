@@ -14,7 +14,6 @@ import {
   Edit3,
   Plus,
   X,
-  Sparkles,
   BookOpen,
 } from 'lucide-react';
 import { SentenceCorrection } from '../../types/submission';
@@ -278,7 +277,7 @@ export const AnnotatedTextReview: React.FC<AnnotatedTextReviewProps> = ({
 
       {editable && (
         <div className="p-3 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-[11px] text-indigo-900 flex items-start space-x-2">
-          <Sparkles className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <Edit3 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <div>
             <span className="font-bold">Educator Diagnostic Mode:</span> Click any red highlight to
             modify explanations or remove the error. Select text with your cursor to highlight a new mistake.
@@ -346,7 +345,7 @@ export const AnnotatedTextReview: React.FC<AnnotatedTextReviewProps> = ({
 
       {/* Active Correction Inspector Card (shows when a highlight is clicked or hovered) */}
       {activeCorrection && activeIndex !== null && (
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-rose-50/70 via-white to-amber-50/30 border border-rose-200/90 shadow-sm space-y-3 animate-in fade-in duration-150">
+        <div className="p-4 rounded-2xl bg-white border border-rose-200 shadow-xs space-y-3 animate-in fade-in duration-150">
           <div className="flex items-center justify-between pb-2 border-b border-rose-100">
             <div className="flex items-center space-x-2">
               <span className="w-6 h-6 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-xs font-bold">

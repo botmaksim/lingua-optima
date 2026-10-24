@@ -35,7 +35,7 @@ export const PrivacyPolicy: React.FC = () => {
       </div>
 
       {/* Zero-Retention Banner Callout */}
-      <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-500/10 via-purple-500/5 to-white border border-indigo-200/80 shadow-sm space-y-2.5">
+      <div className="p-6 rounded-3xl bg-slate-50 border border-slate-200 shadow-xs space-y-2.5">
         <div className="flex items-center space-x-2 text-primary font-bold text-sm">
           <EyeOff className="w-5 h-5 text-indigo-600 shrink-0" />
           <span>Zero-Retention OCR Architecture Guarantee</span>

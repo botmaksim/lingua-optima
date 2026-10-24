@@ -14,7 +14,6 @@ import {
   Users,
   CheckCircle,
   Clock,
-  Sparkles,
   RefreshCw,
   Award,
   Calendar,
@@ -325,7 +324,7 @@ export const ExportReports: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 no-print">
           <div>
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
+              <Users className="w-4 h-4 text-primary" />
               <span>Cohort Performance Preview</span>
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">

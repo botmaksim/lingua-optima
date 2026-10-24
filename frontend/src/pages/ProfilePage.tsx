@@ -15,7 +15,7 @@ import {
   GraduationCap,
   School,
   BookOpen,
-  Sparkles,
+  Award,
   HelpCircle,
   ArrowRight,
   Edit2,
@@ -493,7 +493,7 @@ export const ProfilePage: React.FC = () => {
 
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
             <h4 className="font-bold text-slate-900 text-sm flex items-center space-x-1.5">
-              <Sparkles className="w-4 h-4 text-amber-500" />
+              <Award className="w-4 h-4 text-amber-500" />
               <span>CEFR Ladder & Placement</span>
             </h4>
             <p className="leading-relaxed">

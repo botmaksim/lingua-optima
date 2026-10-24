@@ -68,17 +68,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className={`absolute inset-x-0 top-0 h-1.5 ${
-            isDestructive
-              ? 'bg-gradient-to-r from-rose-500 via-red-500 to-orange-500'
-              : 'bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500'
+          className={`absolute inset-x-0 top-0 h-1 ${
+            isDestructive ? 'bg-rose-600' : 'bg-primary'
           }`}
         />
 
         <button
           type="button"
           onClick={onCancel}
-          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 transition"
+          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
           aria-label="Close dialog"
         >
           <X className="w-4 h-4" />
@@ -86,22 +84,22 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
         <div className="flex items-start gap-4">
           <div
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ring-4 ${
+            className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 border ${
               isDestructive
-                ? 'bg-gradient-to-br from-rose-50 to-orange-50 text-rose-600 ring-rose-500/10 border border-rose-200/60'
-                : 'bg-gradient-to-br from-indigo-50 to-violet-50 text-primary ring-indigo-500/10 border border-indigo-200/60'
+                ? 'bg-rose-50 text-rose-600 border-rose-200/80'
+                : 'bg-indigo-50 text-primary border-indigo-200/80'
             }`}
           >
             {isDestructive ? (
-              <AlertTriangle className="w-6 h-6" />
+              <AlertTriangle className="w-5 h-5" />
             ) : (
-              <AlertCircle className="w-6 h-6" />
+              <AlertCircle className="w-5 h-5" />
             )}
           </div>
 
           <div className="flex-1 min-w-0 pr-4">
             <span
-              className={`inline-block text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
+              className={`inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-1.5 ${
                 isDestructive
                   ? 'bg-rose-50 text-rose-700 border border-rose-200/60'
                   : 'bg-indigo-50 text-indigo-700 border border-indigo-200/60'
@@ -111,11 +109,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             </span>
             <h3
               id="confirm-dialog-title"
-              className="text-lg font-black text-slate-900 tracking-tight leading-snug"
+              className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-snug"
             >
               {title}
             </h3>
-            <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{message}</p>
+            <p className="text-sm text-slate-600 mt-1 leading-relaxed">{message}</p>
           </div>
         </div>
 
@@ -123,17 +121,17 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="px-4 py-2.5 text-xs sm:text-sm font-semibold text-slate-700 bg-slate-100/90 hover:bg-slate-200/80 rounded-xl transition"
+            className="px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition"
           >
             {cancelText}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={`px-5 py-2.5 text-xs sm:text-sm font-bold text-white rounded-xl transition shadow-md ${
+            className={`px-4.5 py-2 text-xs sm:text-sm font-semibold text-white rounded-xl transition shadow-xs ${
               isDestructive
-                ? 'bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-700 hover:to-red-700 shadow-rose-500/20'
-                : 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-indigo-500/20'
+                ? 'bg-rose-600 hover:bg-rose-700'
+                : 'bg-primary hover:bg-primary-hover'
             }`}
           >
             {confirmText}

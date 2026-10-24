@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Bell,
-  Sparkles,
+  PlusCircle,
   LogOut,
   User as UserIcon,
   BookOpen,
@@ -162,7 +162,7 @@ export const Navbar: React.FC = () => {
 
   const studentPrimaryLinks = [
     { to: '/student', label: 'Dashboard', icon: LayoutDashboard },
-    { to: '/student/generate', label: 'New Task', icon: Sparkles },
+    { to: '/student/generate', label: 'New Task', icon: PlusCircle },
     { to: '/student/progress', label: 'Progress', icon: BarChart3 },
   ];
 
@@ -181,7 +181,7 @@ export const Navbar: React.FC = () => {
   ];
 
   const teacherMoreLinks = [
-    { to: '/teacher/configure', label: 'Create Task', icon: Sparkles, description: 'Assignment generator' },
+    { to: '/teacher/configure', label: 'Create Task', icon: PlusCircle, description: 'Assignment generator' },
     { to: '/teacher/export', label: 'Reports', icon: FileText, description: 'Export analytics & grades' },
   ];
 
@@ -246,8 +246,7 @@ export const Navbar: React.FC = () => {
                     </button>
 
                     {isMoreMenuOpen && (
-                      <div className="absolute left-0 mt-2 w-64 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-2.5 pt-3.5 animate-in fade-in zoom-in-95 duration-150 z-50">
-                        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500" />
+                      <div className="absolute left-0 mt-2 w-64 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/90 ring-1 ring-slate-900/5 p-2.5 pt-3 animate-in fade-in zoom-in-95 duration-150 z-50">
                         <div className="px-2.5 py-1 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
                           {isTeacher ? 'Teacher Tools' : 'Learning Tools'}
                         </div>
@@ -315,8 +314,8 @@ export const Navbar: React.FC = () => {
                     : 'Remaining daily AI evaluations & generations'
                 }
               >
-                <Sparkles className={`w-3.5 h-3.5 ${isUnlimited ? 'text-emerald-600' : ''}`} />
-                <span>{isUnlimited ? 'Unlimited AI' : `${remainingEvaluations} evaluations left`}</span>
+                <Zap className={`w-3.5 h-3.5 ${isUnlimited ? 'text-emerald-600' : ''}`} />
+                <span>{isUnlimited ? 'Unlimited Access' : `${remainingEvaluations} evaluations left`}</span>
               </button>
 
               <div className="relative" ref={notifMenuRef}>
@@ -334,8 +333,7 @@ export const Navbar: React.FC = () => {
                 </button>
 
                 {isNotifOpen && (
-                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-80 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-3.5 pt-4 animate-in fade-in zoom-in-95 duration-150 z-50">
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-rose-500" />
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-80 overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/90 ring-1 ring-slate-900/5 p-3.5 pt-3.5 animate-in fade-in zoom-in-95 duration-150 z-50">
                     <div className="flex items-center justify-between pb-2.5 border-b border-slate-100 px-1.5">
                       <div className="flex items-center gap-2">
                         <Bell className="w-4 h-4 text-primary" />
@@ -420,8 +418,7 @@ export const Navbar: React.FC = () => {
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl shadow-indigo-950/10 border border-slate-200/80 ring-1 ring-slate-900/5 p-2.5 pt-3.5 animate-in fade-in zoom-in-95 duration-150 z-50">
-                    <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-sky-500" />
+                  <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] overflow-hidden bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-slate-200/90 ring-1 ring-slate-900/5 p-2.5 pt-3 animate-in fade-in zoom-in-95 duration-150 z-50">
                     <div className="px-3 py-2 border-b border-slate-100">
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-sm font-bold text-slate-900 truncate">{user.fullName}</p>

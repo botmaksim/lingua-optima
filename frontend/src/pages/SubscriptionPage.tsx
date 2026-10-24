@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Check, Sparkles, Shield, Zap, Users, Camera, CheckCircle2, GraduationCap, Info, Cpu } from 'lucide-react';
+import { Check, Shield, Zap, Users, Camera, CheckCircle2, GraduationCap, Info, Cpu } from 'lucide-react';
 import { subscriptionApi } from '../api/subscriptionApi';
 import { Subscription, SubscriptionTier, UsageCounter } from '../types/subscription';
 import { useNotificationStore } from '../store/notificationStore';
@@ -169,7 +169,7 @@ export const SubscriptionPage: React.FC = () => {
                 </span>
                 {(currentTier === 'EDUCATOR' || currentTier === 'PREMIUM') && (
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-primary border border-indigo-200/80 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    <Zap className="w-3 h-3 text-amber-500" />
                     <span>Unlimited Quota</span>
                   </span>
                 )}
@@ -185,7 +185,7 @@ export const SubscriptionPage: React.FC = () => {
             <div className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/70 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  <Sparkles className="w-4 h-4 text-primary" />
+                  <Zap className="w-4 h-4 text-primary" />
                   <span>Task Generation</span>
                 </div>
                 {isUnlimitedEvals ? (
@@ -376,7 +376,7 @@ export const SubscriptionPage: React.FC = () => {
                     <h3 className="text-xl font-bold text-slate-900">{plan.name}</h3>
                     <p className="text-xs text-slate-500 mt-1">{plan.description}</p>
                   </div>
-                  {plan.tier === 'PREMIUM' && <Sparkles className="w-6 h-6 text-primary" />}
+                  {plan.tier === 'PREMIUM' && <Zap className="w-6 h-6 text-primary" />}
                   {plan.tier === 'EDUCATOR' && <Users className="w-6 h-6 text-sky-600" />}
                   {plan.tier === 'FREE' && <Shield className="w-6 h-6 text-slate-400" />}
                 </div>

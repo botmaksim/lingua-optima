@@ -6,7 +6,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Sparkles,
   Camera,
   Award,
   Zap,
@@ -14,6 +13,7 @@ import {
   Users,
   ArrowRight,
   CheckCircle2,
+  Cpu,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 
@@ -38,10 +38,10 @@ export const Landing: React.FC = () => {
         'Photograph handwritten homework and essays. Images are processed in RAM only and purged immediately to protect biometrics.',
     },
     {
-      icon: Sparkles,
-      title: 'Multi-Model AI Fallback Chain',
+      icon: Cpu,
+      title: 'High-Throughput Diagnostic Engine',
       description:
-        'Ultra-fast generation powered by Groq LPU (Qwen 3.8 27B & GPT-OSS 120B) with seamless automatic fallback to Gemini 3.8 Flash.',
+        'Sub-second task analysis and grammar evaluation with automated multi-provider failover for uninterrupted practice.',
     },
     {
       icon: Award,
@@ -59,22 +59,22 @@ export const Landing: React.FC = () => {
       icon: ShieldCheck,
       title: 'Bring Your Own API Key (BYOK)',
       description:
-        'Supply your DeepSeek V4.1 Flash/V4 Pro, Qwen 3.8 Max, Kimi K3, Gemini 3.8 Flash, GPT-6 Astra/6.1 Sol, Claude Opus 5.5/Fable 5.1, or Groq key, encrypted with AES-256-GCM.',
+        'Supply your DeepSeek, Qwen, Gemini, GPT, Claude, or Groq key with client-side AES-256-GCM encryption.',
     },
   ];
 
   return (
-    <div className="space-y-20 py-10 sm:py-16">
+    <div className="space-y-16 py-8 sm:py-14">
       <section className="text-center max-w-4xl mx-auto px-4 space-y-6">
-        <div className="inline-flex items-center space-x-2 py-1.5 px-3.5 rounded-full bg-indigo-50 border border-indigo-200 text-primary text-xs font-bold shadow-sm">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Next-Generation Adaptive English Platform</span>
+        <div className="inline-flex items-center space-x-2 py-1.5 px-3.5 rounded-full bg-slate-100 border border-slate-200/90 text-slate-700 text-xs font-semibold shadow-xs">
+          <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+          <span>Academic English Platform · CEFR Framework · Zero-Retention OCR</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-tight">
           Master English with{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">
-            Intelligent AI
+          <span className="text-primary underline decoration-primary/30 decoration-wavy underline-offset-4">
+            Adaptive Precision
           </span>{' '}
           and Privacy-First OCR
         </h1>
@@ -83,19 +83,19 @@ export const Landing: React.FC = () => {
           From handwritten essay corrections to adaptive computerized testing: Lingua Optima provides precise diagnostics, automated grading, and teacher cohort workflows.
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+        <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2">
           <Link
             to={user ? (user.role === 'TEACHER' ? '/teacher' : '/student') : '/login?register=true'}
-            className="flex items-center space-x-2 py-4 px-8 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold text-sm transition shadow-lg shadow-indigo-200"
+            className="flex items-center space-x-2 py-3.5 px-7 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm transition shadow-xs"
           >
-            <span>{user ? 'Open Dashboard' : 'Get Started Free'}</span>
+            <span>{user ? 'Open Dashboard' : 'Get Started'}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
 
           {!user && (
             <Link
               to="/login"
-              className="py-4 px-8 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm border border-slate-200 transition shadow-sm"
+              className="py-3.5 px-7 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-300 transition shadow-xs"
             >
               Sign In
             </Link>
@@ -105,16 +105,16 @@ export const Landing: React.FC = () => {
             href="/presentation.html"
             target="_blank"
             rel="noopener noreferrer"
-            className="py-4 px-8 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-primary font-bold text-sm border border-indigo-200 transition shadow-sm"
+            className="py-3.5 px-7 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm border border-slate-200 transition"
           >
-            View Presentation
+            Product Overview
           </a>
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <div className="text-center space-y-1.5">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             Engineered for Academic Rigor & Privacy
           </h2>
           <p className="text-sm text-slate-500 max-w-xl mx-auto">
@@ -122,19 +122,19 @@ export const Landing: React.FC = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feat, idx) => {
             const Icon = feat.icon;
             return (
               <div
                 key={idx}
-                className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm hover:shadow-md transition space-y-4"
+                className="bg-white rounded-2xl p-6 sm:p-7 border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-sm transition space-y-3.5"
               >
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center">
-                  <Icon className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+                  <Icon className="w-5 h-5" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">{feat.title}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">{feat.description}</p>
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">{feat.title}</h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{feat.description}</p>
               </div>
             );
           })}

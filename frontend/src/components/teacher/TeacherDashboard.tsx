@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Sparkles, CheckCircle, FileText, ArrowRight, TrendingUp } from 'lucide-react';
+import { Users, PlusCircle, CheckCircle, FileText, ArrowRight, TrendingUp, Layers } from 'lucide-react';
 import { groupApi } from '../../api/groupApi';
 import { Group } from '../../types/group';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -43,10 +43,10 @@ export const TeacherDashboard: React.FC = () => {
       action: () => navigate('/teacher/groups'),
     },
     {
-      title: 'AI Task Configurator',
-      description: 'Configure and assign customized exercises across A1-C2 to specific cohorts with due dates.',
+      title: 'Task Configurator',
+      description: 'Configure and assign calibrated exercises across A1-C2 to specific cohorts with due dates.',
       badge: 'Assignments',
-      icon: Sparkles,
+      icon: PlusCircle,
       bg: 'bg-indigo-50 text-primary',
       action: () => navigate('/teacher/configure'),
     },
@@ -70,29 +70,29 @@ export const TeacherDashboard: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-200">
-      <div className="bg-gradient-to-r from-sky-600 to-indigo-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-sky-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 text-white shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
             Educator Command Center
           </h1>
-          <p className="text-sky-100 text-sm max-w-xl">
-            Manage your student cohorts, generate targeted curriculum tasks with AI, and review student homework submissions.
+          <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
+            Manage your student cohorts, generate targeted curriculum tasks, and review student homework submissions.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => navigate('/teacher/groups')}
-            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl bg-white text-sky-700 font-bold hover:bg-sky-50 transition shadow-md"
+            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-xl bg-primary text-white font-semibold hover:bg-primary-hover transition shadow-xs text-sm"
           >
             <Users className="w-4 h-4" />
             <span>Create Group</span>
           </button>
           <button
             onClick={() => navigate('/teacher/configure')}
-            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium transition backdrop-blur-sm"
+            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium transition text-sm"
           >
-            <Sparkles className="w-4 h-4" />
+            <PlusCircle className="w-4 h-4" />
             <span>Configure Task</span>
           </button>
         </div>
@@ -133,7 +133,7 @@ export const TeacherDashboard: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-sky-600" />
+            <Layers className="w-5 h-5 text-sky-600" />
             <span>Educator Toolkit & Modules</span>
           </h2>
           <span className="text-xs text-slate-400 font-medium">All educator workflows</span>

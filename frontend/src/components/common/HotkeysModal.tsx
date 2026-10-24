@@ -11,7 +11,7 @@ import {
   ArrowLeftRight,
   CornerDownLeft,
   Lightbulb,
-  Sparkles,
+  Zap,
   Layers,
   CheckCircle2,
 } from 'lucide-react';
@@ -103,8 +103,8 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
       ],
     },
     {
-      title: 'ИИ-разбор и подсказки',
-      icon: <Sparkles className="w-4 h-4 text-amber-500" />,
+      title: 'Диагностика и разбор',
+      icon: <Zap className="w-4 h-4 text-amber-500" />,
       shortcuts: [
         {
           keys: ['E'],

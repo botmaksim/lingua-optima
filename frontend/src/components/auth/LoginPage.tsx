@@ -10,7 +10,7 @@ import {
   Lock,
   User,
   AlertCircle,
-  Sparkles,
+  BookOpen,
   GraduationCap,
   ArrowLeft,
   CheckCircle2,
@@ -265,7 +265,7 @@ export const LoginPage: React.FC = () => {
     <div className="min-h-[85vh] flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-6 bg-white p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-100">
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white font-black text-xl flex items-center justify-center mx-auto shadow-md shadow-indigo-100">
+          <div className="w-12 h-12 rounded-2xl bg-primary text-white font-bold text-xl flex items-center justify-center mx-auto shadow-sm">
             LO
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -279,7 +279,7 @@ export const LoginPage: React.FC = () => {
             {isRegister
               ? regStep === 'VERIFY_CODE'
                 ? 'Enter the 6-digit confirmation code sent to your email address'
-                : 'Start mastering English with adaptive AI and zero-retention OCR'
+                : 'Start mastering English with adaptive precision and zero-retention OCR'
               : 'Sign in to continue your personalized learning journey'}
           </p>
         </div>
@@ -444,7 +444,7 @@ export const LoginPage: React.FC = () => {
                           : 'border-slate-200 text-slate-600 hover:border-slate-300'
                       }`}
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <BookOpen className="w-4 h-4" />
                       <span>Teacher</span>
                     </button>
                   </div>

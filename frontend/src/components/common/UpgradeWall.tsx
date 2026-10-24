@@ -5,7 +5,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Key, X, ArrowRight } from 'lucide-react';
+import { Zap, Key, X, ArrowRight } from 'lucide-react';
 import { useUIStore } from '../../store/uiStore';
 
 /**
@@ -41,26 +41,26 @@ export const UpgradeWall: React.FC = () => {
         className="relative overflow-hidden bg-white/95 backdrop-blur-xl rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl shadow-slate-950/25 border border-slate-200/80 ring-1 ring-slate-900/5 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-amber-500" />
+        <div className="absolute inset-x-0 top-0 h-1 bg-primary" />
 
         <button
           type="button"
           onClick={closeUpgradeWall}
-          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100/80 transition"
+          className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
         </button>
 
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/25 ring-4 ring-indigo-500/10 shrink-0">
-            <Sparkles className="w-6 h-6" />
+          <div className="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+            <Zap className="w-5 h-5 text-amber-400" />
           </div>
           <div>
-            <span className="inline-block text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/70">
+            <span className="inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/70">
               Daily Limit Reached
             </span>
-            <h3 id="upgrade-wall-title" className="text-xl font-black text-slate-900 tracking-tight mt-0.5">
+            <h3 id="upgrade-wall-title" className="text-lg font-bold text-slate-900 tracking-tight mt-0.5">
               Upgrade to Continue
             </h3>
           </div>
@@ -77,10 +77,10 @@ export const UpgradeWall: React.FC = () => {
               closeUpgradeWall();
               navigate('/subscription');
             }}
-            className="w-full flex items-center justify-between py-3.5 px-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold transition shadow-lg shadow-indigo-500/25 group"
+            className="w-full flex items-center justify-between py-3.5 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold transition shadow-xs group"
           >
             <div className="flex items-center gap-2.5">
-              <Sparkles className="w-4 h-4 text-amber-300" />
+              <Zap className="w-4 h-4 text-amber-300" />
               <span>Upgrade to Premium</span>
             </div>
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />

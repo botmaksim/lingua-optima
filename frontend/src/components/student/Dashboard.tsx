@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Flame,
-  Sparkles,
+  PlusCircle,
   Camera,
   ArrowRight,
   AlertCircle,
@@ -124,11 +124,11 @@ export const Dashboard: React.FC = () => {
 
   const learningModules = [
     {
-      title: 'AI Task Generator',
-      description: 'Generate customized exercises (MCQ, Fill-in-blanks) across A1-C2 with instant hints.',
+      title: 'Task Practice',
+      description: 'Structured exercises across CEFR A1-C2 with contextual hints and error diagnosis.',
       badge: 'Interactive',
-      icon: Sparkles,
-      color: 'from-indigo-500 to-primary text-primary',
+      icon: PlusCircle,
+      color: 'from-indigo-600 to-primary text-primary',
       bgLight: 'bg-indigo-50/70',
       action: () => navigate('/student/generate'),
     },
@@ -226,22 +226,22 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 text-white shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative overflow-hidden">
         <div>
           <div className="flex items-center space-x-3 mb-2">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
               Hello, {user?.fullName || 'Student'}!
             </h1>
-            {user?.cefrLevel && <CefrBadge level={user.cefrLevel} size="md" className="bg-white/20 text-white border-white/30" />}
+            {user?.cefrLevel && <CefrBadge level={user.cefrLevel} size="md" className="bg-slate-800 text-slate-200 border-slate-700" />}
           </div>
-          <p className="text-indigo-100 text-sm max-w-xl">
-            Continue your adaptive learning journey across the full CEFR A1-C2 ladder. Practice targeted exercises or upload handwritten homework for instant AI feedback.
+          <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
+            Personalized academic practice across CEFR A1-C2. Select targeted exercises or submit handwritten work for instant diagnostic grading.
           </p>
           {gaps.length > 0 && (
-            <div className="mt-3 inline-flex items-center space-x-2 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-xl text-xs text-white border border-white/20">
-              <span className="font-bold text-amber-300">Рекомендация:</span>
-              <span className="font-semibold">{[...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].grammarTopic}</span>
-              <span className="text-white/75">{Math.round([...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].masteryScore * 100)}% освоено</span>
+            <div className="mt-3.5 inline-flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg text-xs text-slate-300 border border-slate-700/80">
+              <span className="font-semibold text-amber-400">Фокус:</span>
+              <span className="font-medium text-white">{[...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].grammarTopic}</span>
+              <span className="text-slate-400">· {Math.round([...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].masteryScore * 100)}% освоено</span>
             </div>
           )}
         </div>
@@ -249,14 +249,14 @@ export const Dashboard: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           <button
             onClick={() => navigate('/student/generate')}
-            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black transition shadow-lg shadow-amber-500/30 hover:scale-[1.02] active:scale-[0.98]"
+            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition shadow-xs"
           >
-            <Sparkles className="w-4 h-4 fill-slate-950" />
+            <PlusCircle className="w-4 h-4" />
             <span>Сгенерировать задание</span>
           </button>
           <button
             onClick={() => navigate('/student/ocr')}
-            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3.5 px-5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold transition backdrop-blur-sm"
+            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-4.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-sm transition"
           >
             <Camera className="w-4 h-4" />
             <span>Фото тетради</span>
@@ -307,7 +307,7 @@ export const Dashboard: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-            <Sparkles className="w-5 h-5 text-indigo-500" />
+            <BookOpen className="w-5 h-5 text-primary" />
             <span>Learning Modules & Practice Modes</span>
           </h2>
           <span className="text-xs text-slate-400 font-medium">Choose a practice mode</span>

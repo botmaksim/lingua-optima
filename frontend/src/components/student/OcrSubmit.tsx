@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UploadCloud, ShieldCheck, X, Sparkles, AlertCircle, Plus, FileImage } from 'lucide-react';
+import { UploadCloud, ShieldCheck, X, FileCheck, AlertCircle, Plus, FileImage } from 'lucide-react';
 import { submissionApi } from '../../api/submissionApi';
 import { useUsage } from '../../hooks/useUsage';
 import { useUIStore } from '../../store/uiStore';
@@ -289,13 +289,13 @@ export const OcrSubmit: React.FC = () => {
               type="button"
               onClick={handleSubmit}
               disabled={isLoading}
-              className="flex-1 flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-md shadow-indigo-100 disabled:opacity-50"
+              className="flex-1 flex items-center justify-center space-x-2 py-3.5 px-6 rounded-2xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-xs disabled:opacity-50"
             >
               {isLoading ? (
                 <LoadingSpinner size="sm" className="p-0 text-white" />
               ) : (
                 <>
-                  <Sparkles className="w-4 h-4" />
+                  <FileCheck className="w-4 h-4" />
                   <span>Analyse {previewItems.length} {previewItems.length === 1 ? 'Page' : 'Pages'}</span>
                 </>
               )}
