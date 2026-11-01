@@ -112,6 +112,12 @@ public class ScoringService {
         double pacing = parseMetric(studentText, "Pacing Score", 90.0);
         int wpm = (int) parseMetric(studentText, "Speech Rate", 120.0);
 
+        boolean isSituation = studentText != null && (
+            studentText.contains("Task Mode: SITUATION") ||
+            studentText.contains("Communicative Situation") ||
+            studentText.contains("Role-Play")
+        );
+
         String pacingFeedback = parseField(studentText, "Pacing Diagnostics:", "Natural speech tempo and cadence.");
         String spokenTranscript = parseField(studentText, "Spoken Transcript:", "");
         String referencePassage = parseField(studentText, "Reference Passage:", answerKey != null ? answerKey : "");
@@ -127,14 +133,20 @@ public class ScoringService {
 
         Map<String, Object> item = new HashMap<>();
         item.put("questionNumber", 1);
-        item.put("question", "Oral reading and pronunciation of target passage");
+        item.put("question", isSituation
+            ? "Communicative situation role-play and spoken delivery"
+            : "Oral reading and pronunciation of target passage");
         item.put("studentAnswer", !spokenTranscript.isBlank() ? spokenTranscript : studentText);
         item.put("correctAnswer", !referencePassage.isBlank() ? referencePassage : (answerKey != null ? answerKey : ""));
         item.put("isCorrect", overallScore >= 70.0);
         item.put("explanation", String.format("Pronunciation Accuracy: %.0f%% | Speech Rate: %d WPM | Pacing: %.0f%% (%s)",
             accuracy, wpm, pacing, pacingFeedback));
-        item.put("grammarRule", "Oral Speech Cadence & Phonetic Articulation");
-        item.put("rule", "Oral Speech Cadence & Phonetic Articulation");
+        item.put("grammarRule", isSituation
+            ? "Communicative Role-Play & Situational Fluency"
+            : "Oral Speech Cadence & Phonetic Articulation");
+        item.put("rule", isSituation
+            ? "Communicative Role-Play & Situational Fluency"
+            : "Oral Speech Cadence & Phonetic Articulation");
 
         result.put("items", List.of(item));
         return result;

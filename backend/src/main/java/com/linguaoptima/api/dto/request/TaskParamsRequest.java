@@ -112,4 +112,7 @@ public class TaskParamsRequest {
 
     /** @brief Optional ID of pre-calibrated pronunciation pack from phonetics/pronunciation_packs.json. */
     private String pronunciationPackId;
+
+    /** @brief Optional speaking mode: TEXT (oral reading passage) or SITUATION (communicative role-play scenario). */
+    private String speakingMode;
 }

@@ -706,3 +706,232 @@ export function alignSpokenWords(
     generalFeedback,
   };
 }
+
+/**
+ * @brief Structured representation of a parsed communicative role-play scenario.
+ */
+export interface ParsedSituation {
+  role?: string;
+  setting?: string;
+  goal?: string;
+  talkingPoints: string[];
+  usefulExpressions: string[];
+  rawText: string;
+}
+
+/**
+ * @brief Parses raw text from a communicative situation speaking exercise into structured fields.
+ * Extracts Role, Setting, Goal, Talking Points checklist, and Useful Expressions.
+ */
+export function parseSituationContent(text: string): ParsedSituation {
+  const result: ParsedSituation = {
+    talkingPoints: [],
+    usefulExpressions: [],
+    rawText: text || '',
+  };
+
+  if (!text) return result;
+
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  let currentSection: 'NONE' | 'POINTS' | 'EXPRESSIONS' = 'NONE';
+
+  for (const line of lines) {
+    const lower = line.toLowerCase();
+    if (lower.startsWith('role:')) {
+      result.role = line.substring(5).trim();
+      currentSection = 'NONE';
+    } else if (lower.startsWith('setting:')) {
+      result.setting = line.substring(8).trim();
+      currentSection = 'NONE';
+    } else if (lower.startsWith('goal:') || lower.startsWith('objective:')) {
+      result.goal = line.replace(/^(?:goal|objective):/i, '').trim();
+      currentSection = 'NONE';
+    } else if (lower.includes('talking point') || lower.includes('key point') || lower.includes('опорные пункт')) {
+      currentSection = 'POINTS';
+    } else if (lower.includes('useful expression') || lower.includes('useful phrase') || lower.includes('полезные фраз')) {
+      currentSection = 'EXPRESSIONS';
+    } else if (currentSection === 'POINTS') {
+      const cleanLine = line.replace(/^[-•*–—\d.]+\s*/, '').trim();
+      if (cleanLine) result.talkingPoints.push(cleanLine);
+    } else if (currentSection === 'EXPRESSIONS') {
+      const cleanLine = line.replace(/^[-•*–—\d.]+\s*/, '').trim();
+      if (cleanLine) result.usefulExpressions.push(cleanLine);
+    }
+  }
+
+  return result;
+}
+
+export interface SituationalContext {
+  role?: string;
+  setting?: string;
+  goal?: string;
+  talkingPoints?: string[];
+  usefulExpressions?: string[];
+}
+
+/**
+ * @brief Evaluates spoken monologue/dialogue in communicative role-play speaking exercises.
+ * Assesses delivery, speech rate (WPM), speech volume/duration, and coverage of situational talking points/keywords.
+ *
+ * @param context Structured role, goal, talking points, and expressions.
+ * @param recognizedText Spoken transcript captured from student speech.
+ * @param durationSeconds Elapsed recording duration in seconds.
+ * @return Calibrated PronunciationResult.
+ */
+export function evaluateSituationalSpeech(
+  context: SituationalContext,
+  recognizedText: string,
+  durationSeconds?: number
+): PronunciationResult {
+  const isAudioOnly = recognizedText.startsWith('[Recorded Audio');
+  const spokenTokens = recognizedText
+    .trim()
+    .split(/\s+/)
+    .filter(t => t.length > 0 && !t.startsWith('[Recorded'));
+
+  const cleanTokens = recognizedText
+    .toLowerCase()
+    .replace(/[^\w\s']/g, ' ')
+    .split(/\s+/)
+    .filter(t => t.length > 0 && t !== 'recorded' && t !== 'audio' && t !== 'submission');
+
+  const wordCount = isAudioOnly ? 35 : spokenTokens.length;
+  const elapsedSec = durationSeconds !== undefined && durationSeconds > 0
+    ? durationSeconds
+    : Math.max(1, Math.round((wordCount / 120) * 60));
+
+  const elapsedMinutes = Math.max(0.01, elapsedSec / 60);
+  const wpm = Math.max(1, Math.round(wordCount / elapsedMinutes));
+
+  // Pacing scoring for conversational speech (optimal 90 - 150 WPM)
+  let pacingScore = 100;
+  let pacingFeedback = '';
+
+  if (wpm >= 90 && wpm <= 150) {
+    pacingScore = 100;
+    pacingFeedback = `Optimal conversational pace (${wpm} WPM) with natural speech cadence and clear delivery.`;
+  } else if (wpm >= 70 && wpm < 90) {
+    pacingScore = Math.round(80 + ((wpm - 70) / 20) * 19);
+    pacingFeedback = `Measured, deliberate conversational pace (${wpm} WPM). Practice linking phrases more smoothly.`;
+  } else if (wpm >= 45 && wpm < 70) {
+    pacingScore = Math.round(60 + ((wpm - 45) / 25) * 19);
+    pacingFeedback = `Hesitant speech pace (${wpm} WPM). Try organizing your thoughts in continuous phrases.`;
+  } else if (wpm < 45) {
+    pacingScore = Math.max(30, Math.round(wpm * 0.9));
+    pacingFeedback = `Very slow delivery (${wpm} WPM). Build spoken fluency with repeated practice of key expressions.`;
+  } else if (wpm > 150 && wpm <= 180) {
+    pacingScore = Math.round(100 - ((wpm - 150) / 30) * 15);
+    pacingFeedback = `Fast conversational pace (${wpm} WPM). Ensure key points are clearly enunciated.`;
+  } else {
+    pacingScore = Math.max(40, Math.round(85 - (wpm - 180) * 0.8));
+    pacingFeedback = `Rushed delivery (${wpm} WPM). Slow down slightly to maintain clarity in communicative dialogue.`;
+  }
+
+  // Volume / Length adequacy score
+  let volumeScore = 100;
+  if (wordCount >= 25) {
+    volumeScore = 100;
+  } else if (wordCount >= 15) {
+    volumeScore = 85;
+  } else if (wordCount >= 8) {
+    volumeScore = 65;
+  } else {
+    volumeScore = Math.max(25, Math.round(wordCount * 7));
+  }
+
+  // Talking points & topical coverage
+  const stopWords = new Set([
+    'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+    'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+    'i', 'you', 'he', 'she', 'it', 'we', 'they', 'my', 'your', 'his', 'her', 'its', 'our', 'their',
+    'that', 'this', 'these', 'those', 'as', 'if', 'when', 'while', 'about', 'can', 'could', 'would',
+    'should', 'will', 'just', 'from', 'so', 'not', 'no', 'there', 'here', 'what', 'who', 'how', 'why'
+  ]);
+
+  const extractKeywords = (str: string) => {
+    return str
+      .toLowerCase()
+      .replace(/[^\w\s']/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 4 && !stopWords.has(w));
+  };
+
+  const spokenSet = new Set(cleanTokens);
+  const spokenTextLower = recognizedText.toLowerCase();
+
+  let totalPoints = (context.talkingPoints || []).length;
+  let coveredPoints = 0;
+
+  if (totalPoints > 0) {
+    (context.talkingPoints || []).forEach(tp => {
+      const kws = extractKeywords(tp);
+      const hasMatch = kws.length === 0 || kws.some(kw => spokenSet.has(kw) || spokenTextLower.includes(kw));
+      if (hasMatch) {
+        coveredPoints++;
+      }
+    });
+  } else {
+    totalPoints = 1;
+    coveredPoints = 1;
+  }
+
+  const coverageRatio = coveredPoints / totalPoints;
+  const coverageScore = Math.min(100, Math.round(coverageRatio * 100));
+
+  // Balanced calculation
+  const accuracyScore = isAudioOnly ? 85 : Math.min(100, Math.round(coverageScore * 0.5 + volumeScore * 0.3 + pacingScore * 0.2));
+  const fluencyScore = isAudioOnly ? 85 : Math.min(100, Math.round(pacingScore * 0.6 + volumeScore * 0.4));
+  const completenessScore = isAudioOnly ? 85 : coverageScore;
+  const overallScore = isAudioOnly ? 85 : Math.min(100, Math.round(accuracyScore * 0.45 + fluencyScore * 0.35 + completenessScore * 0.2));
+
+  // Construct AlignedWords from student's spoken words so they have IPA transcription
+  const alignedWords: AlignedWord[] = spokenTokens.map(word => {
+    const clean = word.toLowerCase().replace(/[^a-z']/g, '').trim();
+    return {
+      word,
+      cleanWord: clean || word,
+      ipa: getIpaTranscription(clean || word),
+      status: 'CORRECT',
+      tip: `Spoken in role-play: "${word}". Click to listen to model pronunciation.`,
+    };
+  });
+
+  const generalFeedback: string[] = [];
+  if (isAudioOnly) {
+    generalFeedback.push('Аудиозапись успешно сохранена и передана на проверку преподавателю.');
+  } else {
+    generalFeedback.push(`Речь зафиксирована: ${wordCount} слов за ${elapsedSec} сек (${wpm} WPM).`);
+    if (context.talkingPoints && context.talkingPoints.length > 0) {
+      if (coveredPoints === totalPoints) {
+        generalFeedback.push(`Отлично: раскрыты все ключевые аспекты ситуации (${coveredPoints} из ${totalPoints}).`);
+      } else {
+        generalFeedback.push(`Раскрыто аспектов ситуации: ${coveredPoints} из ${totalPoints}. Постарайтесь упомянуть все пункты плана.`);
+      }
+    }
+    generalFeedback.push(pacingFeedback);
+    if (wordCount < 15) {
+      generalFeedback.push('Совет: попробуйте дать более развернутый ответ, дополнив высказывание деталями и вежливыми фразами.');
+    } else {
+      generalFeedback.push('Хорошая глубина высказывания и уверенное раскрытие коммуникативной роли!');
+    }
+  }
+
+  return {
+    accuracyScore,
+    fluencyScore,
+    completenessScore,
+    overallScore,
+    correctCount: spokenTokens.length,
+    mispronouncedCount: 0,
+    omittedCount: 0,
+    totalWords: spokenTokens.length,
+    wpm,
+    durationSeconds: elapsedSec,
+    pacingScore,
+    pacingFeedback,
+    words: alignedWords,
+    mispronouncedWords: [],
+    generalFeedback,
+  };
+}

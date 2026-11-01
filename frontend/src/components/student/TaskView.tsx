@@ -303,6 +303,7 @@ export const TaskView: React.FC = () => {
     setSubmitError(null);
     try {
       const formattedSubmission = [
+        `Task Mode: ${task.speakingMode || 'TEXT'}`,
         `Pronunciation Accuracy: ${result.accuracyScore}%`,
         `Overall Speaking Score: ${result.overallScore}%`,
         `Speech Rate: ${result.wpm ?? 120} WPM (Pacing Score: ${result.pacingScore ?? 100}%)`,
@@ -794,9 +795,13 @@ export const TaskView: React.FC = () => {
             task.speakingTitle ||
             (task.grammarTopic && !task.grammarTopic.includes('Voice') && !task.grammarTopic.includes('Passive') && !task.grammarTopic.includes('Tense')
               ? task.grammarTopic
-              : 'Oral Reading & Pronunciation Assessment')
+              : task.speakingMode === 'SITUATION'
+                ? 'Communicative Role-Play Assessment'
+                : 'Oral Reading & Pronunciation Assessment')
           }
           targetSounds={task.targetSounds}
+          speakingMode={task.speakingMode}
+          sampleResponse={task.questions?.[0]?.correctAnswer}
           points={task.totalPoints || 100}
           onSubmit={handleSpeakingSubmit}
           isSubmitting={isSubmitting}

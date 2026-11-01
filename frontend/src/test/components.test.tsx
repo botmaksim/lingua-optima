@@ -1598,6 +1598,28 @@ describe('SpeakingConfigPanel component', () => {
     expect(screen.getByText('Speaking Practice')).toBeInTheDocument();
     expect(screen.queryByText('Assignment Points (Max Score)')).not.toBeInTheDocument();
   });
+
+  it('allows toggling between text reading and communicative situation mode', () => {
+    const handleModeChange = vi.fn();
+    render(
+      <SpeakingConfigPanel
+        speakingTitle=""
+        onTitleChange={vi.fn()}
+        speakingMode="TEXT"
+        onSpeakingModeChange={handleModeChange}
+        targetSounds={TARGET_SOUND_PRESETS[0].value}
+        onTargetSoundsChange={vi.fn()}
+        speakingLength="MEDIUM"
+        onSpeakingLengthChange={vi.fn()}
+        totalPoints={100}
+        onTotalPointsChange={vi.fn()}
+      />
+    );
+
+    const situationTab = screen.getByRole('button', { name: /Коммуникативная ситуация/i });
+    fireEvent.click(situationTab);
+    expect(handleModeChange).toHaveBeenCalledWith('SITUATION');
+  });
 });
 
 describe('SpeakingPracticeView component', () => {
@@ -1723,6 +1745,43 @@ describe('SpeakingPracticeView component', () => {
     // Record button should be enabled regardless of SpeechRecognition support
     const recordBtn = screen.getByRole('button', { name: /Начать запись/i });
     expect(recordBtn).not.toBeDisabled();
+  });
+
+  it('renders communicative situation format with role, setting, goal, and useful expressions', () => {
+    const situationPassage = `Role: Hotel Guest
+Setting: Front Desk
+Goal: Ask for a room upgrade
+
+Talking Points:
+• Explain your room is noisy
+• Ask for courtyard room
+
+Useful Expressions:
+• I was wondering if it might be possible to change rooms
+• Would you happen to have a quieter room?`;
+
+    render(
+      <SpeakingPracticeView
+        passageText={situationPassage}
+        speakingMode="SITUATION"
+        sampleResponse="I was wondering if it might be possible to change my room as it is very noisy."
+        taskTitle="Hotel Reception Role-Play"
+        points={100}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Hotel Reception Role-Play')).toBeInTheDocument();
+    expect(screen.getByText('Ролевая ситуация')).toBeInTheDocument();
+    expect(screen.getByText('Hotel Guest')).toBeInTheDocument();
+    expect(screen.getByText('Ask for a room upgrade')).toBeInTheDocument();
+    expect(screen.getByText('Explain your room is noisy')).toBeInTheDocument();
+    expect(screen.getByText('I was wondering if it might be possible to change rooms')).toBeInTheDocument();
+
+    // Click useful expression to hear pronunciation
+    const exprBtn = screen.getByText('I was wondering if it might be possible to change rooms');
+    fireEvent.click(exprBtn);
+    expect(window.speechSynthesis.speak).toHaveBeenCalled();
   });
 });
 

@@ -56,6 +56,7 @@ export interface QuickGenerateParams {
     targetSounds: string;
     speakingLength: string;
     pronunciationPackId?: string;
+    speakingMode?: 'TEXT' | 'SITUATION';
   };
   essayConfig?: {
     topic: string;
@@ -113,6 +114,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
 
   const [isCustomTopic, setIsCustomTopic] = useState<boolean>(false);
   const [customTopicInput, setCustomTopicInput] = useState<string>('');
+  const [speakingSubMode, setSpeakingSubMode] = useState<'TEXT' | 'SITUATION'>('TEXT');
   const [studentGaps, setStudentGaps] = useState<ProgressRecord[]>([]);
   const [recentSubmissions, setRecentSubmissions] = useState<SubmissionResult[]>([]);
 
@@ -218,11 +220,24 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
     }
   }, [cefrLevel, format, detectedWeakness]);
 
-  const getTopicPoolForFormat = (fmt: QuickPracticeFormat): string[] => {
+  const getTopicPoolForFormat = (fmt: QuickPracticeFormat, overrideSpeakingMode?: 'TEXT' | 'SITUATION'): string[] => {
     if (fmt === 'ESSAY') {
       return DEFAULT_ESSAY_TOPICS[cefrLevel] || [];
     }
     if (fmt === 'SPEAKING') {
+      const mode = overrideSpeakingMode ?? speakingSubMode;
+      if (mode === 'SITUATION') {
+        return [
+          'Hotel: Resolving Room Heating Issue',
+          'Job Interview: Strengths & Achievements',
+          'Store: Returning Damaged Electronics',
+          'Restaurant: Dietary Allergy Inquiries',
+          'Airport: Rebooking Missed Connecting Flight',
+          'Workplace: Project Deadline Extension Discussion',
+          'Apartment Rental: Negotiating Lease Terms',
+          'Travel: Hotel Check-in & Special Requests',
+        ];
+      }
       return [
         'Natural Speech Flow, Connected Rhythm & Articulation',
         'Consonant Contrasts & Minimal Pairs (/θ/ vs /ð/, /r/ vs /l/)',
@@ -371,9 +386,14 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
       ...(chosenTaskType === 'SPEAKING'
         ? {
             speakingConfig: {
-              speakingTitle: `${activeTopic} · Speech Drill`,
-              targetSounds: 'Natural Rhythm, Connected Speech & Clear Articulation',
+              speakingTitle: speakingSubMode === 'SITUATION'
+                ? `${activeTopic} · Communicative Situation`
+                : `${activeTopic} · Speech Drill`,
+              targetSounds: speakingSubMode === 'SITUATION'
+                ? 'Communicative Fluency & Natural Delivery'
+                : 'Natural Rhythm, Connected Speech & Clear Articulation',
               speakingLength: 'MEDIUM',
+              speakingMode: speakingSubMode,
             },
           }
         : {}),
@@ -578,12 +598,59 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
             </span>
           </button>
         </div>
+
+        {/* Speaking Sub-mode toggle: TEXT vs SITUATION */}
+        {(format === 'SPEAKING' || (format === 'RECOMMENDED' && detectedWeakness.modality === 'SPEAKING')) && (
+          <div className="pt-3 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-in fade-in duration-200">
+            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+              Формат говорения:
+            </span>
+            <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => {
+                  setSpeakingSubMode('TEXT');
+                  const pool = getTopicPoolForFormat('SPEAKING', 'TEXT');
+                  setTopic(pool[0]);
+                }}
+                className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 ${
+                  speakingSubMode === 'TEXT'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:bg-amber-50 border border-slate-200'
+                }`}
+              >
+                <span>Текст (Чтение вслух)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSpeakingSubMode('SITUATION');
+                  const pool = getTopicPoolForFormat('SPEAKING', 'SITUATION');
+                  setTopic(pool[0]);
+                }}
+                className={`py-1.5 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5 ${
+                  speakingSubMode === 'SITUATION'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'bg-white text-slate-700 hover:bg-amber-50 border border-slate-200'
+                }`}
+              >
+                <span>Коммуникативная ситуация</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-            {format === 'SPEAKING' ? '3. Speech & Phonetic Focus' : format === 'READING' ? '3. Reading Article Topic' : format === 'ESSAY' ? '3. Essay Discursive Prompt' : '3. Practice Topic'}
+            {format === 'SPEAKING'
+              ? (speakingSubMode === 'SITUATION' ? '3. Communicative Situation Topic' : '3. Speech & Phonetic Focus')
+              : format === 'READING'
+              ? '3. Reading Article Topic'
+              : format === 'ESSAY'
+              ? '3. Essay Discursive Prompt'
+              : '3. Practice Topic'}
           </label>
           <button
             type="button"

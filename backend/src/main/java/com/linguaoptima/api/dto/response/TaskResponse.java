@@ -60,6 +60,12 @@ public class TaskResponse {
     /** @brief Flag indicating whether this task was formally assigned by an educator. */
     @Builder.Default
     private Boolean isTeacherTask = false;
+    /** @brief Optional speaking mode: TEXT (oral reading passage) or SITUATION (communicative role-play scenario). */
+    private String speakingMode;
+    /** @brief Target phonemes or contrastive sound pairs for oral speaking practice. */
+    private String targetSounds;
+    /** @brief Custom title or drill topic for speaking tasks. */
+    private String speakingTitle;
     @Builder.Default
     private List<QuestionResponse> questions = new ArrayList<>();
 
@@ -74,6 +80,44 @@ public class TaskResponse {
             ? task.getQuestions().stream().map(QuestionResponse::fromEntity).collect(Collectors.toList())
             : new ArrayList<>();
 
+        String resolvedSpeakingMode = null;
+        String resolvedTargetSounds = null;
+        String resolvedSpeakingTitle = null;
+
+        if (task.getType() == TaskType.SPEAKING) {
+            resolvedSpeakingTitle = task.getGrammarTopic();
+            if (task.getAnswerKey() != null && !task.getAnswerKey().isBlank()) {
+                try {
+                    com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                    com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(task.getAnswerKey());
+                    if (node.has("speakingMode")) {
+                        resolvedSpeakingMode = node.get("speakingMode").asText(null);
+                    }
+                    if (node.has("targetSounds")) {
+                        resolvedTargetSounds = node.get("targetSounds").asText(null);
+                    }
+                    if (node.has("speakingTitle")) {
+                        resolvedSpeakingTitle = node.get("speakingTitle").asText(resolvedSpeakingTitle);
+                    }
+                } catch (Exception ignored) {
+                    // Answer key is not a metadata JSON, fallback to content analysis
+                }
+            }
+            if (resolvedSpeakingMode == null) {
+                if (task.getContent() != null && (
+                    task.getContent().contains("Role:") ||
+                    task.getContent().contains("Setting:") ||
+                    task.getContent().contains("Goal:") ||
+                    task.getContent().contains("Talking Points:") ||
+                    task.getContent().contains("Communicative Situation")
+                )) {
+                    resolvedSpeakingMode = "SITUATION";
+                } else {
+                    resolvedSpeakingMode = "TEXT";
+                }
+            }
+        }
+
         return TaskResponse.builder()
             .id(task.getId())
             .type(task.getType())
@@ -85,6 +129,9 @@ public class TaskResponse {
             .totalPoints(task.getTotalPoints())
             .isTemplate(task.isTemplate())
             .createdAt(task.getCreatedAt())
+            .speakingMode(resolvedSpeakingMode)
+            .targetSounds(resolvedTargetSounds)
+            .speakingTitle(resolvedSpeakingTitle)
             .questions(questionResponses)
             .build();
     }

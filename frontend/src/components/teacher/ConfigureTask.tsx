@@ -44,6 +44,7 @@ import {
   TopicsCatalogResponse,
   TaskQuestion,
   CreateCustomTaskRequest,
+  SpeakingMode,
 } from '../../types/task';
 import { CefrLevel } from '../../types/user';
 import { CefrBadge } from '../common/CefrBadge';
@@ -111,6 +112,7 @@ export const ConfigureTask: React.FC = () => {
   });
 
   // Dedicated Speaking task configuration state
+  const [speakingMode, setSpeakingMode] = useState<SpeakingMode>('TEXT');
   const [speakingTitle, setSpeakingTitle] = useState<string>('');
   const [targetSounds, setTargetSounds] = useState<string>(TARGET_SOUND_PRESETS[0].value);
   const [pronunciationPackId, setPronunciationPackId] = useState<string | null>(null);
@@ -356,6 +358,7 @@ export const ConfigureTask: React.FC = () => {
             targetSounds: targetSounds.trim() || undefined,
             speakingLength: speakingLength.trim() || undefined,
             pronunciationPackId: pronunciationPackId || undefined,
+            speakingMode: speakingMode,
             numberOfQuestions: 1,
             totalPoints: totalPoints || 100,
           }
@@ -383,6 +386,9 @@ export const ConfigureTask: React.FC = () => {
         setSpeakingTitle(params.speakingConfig.speakingTitle);
         setTargetSounds(params.speakingConfig.targetSounds);
         setSpeakingLength(params.speakingConfig.speakingLength);
+        if (params.speakingConfig.speakingMode) {
+          setSpeakingMode(params.speakingConfig.speakingMode);
+        }
         if (params.speakingConfig.pronunciationPackId) {
           setPronunciationPackId(params.speakingConfig.pronunciationPackId);
         }
@@ -1472,6 +1478,8 @@ export const ConfigureTask: React.FC = () => {
                 <div className="animate-in fade-in duration-200">
                   <SpeakingConfigPanel
                     cefrLevel={cefrLevel}
+                    speakingMode={speakingMode}
+                    onSpeakingModeChange={setSpeakingMode}
                     speakingTitle={speakingTitle}
                     onTitleChange={setSpeakingTitle}
                     targetSounds={targetSounds}
@@ -1793,7 +1801,9 @@ export const ConfigureTask: React.FC = () => {
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
                     {previewTask.type === 'SPEAKING'
-                      ? 'Oral Reading Passage (Editable by Teacher)'
+                      ? previewTask.speakingMode === 'SITUATION'
+                        ? 'Communicative Situation Scenario (Editable by Teacher)'
+                        : 'Oral Reading Passage (Editable by Teacher)'
                       : previewTask.type === 'READING'
                       ? 'Reading Passage (Editable)'
                       : 'Exercise Instructions / Reading Passage'}
@@ -1823,7 +1833,9 @@ export const ConfigureTask: React.FC = () => {
                   onChange={handleUpdateInstruction}
                   placeholder={
                     previewTask.type === 'SPEAKING'
-                      ? 'Review and edit the oral speech passage text here...'
+                      ? previewTask.speakingMode === 'SITUATION'
+                        ? 'Review and edit the communicative situation scenario, role, and goal here...'
+                        : 'Review and edit the oral speech passage text here...'
                       : previewTask.type === 'READING'
                       ? 'Review and edit the full reading comprehension passage text here...'
                       : 'Enter exercise instructions or reading context here...'

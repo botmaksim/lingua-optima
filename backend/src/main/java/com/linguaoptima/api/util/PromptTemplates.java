@@ -408,10 +408,18 @@ public final class PromptTemplates {
         String domain = params.getDomain() != null && !params.getDomain().isBlank()
             ? params.getDomain() : "Daily Life";
         String difficulty = params.getDifficulty() != null ? params.getDifficulty().name() : "MEDIUM";
+        String mode = params.getSpeakingMode() != null && !params.getSpeakingMode().isBlank()
+            ? params.getSpeakingMode().toUpperCase() : "TEXT";
+        String defaultTitle = "SITUATION".equalsIgnoreCase(mode)
+            ? (topic + " - Communicative Situation")
+            : (topic + " - Pronunciation & Speech Practice");
         String title = params.getSpeakingTitle() != null && !params.getSpeakingTitle().isBlank()
-            ? params.getSpeakingTitle() : (topic + " - Pronunciation & Speech Practice");
+            ? params.getSpeakingTitle() : defaultTitle;
+        String defaultFocus = "SITUATION".equalsIgnoreCase(mode)
+            ? "Communicative Fluency & Natural Delivery"
+            : (pack != null ? pack.getTitle() : "Natural Rhythm, Intonation & Clear Articulation");
         String targetSounds = params.getTargetSounds() != null && !params.getTargetSounds().isBlank()
-            ? params.getTargetSounds() : (pack != null ? pack.getTitle() : "Natural Rhythm, Intonation & Clear Articulation");
+            ? params.getTargetSounds() : defaultFocus;
         String length = params.getSpeakingLength() != null && !params.getSpeakingLength().isBlank()
             ? params.getSpeakingLength() : "MEDIUM";
         int totalPoints = params.getTotalPoints() != null && params.getTotalPoints() > 0
@@ -419,7 +427,7 @@ public final class PromptTemplates {
         boolean ecoMode = Boolean.TRUE.equals(params.getEcoMode());
 
         return buildSpeakingGenerationPrompt(level, topic, domain, difficulty, title, targetSounds, length, totalPoints,
-            targetVocabulary, pack, ecoMode);
+            targetVocabulary, pack, ecoMode, mode);
     }
 
     /**
@@ -439,7 +447,7 @@ public final class PromptTemplates {
                                                        String title, String targetSounds, String length, int totalPoints,
                                                        String targetVocabulary) {
         return buildSpeakingGenerationPrompt(cefrLevel, topic, domain, difficulty, title, targetSounds, length, totalPoints,
-            targetVocabulary, null, false);
+            targetVocabulary, null, false, "TEXT");
     }
 
     /**
@@ -461,6 +469,113 @@ public final class PromptTemplates {
                                                        String title, String targetSounds, String length, int totalPoints,
                                                        String targetVocabulary, PronunciationPackResponse pack,
                                                        boolean ecoMode) {
+        return buildSpeakingGenerationPrompt(cefrLevel, topic, domain, difficulty, title, targetSounds, length, totalPoints,
+            targetVocabulary, pack, ecoMode, "TEXT");
+    }
+
+    /**
+     * @brief Detailed prompt generator for speaking and pronunciation exercises supporting TEXT and SITUATION modes.
+     * @param cefrLevel Target CEFR level.
+     * @param topic Topic or theme.
+     * @param domain Real-world domain.
+     * @param difficulty Difficulty tier.
+     * @param title Title of assignment.
+     * @param targetSounds Target sounds or phonemes.
+     * @param length Length preset.
+     * @param totalPoints Total points budget.
+     * @param targetVocabulary Target vocabulary words.
+     * @param pack Optional pronunciation pack.
+     * @param ecoMode Eco mode flag.
+     * @param speakingMode Speaking exercise mode: TEXT (oral reading passage) or SITUATION (communicative role-play).
+     * @return Formatted prompt string.
+     */
+    public static String buildSpeakingGenerationPrompt(String cefrLevel, String topic, String domain, String difficulty,
+                                                       String title, String targetSounds, String length, int totalPoints,
+                                                       String targetVocabulary, PronunciationPackResponse pack,
+                                                       boolean ecoMode, String speakingMode) {
+        if ("SITUATION".equalsIgnoreCase(speakingMode)) {
+            String durationGuidance = switch (length.toUpperCase()) {
+                case "SHORT" -> "Short situation: ~30-50 words spoken (~20-40 seconds). Clear single objective.";
+                case "LONG" -> "Extended role-play: ~100-150 words spoken (~60-90 seconds). Multi-step discussion or problem resolution.";
+                default -> length.toUpperCase().startsWith("CUSTOM")
+                    ? length
+                    : "Standard communicative scenario: ~60-90 words spoken (~30-60 seconds). Balanced conversational interaction.";
+            };
+
+            StringBuilder situationContext = new StringBuilder();
+            if (ecoMode) {
+                situationContext.append("\n- ECO MODE ACTIVE: Generate a concise, practical scenario without extensive extra vocabulary.\n");
+            }
+            if (targetVocabulary != null && !targetVocabulary.isBlank() && !ecoMode) {
+                situationContext.append("\n- TARGET VOCABULARY / PHRASES TO INCLUDE:\n").append(targetVocabulary.trim()).append("\n");
+            }
+
+            return """
+                Generate an English Communicative Situation Speaking task (Role-Play & Situational Discourse) based on the following parameters:
+                - CEFR Target Level: %s
+                - Communicative Topic/Theme: %s
+                - Assignment Title: %s
+                - Real-World Setting / Domain: %s
+                - Difficulty Tier: %s
+                - Target Focus: %s
+                - Target Speech Length / Duration: %s
+                %s
+                CRITICAL PEDAGOGICAL REQUIREMENTS:
+                1. Design a realistic real-world communicative scenario where the student speaks into a microphone to accomplish a specific communicative goal.
+                2. Structure the scenario with:
+                   - Role: the role the student plays (e.g. Hotel Guest, Job Candidate, Colleague, Customer).
+                   - Setting: specific setting (e.g. London hotel front desk, team meeting, airport check-in).
+                   - Goal: clear objective (what the student needs to convey, negotiate, or ask).
+                   - Talking Points: 3-4 concrete bullet points the student should cover in their spoken response.
+                   - Useful Expressions: 3-5 high-yield phrases or idioms suited for this scenario.
+                   - Sample Response: a high-quality model response calibrated to CEFR %s.
+                3. Lexical and syntactic complexity MUST strictly calibrate to CEFR %s.
+                4. The "content" field MUST contain the full, nicely formatted text of the situation card (Role, Setting, Goal, Talking Points, Useful Expressions).
+                5. In the "questions" array, provide 1 item whose "text" contains the communicative prompt instructions, and "correctAnswer" contains the model sample response.
+                6. Points allocated equal to %d.
+                7. Return ONLY a valid JSON object matching this exact schema:
+                {
+                  "title": "%s",
+                  "speakingMode": "SITUATION",
+                  "content": "Role: [Your Role]\\nSetting: [Setting]\\nGoal: [Communicative Goal]\\n\\nTalking Points:\\n• [Point 1]\\n• [Point 2]\\n• [Point 3]\\n\\nUseful Expressions:\\n• [Phrase 1]\\n• [Phrase 2]\\n• [Phrase 3]",
+                  "targetSounds": "%s",
+                  "situation": {
+                    "role": "...",
+                    "setting": "...",
+                    "goal": "...",
+                    "talkingPoints": ["...", "...", "..."],
+                    "usefulPhrases": ["...", "...", "..."],
+                    "sampleResponse": "..."
+                  },
+                  "questions": [
+                    {
+                      "id": 1,
+                      "questionOrder": 1,
+                      "type": "SPEAKING",
+                      "text": "Speak clearly into your microphone to address this communicative situation. Address all talking points using natural expressions.",
+                      "correctAnswer": "Model sample response...",
+                      "grammarRule": "Communicative Role-Play & Situational Fluency",
+                      "difficulty": 2,
+                      "points": %d,
+                      "options": []
+                    }
+                  ],
+                  "answerKey": [
+                    {
+                      "questionId": 1,
+                      "questionOrder": 1,
+                      "correctAnswer": "Model sample response...",
+                      "explanation": "Spoken response should address the talking points with appropriate tone, clear pronunciation, and conversational flow."
+                    }
+                  ]
+                }
+                """.formatted(
+                    cefrLevel, topic, title, domain, difficulty, targetSounds, durationGuidance,
+                    situationContext.toString(), cefrLevel, cefrLevel, totalPoints,
+                    title, targetSounds, totalPoints
+                );
+        }
+
         String lengthGuidance = switch (length.toUpperCase()) {
             case "SHORT" -> "Short reading passage: 30 to 50 words (2-3 sentences). Ideal for quick drill and focused sound repetition.";
             case "LONG" -> "Long reading passage: 120 to 180 words (2-3 connected paragraphs). Ideal for advanced rhythm, stress, and continuous discourse.";
@@ -522,6 +637,7 @@ public final class PromptTemplates {
             5. Return ONLY a valid JSON object matching this exact schema:
             {
               "title": "%s",
+              "speakingMode": "TEXT",
               "content": "Full text of the speech passage to read aloud...",
               "targetSounds": "%s",
               "questions": [

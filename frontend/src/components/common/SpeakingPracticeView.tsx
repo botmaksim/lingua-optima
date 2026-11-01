@@ -7,7 +7,7 @@
  * and actionable pronunciation diagnostics.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Mic,
   MicOff,
@@ -21,16 +21,23 @@ import {
   Award,
   Gauge,
   Timer,
-  Lock
+  Lock,
+  MessageSquare,
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import {
   speakWord,
   speakText,
   stopSpeech,
   alignSpokenWords,
+  evaluateSituationalSpeech,
+  parseSituationContent,
   PronunciationResult,
   AlignedWord
 } from '../../utils/phonetics';
+import { SpeakingMode } from '../../types/task';
 
 interface SpeechRecognitionEvent {
   results: {
@@ -63,6 +70,8 @@ interface SpeakingPracticeViewProps {
   passageText: string;
   taskTitle?: string;
   targetSounds?: string;
+  speakingMode?: SpeakingMode;
+  sampleResponse?: string;
   points?: number;
   onSubmit: (result: {
     spokenTranscript: string;
@@ -85,6 +94,8 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   passageText,
   taskTitle,
   targetSounds,
+  speakingMode = 'TEXT',
+  sampleResponse,
   points = 100,
   onSubmit,
   isSubmitting = false,
@@ -103,12 +114,26 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   const [activeWordTip, setActiveWordTip] = useState<AlignedWord | null>(null);
   const [evaluationResult, setEvaluationResult] = useState<PronunciationResult | null>(initialResult || null);
   const [micError, setMicError] = useState<string | null>(null);
+  const [showSampleText, setShowSampleText] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  const isSituationMode =
+    speakingMode === 'SITUATION' ||
+    (Boolean(passageText) && (
+      passageText.includes('Role:') ||
+      passageText.includes('Goal:') ||
+      passageText.includes('Talking Points:') ||
+      passageText.includes('Communicative Situation')
+    ));
+
+  const parsedSituation = useMemo(() => {
+    return isSituationMode ? parseSituationContent(passageText) : null;
+  }, [isSituationMode, passageText]);
 
   const isModelAudioLocked = Boolean(isTeacherTask && !evaluationResult && !readOnly);
 
@@ -197,7 +222,10 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       setIsPlayingModel(false);
     } else {
       setIsPlayingModel(true);
-      speakText(passageText, accent, () => {
+      const textToSpeak = isSituationMode
+        ? (sampleResponse || (parsedSituation ? `${parsedSituation.goal || ''}. ${parsedSituation.talkingPoints.join('. ')}` : passageText))
+        : passageText;
+      speakText(textToSpeak, accent, () => {
         setIsPlayingModel(false);
       });
     }
@@ -309,8 +337,17 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       return;
     }
     const duration = elapsedSeconds || recordingSeconds || 5;
-    const result = alignSpokenWords(passageText, fullTranscript, 0.92, duration);
-    setEvaluationResult(result);
+    if (isSituationMode) {
+      const result = evaluateSituationalSpeech(
+        parsedSituation || { talkingPoints: [], usefulExpressions: [] },
+        fullTranscript,
+        duration
+      );
+      setEvaluationResult(result);
+    } else {
+      const result = alignSpokenWords(passageText, fullTranscript, 0.92, duration);
+      setEvaluationResult(result);
+    }
   };
 
   const handleReset = () => {
@@ -363,19 +400,19 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              Speaking Practice
+              {isSituationMode ? 'Ролевая ситуация' : 'Speaking Practice'}
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               {points} Max Points
             </span>
           </div>
           <h2 className="text-xl font-bold text-white">
-            {taskTitle || 'Oral Reading & Pronunciation Assessment'}
+            {taskTitle || (isSituationMode ? 'Communicative Role-Play Assessment' : 'Oral Reading & Pronunciation Assessment')}
           </h2>
           {targetSounds && (
             <div className="flex items-center gap-1.5 text-xs text-indigo-300 mt-1">
               <Target className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-              <span>Phonetic Focus: <strong className="text-indigo-200">{targetSounds}</strong></span>
+              <span>{isSituationMode ? 'Target Focus' : 'Phonetic Focus'}: <strong className="text-indigo-200">{targetSounds}</strong></span>
             </div>
           )}
         </div>
@@ -422,7 +459,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             ) : (
               <Volume2 className="w-3.5 h-3.5" />
             )}
-            <span>{isModelAudioLocked ? 'Образец скрыт' : isPlayingModel ? 'Остановить' : 'Слушать образец'}</span>
+            <span>{isModelAudioLocked ? 'Образец скрыт' : isPlayingModel ? 'Остановить' : isSituationMode ? 'Слушать образец речи' : 'Слушать образец'}</span>
           </button>
         </div>
       </div>
@@ -433,70 +470,175 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <span className="font-semibold text-slate-200">Инструкция: </span>
           {isModelAudioLocked ? (
             <span>
-              Прочитайте отрывок вслух и запишите ваш голос. Прослушивание образца и аудиоподсказки станут доступны после записи.
+              {isSituationMode
+                ? 'Ознакомьтесь с ситуацией и запишите ваш голосовой ответ. Прослушивание образца станет доступно после записи.'
+                : 'Прочитайте отрывок вслух и запишите ваш голос. Прослушивание образца и аудиоподсказки станут доступны после записи.'}
             </span>
           ) : (
             <span>
-              Нажмите <strong className="text-indigo-300">Начать запись</strong> и четко прочитайте текст в микрофон. Вы можете нажимать на слова для прослушивания IPA произношения.
+              {isSituationMode ? (
+                <>
+                  Ознакомьтесь с ролью, обстановкой и целью. Нажмите <strong className="text-indigo-300">Начать запись</strong> и развернуто решите ситуацию своим голосом в микрофон, используя опорные фразы.
+                </>
+              ) : (
+                <>
+                  Нажмите <strong className="text-indigo-300">Начать запись</strong> и четко прочитайте текст в микрофон. Вы можете нажимать на слова для прослушивания IPA произношения.
+                </>
+              )}
             </span>
           )}
         </div>
       </div>
 
-      <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-6">
-        <div className="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-3 flex items-center justify-between">
-          <span>Speech Passage</span>
-          <span className="text-[11px] text-slate-500 font-normal">Click any word to hear native pronunciation</span>
+      {isSituationMode && parsedSituation ? (
+        <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-5 space-y-4">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {parsedSituation.role && (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-200 text-xs font-semibold">
+                <span className="text-indigo-400 uppercase text-[10px] tracking-wider font-bold">Роль:</span>
+                <span>{parsedSituation.role}</span>
+              </div>
+            )}
+            {parsedSituation.setting && (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium">
+                <span className="text-slate-400 uppercase text-[10px] tracking-wider font-bold">Обстановка:</span>
+                <span>{parsedSituation.setting}</span>
+              </div>
+            )}
+          </div>
+
+          {parsedSituation.goal && (
+            <div className="bg-indigo-950/30 border border-indigo-500/30 rounded-xl p-3.5 flex items-start gap-3">
+              <Target className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+              <div>
+                <div className="text-xs font-bold uppercase tracking-wider text-indigo-300 mb-0.5">
+                  Коммуникативная цель
+                </div>
+                <div className="text-sm font-medium text-slate-100 leading-snug">
+                  {parsedSituation.goal}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+            {parsedSituation.talkingPoints.length > 0 && (
+              <div className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Опорные пункты (Talking Points)</span>
+                </div>
+                <ul className="space-y-2">
+                  {parsedSituation.talkingPoints.map((pt, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-xs text-slate-200 leading-relaxed">
+                      <span className="w-4 h-4 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {parsedSituation.usefulExpressions.length > 0 && (
+              <div className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
+                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Полезные фразы (клик для озвучки)</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {parsedSituation.usefulExpressions.map((expr, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => speakText(expr, accent)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/90 hover:bg-indigo-600/20 border border-slate-700/80 hover:border-indigo-500/40 text-xs text-slate-200 hover:text-indigo-200 transition-all text-left group"
+                      title="Нажмите, чтобы прослушать произношение"
+                    >
+                      <Volume2 className="w-3 h-3 text-slate-400 group-hover:text-indigo-400 shrink-0" />
+                      <span>{expr}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {sampleResponse && !isModelAudioLocked && (
+            <div className="border-t border-slate-800/80 pt-3">
+              <button
+                type="button"
+                onClick={() => setShowSampleText(prev => !prev)}
+                className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 font-semibold transition-colors"
+              >
+                <span>{showSampleText ? 'Скрыть пример ответа' : 'Показать пример образцового ответа'}</span>
+                {showSampleText ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
+              {showSampleText && (
+                <div className="mt-2 p-3 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 italic leading-relaxed animate-in fade-in duration-200">
+                  "{sampleResponse}"
+                </div>
+              )}
+            </div>
+          )}
         </div>
+      ) : (
+        <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-6">
+          <div className="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-3 flex items-center justify-between">
+            <span>Speech Passage</span>
+            <span className="text-[11px] text-slate-500 font-normal">Click any word to hear native pronunciation</span>
+          </div>
 
-        <div className="leading-loose text-lg font-medium text-slate-100 flex flex-wrap gap-x-2 gap-y-3">
-          {evaluationResult
-            ? evaluationResult.words.map((item, idx) => {
-                const isCorrect = item.status === 'CORRECT';
-                const isMispronounced = item.status === 'MISPRONOUNCED';
+          <div className="leading-loose text-lg font-medium text-slate-100 flex flex-wrap gap-x-2 gap-y-3">
+            {evaluationResult
+              ? evaluationResult.words.map((item, idx) => {
+                  const isCorrect = item.status === 'CORRECT';
+                  const isMispronounced = item.status === 'MISPRONOUNCED';
 
-                return (
-                  <div key={idx} className="relative group inline-flex flex-col items-center">
+                  return (
+                    <div key={idx} className="relative group inline-flex flex-col items-center">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleWordClick(item.cleanWord);
+                          setActiveWordTip(item);
+                        }}
+                        className={`px-2 py-0.5 rounded-md border text-base font-medium transition-all ${
+                          isCorrect
+                            ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40 hover:bg-emerald-500/30'
+                            : isMispronounced
+                            ? 'bg-rose-500/20 text-rose-200 border-rose-500/50 hover:bg-rose-500/30 ring-1 ring-rose-500/30 font-semibold'
+                            : 'bg-amber-500/10 text-amber-300/70 border-amber-500/30 line-through'
+                        }`}
+                        title={`Click to pronounce: ${item.ipa}`}
+                      >
+                        {item.word}
+                      </button>
+                      <span className="text-[10px] text-slate-400 font-mono tracking-tight select-none mt-0.5">
+                        {item.ipa}
+                      </span>
+                    </div>
+                  );
+                })
+              : wordsList.map((w, idx) => (
+                  <div key={idx} className="inline-flex flex-col items-center">
                     <button
                       type="button"
-                      onClick={() => {
-                        handleWordClick(item.cleanWord);
-                        setActiveWordTip(item);
-                      }}
-                      className={`px-2 py-0.5 rounded-md border text-base font-medium transition-all ${
-                        isCorrect
-                          ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/40 hover:bg-emerald-500/30'
-                          : isMispronounced
-                          ? 'bg-rose-500/20 text-rose-200 border-rose-500/50 hover:bg-rose-500/30 ring-1 ring-rose-500/30 font-semibold'
-                          : 'bg-amber-500/10 text-amber-300/70 border-amber-500/30 line-through'
+                      onClick={() => handleWordClick(w)}
+                      disabled={isModelAudioLocked}
+                      className={`px-1.5 py-0.5 rounded transition-colors text-slate-100 ${
+                        isModelAudioLocked ? 'cursor-default opacity-80' : 'hover:text-indigo-300 hover:bg-indigo-500/10 cursor-pointer'
                       }`}
-                      title={`Click to pronounce: ${item.ipa}`}
+                      title={isModelAudioLocked ? 'Озвучивание доступно после записи' : 'Нажмите для прослушивания'}
                     >
-                      {item.word}
+                      {w}
                     </button>
-                    <span className="text-[10px] text-slate-400 font-mono tracking-tight select-none mt-0.5">
-                      {item.ipa}
-                    </span>
                   </div>
-                );
-              })
-            : wordsList.map((w, idx) => (
-                <div key={idx} className="inline-flex flex-col items-center">
-                  <button
-                    type="button"
-                    onClick={() => handleWordClick(w)}
-                    disabled={isModelAudioLocked}
-                    className={`px-1.5 py-0.5 rounded transition-colors text-slate-100 ${
-                      isModelAudioLocked ? 'cursor-default opacity-80' : 'hover:text-indigo-300 hover:bg-indigo-500/10 cursor-pointer'
-                    }`}
-                    title={isModelAudioLocked ? 'Озвучивание доступно после записи' : 'Нажмите для прослушивания'}
-                  >
-                    {w}
-                  </button>
-                </div>
-              ))}
+                ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {micError && (
         <div className="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4 text-xs text-rose-300 flex items-start gap-3">
@@ -542,8 +684,14 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             <div className="flex items-center gap-2">
               <Award className="w-5 h-5 text-indigo-400" />
               <div>
-                <h3 className="text-base font-bold text-white">Speech & Pronunciation Evaluation</h3>
-                <p className="text-xs text-slate-400">Calibrated against accuracy, articulation, and pacing rate</p>
+                <h3 className="text-base font-bold text-white">
+                  {isSituationMode ? 'Communicative Role-Play Evaluation' : 'Speech & Pronunciation Evaluation'}
+                </h3>
+                <p className="text-xs text-slate-400">
+                  {isSituationMode
+                    ? 'Calibrated against communicative fluency, speech volume, and conversational pacing'
+                    : 'Calibrated against accuracy, articulation, and pacing rate'}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -552,7 +700,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                   {evaluationResult.accuracyScore}%
                 </div>
                 <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                  Pronunciation Accuracy
+                  {isSituationMode ? 'Communicative Success' : 'Pronunciation Accuracy'}
                 </div>
               </div>
               <div className="h-8 w-px bg-slate-700" />
@@ -570,7 +718,9 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div className="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg">
               <div className="text-lg font-bold text-emerald-400">{evaluationResult.accuracyScore}%</div>
-              <div className="text-[11px] text-emerald-300/80">Accuracy · {evaluationResult.correctCount}/{evaluationResult.totalWords}</div>
+              <div className="text-[11px] text-emerald-300/80">
+                {isSituationMode ? 'Communicative Fluency' : `Accuracy · ${evaluationResult.correctCount}/${evaluationResult.totalWords}`}
+              </div>
             </div>
             <div className="bg-indigo-500/10 border border-indigo-500/20 p-2.5 rounded-lg">
               <div className="flex items-center justify-center gap-1 text-lg font-bold text-indigo-400">
@@ -581,8 +731,12 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               <div className="text-[11px] text-indigo-300/80">Pacing Score · {evaluationResult.pacingScore}%</div>
             </div>
             <div className="bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg">
-              <div className="text-lg font-bold text-rose-400">{evaluationResult.mispronouncedCount}</div>
-              <div className="text-[11px] text-rose-300/80">Mispronounced</div>
+              <div className="text-lg font-bold text-rose-400">
+                {isSituationMode ? evaluationResult.totalWords : evaluationResult.mispronouncedCount}
+              </div>
+              <div className="text-[11px] text-rose-300/80">
+                {isSituationMode ? 'Words Spoken' : 'Mispronounced'}
+              </div>
             </div>
             <div className="bg-slate-700/30 border border-slate-700 p-2.5 rounded-lg">
               <div className="flex items-center justify-center gap-1 text-lg font-bold text-slate-200">
@@ -601,6 +755,31 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               </div>
             ))}
           </div>
+
+          {isSituationMode && evaluationResult.words.length > 0 && (
+            <div className="pt-2 border-t border-slate-700/60">
+              <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center justify-between">
+                <span>Распознанная речь (кликните слово для IPA)</span>
+                <span className="text-[11px] text-slate-500">{evaluationResult.words.length} слов</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto p-2.5 bg-slate-900/60 rounded-lg border border-slate-800">
+                {evaluationResult.words.map((item, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      handleWordClick(item.cleanWord);
+                      setActiveWordTip(item);
+                    }}
+                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600/20 text-slate-200 border border-slate-700 hover:border-indigo-500/30 text-xs transition-colors flex items-center gap-1"
+                  >
+                    <span>{item.word}</span>
+                    <span className="text-[10px] text-indigo-400 font-mono">{item.ipa}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {activeWordTip && (
             <div className="bg-slate-900 border border-indigo-500/40 rounded-lg p-3.5 text-xs space-y-2 mt-2">

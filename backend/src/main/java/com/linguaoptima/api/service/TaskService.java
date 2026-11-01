@@ -792,7 +792,9 @@ public class TaskService {
                        effectiveTopic.toLowerCase().contains("voice") ||
                        effectiveTopic.toLowerCase().contains("tense") ||
                        effectiveTopic.toLowerCase().contains("conditional")) {
-                effectiveTopic = "Speech & Pronunciation Practice";
+                effectiveTopic = "SITUATION".equalsIgnoreCase(params.getSpeakingMode())
+                    ? "Communicative Role-Play & Situation"
+                    : "Speech & Pronunciation Practice";
             }
         }
 
@@ -814,7 +816,21 @@ public class TaskService {
             String rawContent = root.path("content").asText("");
             task.setContent(sanitizeTaskContent(rawContent, params));
             JsonNode answerKeyNode = root.path("answerKey");
-            task.setAnswerKey(answerKeyNode.toString());
+
+            if (params.getTaskType() == TaskType.SPEAKING) {
+                Map<String, Object> speakingMeta = new LinkedHashMap<>();
+                String mode = root.path("speakingMode").asText(params.getSpeakingMode() != null ? params.getSpeakingMode() : "TEXT");
+                speakingMeta.put("speakingMode", mode);
+                speakingMeta.put("speakingTitle", root.path("title").asText(params.getSpeakingTitle() != null ? params.getSpeakingTitle() : effectiveTopic));
+                speakingMeta.put("targetSounds", root.path("targetSounds").asText(params.getTargetSounds() != null ? params.getTargetSounds() : ""));
+                if (root.has("situation")) {
+                    speakingMeta.put("situation", root.path("situation"));
+                }
+                speakingMeta.put("answerKey", answerKeyNode);
+                task.setAnswerKey(objectMapper.writeValueAsString(speakingMeta));
+            } else {
+                task.setAnswerKey(answerKeyNode.toString());
+            }
 
             java.util.Map<Integer, String> answerKeyMap = new java.util.HashMap<>();
             if (answerKeyNode.isArray()) {
@@ -866,6 +882,13 @@ public class TaskService {
                 }
             }
             if (params.getTaskType() == TaskType.SPEAKING && questions.isEmpty()) {
+                boolean isSituation = "SITUATION".equalsIgnoreCase(params.getSpeakingMode()) ||
+                    (task.getContent() != null && task.getContent().contains("Role:"));
+                String rule = isSituation
+                    ? "Communicative Role-Play & Situational Fluency"
+                    : (params.getTargetSounds() != null && !params.getTargetSounds().isBlank()
+                        ? "Pronunciation: " + params.getTargetSounds()
+                        : "Pronunciation & Intonation");
                 TaskQuestion tq = TaskQuestion.builder()
                     .task(task)
                     .questionOrder(1)
@@ -874,9 +897,7 @@ public class TaskService {
                     .optionsJson("[]")
                     .difficulty(2)
                     .points(reqTotal)
-                    .grammarRule(params.getTargetSounds() != null && !params.getTargetSounds().isBlank()
-                        ? "Pronunciation: " + params.getTargetSounds()
-                        : "Pronunciation & Intonation")
+                    .grammarRule(rule)
                     .build();
                 questions.add(tq);
             }
@@ -1026,7 +1047,11 @@ public class TaskService {
         }
         if (params.getTaskType() == TaskType.SPEAKING) {
             String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())
-                ? params.getGrammarTopic() : "Pronunciation and Natural Flow";
+                ? params.getGrammarTopic()
+                : ("SITUATION".equalsIgnoreCase(params.getSpeakingMode()) ? "Contemporary English Communication" : "Pronunciation and Natural Flow");
+            if ("SITUATION".equalsIgnoreCase(params.getSpeakingMode())) {
+                return "Role: Customer / Participant\nSetting: Everyday Social Context\nGoal: Discuss " + topic + " clearly and naturally.\n\nTalking Points:\n• Introduce your perspective\n• Explain key details or requirements\n• Conclude with a polite summary\n\nUseful Expressions:\n• I'd like to discuss...\n• Would it be possible to...\n• Thank you for your assistance.";
+            }
             return "Read the speech practice passage about " + topic + " aloud into the microphone. Focus on clear articulation, accurate pronunciation, and natural rhythm.";
         }
         String topic = (params.getGrammarTopic() != null && !params.getGrammarTopic().isBlank())

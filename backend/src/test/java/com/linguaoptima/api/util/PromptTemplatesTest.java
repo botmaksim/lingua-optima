@@ -252,6 +252,48 @@ class PromptTemplatesTest {
     }
 
     @Test
+    void testBuildSpeakingGenerationPromptSituationMode() {
+        TaskParamsRequest situationParams = TaskParamsRequest.builder()
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Hotel Check-in & Room Issue")
+            .domain("Hospitality")
+            .difficulty(com.linguaoptima.api.domain.enums.DifficultyLevel.MEDIUM)
+            .speakingMode("SITUATION")
+            .speakingLength("SHORT")
+            .totalPoints(100)
+            .build();
+
+        String prompt = PromptTemplates.buildSpeakingGenerationPrompt(situationParams, null, "could you please, room change");
+        assertNotNull(prompt);
+        assertTrue(prompt.contains("Communicative Situation Speaking task"));
+        assertTrue(prompt.contains("SITUATION"));
+        assertTrue(prompt.contains("Hotel Check-in & Room Issue"));
+        assertTrue(prompt.contains("Hospitality"));
+        assertTrue(prompt.contains("could you please, room change"));
+        assertTrue(prompt.contains("Role:"));
+        assertTrue(prompt.contains("Setting:"));
+        assertTrue(prompt.contains("Goal:"));
+        assertTrue(prompt.contains("Talking Points:"));
+        assertTrue(prompt.contains("Useful Expressions:"));
+        assertTrue(prompt.contains("Short situation: ~30-50 words spoken"));
+
+        // Test LONG length for situation
+        situationParams.setSpeakingLength("LONG");
+        String longPrompt = PromptTemplates.buildSpeakingGenerationPrompt(situationParams, null, null);
+        assertTrue(longPrompt.contains("Extended role-play: ~100-150 words spoken"));
+
+        // Test CUSTOM length for situation
+        situationParams.setSpeakingLength("CUSTOM: 80 words");
+        String customPrompt = PromptTemplates.buildSpeakingGenerationPrompt(situationParams, null, null);
+        assertTrue(customPrompt.contains("CUSTOM: 80 words"));
+
+        // Test ecoMode with situation
+        situationParams.setEcoMode(true);
+        String ecoPrompt = PromptTemplates.buildSpeakingGenerationPrompt(situationParams, null, null);
+        assertTrue(ecoPrompt.contains("ECO MODE ACTIVE"));
+    }
+
+    @Test
     void testBuildSentenceExplanationPrompt() {
         // Standard usage with all fields
         String prompt = PromptTemplates.buildSentenceExplanationPrompt(

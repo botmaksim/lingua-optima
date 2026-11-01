@@ -36,7 +36,7 @@ import { progressApi } from '../../api/progressApi';
 import { customCurriculumApi } from '../../api/customCurriculumApi';
 import { apiKeyApi, ApiKeyItem } from '../../api/apiKeyApi';
 import { CefrLevel } from '../../types/user';
-import { TaskType, DifficultyLevel, TopicsCatalogResponse } from '../../types/task';
+import { TaskType, DifficultyLevel, TopicsCatalogResponse, SpeakingMode } from '../../types/task';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { CefrBadge } from '../common/CefrBadge';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -92,6 +92,7 @@ export const GenerateTask: React.FC = () => {
   const [uploadedVocabFile, setUploadedVocabFile] = useState<UploadedCurriculumFile | null>(null);
 
   // Dedicated Speaking task configuration state
+  const [speakingMode, setSpeakingMode] = useState<SpeakingMode>('TEXT');
   const [speakingTitle, setSpeakingTitle] = useState<string>('');
   const [targetSounds, setTargetSounds] = useState<string>(TARGET_SOUND_PRESETS[0].value);
   const [pronunciationPackId, setPronunciationPackId] = useState<string | null>(null);
@@ -211,6 +212,7 @@ export const GenerateTask: React.FC = () => {
               targetSounds: params.speakingConfig.targetSounds,
               speakingLength: params.speakingConfig.speakingLength,
               pronunciationPackId: params.speakingConfig.pronunciationPackId,
+              speakingMode: params.speakingConfig.speakingMode,
             }
           : {}),
       });
@@ -295,6 +297,7 @@ export const GenerateTask: React.FC = () => {
               speakingTitle: speakingTitle.trim() || undefined,
               targetSounds: targetSounds.trim() || undefined,
               pronunciationPackId: pronunciationPackId || undefined,
+              speakingMode: speakingMode,
               speakingLength:
                 speakingLength === 'CUSTOM'
                   ? `Custom (${customWordCount} words${customInstructions ? `: ${customInstructions}` : ''})`
@@ -828,6 +831,8 @@ export const GenerateTask: React.FC = () => {
           {taskType === 'SPEAKING' && (
             <SpeakingConfigPanel
               cefrLevel={cefrLevel}
+              speakingMode={speakingMode}
+              onSpeakingModeChange={setSpeakingMode}
               speakingTitle={speakingTitle}
               onTitleChange={setSpeakingTitle}
               targetSounds={targetSounds}

@@ -7,8 +7,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Mic, Volume2, Target, Check, Sliders, HelpCircle, Edit3, Leaf, Dices } from 'lucide-react';
-import { CefrLevel, PronunciationPack } from '../../types/task';
+import { Mic, Volume2, Target, Check, Sliders, HelpCircle, Edit3, Leaf, Dices, Users, BookOpen } from 'lucide-react';
+import { CefrLevel, PronunciationPack, SpeakingMode } from '../../types/task';
 import { taskApi } from '../../api/taskApi';
 import { speakWord } from '../../utils/phonetics';
 import { AutoExpandingTextarea } from '../common/AutoExpandingTextarea';
@@ -27,6 +27,51 @@ export const TARGET_SOUND_PRESETS = [
   { label: 'General Fluency & Rhythm', value: 'Natural Connected Speech, Linking & Sentence Stress', title: 'Connected Speech & Natural Rhythm', example: 'linking sounds, weak forms, sentence stress' },
 ] as const;
 
+export const SITUATION_PRESETS = [
+  {
+    title: 'Hotel Reception: Room Issue',
+    topic: 'Hotel Room Issue & Resolution',
+    role: 'Hotel Guest',
+    setting: 'Hotel front desk in London',
+    desc: 'Explain the heating is broken and politely request a technician or room change.'
+  },
+  {
+    title: 'Job Interview: Strengths & Experience',
+    topic: 'Job Interview Discussion',
+    role: 'Job Candidate',
+    setting: 'Online job interview with a hiring manager',
+    desc: 'Introduce yourself, highlight two key achievements, and explain why you are the ideal fit.'
+  },
+  {
+    title: 'Store: Returning a Damaged Item',
+    topic: 'Customer Service Return',
+    role: 'Customer',
+    setting: 'Customer service desk at an electronics retailer',
+    desc: 'Explain the item purchased yesterday has a defect and request an exchange or full refund.'
+  },
+  {
+    title: 'Restaurant: Dietary Restrictions',
+    topic: 'Restaurant Special Order',
+    role: 'Dinner Guest',
+    setting: 'A busy local restaurant',
+    desc: 'Inquire about gluten or nut allergies, ask for dish recommendations, and confirm ingredients.'
+  },
+  {
+    title: 'Airport: Delayed Connecting Flight',
+    topic: 'Airport Flight Rebooking',
+    role: 'Airline Passenger',
+    setting: 'Airline customer desk during transit delay',
+    desc: 'Explain missed connection, request rebooking on the next flight, and ask about hotel vouchers.'
+  },
+  {
+    title: 'Workplace: Project Deadline Extension',
+    topic: 'Workplace Negotiation',
+    role: 'Team Lead',
+    setting: 'One-on-one meeting with a senior project manager',
+    desc: 'Outline unforeseen scope challenges, present a realistic new timeline, and propose mitigating steps.'
+  },
+] as const;
+
 /**
  * @brief Length presets for speaking exercises.
  */
@@ -39,6 +84,8 @@ export const SPEAKING_LENGTH_PRESETS = [
 
 interface SpeakingConfigPanelProps {
   cefrLevel?: CefrLevel;
+  speakingMode?: SpeakingMode;
+  onSpeakingModeChange?: (mode: SpeakingMode) => void;
   speakingTitle: string;
   onTitleChange: (title: string) => void;
   targetSounds: string;
@@ -60,6 +107,8 @@ interface SpeakingConfigPanelProps {
 
 export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
   cefrLevel = 'B1',
+  speakingMode,
+  onSpeakingModeChange,
   speakingTitle,
   onTitleChange,
   targetSounds,
@@ -78,6 +127,12 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
   customInstructions,
   onCustomInstructionsChange,
 }) => {
+  const [internalMode, setInternalMode] = useState<SpeakingMode>('TEXT');
+  const activeMode = speakingMode ?? internalMode;
+  const setMode = (m: SpeakingMode) => {
+    setInternalMode(m);
+    onSpeakingModeChange?.(m);
+  };
   const [testWord] = useState('thoughtful');
   const [internalWordCount, setInternalWordCount] = useState<number>(50);
   const [internalInstructions, setInternalInstructions] = useState<string>('');
@@ -144,6 +199,16 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
     }
   };
 
+  const handleSituationSelect = (sit: typeof SITUATION_PRESETS[number]) => {
+    onTitleChange(sit.title);
+    onTargetSoundsChange(`Situational Focus: ${sit.topic} (Role: ${sit.role}, Setting: ${sit.setting})`);
+  };
+
+  const handleRandomSituation = () => {
+    const idx = Math.floor(Math.random() * SITUATION_PRESETS.length);
+    handleSituationSelect(SITUATION_PRESETS[idx]);
+  };
+
   const handleTestAudio = (word: string) => {
     speakWord(word);
   };
@@ -167,8 +232,12 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
             </div>
             <p className="text-xs text-slate-500">
               {isStudent
-                ? 'Read the passage aloud into your microphone to practice pronunciation, phonemes, and pace'
-                : 'Configure target phonemes, drill word packs, passage length, and grading'}
+                ? activeMode === 'SITUATION'
+                  ? 'Speak freely into your microphone to resolve this communicative role-play scenario'
+                  : 'Read the passage aloud into your microphone to practice pronunciation, phonemes, and pace'
+                : activeMode === 'SITUATION'
+                  ? 'Configure communicative role-play, scenario context, target expressions, and duration'
+                  : 'Configure target phonemes, drill word packs, passage length, and grading'}
             </p>
           </div>
         </div>
@@ -188,85 +257,92 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
         </div>
       </div>
 
+      {/* Speaking Mode Selector: TEXT vs SITUATION */}
+      <div className="space-y-1.5">
+        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+          Формат говорения
+        </label>
+        <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200">
+          <button
+            type="button"
+            onClick={() => setMode('TEXT')}
+            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
+              activeMode === 'TEXT'
+                ? 'bg-white text-primary shadow-xs ring-1 ring-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Текст (Чтение вслух)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('SITUATION')}
+            className={`py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 ${
+              activeMode === 'SITUATION'
+                ? 'bg-white text-primary shadow-xs ring-1 ring-slate-200'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Коммуникативная ситуация</span>
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-400">
+          {activeMode === 'SITUATION'
+            ? 'Ролевая игра в реальной ситуации: диалог, решение проблемы или переговоры'
+            : 'Чтение текста вслух для отработки правильного произношения, звуков и ритма'}
+        </p>
+      </div>
+
       {/* Assignment Title */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-          Assignment Title
+          {activeMode === 'SITUATION' ? 'Название ситуации' : 'Assignment Title'}
         </label>
         <AutoExpandingTextarea
           value={speakingTitle}
           onChange={onTitleChange}
           minRows={1}
-          placeholder="e.g. Master the Dental Fricatives: /θ/ and /ð/"
+          placeholder={
+            activeMode === 'SITUATION'
+              ? 'e.g. Hotel Reception: Resolving Room Heating Issue'
+              : 'e.g. Master the Dental Fricatives: /θ/ and /ð/'
+          }
           className="w-full text-xs font-medium text-slate-800 placeholder:text-slate-400"
         />
         <p className="text-[11px] text-slate-400 mt-1">
-          Leave blank to use the target sound focus as the title.
+          {activeMode === 'SITUATION'
+            ? 'Leave blank to generate an authentic title based on the situation.'
+            : 'Leave blank to use the target sound focus as the title.'}
         </p>
       </div>
 
-      {/* Target Sounds & Phoneme Packs */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
-            <span>Phonetics & Word Packs ({cefrLevel})</span>
-            <span title="Select pre-calibrated drill words and minimal pair contrasts from JSON">
-              <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-            </span>
-          </label>
-          <button
-            type="button"
-            onClick={handleRandomPack}
-            className="flex items-center space-x-1 text-[11px] font-bold text-primary hover:text-primary-hover bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-xl transition"
-          >
-            <Dices className="w-3.5 h-3.5" />
-            <span>Surprise Pack</span>
-          </button>
-        </div>
+      {/* Target Sounds & Phoneme Packs vs Communicative Situation Presets */}
+      {activeMode === 'SITUATION' ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+              <span>Сценарии коммуникативных ситуаций</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleRandomSituation}
+              className="flex items-center space-x-1 text-[11px] font-bold text-primary hover:text-primary-hover bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-xl transition"
+            >
+              <Dices className="w-3.5 h-3.5" />
+              <span>Случайный сценарий</span>
+            </button>
+          </div>
 
-        {/* Dynamic JSON Packs or Fallback Presets Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-          {packs.length > 0 ? (
-            packs.map((pack) => {
-              const isSelected = pronunciationPackId === pack.id || targetSounds.includes(pack.title);
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {SITUATION_PRESETS.map((sit) => {
+              const isSelected = speakingTitle === sit.title || targetSounds.includes(sit.topic);
               return (
                 <button
-                  key={pack.id}
+                  key={sit.title}
                   type="button"
-                  onClick={() => handlePackSelect(pack)}
-                  className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between overflow-hidden ${
-                    isSelected
-                      ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
-                      : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
-                  }`}
-                >
-                  <div className="w-full min-w-0">
-                    <div className="flex items-center justify-between gap-1.5 min-w-0 overflow-hidden">
-                      <div className="text-xs font-bold leading-tight truncate min-w-0 flex-1">{pack.title}</div>
-                      <span
-                        className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-indigo-100/70 text-indigo-700 font-semibold truncate max-w-[45%] flex-shrink-0"
-                        title={pack.phonemes?.join(' ') || pack.category}
-                      >
-                        {pack.phonemes?.join(' ') || pack.category}
-                      </span>
-                    </div>
-                    {pack.drillWords && pack.drillWords.length > 0 && (
-                      <div className="text-[11px] text-slate-400 mt-1 font-mono line-clamp-1">
-                        {pack.drillWords.slice(0, 4).join(', ')}...
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })
-          ) : (
-            TARGET_SOUND_PRESETS.map((preset) => {
-              const isSelected = targetSounds === preset.value;
-              return (
-                <button
-                  key={preset.label}
-                  type="button"
-                  onClick={() => handleSoundPresetSelect(preset.value)}
+                  onClick={() => handleSituationSelect(sit)}
                   className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between ${
                     isSelected
                       ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
@@ -274,87 +350,191 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
                   }`}
                 >
                   <div>
-                    <div className="text-xs font-bold leading-tight">{preset.label}</div>
-                    <div className="text-[11px] text-slate-400 mt-1 font-mono line-clamp-1">{preset.example}</div>
+                    <div className="text-xs font-bold leading-tight flex items-center justify-between gap-1">
+                      <span>{sit.title}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-indigo-100/70 text-indigo-700 flex-shrink-0">
+                        {sit.role}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-tight">
+                      {sit.desc}
+                    </div>
                   </div>
                 </button>
               );
-            })
-          )}
-        </div>
+            })}
+          </div>
 
-        {/* Selected Pack Interactive Preview */}
-        {selectedPack && !ecoMode && (
-          <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-xs space-y-3 animate-in fade-in duration-200">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-50 pb-2">
-              <div className="flex items-center space-x-2">
-                <Target className="w-4 h-4 text-primary" />
-                <span className="text-xs font-bold text-slate-800">
-                  Target Words to Weave into Speech:
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-400">Click word to hear pronunciation</span>
+          <div className="pt-1 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-600 flex items-center space-x-1">
+                <Edit3 className="w-3 h-3 text-primary" />
+                <span>Цель диалога, роль и полезные фразы:</span>
+              </span>
+              <span className="text-[10px] text-slate-400">Expandable editor</span>
             </div>
-
-            {/* Drill Words Pills */}
-            {selectedPack.drillWords && selectedPack.drillWords.length > 0 && (
-              <div className="flex flex-wrap gap-1.5">
-                {selectedPack.drillWords.map((word) => (
-                  <button
-                    key={word}
-                    type="button"
-                    onClick={() => handleTestAudio(word)}
-                    className="group px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 text-xs font-medium text-slate-700 hover:text-primary transition flex items-center space-x-1"
-                    title={`Click to pronounce "${word}"`}
-                  >
-                    <span>{word}</span>
-                    <Volume2 className="w-3 h-3 text-slate-400 group-hover:text-primary" />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Minimal Pairs Contrast preview */}
-            {selectedPack.minimalPairs && selectedPack.minimalPairs.length > 0 && (
-              <div className="pt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
-                <span className="font-semibold text-slate-500 text-[11px]">Contrast Pairs:</span>
-                {selectedPack.minimalPairs.map((pair, idx) => (
-                  <span key={idx} className="px-2 py-0.5 rounded-lg bg-indigo-50/60 text-slate-800 font-mono text-[11px]">
-                    <strong>{pair.word1}</strong> ({pair.phoneme1}) vs <strong>{pair.word2}</strong> ({pair.phoneme2})
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {selectedPack.contrastFocus && (
-              <p className="text-[11px] text-slate-500 italic">
-                {selectedPack.contrastFocus}
-              </p>
-            )}
+            <AutoExpandingTextarea
+              minRows={2}
+              value={targetSounds}
+              onChange={onTargetSoundsChange}
+              placeholder="e.g. Роль: Гость отеля. Ситуация: в номере не работает отопление. Полезные фразы: I'm afraid there seems to be a problem..., Would it be possible to..."
+              className="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400"
+            />
+            <p className="text-[11px] text-slate-400">
+              Укажите желаемую коммуникативную роль, тему беседы и фразы, которые студент должен отработать в диалоге.
+            </p>
           </div>
-        )}
-
-        {/* Selected Sound Focus / Custom Input */}
-        <div className="pt-1 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-600 flex items-center space-x-1">
-              <Edit3 className="w-3 h-3 text-primary" />
-              <span>Target Sounds, Phonemes & Custom Practice Words:</span>
-            </span>
-            <span className="text-[10px] text-slate-400">Expandable editor</span>
-          </div>
-          <AutoExpandingTextarea
-            minRows={2}
-            value={targetSounds}
-            onChange={onTargetSoundsChange}
-            placeholder="e.g. /θ/, /ð/, rhythm, sentence stress, or custom tongue-twister words (e.g. thought, through, thirty-three, weather)"
-            className="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400"
-          />
-          <p className="text-[11px] text-slate-400">
-            Selected phoneme pack words are populated here. You can expand this box and freely type additional contrast words or pronunciation goals.
-          </p>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+              <span>Phonetics & Word Packs ({cefrLevel})</span>
+              <span title="Select pre-calibrated drill words and minimal pair contrasts from JSON">
+                <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
+              </span>
+            </label>
+            <button
+              type="button"
+              onClick={handleRandomPack}
+              className="flex items-center space-x-1 text-[11px] font-bold text-primary hover:text-primary-hover bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-xl transition"
+            >
+              <Dices className="w-3.5 h-3.5" />
+              <span>Surprise Pack</span>
+            </button>
+          </div>
+
+          {/* Dynamic JSON Packs or Fallback Presets Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {packs.length > 0 ? (
+              packs.map((pack) => {
+                const isSelected = pronunciationPackId === pack.id || targetSounds.includes(pack.title);
+                return (
+                  <button
+                    key={pack.id}
+                    type="button"
+                    onClick={() => handlePackSelect(pack)}
+                    className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between overflow-hidden ${
+                      isSelected
+                        ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
+                        : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
+                    }`}
+                  >
+                    <div className="w-full min-w-0">
+                      <div className="flex items-center justify-between gap-1.5 min-w-0 overflow-hidden">
+                        <div className="text-xs font-bold leading-tight truncate min-w-0 flex-1">{pack.title}</div>
+                        <span
+                          className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-indigo-100/70 text-indigo-700 font-semibold truncate max-w-[45%] flex-shrink-0"
+                          title={pack.phonemes?.join(' ') || pack.category}
+                        >
+                          {pack.phonemes?.join(' ') || pack.category}
+                        </span>
+                      </div>
+                      {pack.drillWords && pack.drillWords.length > 0 && (
+                        <div className="text-[11px] text-slate-400 mt-1 font-mono line-clamp-1">
+                          {pack.drillWords.slice(0, 4).join(', ')}...
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                );
+              })
+            ) : (
+              TARGET_SOUND_PRESETS.map((preset) => {
+                const isSelected = targetSounds === preset.value;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => handleSoundPresetSelect(preset.value)}
+                    className={`text-left p-3 rounded-2xl border transition flex flex-col justify-between ${
+                      isSelected
+                        ? 'border-primary bg-indigo-50/80 text-primary ring-2 ring-primary/20 shadow-xs'
+                        : 'border-slate-200/90 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50/60'
+                    }`}
+                  >
+                    <div>
+                      <div className="text-xs font-bold leading-tight">{preset.label}</div>
+                      <div className="text-[11px] text-slate-400 mt-1 font-mono line-clamp-1">{preset.example}</div>
+                    </div>
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          {/* Selected Pack Interactive Preview */}
+          {selectedPack && !ecoMode && (
+            <div className="p-4 rounded-2xl bg-white border border-indigo-100 shadow-xs space-y-3 animate-in fade-in duration-200">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-50 pb-2">
+                <div className="flex items-center space-x-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-bold text-slate-800">
+                    Target Words to Weave into Speech:
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400">Click word to hear pronunciation</span>
+              </div>
+
+              {/* Drill Words Pills */}
+              {selectedPack.drillWords && selectedPack.drillWords.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedPack.drillWords.map((word) => (
+                    <button
+                      type="button"
+                      onClick={() => handleTestAudio(word)}
+                      className="group px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 text-xs font-medium text-slate-700 hover:text-primary transition flex items-center space-x-1"
+                      title={`Click to pronounce "${word}"`}
+                    >
+                      <span>{word}</span>
+                      <Volume2 className="w-3 h-3 text-slate-400 group-hover:text-primary" />
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Minimal Pairs Contrast preview */}
+              {selectedPack.minimalPairs && selectedPack.minimalPairs.length > 0 && (
+                <div className="pt-1 text-xs text-slate-600 flex flex-wrap items-center gap-2">
+                  <span className="font-semibold text-slate-500 text-[11px]">Contrast Pairs:</span>
+                  {selectedPack.minimalPairs.map((pair, idx) => (
+                    <span key={idx} className="px-2 py-0.5 rounded-lg bg-indigo-50/60 text-slate-800 font-mono text-[11px]">
+                      <strong>{pair.word1}</strong> ({pair.phoneme1}) vs <strong>{pair.word2}</strong> ({pair.phoneme2})
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {selectedPack.contrastFocus && (
+                <p className="text-[11px] text-slate-500 italic">
+                  {selectedPack.contrastFocus}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Selected Sound Focus / Custom Input */}
+          <div className="pt-1 space-y-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-600 flex items-center space-x-1">
+                <Edit3 className="w-3 h-3 text-primary" />
+                <span>Target Sounds, Phonemes & Custom Practice Words:</span>
+              </span>
+              <span className="text-[10px] text-slate-400">Expandable editor</span>
+            </div>
+            <AutoExpandingTextarea
+              minRows={2}
+              value={targetSounds}
+              onChange={onTargetSoundsChange}
+              placeholder="e.g. /θ/, /ð/, rhythm, sentence stress, or custom tongue-twister words (e.g. thought, through, thirty-three, weather)"
+              className="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400"
+            />
+            <p className="text-[11px] text-slate-400">
+              Selected phoneme pack words are populated here. You can expand this box and freely type additional contrast words or pronunciation goals.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Eco Mode Toggle */}
       {onEcoModeChange && (
@@ -406,11 +586,20 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
       {/* Passage Length Presets */}
       <div className="space-y-3">
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-          Passage Length
+          {activeMode === 'SITUATION' ? 'Длительность и объем ответа' : 'Passage Length'}
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {SPEAKING_LENGTH_PRESETS.map((preset) => {
             const isSelected = speakingLength === preset.value;
+            const desc = activeMode === 'SITUATION'
+              ? preset.value === 'SHORT'
+                ? '30–50 слов (~20–40 сек речи для короткого ответа).'
+                : preset.value === 'LONG'
+                ? '120–180 слов (~60–90 сек речи для развернутой реплики).'
+                : preset.value === 'CUSTOM'
+                ? 'Указать пользовательский объем речи.'
+                : '60–90 слов (~30–60 сек речи для стандартной ситуации).'
+              : preset.desc;
             return (
               <button
                 key={preset.value}
@@ -427,7 +616,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
                     <span>{preset.label}</span>
                     {isSelected && <Check className="w-3.5 h-3.5 text-primary" />}
                   </div>
-                  <div className="text-[11px] text-slate-400 mt-1 leading-relaxed">{preset.desc}</div>
+                  <div className="text-[11px] text-slate-400 mt-1 leading-relaxed">{desc}</div>
                 </div>
               </button>
             );

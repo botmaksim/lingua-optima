@@ -1665,6 +1665,76 @@ class TaskServiceTest {
     }
 
     /**
+     * @brief Tests generation of SPEAKING task in SITUATION mode, metadata storage, and response mapping.
+     */
+    @Test
+    void testGenerateSpeakingTaskSituationMode() {
+        String situationJson = """
+            {
+              "title": "Hotel Reception Room Issue",
+              "speakingMode": "SITUATION",
+              "content": "Role: Hotel Guest\\nSetting: Central London Hotel\\nGoal: Explain the heating is broken and ask for a room change.\\n\\nTalking Points:\\n• State room number\\n• Explain the cold\\n• Request solution",
+              "targetSounds": "Polite intonation, indirect questions",
+              "situation": {
+                "role": "Hotel Guest",
+                "setting": "Central London Hotel",
+                "goal": "Explain the heating is broken",
+                "talkingPoints": ["State room number", "Explain the cold", "Request solution"],
+                "usefulPhrases": ["Could you please", "Would it be possible"],
+                "sampleResponse": "Good evening, I'm staying in room 204. The radiator is completely cold..."
+              },
+              "questions": [
+                {
+                  "id": 1,
+                  "questionOrder": 1,
+                  "type": "SPEAKING",
+                  "text": "Speak clearly to resolve this situation.",
+                  "correctAnswer": "Good evening, I'm staying in room 204...",
+                  "grammarRule": "Communicative Role-Play & Situational Fluency",
+                  "difficulty": 2,
+                  "points": 100,
+                  "options": []
+                }
+              ],
+              "answerKey": []
+            }
+            """;
+
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn(situationJson);
+        when(taskRepository.save(any(Task.class))).thenAnswer(inv -> {
+            Task t = inv.getArgument(0);
+            t.setId(UUID.randomUUID());
+            return t;
+        });
+
+        TaskParamsRequest req = TaskParamsRequest.builder()
+            .taskType(TaskType.SPEAKING)
+            .speakingMode("SITUATION")
+            .cefrLevel(CefrLevel.B2)
+            .grammarTopic("Hotel Problem")
+            .domain("Travel")
+            .speakingTitle("Hotel Reception Room Issue")
+            .totalPoints(100)
+            .build();
+
+        TaskResponse res = taskService.generateTask(req, teacherUser);
+        assertNotNull(res);
+        assertEquals(TaskType.SPEAKING, res.getType());
+        assertEquals("SITUATION", res.getSpeakingMode());
+        assertEquals("Hotel Reception Room Issue", res.getSpeakingTitle());
+        assertTrue(res.getContent().contains("Role: Hotel Guest"));
+        assertEquals(1, res.getQuestions().size());
+
+        // Test fallback generation when AI returns empty
+        when(aiBrokerService.generateTaskContent(anyString(), eq(teacherUser))).thenReturn("{\"content\":\"\"}");
+        TaskResponse emptySituationRes = taskService.generateTask(req, teacherUser);
+        assertNotNull(emptySituationRes);
+        assertEquals("SITUATION", emptySituationRes.getSpeakingMode());
+        assertTrue(emptySituationRes.getContent().contains("Role: Customer / Participant"));
+        assertTrue(emptySituationRes.getContent().contains("Talking Points:"));
+    }
+
+    /**
      * @brief Verifies that speaking generation injects pronunciation pack drill words when Eco Mode is off.
      */
     @Test

@@ -8,7 +8,11 @@ import { getWordCount } from '../utils/wordCount';
 import { getCefrBadgeClasses } from '../utils/cefrColors';
 import { formatDate } from '../utils/formatDate';
 import { CefrLevel } from '../types/user';
-import { splitTextForSpeechWithPauses } from '../utils/phonetics';
+import {
+  splitTextForSpeechWithPauses,
+  parseSituationContent,
+  evaluateSituationalSpeech
+} from '../utils/phonetics';
 
 describe('wordCount utility', () => {
   it('returns 0 for empty or whitespace string', () => {
@@ -106,6 +110,65 @@ describe('splitTextForSpeechWithPauses utility', () => {
   it('attaches trailing punctuation to the previous segment if there is no succeeding text', () => {
     const result = splitTextForSpeechWithPauses('Where have you _____?');
     expect(result).toEqual(['Where have you?']);
+  });
+});
+
+describe('parseSituationContent & evaluateSituationalSpeech utilities', () => {
+  it('correctly parses structured situation text into fields', () => {
+    const rawText = `Role: Hotel Guest
+Setting: Central London hotel reception
+Goal: Request a room upgrade due to noisy street traffic
+
+Talking Points:
+• Explain politely that the current room is facing a noisy avenue
+• Inquire whether an executive room with courtyard view is available
+• Offer to pay any rate difference if needed
+
+Useful Expressions:
+• I was wondering if it might be possible to...
+• Would you happen to have any rooms facing...?
+• I would really appreciate your assistance.`;
+
+    const parsed = parseSituationContent(rawText);
+    expect(parsed.role).toBe('Hotel Guest');
+    expect(parsed.setting).toBe('Central London hotel reception');
+    expect(parsed.goal).toBe('Request a room upgrade due to noisy street traffic');
+    expect(parsed.talkingPoints.length).toBe(3);
+    expect(parsed.talkingPoints[0]).toContain('Explain politely');
+    expect(parsed.usefulExpressions.length).toBe(3);
+    expect(parsed.usefulExpressions[0]).toContain('I was wondering if');
+  });
+
+  it('evaluates situational speech delivery, pacing, and talking points coverage', () => {
+    const context = {
+      role: 'Hotel Guest',
+      talkingPoints: [
+        'Explain that your room is facing noisy traffic',
+        'Inquire about a quieter courtyard room',
+      ],
+      usefulExpressions: ['I was wondering if it might be possible to change rooms'],
+    };
+
+    const transcript =
+      'Good morning. I was wondering if it might be possible to change rooms because my current room is facing noisy street traffic and I cannot sleep. Do you have a quieter courtyard room available?';
+
+    const result = evaluateSituationalSpeech(context, transcript, 15);
+    expect(result.wpm).toBeGreaterThan(60);
+    expect(result.accuracyScore).toBeGreaterThanOrEqual(80);
+    expect(result.overallScore).toBeGreaterThanOrEqual(80);
+    expect(result.words.length).toBeGreaterThan(20);
+    expect(result.generalFeedback.length).toBeGreaterThan(1);
+  });
+
+  it('handles recorded audio fallback gracefully', () => {
+    const context = {
+      talkingPoints: ['Describe your project'],
+    };
+
+    const result = evaluateSituationalSpeech(context, '[Recorded Audio Submission]', 20);
+    expect(result.accuracyScore).toBe(85);
+    expect(result.overallScore).toBe(85);
+    expect(result.generalFeedback[0]).toContain('Аудиозапись успешно сохранена');
   });
 });
 

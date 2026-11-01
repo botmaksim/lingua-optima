@@ -12,6 +12,11 @@ export type { CefrLevel };
 export type TaskType = 'MCQ' | 'GAP_FILL' | 'OPEN_BRACKETS' | 'REWRITE' | 'ESSAY' | 'SHORT_ANSWER' | 'READING' | 'SPEAKING';
 
 /**
+ * @brief Speaking exercise modality: TEXT (oral reading passage) or SITUATION (communicative role-play).
+ */
+export type SpeakingMode = 'TEXT' | 'SITUATION';
+
+/**
  * @brief Task difficulty categorization.
  */
 export type DifficultyLevel = 'EASY' | 'MEDIUM' | 'HARD';
@@ -76,6 +81,8 @@ export interface Task {
   isTeacherTask?: boolean;
   /** @brief Custom title or drill topic for speaking tasks. */
   speakingTitle?: string;
+  /** @brief Speaking exercise modality: TEXT or SITUATION. */
+  speakingMode?: SpeakingMode;
 }
 
 /**
@@ -133,6 +140,8 @@ export interface TaskParams {
   speakingLength?: string;
   /** @brief Optional ID of pre-calibrated pronunciation pack from phonetics/pronunciation_packs.json. */
   pronunciationPackId?: string;
+  /** @brief Optional speaking mode: TEXT (oral reading passage) or SITUATION (communicative role-play). */
+  speakingMode?: SpeakingMode;
 }
 
 /**
