@@ -356,8 +356,8 @@ export const GenerateTask: React.FC = () => {
       setGrammarTopic('Speech & Pronunciation Practice');
       addToast({
         type: 'info',
-        title: 'Рекомендованная фонетическая практика',
-        message: `Заполнен фокус произношения: ${preset.label} (${preset.value})`,
+        title: 'Recommended Pronunciation Practice',
+        message: `Applied pronunciation focus: ${preset.label} (${preset.value})`,
       });
       return;
     }
@@ -398,8 +398,8 @@ export const GenerateTask: React.FC = () => {
       setGrammarTopic(randomPreset.label);
       addToast({
         type: 'info',
-        title: 'Случайный фонетический сет',
-        message: `Выбран фокус: ${randomPreset.label} (${randomPreset.value})`,
+        title: 'Random Phonetic Set',
+        message: `Selected focus: ${randomPreset.label} (${randomPreset.value})`,
       });
       return;
     }

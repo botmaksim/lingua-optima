@@ -383,7 +383,7 @@ describe('TaskView component', () => {
     expect(await screen.findByText(/She ___ \(work\) in a bank\./i)).toBeInTheDocument();
 
     // Toggle Instant Feedback checkbox
-    const instantCheckbox = screen.getByLabelText(/Мгновенная проверка/i);
+    const instantCheckbox = screen.getByLabelText(/Instant Feedback/i);
     fireEvent.click(instantCheckbox);
     expect(instantCheckbox).toBeChecked();
 
@@ -431,10 +431,10 @@ describe('TaskView component', () => {
     expect(await screen.findByText(/They ___ to the store\./i)).toBeInTheDocument();
 
     // Instant feedback checkbox must be hidden for teacher tasks
-    expect(screen.queryByLabelText(/Мгновенная проверка/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Instant Feedback/i)).not.toBeInTheDocument();
 
     // Explain sentence button must NOT be present during active homework
-    expect(screen.queryByTitle(/Объяснить предложение с помощью ИИ \(E\)/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/Explain sentence/i)).not.toBeInTheDocument();
   });
 });
 
@@ -1616,7 +1616,7 @@ describe('SpeakingConfigPanel component', () => {
       />
     );
 
-    const situationTab = screen.getByRole('button', { name: /Коммуникативная ситуация/i });
+    const situationTab = screen.getByRole('button', { name: /Communicative Situation/i });
     fireEvent.click(situationTab);
     expect(handleModeChange).toHaveBeenCalledWith('SITUATION');
   });
@@ -1706,7 +1706,7 @@ describe('SpeakingPracticeView component', () => {
     expect(screen.getAllByText(/100%/i).length).toBeGreaterThan(0);
 
     // Click submit evaluation
-    const submitBtn = screen.getByRole('button', { name: /Отправить результат|Submit Speaking/i });
+    const submitBtn = screen.getByRole('button', { name: /Submit Result|Submit Speaking/i });
     fireEvent.click(submitBtn);
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);
@@ -1727,9 +1727,9 @@ describe('SpeakingPracticeView component', () => {
       />
     );
 
-    const modelAudioBtn = screen.getByRole('button', { name: /Образец скрыт/i });
+    const modelAudioBtn = screen.getByRole('button', { name: /Sample Hidden/i });
     expect(modelAudioBtn).toBeDisabled();
-    expect(modelAudioBtn).toHaveAttribute('title', 'Прослушивание образца заблокировано до сдачи ответа (Задание преподавателя)');
+    expect(modelAudioBtn).toHaveAttribute('title', 'Sample audio is locked until response submission (Teacher assignment setting)');
   });
 
   it('allows starting recording via MediaRecorder fallback when SpeechRecognition is not supported', () => {
@@ -1743,7 +1743,7 @@ describe('SpeakingPracticeView component', () => {
     );
 
     // Record button should be enabled regardless of SpeechRecognition support
-    const recordBtn = screen.getByRole('button', { name: /Начать запись/i });
+    const recordBtn = screen.getByRole('button', { name: /Start Recording/i });
     expect(recordBtn).not.toBeDisabled();
   });
 
@@ -1772,7 +1772,7 @@ Useful Expressions:
     );
 
     expect(screen.getByText('Hotel Reception Role-Play')).toBeInTheDocument();
-    expect(screen.getByText('Ролевая ситуация')).toBeInTheDocument();
+    expect(screen.getByText('Communicative Situation')).toBeInTheDocument();
     expect(screen.getByText('Hotel Guest')).toBeInTheDocument();
     expect(screen.getByText('Ask for a room upgrade')).toBeInTheDocument();
     expect(screen.getByText('Explain your room is noisy')).toBeInTheDocument();
@@ -2150,13 +2150,13 @@ describe('Keyboard Hotkeys System', () => {
 
     // 5. Press '?' to toggle Hotkeys modal cheatsheet
     fireEvent.keyDown(window, { key: '?', code: 'Slash', shiftKey: true });
-    expect(await screen.findByText('Горячие клавиши (Hotkeys)')).toBeInTheDocument();
-    expect(screen.getByText('Управляйте процессотом решения заданий без мыши')).toBeInTheDocument();
+    expect(await screen.findByText('Keyboard Shortcuts')).toBeInTheDocument();
+    expect(screen.getByText('Navigate and complete assignments efficiently without a mouse')).toBeInTheDocument();
 
     // 6. Press 'Escape' to dismiss Hotkeys modal
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
     await waitFor(() => {
-      expect(screen.queryByText('Горячие клавиши (Hotkeys)')).not.toBeInTheDocument();
+      expect(screen.queryByText('Keyboard Shortcuts')).not.toBeInTheDocument();
     });
   });
 

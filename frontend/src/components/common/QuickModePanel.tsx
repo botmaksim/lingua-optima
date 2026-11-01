@@ -603,7 +603,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
         {(format === 'SPEAKING' || (format === 'RECOMMENDED' && detectedWeakness.modality === 'SPEAKING')) && (
           <div className="pt-3 border-t border-amber-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-2 animate-in fade-in duration-200">
             <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
-              Формат говорения:
+              Speaking Format:
             </span>
             <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
               <button
@@ -619,7 +619,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
                     : 'bg-white text-slate-700 hover:bg-amber-50 border border-slate-200'
                 }`}
               >
-                <span>Текст (Чтение вслух)</span>
+                <span>Text (Oral Reading)</span>
               </button>
               <button
                 type="button"
@@ -634,7 +634,7 @@ export const QuickModePanel: React.FC<QuickModePanelProps> = ({
                     : 'bg-white text-slate-700 hover:bg-amber-50 border border-slate-200'
                 }`}
               >
-                <span>Коммуникативная ситуация</span>
+                <span>Communicative Situation</span>
               </button>
             </div>
           </div>

@@ -260,7 +260,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
       {/* Speaking Mode Selector: TEXT vs SITUATION */}
       <div className="space-y-1.5">
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-          Формат говорения
+          Speaking Format
         </label>
         <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200">
           <button
@@ -273,7 +273,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Текст (Чтение вслух)</span>
+            <span>Text (Oral Reading)</span>
           </button>
           <button
             type="button"
@@ -285,20 +285,20 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>Коммуникативная ситуация</span>
+            <span>Communicative Situation</span>
           </button>
         </div>
         <p className="text-[11px] text-slate-400">
           {activeMode === 'SITUATION'
-            ? 'Ролевая игра в реальной ситуации: диалог, решение проблемы или переговоры'
-            : 'Чтение текста вслух для отработки правильного произношения, звуков и ритма'}
+            ? 'Authentic communicative simulation: dialogue, problem-solving, or negotiation'
+            : 'Oral reading aloud for accurate pronunciation, rhythm, and phoneme practice'}
         </p>
       </div>
 
       {/* Assignment Title */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-          {activeMode === 'SITUATION' ? 'Название ситуации' : 'Assignment Title'}
+          {activeMode === 'SITUATION' ? 'Situation Title' : 'Assignment Title'}
         </label>
         <AutoExpandingTextarea
           value={speakingTitle}
@@ -323,7 +323,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
-              <span>Сценарии коммуникативных ситуаций</span>
+              <span>Communicative Situation Scenarios</span>
             </label>
             <button
               type="button"
@@ -331,7 +331,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
               className="flex items-center space-x-1 text-[11px] font-bold text-primary hover:text-primary-hover bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-xl transition"
             >
               <Dices className="w-3.5 h-3.5" />
-              <span>Случайный сценарий</span>
+              <span>Random Scenario</span>
             </button>
           </div>
 
@@ -369,7 +369,7 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-600 flex items-center space-x-1">
                 <Edit3 className="w-3 h-3 text-primary" />
-                <span>Цель диалога, роль и полезные фразы:</span>
+                <span>Goal, Role & Target Expressions:</span>
               </span>
               <span className="text-[10px] text-slate-400">Expandable editor</span>
             </div>
@@ -377,11 +377,11 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
               minRows={2}
               value={targetSounds}
               onChange={onTargetSoundsChange}
-              placeholder="e.g. Роль: Гость отеля. Ситуация: в номере не работает отопление. Полезные фразы: I'm afraid there seems to be a problem..., Would it be possible to..."
+              placeholder="e.g. Role: Hotel Guest. Scenario: Heating broken in room. Key phrases: I'm afraid there seems to be a problem..., Would it be possible to..."
               className="w-full text-xs font-mono text-slate-800 placeholder:text-slate-400"
             />
             <p className="text-[11px] text-slate-400">
-              Укажите желаемую коммуникативную роль, тему беседы и фразы, которые студент должен отработать в диалоге.
+              Specify the target role, communicative scenario, and key expressions the student should practice.
             </p>
           </div>
         </div>
@@ -586,19 +586,19 @@ export const SpeakingConfigPanel: React.FC<SpeakingConfigPanelProps> = ({
       {/* Passage Length Presets */}
       <div className="space-y-3">
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-          {activeMode === 'SITUATION' ? 'Длительность и объем ответа' : 'Passage Length'}
+          {activeMode === 'SITUATION' ? 'Response Duration & Length' : 'Passage Length'}
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {SPEAKING_LENGTH_PRESETS.map((preset) => {
             const isSelected = speakingLength === preset.value;
             const desc = activeMode === 'SITUATION'
               ? preset.value === 'SHORT'
-                ? '30–50 слов (~20–40 сек речи для короткого ответа).'
+                ? '30–50 words (~20–40 sec of speech for quick responses).'
                 : preset.value === 'LONG'
-                ? '120–180 слов (~60–90 сек речи для развернутой реплики).'
+                ? '120–180 words (~60–90 sec of speech for extended discourse).'
                 : preset.value === 'CUSTOM'
-                ? 'Указать пользовательский объем речи.'
-                : '60–90 слов (~30–60 сек речи для стандартной ситуации).'
+                ? 'Specify custom speech length.'
+                : '60–90 words (~30–60 sec of speech for standard situations).'
               : preset.desc;
             return (
               <button

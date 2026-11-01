@@ -239,9 +239,9 @@ export const Dashboard: React.FC = () => {
           </p>
           {gaps.length > 0 && (
             <div className="mt-3.5 inline-flex items-center space-x-2 bg-slate-800/90 px-3 py-1.5 rounded-lg text-xs text-slate-300 border border-slate-700/80">
-              <span className="font-semibold text-amber-400">Фокус:</span>
+              <span className="font-semibold text-amber-400">Focus:</span>
               <span className="font-medium text-white">{[...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].grammarTopic}</span>
-              <span className="text-slate-400">· {Math.round([...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].masteryScore * 100)}% освоено</span>
+              <span className="text-slate-400">· {Math.round([...gaps].sort((a, b) => a.masteryScore - b.masteryScore)[0].masteryScore * 100)}% mastered</span>
             </div>
           )}
         </div>
@@ -252,14 +252,14 @@ export const Dashboard: React.FC = () => {
             className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-xl bg-primary hover:bg-primary-hover text-white font-semibold text-sm transition shadow-xs"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Сгенерировать задание</span>
+            <span>Generate Task</span>
           </button>
           <button
             onClick={() => navigate('/student/ocr')}
-            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-4.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-sm transition"
+            className="flex-1 md:flex-initial flex items-center justify-center space-x-2 py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-sm transition shadow-xs"
           >
             <Camera className="w-4 h-4" />
-            <span>Фото тетради</span>
+            <span>Scan Worksheet</span>
           </button>
         </div>
       </div>

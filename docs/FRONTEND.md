@@ -16,9 +16,9 @@ Comprehensive documentation for the frontend application of **Lingua Optima** �
 8. **External Automated Translation Widget:** To avoid bloated or incomplete hardcoded translation dictionaries, a global `TranslatorDropdown` component in the Navbar enables on-page translation via official Google Translate widget (with full language picker, RU/ES/DE/FR/ZH/AR/TR support, and 1-click reversion back to original English).
 9. **Mobile-First Navigation & UX:** Features a persistent `MobileBottomNav` on mobile viewports (<768px) providing one-thumb access to core workspaces, optimized touch interaction (`touch-action: manipulation`), responsive card layouts for tables, and accessible touch target sizes.
 10. **Printable Academic Reports & Date-Range Filtering:** Educator reporting module (`ExportReports.tsx`) supports date-range presets (All Time, Last 7 Days, Last 30 Days, This Month, Custom Range) and clean paper/PDF print preview via dedicated `@media print` CSS styles.
-11. **Card Focus Mode (Step-by-Step) with Keyboard Hotkeys:** `TaskView.tsx` supports two streamlined views: Classic List and Card Focus Mode (single question at a time with keyboard hotkeys `1-4`, `ArrowLeft`/`ArrowRight`, and `Enter`). Card Focus features optional Instant Feedback (`Мгновенная проверка`) highlighting answers immediately with checkmark/cross badges and embedded grammar explanations in self-practice mode.
-12. **Academic Integrity & Anti-Cheating Rules:** In teacher-assigned tasks, `correctAnswer` and `grammarRule` fields are strictly redacted by the backend until submission. The instant feedback toggle (`Мгновенная проверка`) is hidden, option buttons lock on first selection in self-practice instant mode to prevent brute-force guessing, contextual sentence breakdown (`💡 Пояснить`) is disabled during homework, and speaking model preview audio is locked until the student has recorded their spoken answer.
-13. **Sentence AI Explainer Engine:** Allows students to highlight any sentence in reading passages or click `[ 💡 Пояснить ]` on any exercise item to view contextual Russian translation, grammatical breakdown, and key vocabulary via `POST /api/tasks/explain-sentence`.
+11. **Card Focus Mode (Step-by-Step) with Keyboard Hotkeys:** `TaskView.tsx` supports two streamlined views: Classic List and Card Focus Mode (single question at a time with keyboard hotkeys `1-4`, `ArrowLeft`/`ArrowRight`, and `Enter`). Card Focus features optional Instant Feedback (`Instant Feedback`) highlighting answers immediately with checkmark/cross badges and embedded grammar explanations in self-practice mode.
+12. **Academic Integrity & Anti-Cheating Rules:** In teacher-assigned tasks, `correctAnswer` and `grammarRule` fields are strictly redacted by the backend until submission. The instant feedback toggle (`Instant Feedback`) is hidden, option buttons lock on first selection in self-practice instant mode to prevent brute-force guessing, contextual sentence breakdown (`💡 Explain`) is disabled during homework, and speaking model preview audio is locked until the student has recorded their spoken answer.
+13. **Sentence AI Explainer Engine:** Allows students to highlight any sentence in reading passages or click `[ 💡 Explain ]` on any exercise item to view contextual Russian translation, grammatical breakdown, and key vocabulary via `POST /api/tasks/explain-sentence`.
 14. **Smart Recommended Practice:** `QuickModePanel.tsx` features an intelligent `Recommended` format that queries `progressApi.getGaps()` to automatically target the student's weakest grammar topic or foundational CEFR unit.
 15. **Zero-Dependency Confetti Celebration:** `src/utils/confetti.ts` renders dynamic particle confetti using HTML5 Canvas upon achieving scores $\ge 90\%$.
 
@@ -293,22 +293,25 @@ The application implements full Progressive Web App (PWA) support to ensure a re
 - **Speech Synthesis (`speakWord`, `speakText`, `stopSpeech`)**: Natural speech playback with accent selection (`en-US` and `en-GB`).
 
 ### 3. Educator Configuration (`SpeakingConfigPanel.tsx`)
-- Configures assignment title, target phonemes, passage length presets (`Short 30–50w`, `Medium 60–90w`, `Long 120–180w`, `Custom`), scenario instructions, and total points.
-- Integrates calibrated CEFR JSON Pronunciation Packs (A1–C2) with minimal pair contrast exploration.
-- Eco Mode switch: toggles between enriched phonetic guidance and token-saving lightweight prompt compiling.
+- Supports two distinct speaking formats via Mode Switcher:
+  - **`Text (Oral Reading)`**: Configures assignment title, target phonemes, passage length presets (`Short 30–50w`, `Medium 60–90w`, `Long 120–180w`, `Custom`), and integrates calibrated CEFR JSON Pronunciation Packs (A1–C2) with minimal pair contrast exploration.
+  - **`Communicative Situation`**: Generates real-world conversational scenarios (e.g. Hotel Check-in, Job Interview, Returning Defective Item) with situation titles, role specifications, target talking points, useful expressions, and duration guidance (`30–50 words / 20–40s` up to `120–180 words / 60–90s`).
+- Eco Mode switch: toggles between enriched guidance and token-saving lightweight prompt compiling.
 - Live TTS audio tester allows instant verification of speaker audio across US and UK accents.
 
 ### 4. Student Practice Workspace (`SpeakingPracticeView.tsx`)
-- Displays target phoneme focus badges, points, and passage word chips.
-- Click any individual word to hear native pronunciation and inspect its IPA transcription.
-- Real-time speech recognition recording with live duration timer (`00:15`) and interim transcript feedback.
+- Displays target focus badges, points, and dynamic layout based on mode:
+  - In **Oral Reading** mode: displays passage word chips. Click any word to hear native pronunciation and inspect its IPA transcription.
+  - In **Communicative Situation** mode: renders situation brief card (`Role`, `Setting`, `Communicative Goal`), structured `Talking Points` checklist, and click-to-hear `Useful Expressions` audio chips with optional sample model answer.
+- Real-time voice capture via Web Speech API or MediaRecorder audio fallback with live duration timer (`00:15`) and interim transcript feedback.
 - **Speech Rate & Pacing Engine (`phonetics.ts`)**:
-  - Dynamically computes reading speed in Words Per Minute (WPM): `Math.round(spokenWordCount / elapsedMinutes)`.
-  - Calibrates pacing score with a calibrated Gaussian-style comfort curve: 100% optimal for 100–160 WPM, smoothly descending for rushed (>180 WPM) or halting (<80 WPM) cadence.
-  - Automatically generates actionable pacing tips in `generalFeedback`.
+  - Dynamically computes speaking tempo in Words Per Minute (WPM): `Math.round(spokenWordCount / elapsedMinutes)`.
+  - Calibrates conversational pacing score (optimal 90–150 WPM for natural dialogue).
+  - Evaluates topical coverage of situational talking points without penalizing spontaneous conversational variations.
+  - Automatically generates actionable fluency and pacing tips in English `generalFeedback`.
 - **Diagnostic Stats Quad**:
-  - Displays 4 key performance metrics: Pronunciation Accuracy (%), Speech Speed (WPM with gauge indicator), Mispronounced Words count, and Recording Duration (seconds).
-- Comprehensive evaluation breakdown with color-coded word highlights, word-by-word articulation popovers, and overall accuracy badges.
+  - Displays 4 key performance metrics: Communicative Fluency / Accuracy (%), Speech Speed (WPM with gauge indicator), Words Spoken count, and Recording Duration (seconds).
+- Comprehensive evaluation breakdown with spoken transcript word chips, IPA transcriptions, and submit actions.
 
 ### 5. Educator Submission Diagnostics (`SubmissionsReview.tsx`)
 - Dedicated oral speaking diagnostic banner displaying accuracy score, speech rate (WPM), recording duration, pacing analysis, spoken transcript, and reference text.

@@ -88,7 +88,7 @@ Seven provider implementations are available: `GroqProvider`, `GeminiProvider`, 
 
 **Provider & Model Selection Logic:**
 1. Does the user have a custom API key configured? → Match the user's `preferredProvider` (selected per task or first configured key), decrypt the key with AES-256-GCM at runtime, and instantiate the provider with `Optional.ofNullable(user.getPreferredModel()).orElse(key.getModelName())` (falling back to the provider's modern `DEFAULT_MODEL`).
-2. No custom key? → Route to the system default provider (`GroqProvider` with `llama-3.3-70b-versatile` for task generation, `GeminiProvider` with `gemini-3.8-flash` for essay scoring).
+2. No custom key? → Route to the system default provider (`GroqProvider` with `llama-3.3-70b-versatile` for task generation, `GeminiProvider` with ultra-low latency `gemini-3.5-flash` for essay scoring and sentence explanation).
 
 ```mermaid
 classDiagram
@@ -424,11 +424,13 @@ Essay evaluation is modeled after official IELTS and Cambridge English assessmen
 ## 10. Speaking Passage Generation & Pronunciation Assessment Architecture
 
 ### 10.1 Speaking Prompt Engineering (`PromptTemplates.buildSpeakingGenerationPrompt`)
-- **CEFR & Phonemic Alignment**: The generation prompt directs the LLM to construct a coherent narrative passage calibrated to the target CEFR level while maximizing occurrences of target sounds and contrastive minimal pairs (such as `/θ/` and `/ð/`, `/r/` and `/l/`, `/v/` and `/w/`, `/iː/` and `/ɪ/`).
+- **Dual Mode Support**:
+  - **`TEXT` Mode (Oral Reading & Phonetic Drills)**: Directs the LLM to construct a coherent narrative passage calibrated to the target CEFR level while maximizing occurrences of target sounds and contrastive minimal pairs (such as `/θ/` and `/ð/`, `/r/` and `/l/`, `/v/` and `/w/`, `/iː/` and `/ɪ/`).
+  - **`SITUATION` Mode (Communicative Role-Play Simulation)**: Prompts the LLM to design an authentic conversational simulation with a defined `Role`, `Setting`, `Goal`, numbered `Talking Points`, clickable `Useful Expressions` for pronunciation audition, and an exemplar `Sample Response`.
 - **Passage Length Presets**:
-  - `SHORT` (30–50 words): 2–3 sentences. Ideal for focused sound drills and quick testing.
-  - `MEDIUM` (60–90 words): 1 rich paragraph. Balanced fluency, rhythm, and natural discourse.
-  - `LONG` (120–180 words): 2–3 paragraphs. Continuous discourse and complex prosody.
+  - `SHORT` (30–50 words): 2–3 sentences (or 20–40s situational response). Ideal for focused drills and quick tests.
+  - `MEDIUM` (60–90 words): 1 rich paragraph (or 30–60s conversational response). Balanced fluency and prosody.
+  - `LONG` (120–180 words): 2–3 paragraphs (or 60–90s extended discourse).
   - `CUSTOM`: Custom word counts and educator-specified stylistic parameters.
 - **Strict JSON Contract**: Enforces valid JSON output conforming to the backend `TaskService` parser schema.
 

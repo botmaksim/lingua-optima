@@ -650,12 +650,15 @@ The PostgreSQL relational database is version-controlled using an enterprise bas
 ### 12.1 Speaking Task Architecture
 - **TaskType.SPEAKING**: Designed for oral speech practice, pronunciation assessment, and connected speech training.
 - **TaskParamsRequest Fields**:
-  - `speakingTitle`: Custom title or thematic focus for the speech drill.
-  - `targetSounds`: Target phoneme contrasts or articulatory focus (e.g., `/θ/` vs `/ð/`, `/r/` vs `/l/`, `/v/` vs `/w/`, `/iː/` vs `/ɪ/`, sibilants, silent consonants, natural rhythm).
+  - `speakingMode`: Speaking exercise format: `TEXT` (Oral Reading) or `SITUATION` (Communicative Role-Play Situation). Defaults to `TEXT`.
+  - `speakingTitle`: Custom title or thematic focus for the speech drill / communicative scenario.
+  - `targetSounds`: Target phoneme contrasts or articulatory focus for `TEXT` mode (e.g., `/θ/` vs `/ð/`, `/r/` vs `/l/`, `/v/` vs `/w/`, `/iː/` vs `/ɪ/`), or communicative goals, roles, and target expressions for `SITUATION` mode.
   - `speakingLength`: Passage length presets (`SHORT` 30–50 words, `MEDIUM` 60–90 words, `LONG` 120–180 words, or `CUSTOM`).
-- **Passage Generation**: Governed by `PromptTemplates.buildSpeakingGenerationPrompt(...)`. Prompts LLMs to construct an oral reading text packed with the target phonemes while strictly enforcing the student's CEFR vocabulary constraints and natural prosody.
-- **Teacher Review & Editability**: In `ConfigureTask.tsx`, educators can review generated passages, edit sentences in a live textarea, test native pronunciation playback via TTS, and deploy to cohorts.
-- **Student Self-Service Generation**: In `GenerateTask.tsx`, students can autonomously configure target phonemes and generate custom speaking practice drills.
+- **Passage Generation Modes**:
+  - **`TEXT` Mode (Oral Reading)**: Governed by `PromptTemplates.buildSpeakingGenerationPrompt(...)`. Directs the LLM to construct a connected text packed with target phonemes while enforcing CEFR vocabulary and natural rhythm.
+  - **`SITUATION` Mode (Communicative Situation)**: Prompts the LLM to generate an authentic real-world role-play simulation containing `Role`, `Setting`, `Goal`, `Talking Points`, `Useful Expressions` (with click-to-hear audio TTS preview), and an exemplar `Sample Response`.
+- **Teacher Review & Editability**: In `ConfigureTask.tsx`, educators can review generated passages or scenarios, edit content in a live auto-expanding textarea, test pronunciation, and deploy to cohorts.
+- **Student Self-Service Generation**: In `GenerateTask.tsx` and `QuickModePanel.tsx`, students can toggle between Oral Reading and Communicative Situation formats with 1-click preset pools.
 
 ### 12.2 Speaking Evaluation & Speed Rate Pacing Analysis
 - **ScoringService.scoreSpeakingTask**:

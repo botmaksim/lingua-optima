@@ -51,86 +51,86 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
 
   const sections: ShortcutSection[] = [
     {
-      title: 'Выбор вариантов ответов',
+      title: 'Answer Selection',
       icon: <CheckCircle2 className="w-4 h-4 text-emerald-600" />,
       shortcuts: [
         {
           keys: ['1', '2', '3', '4'],
-          description: 'Мгновенный выбор варианта ответа по номеру',
+          description: 'Quickly select answer by option number',
         },
         {
           keys: ['A', 'B', 'C', 'D'],
-          description: 'Выбор варианта по букве (поддерживается и русская раскладка: Ф, И, С, В)',
+          description: 'Select option by letter (also supports RU layout: Ф, И, С, В)',
         },
         {
           keys: ['T', 'F'],
-          description: 'Выбор True или False (для вопросов формата True/False; также Е / А)',
+          description: 'Select True or False for boolean questions',
         },
       ],
     },
     {
-      title: 'Аудио и произношение',
+      title: 'Audio & Pronunciation',
       icon: <Volume2 className="w-4 h-4 text-indigo-600" />,
       shortcuts: [
         {
-          keys: ['Пробел'],
-          description: 'Прослушать эталонное аудио-произношение вопроса или предложения (нажмите повторно для паузы)',
+          keys: ['Space'],
+          description: 'Listen to reference audio pronunciation (press again to pause)',
         },
       ],
     },
     {
-      title: 'Навигация между вопросами',
+      title: 'Question Navigation',
       icon: <ArrowLeftRight className="w-4 h-4 text-sky-600" />,
       shortcuts: [
         {
           keys: ['←', '→'],
-          description: 'Перемещение к предыдущей или следующей карточке вопроса (также H / L)',
+          description: 'Navigate to previous or next question card (or H / L)',
         },
       ],
     },
     {
-      title: 'Переход и подтверждение',
+      title: 'Submission & Confirmation',
       icon: <CornerDownLeft className="w-4 h-4 text-violet-600" />,
       shortcuts: [
         {
           keys: ['Enter'],
-          description: 'Переход к следующей карточке (или отправка ответа из текстового поля ввода)',
+          description: 'Go to next card (or submit answer in input field)',
         },
         {
           keys: ['Ctrl', 'Enter'],
-          description: 'Мгновенная отправка всей работы на проверку преподавателю / ИИ',
+          description: 'Submit entire assignment for evaluation',
         },
       ],
     },
     {
-      title: 'Диагностика и разбор',
+      title: 'Diagnostics & Explanations',
       icon: <Zap className="w-4 h-4 text-amber-500" />,
       shortcuts: [
         {
           keys: ['E'],
-          description: 'Грамматический и лексический разбор предложения с переводом (также У в русской раскладке)',
+          description: 'AI grammar and vocabulary sentence explanation with Russian translation (also U in RU layout)',
         },
         {
           keys: ['F'],
-          description: 'Включить или выключить режим мгновенной проверки ответов',
+          description: 'Toggle instant feedback mode for immediate grading',
         },
       ],
     },
     {
-      title: 'Вид и интерфейс',
+      title: 'View & Interface',
       icon: <Layers className="w-4 h-4 text-slate-600" />,
       shortcuts: [
         {
           keys: ['V'],
-          description: 'Переключение вида: Карточки ↔ Список',
+          description: 'Toggle view: Cards ↔ List',
         },
         {
           keys: ['?'],
-          description: 'Открыть или закрыть эту справку по горячим клавишам',
+          description: 'Open or close this hotkeys guide',
         },
         {
           keys: ['Esc'],
-          description: 'Закрыть любое модальное окно, окно разбора или снять выделение текста',
+          description: 'Close any modal, explanation panel, or clear selection',
         },
       ],
     },
@@ -153,10 +153,10 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
             </div>
             <div>
               <h3 className="text-base font-black text-slate-900">
-                Горячие клавиши (Hotkeys)
+                Keyboard Shortcuts
               </h3>
               <p className="text-xs text-slate-500 font-medium">
-                Управляйте процессотом решения заданий без мыши
+                Navigate and complete assignments efficiently without a mouse
               </p>
             </div>
           </div>
@@ -164,7 +164,7 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
             type="button"
             onClick={onClose}
             className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
-            aria-label="Закрыть"
+            aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
@@ -210,14 +210,14 @@ export const HotkeysModal: React.FC<HotkeysModalProps> = ({ isOpen, onClose }) =
         <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 flex-shrink-0">
           <div className="flex items-center space-x-2">
             <Lightbulb className="w-4 h-4 text-amber-500 flex-shrink-0" />
-            <span>Клавиши работают везде в режиме карточек, когда не активен ввод текста.</span>
+            <span>Shortcuts are active across card mode when text inputs are not focused.</span>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white font-bold transition shadow-xs"
           >
-            Понятно
+            Got it
           </button>
         </div>
       </div>

@@ -252,7 +252,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
 
   const startMediaRecorderFallback = () => {
     if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setMicError('Запись микрофона не поддерживается в данном браузере.');
+      setMicError('Microphone recording is not supported in this browser.');
       return;
     }
 
@@ -278,9 +278,9 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       })
       .catch((err) => {
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          setMicError('Доступ к микрофону отклонен. Пожалуйста, разрешите доступ к микрофону в настройках браузера.');
+          setMicError('Microphone access denied. Please allow microphone permissions in your browser settings.');
         } else {
-          setMicError(`Ошибка микрофона: ${err.message || 'Не удалось активировать микрофон'}`);
+          setMicError(`Microphone error: ${err.message || 'Failed to activate microphone'}`);
         }
         setIsRecording(false);
       });
@@ -400,7 +400,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-              {isSituationMode ? 'Ролевая ситуация' : 'Speaking Practice'}
+              {isSituationMode ? 'Communicative Situation' : 'Speaking Practice'}
             </span>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
               {points} Max Points
@@ -443,7 +443,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             type="button"
             onClick={handlePlayModelAudio}
             disabled={isModelAudioLocked}
-            title={isModelAudioLocked ? 'Прослушивание образца заблокировано до сдачи ответа (Задание преподавателя)' : undefined}
+            title={isModelAudioLocked ? 'Sample audio is locked until response submission (Teacher assignment setting)' : undefined}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               isModelAudioLocked
                 ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-60'
@@ -459,7 +459,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             ) : (
               <Volume2 className="w-3.5 h-3.5" />
             )}
-            <span>{isModelAudioLocked ? 'Образец скрыт' : isPlayingModel ? 'Остановить' : isSituationMode ? 'Слушать образец речи' : 'Слушать образец'}</span>
+            <span>{isModelAudioLocked ? 'Sample Hidden' : isPlayingModel ? 'Stop' : 'Listen to Sample'}</span>
           </button>
         </div>
       </div>
@@ -467,22 +467,22 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       <div className="bg-slate-800/40 border border-slate-700/60 rounded-xl p-3.5 text-xs text-slate-300 flex items-start gap-3">
         <Info className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
         <div>
-          <span className="font-semibold text-slate-200">Инструкция: </span>
+          <span className="font-semibold text-slate-200">Instructions: </span>
           {isModelAudioLocked ? (
             <span>
               {isSituationMode
-                ? 'Ознакомьтесь с ситуацией и запишите ваш голосовой ответ. Прослушивание образца станет доступно после записи.'
-                : 'Прочитайте отрывок вслух и запишите ваш голос. Прослушивание образца и аудиоподсказки станут доступны после записи.'}
+                ? 'Review the communicative scenario and record your spoken response. Sample audio will unlock after submission.'
+                : 'Read the passage aloud and record your voice. Sample audio and pronunciation guides will unlock after submission.'}
             </span>
           ) : (
             <span>
               {isSituationMode ? (
                 <>
-                  Ознакомьтесь с ролью, обстановкой и целью. Нажмите <strong className="text-indigo-300">Начать запись</strong> и развернуто решите ситуацию своим голосом в микрофон, используя опорные фразы.
+                  Review your role, setting, and communicative goal. Click <strong className="text-indigo-300">Start Recording</strong> and respond clearly into your microphone addressing all talking points.
                 </>
               ) : (
                 <>
-                  Нажмите <strong className="text-indigo-300">Начать запись</strong> и четко прочитайте текст в микрофон. Вы можете нажимать на слова для прослушивания IPA произношения.
+                  Click <strong className="text-indigo-300">Start Recording</strong> and read the passage clearly into your microphone. You can click individual words to hear native IPA pronunciation.
                 </>
               )}
             </span>
@@ -495,13 +495,13 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <div className="flex flex-wrap items-center gap-2.5">
             {parsedSituation.role && (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-200 text-xs font-semibold">
-                <span className="text-indigo-400 uppercase text-[10px] tracking-wider font-bold">Роль:</span>
+                <span className="text-indigo-400 uppercase text-[10px] tracking-wider font-bold">Role:</span>
                 <span>{parsedSituation.role}</span>
               </div>
             )}
             {parsedSituation.setting && (
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-medium">
-                <span className="text-slate-400 uppercase text-[10px] tracking-wider font-bold">Обстановка:</span>
+                <span className="text-slate-400 uppercase text-[10px] tracking-wider font-bold">Setting:</span>
                 <span>{parsedSituation.setting}</span>
               </div>
             )}
@@ -512,7 +512,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               <Target className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
               <div>
                 <div className="text-xs font-bold uppercase tracking-wider text-indigo-300 mb-0.5">
-                  Коммуникативная цель
+                  Communicative Goal
                 </div>
                 <div className="text-sm font-medium text-slate-100 leading-snug">
                   {parsedSituation.goal}
@@ -526,7 +526,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               <div className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <MessageSquare className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Опорные пункты (Talking Points)</span>
+                  <span>Talking Points</span>
                 </div>
                 <ul className="space-y-2">
                   {parsedSituation.talkingPoints.map((pt, idx) => (
@@ -545,7 +545,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               <div className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Полезные фразы (клик для озвучки)</span>
+                  <span>Useful Expressions (click to listen)</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {parsedSituation.usefulExpressions.map((expr, idx) => (
@@ -554,7 +554,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                       type="button"
                       onClick={() => speakText(expr, accent)}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800/90 hover:bg-indigo-600/20 border border-slate-700/80 hover:border-indigo-500/40 text-xs text-slate-200 hover:text-indigo-200 transition-all text-left group"
-                      title="Нажмите, чтобы прослушать произношение"
+                      title="Click to hear pronunciation"
                     >
                       <Volume2 className="w-3 h-3 text-slate-400 group-hover:text-indigo-400 shrink-0" />
                       <span>{expr}</span>
@@ -572,7 +572,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                 onClick={() => setShowSampleText(prev => !prev)}
                 className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 font-semibold transition-colors"
               >
-                <span>{showSampleText ? 'Скрыть пример ответа' : 'Показать пример образцового ответа'}</span>
+                <span>{showSampleText ? 'Hide Sample Response' : 'Show Sample Response'}</span>
                 {showSampleText ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
               {showSampleText && (
@@ -630,7 +630,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                       className={`px-1.5 py-0.5 rounded transition-colors text-slate-100 ${
                         isModelAudioLocked ? 'cursor-default opacity-80' : 'hover:text-indigo-300 hover:bg-indigo-500/10 cursor-pointer'
                       }`}
-                      title={isModelAudioLocked ? 'Озвучивание доступно после записи' : 'Нажмите для прослушивания'}
+                      title={isModelAudioLocked ? 'Audio available after recording' : 'Click to hear pronunciation'}
                     >
                       {w}
                     </button>
@@ -655,7 +655,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2 text-indigo-300 text-xs font-semibold">
               <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
-              <span>Слушаем вашу речь... Читайте текст четко и внятно</span>
+              <span>Listening to your voice... Speak clearly into the microphone</span>
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-indigo-900/60 border border-indigo-500/30 text-indigo-200 text-xs font-mono font-bold">
               <Timer className="w-3.5 h-3.5 text-indigo-400" />
@@ -672,7 +672,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
         <div className="bg-slate-950/80 border border-indigo-500/30 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 animate-in fade-in duration-200">
           <div className="text-xs text-indigo-300 font-semibold flex items-center gap-2">
             <Mic className="w-4 h-4 text-indigo-400" />
-            <span>Ваша аудиозапись:</span>
+            <span>Your Audio Recording:</span>
           </div>
           <audio controls src={recordedAudioUrl} className="h-8 w-full sm:w-80" />
         </div>
@@ -759,8 +759,8 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           {isSituationMode && evaluationResult.words.length > 0 && (
             <div className="pt-2 border-t border-slate-700/60">
               <div className="text-xs font-semibold text-slate-400 mb-2 flex items-center justify-between">
-                <span>Распознанная речь (кликните слово для IPA)</span>
-                <span className="text-[11px] text-slate-500">{evaluationResult.words.length} слов</span>
+                <span>Spoken Transcript (click any word for IPA)</span>
+                <span className="text-[11px] text-slate-500">{evaluationResult.words.length} words</span>
               </div>
               <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto p-2.5 bg-slate-900/60 rounded-lg border border-slate-800">
                 {evaluationResult.words.map((item, idx) => (
@@ -826,7 +826,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               }`}
             >
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              <span>{isRecording ? 'Завершить и оценить' : evaluationResult ? 'Прочитать снова' : 'Начать запись'}</span>
+              <span>{isRecording ? 'Finish & Evaluate' : evaluationResult ? (isSituationMode ? 'Record Again' : 'Read Again') : 'Start Recording'}</span>
             </button>
 
             {evaluationResult && (
@@ -836,7 +836,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
                 className="flex items-center gap-1.5 px-4 py-3 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Сбросить</span>
+                <span>Reset</span>
               </button>
             )}
           </div>
@@ -849,7 +849,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-3 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{isSubmitting ? 'Отправка...' : 'Отправить результат'}</span>
+              <span>{isSubmitting ? 'Submitting...' : 'Submit Result'}</span>
             </button>
           )}
         </div>

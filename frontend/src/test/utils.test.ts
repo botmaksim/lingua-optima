@@ -168,7 +168,7 @@ Useful Expressions:
     const result = evaluateSituationalSpeech(context, '[Recorded Audio Submission]', 20);
     expect(result.accuracyScore).toBe(85);
     expect(result.overallScore).toBe(85);
-    expect(result.generalFeedback[0]).toContain('Аудиозапись успешно сохранена');
+    expect(result.generalFeedback[0]).toContain('Audio recording captured successfully');
   });
 });
 

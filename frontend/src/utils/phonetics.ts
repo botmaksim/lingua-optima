@@ -899,21 +899,21 @@ export function evaluateSituationalSpeech(
 
   const generalFeedback: string[] = [];
   if (isAudioOnly) {
-    generalFeedback.push('Аудиозапись успешно сохранена и передана на проверку преподавателю.');
+    generalFeedback.push('Audio recording captured successfully and submitted for teacher evaluation.');
   } else {
-    generalFeedback.push(`Речь зафиксирована: ${wordCount} слов за ${elapsedSec} сек (${wpm} WPM).`);
+    generalFeedback.push(`Spoken output captured: ${wordCount} words in ${elapsedSec}s (${wpm} WPM).`);
     if (context.talkingPoints && context.talkingPoints.length > 0) {
       if (coveredPoints === totalPoints) {
-        generalFeedback.push(`Отлично: раскрыты все ключевые аспекты ситуации (${coveredPoints} из ${totalPoints}).`);
+        generalFeedback.push(`Excellent: covered all key communicative talking points (${coveredPoints} of ${totalPoints}).`);
       } else {
-        generalFeedback.push(`Раскрыто аспектов ситуации: ${coveredPoints} из ${totalPoints}. Постарайтесь упомянуть все пункты плана.`);
+        generalFeedback.push(`Addressed ${coveredPoints} of ${totalPoints} communicative talking points. Aim to touch upon each required prompt.`);
       }
     }
     generalFeedback.push(pacingFeedback);
     if (wordCount < 15) {
-      generalFeedback.push('Совет: попробуйте дать более развернутый ответ, дополнив высказывание деталями и вежливыми фразами.');
+      generalFeedback.push('Tip: Expand your response with additional supporting details, polite markers, and conversational connectors.');
     } else {
-      generalFeedback.push('Хорошая глубина высказывания и уверенное раскрытие коммуникативной роли!');
+      generalFeedback.push('Great conversational depth and confident communicative role-play delivery!');
     }
   }
 

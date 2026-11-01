@@ -706,7 +706,7 @@ export const SubmissionsReview: React.FC = () => {
                 type="button"
                 onClick={() => setSearchQuery('')}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 rounded"
-                title="Очистить (Esc)"
+                title="Clear (Esc)"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -1711,7 +1711,7 @@ export const SubmissionsReview: React.FC = () => {
                 type="text"
                 value={renameInput}
                 onChange={(e) => setRenameInput(e.target.value)}
-                placeholder="e.g. John Doe / Иванов Иван"
+                placeholder="e.g. John Doe / Jane Smith"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition"
                 autoFocus
               />

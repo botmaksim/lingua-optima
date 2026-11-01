@@ -207,7 +207,7 @@ export const TaskView: React.FC = () => {
       setExplanationData(res);
     } catch (err: any) {
       console.error('Sentence explanation failed:', err);
-      setExplanationError(err?.response?.data?.message || 'Не удалось получить разбор предложения.');
+      setExplanationError(err?.response?.data?.message || 'Failed to explain sentence.');
     } finally {
       setIsExplaining(false);
     }
@@ -610,7 +610,7 @@ export const TaskView: React.FC = () => {
           className="flex items-center space-x-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Назад</span>
+          <span>Back</span>
         </button>
 
         {task?.type !== 'SPEAKING' && (
@@ -625,7 +625,7 @@ export const TaskView: React.FC = () => {
               }`}
             >
               <List className="w-3.5 h-3.5" />
-              <span>Список</span>
+              <span>List</span>
             </button>
             <button
               type="button"
@@ -637,7 +637,7 @@ export const TaskView: React.FC = () => {
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Карточки</span>
+              <span>Cards</span>
             </button>
           </div>
         )}
@@ -647,8 +647,8 @@ export const TaskView: React.FC = () => {
             type="button"
             onClick={() => setShowHotkeysModal(true)}
             className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition flex items-center space-x-1"
-            title="Горячие клавиши (?)"
-            aria-label="Горячие клавиши"
+            title="Keyboard Shortcuts (?)"
+            aria-label="Keyboard Shortcuts"
           >
             <Keyboard className="w-4 h-4" />
             <span className="hidden sm:inline text-[11px] font-mono font-bold text-slate-500">?</span>
@@ -845,7 +845,7 @@ export const TaskView: React.FC = () => {
                   />
                   <span className="flex items-center space-x-1">
                     <Zap className="w-3.5 h-3.5 text-amber-500" />
-                    <span>Мгновенная проверка</span>
+                    <span>Instant Feedback</span>
                   </span>
                 </label>
               )}
@@ -861,7 +861,7 @@ export const TaskView: React.FC = () => {
                   }`}
                 >
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span>{showReadingInCard ? 'Скрыть текст' : 'Текст статьи'}</span>
+                  <span>{showReadingInCard ? 'Hide Passage' : 'Show Passage'}</span>
                 </button>
               )}
             </div>
@@ -872,7 +872,7 @@ export const TaskView: React.FC = () => {
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-2">
                   <BookOpen className="w-4 h-4 text-primary" />
-                  <span>Материал для чтения</span>
+                  <span>Reading Material</span>
                 </h4>
                 {!isExplanationLocked && (
                   <button
@@ -881,7 +881,7 @@ export const TaskView: React.FC = () => {
                     className="text-xs font-semibold text-primary hover:underline flex items-center space-x-1"
                   >
                     <Lightbulb className="w-3.5 h-3.5" />
-                    <span>Пояснить весь текст</span>
+                    <span>Explain Full Passage</span>
                   </button>
                 )}
               </div>
@@ -896,7 +896,7 @@ export const TaskView: React.FC = () => {
             if (!currentQ) {
               return (
                 <div className="bg-white p-12 rounded-3xl text-center text-slate-500">
-                  Вопросы не найдены.
+                  No questions found.
                 </div>
               );
             }
@@ -928,10 +928,10 @@ export const TaskView: React.FC = () => {
                     </span>
                     <div>
                       <span className="text-[11px] font-bold text-slate-400 block uppercase tracking-wider">
-                        Вопрос {currentCardIndex + 1} из {questions.length}
+                        Question {currentCardIndex + 1} of {questions.length}
                       </span>
                       <span className="text-xs font-semibold text-slate-600">
-                        {isTF ? 'True / False' : isMCQ ? 'Выбор ответа' : currentQ.grammarRule || task.grammarTopic}
+                        {isTF ? 'True / False' : isMCQ ? 'Multiple Choice' : currentQ.grammarRule || task.grammarTopic}
                       </span>
                     </div>
                   </div>
@@ -939,7 +939,7 @@ export const TaskView: React.FC = () => {
                   <div className="flex items-center space-x-2">
                     {currentQ.points && (
                       <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-indigo-50 text-primary">
-                        {currentQ.points} баллов
+                        {currentQ.points} {currentQ.points === 1 ? 'Point' : 'Points'}
                       </span>
                     )}
                     <button
@@ -950,10 +950,10 @@ export const TaskView: React.FC = () => {
                           ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/30 animate-pulse'
                           : 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200/80 text-primary'
                       }`}
-                      title="Прослушать произношение (Пробел)"
+                      title="Listen to pronunciation (Space)"
                     >
                       {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                      <span>{isSpeaking ? 'Пауза' : 'Озвучить'}</span>
+                      <span>{isSpeaking ? 'Pause' : 'Listen'}</span>
                       <kbd className="kbd-shortcut hidden md:inline-block px-1 py-0.5 rounded bg-white/40 text-[10px] font-mono font-bold text-current">
                         Space
                       </kbd>
@@ -963,10 +963,10 @@ export const TaskView: React.FC = () => {
                         type="button"
                         onClick={() => handleExplainSentence(currentQ.questionText)}
                         className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-xs font-bold transition flex items-center space-x-1.5"
-                        title="Пояснить предложение и грамматику с помощью AI (E)"
+                        title="Explain sentence & grammar with AI (E)"
                       >
                         <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
-                        <span>Пояснить</span>
+                        <span>Explain</span>
                         <kbd className="kbd-shortcut hidden md:inline-block px-1 py-0.5 rounded bg-amber-100/70 text-[10px] font-mono font-bold text-amber-900">
                           E
                         </kbd>
@@ -984,7 +984,7 @@ export const TaskView: React.FC = () => {
                 {hasOptions ? (
                   <div className="space-y-3">
                     <div className="hidden md:block text-[11px] font-semibold text-slate-400">
-                      Используйте клавиши <kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">1</kbd>–<kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">{currentQ.options.length}</kbd> или <kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">A</kbd>–<kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">{['A', 'B', 'C', 'D', 'E'][Math.min(currentQ.options.length - 1, 4)]}</kbd> для быстрого выбора:
+                      Use keys <kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">1</kbd>–<kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">{currentQ.options.length}</kbd> or <kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">A</kbd>–<kbd className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-slate-700 font-bold border border-slate-200">{['A', 'B', 'C', 'D', 'E'][Math.min(currentQ.options.length - 1, 4)]}</kbd> for quick answering:
                     </div>
                     <div className="grid grid-cols-1 gap-2.5">
                       {currentQ.options.map((opt, optIdx) => {
@@ -1037,12 +1037,12 @@ export const TaskView: React.FC = () => {
                                 isCorrect ? (
                                   <span className="flex items-center space-x-1 text-xs text-emerald-700 font-bold">
                                     <Check className="w-4 h-4 text-emerald-600" />
-                                    <span>Верно</span>
+                                    <span>Correct</span>
                                   </span>
                                 ) : (
                                   <span className="flex items-center space-x-1 text-xs text-rose-700 font-bold">
                                     <XCircle className="w-4 h-4 text-rose-600" />
-                                    <span>Неверно</span>
+                                    <span>Incorrect</span>
                                   </span>
                                 )
                               )}
@@ -1060,7 +1060,7 @@ export const TaskView: React.FC = () => {
                     <textarea
                       rows={3}
                       disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(currentQ.id))}
-                      placeholder="Напишите полный перефразированный вариант предложения..."
+                      placeholder="Write the full rewritten sentence..."
                       value={selectedAnswer}
                       onChange={(e) => handleSelectAnswer(currentQ.id, e.target.value)}
                       className="w-full p-4 rounded-2xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition resize-y"
@@ -1073,8 +1073,8 @@ export const TaskView: React.FC = () => {
                       disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(currentQ.id))}
                       placeholder={
                         task.type === 'OPEN_BRACKETS'
-                          ? 'Введите правильную форму слова из скобок...'
-                          : 'Введите ваш ответ...'
+                          ? 'Enter the correct form of the word in brackets...'
+                          : 'Enter your answer...'
                       }
                       value={selectedAnswer}
                       onChange={(e) => handleSelectAnswer(currentQ.id, e.target.value)}
@@ -1089,7 +1089,7 @@ export const TaskView: React.FC = () => {
                   }`}>
                     <div className="font-bold flex items-center space-x-1.5">
                       <BookOpen className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Грамматическое правило:</span>
+                      <span>Grammar Rule:</span>
                     </div>
                     <p>{currentQ.grammarRule}</p>
                   </div>
@@ -1097,32 +1097,32 @@ export const TaskView: React.FC = () => {
 
                 <div className="kbd-shortcut hidden md:flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-slate-50 border border-slate-200/70 rounded-2xl text-[11px] text-slate-500">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="font-semibold text-slate-400">Горячие клавиши:</span>
+                    <span className="font-semibold text-slate-400">Hotkeys:</span>
                     <span className="inline-flex items-center space-x-1">
                       <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">1–{currentQ.options?.length || 4}</kbd>
                       <span>/</span>
                       <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">A–D</kbd>
-                      <span className="text-slate-600 font-medium">Выбор</span>
+                      <span className="text-slate-600 font-medium">Select</span>
                     </span>
                     <span className="text-slate-300">·</span>
                     <span className="inline-flex items-center space-x-1">
-                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">Пробел</kbd>
-                      <span className="text-slate-600 font-medium">Озвучить</span>
+                      <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">Space</kbd>
+                      <span className="text-slate-600 font-medium">Listen</span>
                     </span>
                     <span className="text-slate-300">·</span>
                     <span className="inline-flex items-center space-x-1">
                       <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">← / →</kbd>
-                      <span className="text-slate-600 font-medium">Карточка</span>
+                      <span className="text-slate-600 font-medium">Card</span>
                     </span>
                     <span className="text-slate-300">·</span>
                     <span className="inline-flex items-center space-x-1">
                       <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">Enter</kbd>
-                      <span className="text-slate-600 font-medium">Далее</span>
+                      <span className="text-slate-600 font-medium">Next</span>
                     </span>
                     <span className="text-slate-300">·</span>
                     <span className="inline-flex items-center space-x-1">
                       <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono font-bold text-slate-700 text-[10px]">E</kbd>
-                      <span className="text-slate-600 font-medium">Разбор</span>
+                      <span className="text-slate-600 font-medium">Explain</span>
                     </span>
                   </div>
                   <button
@@ -1131,7 +1131,7 @@ export const TaskView: React.FC = () => {
                     className="inline-flex items-center space-x-1 font-bold text-primary hover:text-primary-hover transition"
                   >
                     <Keyboard className="w-3.5 h-3.5" />
-                    <span>Все клавиши (?)</span>
+                    <span>All Shortcuts (?)</span>
                   </button>
                 </div>
 
@@ -1143,7 +1143,7 @@ export const TaskView: React.FC = () => {
                     className="flex items-center space-x-1.5 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition disabled:opacity-30"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    <span>Назад</span>
+                    <span>Previous</span>
                   </button>
 
                   <span className="text-xs font-semibold text-slate-400">
@@ -1156,7 +1156,7 @@ export const TaskView: React.FC = () => {
                       onClick={() => setCurrentCardIndex((prev) => Math.min(questions.length - 1, prev + 1))}
                       className="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold transition shadow-sm"
                     >
-                      <span>Далее</span>
+                      <span>Next</span>
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   ) : (
@@ -1167,7 +1167,7 @@ export const TaskView: React.FC = () => {
                       className="flex items-center space-x-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>Завершить задание</span>
+                      <span>Submit Assignment</span>
                     </button>
                   )}
                 </div>
@@ -1312,10 +1312,10 @@ export const TaskView: React.FC = () => {
                           type="button"
                           onClick={() => handleExplainSentence(q.questionText)}
                           className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-2 py-0.5 rounded-lg transition flex items-center space-x-1 flex-shrink-0"
-                          title="Пояснить предложение"
+                          title="Explain sentence"
                         >
                           <Lightbulb className="w-3 h-3 text-amber-600" />
-                          <span>Пояснить</span>
+                          <span>Explain</span>
                         </button>
                       )}
                     </div>
@@ -1383,10 +1383,10 @@ export const TaskView: React.FC = () => {
                         type="button"
                         onClick={() => handleExplainSentence(q.questionText)}
                         className="text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-2 py-0.5 rounded-lg transition flex items-center space-x-1"
-                        title="Пояснить предложение"
+                        title="Explain sentence"
                       >
                         <Lightbulb className="w-3 h-3 text-amber-600" />
-                        <span>Пояснить</span>
+                        <span>Explain</span>
                       </button>
                     )}
                   </div>
@@ -1495,10 +1495,10 @@ export const TaskView: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="text-sm font-black text-slate-900">
-                    Пояснение предложения
+                    Sentence Explanation
                   </h3>
                   <span className="text-[11px] text-slate-400 font-semibold">
-                    Изучение грамматики и контекста
+                    Grammar & Contextual Analysis
                   </span>
                 </div>
               </div>
@@ -1513,7 +1513,7 @@ export const TaskView: React.FC = () => {
 
             <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
-                Предложение
+                Sentence
               </span>
               <p className="text-sm font-semibold text-slate-900 leading-relaxed font-serif">
                 "{explainingSentence}"
@@ -1522,7 +1522,7 @@ export const TaskView: React.FC = () => {
 
             {isExplaining && (
               <div className="py-8 text-center space-y-3">
-                <LoadingSpinner size="md" message="Анализируем грамматические структуры и лексику..." />
+                <LoadingSpinner size="md" message="Analyzing grammatical structures and vocabulary..." />
               </div>
             )}
 
@@ -1534,7 +1534,7 @@ export const TaskView: React.FC = () => {
                   onClick={() => handleExplainSentence(explainingSentence)}
                   className="px-3 py-1 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700 transition"
                 >
-                  Повторить
+                  Retry
                 </button>
               </div>
             )}
@@ -1543,7 +1543,7 @@ export const TaskView: React.FC = () => {
               <div className="space-y-4 animate-in fade-in duration-200">
                 <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-1">
                   <span className="text-[10px] uppercase font-bold text-primary block tracking-wider">
-                    Перевод на русский
+                    Russian Translation
                   </span>
                   <p className="text-sm font-semibold text-slate-900 leading-relaxed">
                     {explanationData.translation}
@@ -1552,7 +1552,7 @@ export const TaskView: React.FC = () => {
 
                 {explanationData.grammarBreakdown && (
                   <div className="space-y-1.5">
-                    <span className="text-xs font-bold text-slate-700 block">Грамматический разбор:</span>
+                    <span className="text-xs font-bold text-slate-700 block">Grammar Breakdown:</span>
                     <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 leading-relaxed font-mono">
                       {explanationData.grammarBreakdown}
                     </div>
@@ -1561,7 +1561,7 @@ export const TaskView: React.FC = () => {
 
                 {explanationData.explanation && (
                   <div className="space-y-1.5">
-                    <span className="text-xs font-bold text-slate-700 block">Пояснение:</span>
+                    <span className="text-xs font-bold text-slate-700 block">Explanation:</span>
                     <p className="text-xs text-slate-700 leading-relaxed bg-white p-4 rounded-2xl border border-slate-200">
                       {explanationData.explanation}
                     </p>
@@ -1570,7 +1570,7 @@ export const TaskView: React.FC = () => {
 
                 {explanationData.keyVocabulary && explanationData.keyVocabulary.length > 0 && (
                   <div className="space-y-2">
-                    <span className="text-xs font-bold text-slate-700 block">Ключевая лексика:</span>
+                    <span className="text-xs font-bold text-slate-700 block">Key Vocabulary:</span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {explanationData.keyVocabulary.map((v, i) => (
                         <div key={i} className="p-2.5 rounded-xl border border-slate-200 bg-slate-50/60 text-xs text-slate-800 font-medium">
@@ -1596,7 +1596,7 @@ export const TaskView: React.FC = () => {
             >
               <Lightbulb className="w-4 h-4 text-amber-400 flex-shrink-0" />
               <span className="truncate max-w-[200px] sm:max-w-[280px]">
-                Пояснить: &laquo;{floatingSelection.slice(0, 24)}...&raquo;
+                Explain: &laquo;{floatingSelection.slice(0, 24)}...&raquo;
               </span>
             </button>
             <button
@@ -1607,7 +1607,7 @@ export const TaskView: React.FC = () => {
                 window.getSelection()?.removeAllRanges();
               }}
               className="p-1.5 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition"
-              title="Закрыть"
+              title="Close"
               aria-label="Dismiss selection"
             >
               <X className="w-4 h-4" />
