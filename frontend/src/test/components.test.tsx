@@ -1776,10 +1776,14 @@ Useful Expressions:
     expect(screen.getByText('Hotel Guest')).toBeInTheDocument();
     expect(screen.getByText('Ask for a room upgrade')).toBeInTheDocument();
     expect(screen.getByText('Explain your room is noisy')).toBeInTheDocument();
-    expect(screen.getByText('I was wondering if it might be possible to change rooms')).toBeInTheDocument();
-    expect(screen.getByText(/Model Response \/ Text to Practice Speaking/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Show Example Response/i })).toBeInTheDocument();
+    const listenExampleBtns = screen.getAllByRole('button', { name: /Listen to Example/i });
+    expect(listenExampleBtns.length).toBeGreaterThan(0);
+
+    // Expand example response
+    fireEvent.click(screen.getByRole('button', { name: /Show Example Response/i }));
+    expect(screen.getByText(/Example Model Response:/i)).toBeInTheDocument();
     expect(screen.getByText(/"I was wondering if it might be possible to change my room as it is very noisy."/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Listen to Model/i })).toBeInTheDocument();
 
     // Click useful expression to hear pronunciation
     const exprBtn = screen.getByText('I was wondering if it might be possible to change rooms');

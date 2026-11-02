@@ -114,7 +114,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
   const [activeWordTip, setActiveWordTip] = useState<AlignedWord | null>(null);
   const [evaluationResult, setEvaluationResult] = useState<PronunciationResult | null>(initialResult || null);
   const [micError, setMicError] = useState<string | null>(null);
-  const [showSampleText, setShowSampleText] = useState(true);
+  const [showSampleText, setShowSampleText] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -135,22 +135,14 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
     return isSituationMode ? parseSituationContent(passageText) : null;
   }, [isSituationMode, passageText]);
 
-  const resolvedSampleResponse = useMemo(() => {
+  const effectiveSampleResponse = useMemo(() => {
     if (sampleResponse && sampleResponse.trim() && !sampleResponse.toLowerCase().includes('model sample response...')) {
       return sampleResponse.trim();
     }
     if (parsedSituation?.sampleResponse && parsedSituation.sampleResponse.trim()) {
       return parsedSituation.sampleResponse.trim();
     }
-    if (parsedSituation && (parsedSituation.goal || parsedSituation.role || parsedSituation.talkingPoints.length > 0)) {
-      const rolePrefix = parsedSituation.role ? `As a ${parsedSituation.role}, ` : '';
-      const goalSentence = parsedSituation.goal ? `I need to ${parsedSituation.goal.replace(/\.$/, '')}. ` : '';
-      const points = parsedSituation.talkingPoints.length > 0
-        ? parsedSituation.talkingPoints.map((pt) => pt.replace(/\.$/, '')).join('. ') + '.'
-        : 'I will state my request clearly and politely.';
-      return `${rolePrefix}I am speaking to address this situation. ${goalSentence}Specifically: ${points}`;
-    }
-    return '';
+    return null;
   }, [sampleResponse, parsedSituation]);
 
   const isModelAudioLocked = Boolean(isTeacherTask && !evaluationResult && !readOnly);
@@ -239,13 +231,19 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
       stopSpeech();
       setIsPlayingModel(false);
     } else {
-      setIsPlayingModel(true);
-      const textToSpeak = isSituationMode
-        ? (resolvedSampleResponse || passageText)
-        : passageText;
-      speakText(textToSpeak, accent, () => {
-        setIsPlayingModel(false);
-      });
+      if (isSituationMode) {
+        if (!effectiveSampleResponse) return;
+        setShowSampleText(true);
+        setIsPlayingModel(true);
+        speakText(effectiveSampleResponse, accent, () => {
+          setIsPlayingModel(false);
+        });
+      } else {
+        setIsPlayingModel(true);
+        speakText(passageText, accent, () => {
+          setIsPlayingModel(false);
+        });
+      }
     }
   };
 
@@ -460,10 +458,18 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
           <button
             type="button"
             onClick={handlePlayModelAudio}
-            disabled={isModelAudioLocked}
-            title={isModelAudioLocked ? 'Sample audio is locked until response submission (Teacher assignment setting)' : undefined}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+            disabled={isModelAudioLocked || (isSituationMode && !effectiveSampleResponse)}
+            title={
               isModelAudioLocked
+                ? 'Sample audio is locked until response submission (Teacher assignment setting)'
+                : isSituationMode && !effectiveSampleResponse
+                ? 'No example response available for this scenario'
+                : isSituationMode
+                ? 'Listen to the example response for this communicative scenario'
+                : 'Listen to the passage read by native speaker'
+            }
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              isModelAudioLocked || (isSituationMode && !effectiveSampleResponse)
                 ? 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed opacity-60'
                 : isPlayingModel
                 ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse'
@@ -477,7 +483,15 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             ) : (
               <Volume2 className="w-3.5 h-3.5" />
             )}
-            <span>{isModelAudioLocked ? 'Sample Hidden' : isPlayingModel ? 'Stop' : 'Listen to Sample'}</span>
+            <span>
+              {isModelAudioLocked
+                ? 'Sample Hidden'
+                : isPlayingModel
+                ? 'Stop'
+                : isSituationMode
+                ? 'Listen to Example'
+                : 'Listen to Sample'}
+            </span>
           </button>
         </div>
       </div>
@@ -496,7 +510,7 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             <span>
               {isSituationMode ? (
                 <>
-                  Review your role, setting, and goal. You can choose to <strong className="text-indigo-300">improvise freely</strong> addressing the talking points, or <strong className="text-emerald-300">read the Model Speech aloud</strong> below. Click <strong className="text-indigo-300">Start Recording</strong> when ready.
+                  Review your role, setting, and communicative goal. Click <strong className="text-indigo-300">Start Recording</strong> and respond clearly into your microphone addressing all talking points.
                 </>
               ) : (
                 <>
@@ -583,47 +597,53 @@ export const SpeakingPracticeView: React.FC<SpeakingPracticeViewProps> = ({
             )}
           </div>
 
-          {resolvedSampleResponse && !isModelAudioLocked && (
-            <div className="rounded-xl bg-slate-900/95 border border-indigo-500/30 p-4 space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-indigo-300 flex items-center gap-1.5">
-                    Model Response / Text to Practice Speaking
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[10px] font-semibold">
-                    Read Aloud or Adapt
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => speakText(resolvedSampleResponse, accent)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-xs text-indigo-200 transition font-semibold"
-                    title="Listen to native audio for this model response"
-                  >
-                    <Volume2 className="w-3.5 h-3.5 text-indigo-300" />
-                    <span>Listen to Model</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSampleText((prev) => !prev)}
-                    className="text-xs text-slate-400 hover:text-slate-300 flex items-center gap-1 p-1 transition-colors"
-                    title={showSampleText ? 'Collapse model text' : 'Expand model text'}
-                  >
-                    {showSampleText ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </button>
-                </div>
+          {effectiveSampleResponse && !isModelAudioLocked && (
+            <div className="border-t border-slate-800/80 pt-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowSampleText((prev) => !prev)}
+                  className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1.5 font-semibold transition-colors"
+                >
+                  <span>{showSampleText ? 'Hide Example Response' : 'Show Example Response'}</span>
+                  {showSampleText ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePlayModelAudio}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                    isPlayingModel
+                      ? 'bg-rose-500/20 border-rose-500 text-rose-300 animate-pulse'
+                      : 'bg-indigo-600/20 border-indigo-500/30 text-indigo-300 hover:bg-indigo-600/30'
+                  }`}
+                  title="Listen to native pronunciation of this example"
+                >
+                  {isPlayingModel ? <Square className="w-3 h-3" /> : <Volume2 className="w-3 h-3" />}
+                  <span>{isPlayingModel ? 'Stop Audio' : 'Listen to Example'}</span>
+                </button>
               </div>
+
               {showSampleText && (
-                <div className="space-y-2 animate-in fade-in duration-200">
-                  <p className="text-sm font-medium text-slate-100 leading-relaxed bg-slate-950/70 p-3.5 rounded-xl border border-slate-800/80">
-                    "{resolvedSampleResponse}"
-                  </p>
-                  <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                    <span>You can read this model response directly into your microphone, or express these points in your own words.</span>
+                <div
+                  className={`p-3.5 rounded-xl border text-xs leading-relaxed transition-all animate-in fade-in duration-200 ${
+                    isPlayingModel
+                      ? 'bg-indigo-950/40 border-indigo-500/60 ring-1 ring-indigo-500/40 shadow-sm shadow-indigo-500/10'
+                      : 'bg-slate-900/90 border-slate-800 text-slate-300'
+                  }`}
+                >
+                  <div className="text-[11px] font-bold uppercase tracking-wider mb-1 flex items-center gap-2">
+                    {isPlayingModel ? (
+                      <>
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                        <span className="text-emerald-300">Now Voicing Example Response:</span>
+                      </>
+                    ) : (
+                      <span className="text-indigo-400">Example Model Response:</span>
+                    )}
                   </div>
+                  <p className="text-slate-200 italic font-normal">
+                    "{effectiveSampleResponse}"
+                  </p>
                 </div>
               )}
             </div>

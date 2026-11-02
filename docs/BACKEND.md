@@ -747,7 +747,7 @@ The PostgreSQL relational database is version-controlled using an enterprise bas
 
 ### 15.2 Communicative Speaking Model Speech Contract (`PromptTemplates.buildSpeakingGenerationPrompt`)
 - Generates structured scenario metadata (`Role`, `Setting`, `Goal`, `Talking Points`, `Useful Expressions`) alongside an explicit model response calibrated to the target CEFR level.
-- Stored directly in `content` and `questions[0].correctAnswer`, enabling instant client parsing (`parseSituationContent`) and guaranteed rendering of a prominent, audible model speech passage.
+- Stored directly in `content` and `questions[0].correctAnswer`, enabling instant client parsing (`parseSituationContent`) and interactive rendering of an audible example model response with active playback feedback.
 
 ---
 
