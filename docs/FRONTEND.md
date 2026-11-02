@@ -73,7 +73,7 @@ frontend/
 │   │   │   ├── Toast.tsx      — Notification toast component
 │   │   │   ├── ConfirmDialog.tsx
 │   │   │   ├── AnnotatedTextReview.tsx — Modular inline mistake highlighting component rendering red error marks (<mark>), popovers with mistake description, suggested rewrites, and grammar rules. Supports teacher interactive editing mode (adjust explanations, delete false positives, select text to add new errors) and student review mode
-│   │   │   └── SpeakingPracticeView.tsx — Interactive student oral speaking and pronunciation practice interface. Features real-time voice capture via Web Speech API, word-level acoustic alignment (Levenshtein distance), IPA phonetic transcription hints, audio TTS playback with accent switcher (US/UK), speech tempo calculation (WPM), and composite scoring (Accuracy, Fluency, Completeness)
+│   │   │   └── SpeakingPracticeView.tsx — Interactive student oral speaking and pronunciation practice interface supporting dual modalities: (1) Oral Reading Passage with real-time voice capture via Web Speech API, word-level acoustic alignment (Levenshtein distance), IPA phonetic transcription hints, audio TTS playback with accent switcher (US/UK), speech tempo calculation (WPM), and composite scoring (Accuracy, Fluency, Completeness); and (2) Communicative Situation role-play scenarios featuring student role, setting, communicative objective, structured talking points, high-yield expressions, and AI model response.
 │   │   │
 │   │   ├── student/           — Student-only components
 │   │   │   ├── Dashboard.tsx          — Streak counter, CEFR progress bar, Learning Modules & Practice Modes grid (AI Generator, Essay Studio, Photo OCR, Adaptive CAT, My Units, Progress), active assignments with smart essay/grammar routing, grammar gaps
@@ -261,6 +261,7 @@ The application implements full Progressive Web App (PWA) support to ensure a re
   - Granular option, answer, and point customization for each question.
 - **Student Split Solving Workspace (`TaskView.tsx`)**:
   - Responsive two-column split layout: sticky left pane contains readable passage with live word counter; right pane displays questions with category badges, point values, radio choices, and open textareas.
+  - **True/False Justification & Factual Correction**: When a student selects `False` on any True/False statement (in both Card and List modes), an interactive justification textarea appears. The student provides the factual correction or reason based on the reading passage. The submission payload formats answers as `Q<n>: False | Correction: <correction>`, and downstream AI evaluates both the boolean choice and the accuracy of the factual correction, awarding full credit for accurate corrections or partial credit if the choice was right but the justification is missing or inaccurate.
 
 ### 2. Diagnostic Mistake Annotation
 - **AnnotatedTextReview (`frontend/src/components/common/AnnotatedTextReview.tsx`)**:
@@ -302,7 +303,7 @@ The application implements full Progressive Web App (PWA) support to ensure a re
 ### 4. Student Practice Workspace (`SpeakingPracticeView.tsx`)
 - Displays target focus badges, points, and dynamic layout based on mode:
   - In **Oral Reading** mode: displays passage word chips. Click any word to hear native pronunciation and inspect its IPA transcription.
-  - In **Communicative Situation** mode: renders situation brief card (`Role`, `Setting`, `Communicative Goal`), structured `Talking Points` checklist, and click-to-hear `Useful Expressions` audio chips with optional sample model answer.
+  - In **Communicative Situation** mode: renders situation brief card (`Role`, `Setting`, `Communicative Goal`), structured `Talking Points` checklist, click-to-hear `Useful Expressions` audio chips, and a prominent, expanded-by-default `Model Response / Text to Practice Speaking` section with native TTS audio (`Listen to Model`). Clear instructions inform the student that they can either improvise freely or read the provided model response aloud into their microphone.
 - Real-time voice capture via Web Speech API or MediaRecorder audio fallback with live duration timer (`00:15`) and interim transcript feedback.
 - **Speech Rate & Pacing Engine (`phonetics.ts`)**:
   - Dynamically computes speaking tempo in Words Per Minute (WPM): `Math.round(spokenWordCount / elapsedMinutes)`.
@@ -355,6 +356,22 @@ To eliminate UI duplication and configuration clutter:
   - **Topic Selection**: Built-in 1-click random shuffle button (`🎲 Random Topic`) with instant rotation across CEFR topics, plus custom topic input support.
 - **Automatic Parameter Randomization**: Automatically calibrates question count (3–6), difficulty (Easy to Hard), domain (General/Academic/Business), and sets Eco Mode to ON for rapid generation and minimal token consumption.
 - **Universal Availability**: Integrated into both Student Self-Service (`GenerateTask.tsx`) and Educator Homework Configurator (`ConfigureTask.tsx`).
+
+---
+
+## Performance & Bundle Code Splitting (Vite 5)
+
+### 1. Route-Based Lazy Loading
+- All top-level page components (`Landing`, `LoginPage`, `ForgotPassword`, `StudentApp`, `TeacherApp`, `ProfilePage`, `SubscriptionPage`, `PrivacyPolicy`, `TermsOfService`, `HelpCenter`, `NotFound`) are loaded on-demand via `React.lazy`.
+- Wrapped in a top-level `<Suspense>` boundary inside `App.tsx` with a centered `<LoadingSpinner size="lg" />` fallback indicator.
+- Drastically reduces initial download volume for first-time visitors landing on marketing or authentication pages.
+
+### 2. Manual Vendor Chunk Partitioning
+Vite's Rollup build configuration (`frontend/vite.config.ts`) explicitly partitions heavyweight third-party libraries into dedicated vendor chunks:
+- **`vendor-react`** (`react`, `react-dom`, `react-router-dom`, `zustand`): ~163 kB (53 kB gzipped).
+- **`vendor-icons`** (`lucide-react`): ~45 kB (8.6 kB gzipped).
+- **Page chunks**: Each page bundle is isolated (e.g. `Landing` ~7.6 kB, `StudentApp` ~178 kB, `TeacherApp` ~159 kB).
+- Eliminates bundle bloat warnings and maximizes long-term browser cache hit rates across user sessions.
 
 ---
 

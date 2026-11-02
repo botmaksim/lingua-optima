@@ -166,7 +166,7 @@ axiosInstance.interceptors.response.use(
       }
     }
 
-    if (error.config?.headers?.['X-Request-Id']) {
+    if (error.config?.headers?.['X-Request-Id'] && import.meta.env.MODE !== 'test') {
       const reqId = error.config.headers['X-Request-Id'];
       const status = error.response?.status || 'NETWORK_ERR';
       console.warn(`[API ${status}] req=${reqId} ${error.config.method?.toUpperCase()} ${error.config.url}`);

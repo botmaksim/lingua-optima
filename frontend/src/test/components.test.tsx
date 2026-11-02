@@ -1777,6 +1777,9 @@ Useful Expressions:
     expect(screen.getByText('Ask for a room upgrade')).toBeInTheDocument();
     expect(screen.getByText('Explain your room is noisy')).toBeInTheDocument();
     expect(screen.getByText('I was wondering if it might be possible to change rooms')).toBeInTheDocument();
+    expect(screen.getByText(/Model Response \/ Text to Practice Speaking/i)).toBeInTheDocument();
+    expect(screen.getByText(/"I was wondering if it might be possible to change my room as it is very noisy."/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Listen to Model/i })).toBeInTheDocument();
 
     // Click useful expression to hear pronunciation
     const exprBtn = screen.getByText('I was wondering if it might be possible to change rooms');
@@ -2184,6 +2187,76 @@ describe('Keyboard Hotkeys System', () => {
 
     fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
     expect(searchInput).toHaveValue('');
+  });
+});
+
+describe('TaskView True/False Justification & AI Evaluation Payload', () => {
+  it('renders justification textarea when False is selected and appends it to submission payload', async () => {
+    vi.spyOn(taskApi, 'getTaskById').mockResolvedValue({
+      id: 'tf-task-42',
+      type: 'READING',
+      grammarTopic: 'Environmental Science',
+      cefrLevel: 'B2',
+      domain: 'Nature',
+      content: 'Solar energy deployment grew by 35% in 2025 across Europe.',
+      totalPoints: 20,
+      questions: [
+        {
+          id: 'q-tf-1',
+          questionOrder: 1,
+          questionText: 'Solar energy deployment declined in Europe in 2025.',
+          correctAnswer: 'False',
+          options: ['True', 'False', 'Not Given'],
+          difficulty: 2,
+          points: 10,
+          grammarRule: 'Reading: True/False/Not Given',
+        },
+      ],
+    } as any);
+
+    const submitSpy = vi.spyOn(submissionApi, 'submitText').mockResolvedValue({
+      id: 'sub-tf-99',
+      score: 100,
+      effectiveScore: 100,
+    } as any);
+
+    render(
+      <MemoryRouter initialEntries={['/student/task/tf-task-42']}>
+        <Routes>
+          <Route path="/student/task/:taskId" element={<TaskView />} />
+          <Route path="/student/review/:submissionId" element={<div>Review View</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    // Question loads in List mode (READING default)
+    expect(await screen.findByText('Solar energy deployment declined in Europe in 2025.')).toBeInTheDocument();
+
+    // False is not yet selected, so correction textarea should not be in the document
+    expect(screen.queryByPlaceholderText(/State the correct fact or explain why it is false/i)).not.toBeInTheDocument();
+
+    // Click 'False' option
+    const falseBtn = screen.getByRole('button', { name: /^False/i });
+    fireEvent.click(falseBtn);
+
+    // Now the correction textarea must appear
+    const correctionInput = await screen.findByPlaceholderText(/State the correct fact or explain why it is false/i);
+    expect(correctionInput).toBeInTheDocument();
+    expect(screen.getByText(/Explain why this statement is False \/ Rewrite correctly:/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Evaluated by AI/i).length).toBeGreaterThan(0);
+
+    // Type the correction
+    fireEvent.change(correctionInput, {
+      target: { value: 'In fact, solar energy grew by 35% in 2025.' },
+    });
+
+    // Click submit
+    const submitBtn = screen.getByRole('button', { name: /Submit Assignment|Submit Answers|Submit Task/i });
+    fireEvent.click(submitBtn);
+
+    expect(submitSpy).toHaveBeenCalledTimes(1);
+    const submittedText = submitSpy.mock.calls[0][0].text;
+    expect(submittedText).toContain('Q1: False | Correction: In fact, solar energy grew by 35% in 2025.');
   });
 });
 

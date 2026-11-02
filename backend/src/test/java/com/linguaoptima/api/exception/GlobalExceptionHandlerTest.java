@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -179,5 +180,51 @@ class GlobalExceptionHandlerTest {
         assertNull(exWithoutDevice.getActiveDeviceId());
         ResponseEntity<ErrorResponse> resNull = handler.handleConcurrentGeneration(exWithoutDevice);
         assertEquals("AI task generation is currently running on another device.", resNull.getBody().getMessage());
+    }
+
+    /**
+     * @brief Verifies unit test scenarios for 400 Bad Request exception handlers.
+     */
+    @Test
+    void testHandleBadRequestExceptions() {
+        // 1. IllegalArgumentException with message
+        ResponseEntity<ErrorResponse> r1 = handler.handleIllegalArgument(new IllegalArgumentException("Invalid CEFR tier"));
+        assertEquals(HttpStatus.BAD_REQUEST, r1.getStatusCode());
+        assertEquals(400, r1.getBody().getStatus());
+        assertEquals("INVALID_ARGUMENT", r1.getBody().getErrorCode());
+        assertEquals("Invalid CEFR tier", r1.getBody().getMessage());
+
+        // 2. IllegalArgumentException with null message
+        ResponseEntity<ErrorResponse> r1Null = handler.handleIllegalArgument(new IllegalArgumentException((String) null));
+        assertEquals("Invalid argument provided", r1Null.getBody().getMessage());
+
+        // 3. HttpMessageNotReadableException
+        org.springframework.http.converter.HttpMessageNotReadableException readableEx =
+            mock(org.springframework.http.converter.HttpMessageNotReadableException.class);
+        ResponseEntity<ErrorResponse> r2 = handler.handleHttpMessageNotReadable(readableEx);
+        assertEquals(HttpStatus.BAD_REQUEST, r2.getStatusCode());
+        assertEquals(400, r2.getBody().getStatus());
+        assertEquals("MALFORMED_REQUEST", r2.getBody().getErrorCode());
+        assertEquals("Malformed request payload or invalid JSON format", r2.getBody().getMessage());
+
+        // 4. MethodArgumentTypeMismatchException with known type
+        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException mismatchEx =
+            mock(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class);
+        when(mismatchEx.getName()).thenReturn("difficulty");
+        doReturn(Integer.class).when(mismatchEx).getRequiredType();
+        ResponseEntity<ErrorResponse> r3 = handler.handleTypeMismatch(mismatchEx);
+        assertEquals(HttpStatus.BAD_REQUEST, r3.getStatusCode());
+        assertEquals(400, r3.getBody().getStatus());
+        assertEquals("TYPE_MISMATCH", r3.getBody().getErrorCode());
+        assertTrue(r3.getBody().getMessage().contains("difficulty"));
+        assertTrue(r3.getBody().getMessage().contains("Integer"));
+
+        // 5. MethodArgumentTypeMismatchException with null required type
+        org.springframework.web.method.annotation.MethodArgumentTypeMismatchException mismatchNullType =
+            mock(org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class);
+        when(mismatchNullType.getName()).thenReturn("id");
+        doReturn(null).when(mismatchNullType).getRequiredType();
+        ResponseEntity<ErrorResponse> r3Null = handler.handleTypeMismatch(mismatchNullType);
+        assertTrue(r3Null.getBody().getMessage().contains("unknown"));
     }
 }

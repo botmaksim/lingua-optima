@@ -48,6 +48,8 @@ class PromptTemplatesTest {
         String grammarPrompt = PromptTemplates.buildGrammarCheckingPrompt("Student text", "Answer key");
         assertTrue(grammarPrompt.contains("Student text"));
         assertTrue(grammarPrompt.contains("Answer key"));
+        assertTrue(grammarPrompt.contains("CRITICAL FOR TRUE / FALSE QUESTIONS WITH CORRECTIONS:"));
+        assertTrue(grammarPrompt.contains("Evaluate both the boolean choice (\"False\") AND the factual/grammatical accuracy"));
         String essayGenPrompt = PromptTemplates.buildTaskGenerationPrompt("C1", "Cleft Sentences", "Technology", "ESSAY", "HARD", 5);
         assertTrue(essayGenPrompt.contains("C1"));
         assertTrue(essayGenPrompt.contains("Cleft Sentences"));

@@ -282,11 +282,11 @@ In reading comprehension and open question exercises, student formulations frequ
 }
 ```
 
-### Grammar Checking (OCR & Text Submissions)
+### Grammar Checking & True/False Justification Evaluation (Text & OCR Submissions)
 ```json
 {
   "system": "You are an automated grading assistant.",
-  "prompt": "Compare the student's text against the official answer key and score it.\n\nStudent Text: {studentText}\nAnswer Key: {answerKey}\n\nIdentify mistakes, provide corrections, and calculate a score from 0 to 100. Return ONLY a valid JSON object:\n{\n  \"score\": 85,\n  \"feedback\": \"Detailed feedback\",\n  \"errors\": [ { \"type\": \"grammar/spelling\", \"description\": \"...\" } ],\n  \"corrections\": [ { \"original\": \"...\", \"corrected\": \"...\" } ]\n}"
+  "prompt": "Compare the student's text against the official answer key and score it.\n\nStudent Text: {studentText}\nAnswer Key: {answerKey}\n\nCRITICAL FOR TRUE / FALSE QUESTIONS WITH CORRECTIONS:\nWhen evaluating True/False questions where the student selected 'False' and provided an explanation or correction (e.g. format: 'False | Correction: <student explanation or rewrite>'):\n1. Evaluate both the boolean choice ('False') AND the factual/grammatical accuracy of the student's correction against the text or grammar rule.\n2. If the statement is indeed False:\n   - If the student provided an accurate correction or justification, award full points for this question (isCorrect: true).\n   - If the student selected False but provided an inaccurate, vague, or missing correction, award partial credit (50% score for this item, isCorrect: false or partial) and clearly explain in 'explanation' what the correct fact from the text is.\n3. If the statement was actually True, but the student answered False, mark it incorrect (isCorrect: false) and explain why the statement is True.\n4. In the 'explanation' field, always explicitly address both the truth value and the student's proposed correction.\n\nIdentify mistakes, provide corrections, and calculate a score from 0 to 100. Return ONLY a valid JSON object:\n{\n  \"score\": 85,\n  \"feedback\": \"Detailed feedback\",\n  \"items\": [ { \"questionNumber\": 1, \"sentence\": \"...\", \"studentAnswer\": \"...\", \"correctAnswer\": \"...\", \"isCorrect\": true, \"explanation\": \"...\", \"grammarRule\": \"...\" } ],\n  \"weaknesses\": [ \"...\" ],\n  \"strengths\": [ \"...\" ],\n  \"recommendations\": \"...\"\n}"
 }
 ```
 
@@ -432,7 +432,25 @@ Essay evaluation is modeled after official IELTS and Cambridge English assessmen
   - `MEDIUM` (60–90 words): 1 rich paragraph (or 30–60s conversational response). Balanced fluency and prosody.
   - `LONG` (120–180 words): 2–3 paragraphs (or 60–90s extended discourse).
   - `CUSTOM`: Custom word counts and educator-specified stylistic parameters.
-- **Strict JSON Contract**: Enforces valid JSON output conforming to the backend `TaskService` parser schema.
+- **Strict JSON Contract**: Enforces valid JSON conforming to the backend `TaskService` parser schema:
+  ```json
+  {
+    "title": "Hotel Check-In Dispute Resolution",
+    "speakingMode": "SITUATION",
+    "content": "Role: Hotel Guest\nSetting: London Boutique Hotel\nGoal: Resolve room discrepancy calmly\n\nTalking Points:\n• Mention reservation confirmation number\n• Explain difference in booked room category\n• Request complimentary upgrade or breakfast voucher\n\nUseful Expressions:\n• I'd appreciate if you could look into this\n• There seems to be a misunderstanding regarding\n• Could you check if another suite is available?",
+    "targetSounds": "/θ/, /ð/",
+    "situation": {
+      "role": "Hotel Guest",
+      "setting": "London Boutique Hotel",
+      "goal": "Resolve room discrepancy calmly and politely",
+      "talkingPoints": ["Mention booking ref", "Explain discrepancy", "Request resolution"],
+      "usefulPhrases": ["I'd appreciate if...", "There seems to be...", "Could you check..."],
+      "sampleResponse": "Good evening. I have a reservation under Smith, number 4821..."
+    },
+    "questions": [{ "id": 1, "type": "SPEAKING", "points": 100 }],
+    "answerKey": [{ "questionId": 1, "correctAnswer": "Model sample response..." }]
+  }
+  ```
 
 ### 10.2 Zero-Cost Acoustic Assessment Strategy & Modular Architecture
 - **In-Browser Free-Tier Execution ($0 Operational Cost)**:

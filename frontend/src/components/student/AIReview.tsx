@@ -494,9 +494,22 @@ export const AIReview: React.FC = () => {
                 <div className="space-y-2 pt-1">
                   {isEffectivelyCorrect ? (
                     <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 text-xs font-medium flex items-center justify-between">
-                      <div className="space-x-1">
-                        <span className="font-semibold text-emerald-800">Your answer:</span>
-                        <span className="font-bold">{item.studentAnswer}</span>
+                      <div className="space-y-1">
+                        <span className="font-semibold text-emerald-800">Your answer:</span>{' '}
+                        {item.studentAnswer && item.studentAnswer.includes(' | Correction: ') ? (
+                          <div className="mt-1 space-y-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-slate-700">Choice:</span>
+                              <span className="font-bold">{item.studentAnswer.split(' | Correction: ')[0]}</span>
+                            </div>
+                            <div className="p-2 rounded-lg bg-emerald-100/70 border border-emerald-200 text-xs text-emerald-950 font-normal">
+                              <span className="font-semibold text-emerald-900">Your Correction: </span>
+                              <span className="italic">{item.studentAnswer.split(' | Correction: ')[1]}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="font-bold">{item.studentAnswer}</span>
+                        )}
                       </div>
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                     </div>
@@ -521,9 +534,22 @@ export const AIReview: React.FC = () => {
                   ) : (
                     <>
                       <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-950 text-xs font-medium flex items-center justify-between">
-                        <div className="space-x-1">
-                          <span className="font-semibold text-rose-800">Your answer:</span>
-                          <span className="line-through font-bold text-rose-900">{item.studentAnswer}</span>
+                        <div className="space-y-1">
+                          <span className="font-semibold text-rose-800">Your answer:</span>{' '}
+                          {item.studentAnswer && item.studentAnswer.includes(' | Correction: ') ? (
+                            <div className="mt-1 space-y-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-slate-700">Choice:</span>
+                                <span className="font-bold text-rose-900">{item.studentAnswer.split(' | Correction: ')[0]}</span>
+                              </div>
+                              <div className="p-2 rounded-lg bg-rose-100/70 border border-rose-200 text-xs text-rose-950 font-normal">
+                                <span className="font-semibold text-rose-900">Your Correction: </span>
+                                <span className="italic">{item.studentAnswer.split(' | Correction: ')[1]}</span>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="line-through font-bold text-rose-900">{item.studentAnswer}</span>
+                          )}
                         </div>
                         <XCircle className="w-4 h-4 text-rose-600 flex-shrink-0" />
                       </div>

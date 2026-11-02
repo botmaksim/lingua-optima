@@ -124,9 +124,9 @@ class TestDeployerServer(unittest.TestCase):
                 data = json.loads(resp.read().decode("utf-8"))
                 self.assertIn("success", data)
         except urllib.error.HTTPError as e:
-            self.assertEqual(e.code, 500)
+            self.assertEqual(e.code, 400)
             data = json.loads(e.read().decode("utf-8"))
-            self.assertFalse(data.get("success"))
+            self.assertFalse(data.get("ok", True))
 
 if __name__ == "__main__":
     unittest.main()

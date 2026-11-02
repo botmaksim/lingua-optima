@@ -929,7 +929,7 @@ LOGIN_PAGE = """<!DOCTYPE html>
 
     <form method="POST" action="/api/login" class="mt-6 space-y-4">
       <div>
-        <label class="block text-xs font-mono text-slate-400 mb-1.5">Ключ доступа</label>
+        <label class="block text-xs font-mono text-slate-400 mb-1.5">Access Key / Ключ доступа</label>
         <input type="password" name="secret" required autofocus placeholder="••••••••••••" class="w-full bg-[#070b14] border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition font-mono">
       </div>
       <button type="submit" class="w-full py-2.5 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] transition shadow-xs">

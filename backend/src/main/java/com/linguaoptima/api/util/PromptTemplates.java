@@ -343,7 +343,7 @@ public final class PromptTemplates {
                - %d Multiple Choice Questions (MCQ):
                  Each question must test comprehension (main ideas, specific details, inferences). "options" array MUST contain 4 plausible choices ["Choice A", "Choice B", "Choice C", "Choice D"]. "correctAnswer" must match the correct option. "points": %d. "grammarRule": "Reading: Multiple Choice".
                - %d True / False / Not Given Questions:
-                 Each question presents a statement to verify against the passage. "options" MUST be ["True", "False", "Not Given"]. "correctAnswer" must be "True", "False", or "Not Given". "points": %d. "grammarRule": "Reading: True/False/Not Given".
+                 Each question presents a statement to verify against the passage. "options" MUST be ["True", "False", "Not Given"]. "correctAnswer" must be "True", "False", or "Not Given". If the answer is "False", the explanation in answerKey MUST explicitly state why the statement is false and provide the factual correction from the passage. "points": %d. "grammarRule": "Reading: True/False/Not Given".
                - %d Sentence Completion / Information Extraction Questions:
                  Each question prompts the student to complete a sentence or answer a factual inquiry from the text. "options" MUST be empty []. "correctAnswer" must contain the expected concise phrase or fact (with acceptable variants separated by ' / '). "points": %d. "grammarRule": "Reading: Sentence Completion".
 
@@ -783,6 +783,15 @@ public final class PromptTemplates {
             Identify mistakes, provide sentence-by-sentence corrections, calculate a score from 0 to 100, and analyze what grammar gaps or topics the student needs to brush up on.
             IMPORTANT FOR OPEN-ENDED QUESTIONS, SENTENCE COMPLETIONS, AND REWRITES:
             A non-exact match with the answer key does NOT mean the answer is wrong. If the student's answer is semantically accurate, aligns with the context or reading passage, and is grammatically acceptable, evaluate it as isCorrect: true, award points, and explain why it is valid.
+
+            CRITICAL FOR TRUE / FALSE QUESTIONS WITH CORRECTIONS:
+            When evaluating True/False questions where the student selected "False" and provided an explanation or correction (e.g. format: "False | Correction: <student explanation or rewrite>"):
+            1. Evaluate both the boolean choice ("False") AND the factual/grammatical accuracy of the student's correction against the text or grammar rule.
+            2. If the statement is indeed False according to the passage or rule:
+               - If the student provided an accurate correction or justification explaining what is actually true according to the text, award full points for this question (isCorrect: true).
+               - If the student selected False but provided an inaccurate, vague, or missing correction, award partial credit (e.g. 50%% score for this item, isCorrect: false or partial) and clearly explain in "explanation" what the correct fact from the text is.
+            3. If the statement was actually True, but the student answered False, mark it incorrect (isCorrect: false) and explain why the statement is True.
+            4. In the "explanation" field, always explicitly address both the truth value and the student's proposed correction.
 
             Return ONLY a valid JSON object with the following structure:
             {

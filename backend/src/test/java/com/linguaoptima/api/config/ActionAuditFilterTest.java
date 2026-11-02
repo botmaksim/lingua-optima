@@ -83,6 +83,7 @@ class ActionAuditFilterTest {
         assertThat(filter.resolveActionName("PUT", "/api/users/me")).isEqualTo("USER_PROFILE_UPDATE");
         assertThat(filter.resolveActionName("DELETE", "/api/users/me")).isEqualTo("USER_GDPR_ERASURE");
         assertThat(filter.resolveActionName("PUT", "/api/users/550e8400-e29b-41d4-a716-446655440000/name")).isEqualTo("STUDENT_ALIAS_RENAME");
+        assertThat(filter.resolveActionName("GET", "/api/tasks/curriculum/pronunciation-packs")).isEqualTo("PRONUNCIATION_PACKS_INSPECT");
     }
 
     @Test

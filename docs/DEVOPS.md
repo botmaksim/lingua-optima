@@ -25,6 +25,12 @@ services:
   db:
     image: postgres:16-alpine
     container_name: lingua_optima_db
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 1024m
+    cpus: 2.5
+    pids_limit: 250
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -44,6 +50,12 @@ services:
   redis:
     image: redis:7-alpine
     container_name: lingua_optima_redis
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    cpus: 2.0
+    pids_limit: 100
     ports:
       - "6379:6379"
     healthcheck:
@@ -59,6 +71,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: lingua_optima_backend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 2048m
+    cpus: 3.5
+    pids_limit: 500
     ports:
       - "8080:8080"
     environment:
@@ -101,6 +121,12 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: lingua_optima_frontend
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    cpus: 2.0
+    pids_limit: 200
     ports:
       - "5173:80"
     environment:
@@ -114,6 +140,11 @@ services:
     image: adminer
     container_name: lingua_optima_adminer
     restart: always
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    cpus: 1.0
+    pids_limit: 100
     ports:
       - "8081:8080"
     depends_on:
@@ -476,13 +507,40 @@ KIMI_BASE_URL=https://api.moonshot.cn/v1
 
 ---
 
-## 12. Project Directory Structure
+---
+
+## 12. Deployer Subsystem (`deployer/`)
+
+Lingua Optima includes a hardened, standalone deployment and monitoring daemon (`deployer/server.py`) with zero external dependencies (pure Python 3 standard library):
+
+### 12.1 Core Capabilities
+- **Web Monitoring UI (`http://<host>:17777`)**: Clean dark-mode dashboard displaying live system resource gauges (RAM, Disk, CPU load), container statuses, and interactive 1-click redeployment controls.
+- **Real-Time Log Streaming**: SSE endpoint (`/api/deploy/stream`) streaming colored terminal build output directly to the browser.
+- **Container Log Inspection (`/api/logs?service=...&format=text`)**: Instant retrieval of container stdout/stderr with plain text or JSON output formatting.
+- **Granular Service Restart (`POST /api/restart`)**: Safe restart of individual containers (`backend`, `frontend`, `db`, `redis`, `adminer`) with strict whitelist validation (rejects unauthorized services with HTTP 400 Bad Request).
+- **Automated Pre-Deploy Security Policy Validator (`validate_security_policy`)**:
+  - Rejects privileged mode (`privileged: true`).
+  - Prohibits host namespace sharing (`network_mode: host`, `pid: host`, `ipc: host`, `userns_mode: host`).
+  - Blocks dangerous Linux capabilities (`ALL`, `SYS_ADMIN`, `SYS_PTRACE`, `NET_ADMIN`).
+  - Rejects sensitive host filesystem mounts (`/`, `/etc`, `/home`, `/var/run/docker.sock`).
+
+### 12.2 Automated Testing
+```bash
+python3 -m unittest discover deployer
+```
+Executes 8 integration and unit tests verifying unauthenticated redirects, Bearer token auth, query param auth, status JSON payloads, SSE handshakes, and input validation.
+
+---
+
+## 13. Project Directory Structure
 
 ```text
 lingua_optima/
 ├── backend/                — Java 21 + Spring Boot 3
-├── frontend/               — React 18 + TypeScript + Vite
+├── frontend/               — React 18 + TypeScript + Vite (Route-based Code Splitting)
+├── deployer/               — Standalone deployment daemon & monitoring dashboard (server.py, test_deployer.py)
 ├── cloudflare-proxy/       — Cloudflare Edge AI reverse-proxy (worker.js, wrangler.toml)
+├── scripts/                — Curriculum generation & vocabulary enrichment scripts
 ├── docker-compose.yml      — All services orchestration (parameterized via .env)
 ├── docs/                   — Documentation & presentation
 │   ├── presentation.html   — Interactive pitch deck

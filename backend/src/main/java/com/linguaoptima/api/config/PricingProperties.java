@@ -40,18 +40,25 @@ public class PricingProperties {
     @AllArgsConstructor
     public static class TierConfig {
         /** @brief Weekly token allowance across AI evaluation and generation. */
+        @lombok.Builder.Default
         private long weeklyTokenLimit = 50_000L;
         /** @brief Maximum task evaluations allowed per week. */
+        @lombok.Builder.Default
         private int weeklyEvaluationLimit = 10;
         /** @brief Maximum OCR uploads allowed per week. */
+        @lombok.Builder.Default
         private int weeklyOcrLimit = 3;
         /** @brief Monthly subscription cost in USD. */
+        @lombok.Builder.Default
         private double monthlyPriceUsd = 0.0;
         /** @brief Maximum active student groups/cohorts allowed. */
+        @lombok.Builder.Default
         private int maxGroups = 1;
         /** @brief Maximum saved custom grammar rules. */
+        @lombok.Builder.Default
         private int maxCustomRules = 1;
         /** @brief Maximum saved custom vocabulary dictionaries. */
+        @lombok.Builder.Default
         private int maxCustomVocabularySets = 1;
 
         public TierConfig(long weeklyTokenLimit, int weeklyEvaluationLimit, int weeklyOcrLimit, double monthlyPriceUsd) {

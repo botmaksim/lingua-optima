@@ -127,7 +127,10 @@ Talking Points:
 Useful Expressions:
 • I was wondering if it might be possible to...
 • Would you happen to have any rooms facing...?
-• I would really appreciate your assistance.`;
+• I would really appreciate your assistance.
+
+Sample Response:
+"Good morning, I was wondering if it might be possible to change rooms as my current room is facing noisy street traffic."`;
 
     const parsed = parseSituationContent(rawText);
     expect(parsed.role).toBe('Hotel Guest');
@@ -137,6 +140,7 @@ Useful Expressions:
     expect(parsed.talkingPoints[0]).toContain('Explain politely');
     expect(parsed.usefulExpressions.length).toBe(3);
     expect(parsed.usefulExpressions[0]).toContain('I was wondering if');
+    expect(parsed.sampleResponse).toContain('Good morning, I was wondering if it might be possible to change rooms');
   });
 
   it('evaluates situational speech delivery, pacing, and talking points coverage', () => {

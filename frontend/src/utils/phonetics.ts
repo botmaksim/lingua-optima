@@ -716,12 +716,13 @@ export interface ParsedSituation {
   goal?: string;
   talkingPoints: string[];
   usefulExpressions: string[];
+  sampleResponse?: string;
   rawText: string;
 }
 
 /**
  * @brief Parses raw text from a communicative situation speaking exercise into structured fields.
- * Extracts Role, Setting, Goal, Talking Points checklist, and Useful Expressions.
+ * Extracts Role, Setting, Goal, Talking Points checklist, Useful Expressions, and Sample Response.
  */
 export function parseSituationContent(text: string): ParsedSituation {
   const result: ParsedSituation = {
@@ -733,7 +734,8 @@ export function parseSituationContent(text: string): ParsedSituation {
   if (!text) return result;
 
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  let currentSection: 'NONE' | 'POINTS' | 'EXPRESSIONS' = 'NONE';
+  let currentSection: 'NONE' | 'POINTS' | 'EXPRESSIONS' | 'SAMPLE' = 'NONE';
+  const sampleLines: string[] = [];
 
   for (const line of lines) {
     const lower = line.toLowerCase();
@@ -746,6 +748,16 @@ export function parseSituationContent(text: string): ParsedSituation {
     } else if (lower.startsWith('goal:') || lower.startsWith('objective:')) {
       result.goal = line.replace(/^(?:goal|objective):/i, '').trim();
       currentSection = 'NONE';
+    } else if (
+      lower.startsWith('sample response:') ||
+      lower.startsWith('model response:') ||
+      lower.startsWith('model answer:') ||
+      lower.startsWith('sample answer:') ||
+      lower.startsWith('пример ответа:')
+    ) {
+      currentSection = 'SAMPLE';
+      const inlineText = line.replace(/^(?:sample response|model response|model answer|sample answer|пример ответа):/i, '').trim();
+      if (inlineText) sampleLines.push(inlineText);
     } else if (lower.includes('talking point') || lower.includes('key point') || lower.includes('опорные пункт')) {
       currentSection = 'POINTS';
     } else if (lower.includes('useful expression') || lower.includes('useful phrase') || lower.includes('полезные фраз')) {
@@ -756,7 +768,13 @@ export function parseSituationContent(text: string): ParsedSituation {
     } else if (currentSection === 'EXPRESSIONS') {
       const cleanLine = line.replace(/^[-•*–—\d.]+\s*/, '').trim();
       if (cleanLine) result.usefulExpressions.push(cleanLine);
+    } else if (currentSection === 'SAMPLE') {
+      sampleLines.push(line);
     }
+  }
+
+  if (sampleLines.length > 0) {
+    result.sampleResponse = sampleLines.join(' ').replace(/^["']|["']$/g, '').trim();
   }
 
   return result;

@@ -116,7 +116,9 @@ Featuring AI-driven task generation, essay grading aligned with IELTS/CEFR rubri
 - **Inline Grammatical Mistake Highlighting & Educator Review**: Highlights grammatical and stylistic errors directly within student essays and open responses in red with contextual popovers detailing the error, suggested rewrite, grammar rule, and explanation. Educators can dynamically highlight new mistakes, edit explanations, toggle question correctness, and remove highlights.
 
 ### 7. Speaking & Pronunciation Practice Studio ($0-Budget Acoustic Architecture)
-- **AI Speech Generation**: Generation of oral reading passages calibrated to CEFR levels (A1–C2) with targeted phonetic patterns (dental fricatives `/θ/-/ð/`, liquids `/r/-/l/`, labiodentals `/v/-/w/`, vowel contrasts `/iː/-/ɪ/`, sibilants, silent letters, connected speech rhythm) and duration presets.
+- **Dual Speaking Modalities (TEXT & SITUATION)**:
+  - **Oral Reading Passage (`TEXT`)**: AI generates calibrated oral passages with focused phonetic repetition (dental fricatives, liquids, vowel contrasts). The student reads into the microphone; client-side Dynamic Levenshtein alignment provides real-time per-word phonetic diagnostics, WPM pace metrics, text-to-speech audio comparison, and interactive IPA articulation cards.
+  - **Communicative Situation (`SITUATION`)**: AI generates realistic communicative role-play scenarios (e.g., job candidate interview, hotel check-in dispute, conference negotiation). Structured with Student Role, Setting, Communicative Goal, 3–4 Talking Points, High-yield Useful Expressions, and an exemplary Model Sample Response calibrated to CEFR tier.
 - **Light Theme & Custom Scenario Calibration**: Modern Lingua Optima light gradient styling (`indigo-50/40 via-white to violet-50/30`), clear educational phonetic descriptions with everyday examples, and custom speech length exposing numeric target word count (15–300 words) and custom speech scenario / monologue instructions.
 - **Client-Side Phonetic Alignment & Zero-Cost Scoring**: Browser-native Web Speech API (`SpeechRecognition`) captures microphone audio without recurring cloud API fees; client-side dynamic Levenshtein alignment categorizes spoken words as correct, mispronounced, or omitted.
 - **Speech Rate & Pacing Cadence Scoring**: Real-time measurement of reading speed in Words Per Minute (WPM) calibrated against natural conversational tempo (100–160 WPM). Pacing directly influences fluency and composite overall scoring alongside pronunciation accuracy and completeness.
@@ -269,7 +271,7 @@ cd backend
 ### 3. Local Frontend Testing & Production Build
 ```bash
 cd frontend
-# Runs 58 Vitest unit tests and builds optimized production bundles
+# Runs 82 Vitest unit tests and builds optimized production bundles with code splitting
 npm install
 npm test
 npm run build
@@ -321,15 +323,20 @@ lingua_optima/
 ├── cloudflare-proxy/              # Cloudflare Edge Worker AI proxy & scraper
 │   ├── worker.js                  # Edge routing & vendor model synchronization
 │   └── README.md                  # Proxy deployment guide
+├── deployer/                      # Standalone Python deployment server & monitoring UI
+│   ├── server.py                  # HTTP server, Docker runner, SSE log streamer
+│   ├── test_deployer.py           # Subsystem test suite (8/8 OK)
+│   └── lingua-deployer.service    # Systemd unit file for autostart
 ├── backend/                       # Spring Boot 3 + Java 21 REST API
 │   ├── src/main/java/             # Controllers, Services, Repositories, Domain, Config
-│   ├── src/main/resources/        # application.yml, logback-spring.xml, Flyway migrations
+│   ├── src/main/resources/        # application.yml, logback-spring.xml, Flyway migrations, pronunciation_packs.json
 │   └── src/test/java/             # 401 unit & slice tests, 99.7% lines | 99.3% instructions
-├── frontend/                      # React 18 + TypeScript + Vite PWA
+├── frontend/                      # React 18 + TypeScript + Vite PWA (Route-based Code Splitting)
 │   ├── src/components/            # Student, Teacher, Auth, and Common UI components
 │   ├── src/pages/                 # Landing, Dashboards, Privacy Policy, Terms, Help Center
 │   ├── src/store/                 # Zustand state stores (auth, task, ui, notification)
-│   └── src/test/                  # 58 Vitest unit and component tests
+│   └── src/test/                  # 82 Vitest unit and component tests
+├── scripts/                       # Curriculum seeding & vocabulary enrichment scripts
 ├── docs/                          # In-depth architectural specifications
 │   ├── presentation.html          # Interactive Project Presentation (Pitch Deck)
 │   ├── AUDIT_LOGGING.md           # Structured Action Audit & Distributed Tracing

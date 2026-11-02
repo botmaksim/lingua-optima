@@ -28,6 +28,7 @@ import {
   Keyboard,
   Volume2,
   VolumeX,
+  Edit3,
 } from 'lucide-react';
 import { taskApi } from '../../api/taskApi';
 import { submissionApi } from '../../api/submissionApi';
@@ -54,12 +55,20 @@ export const TaskView: React.FC = () => {
 
   const [task, setTask] = useState<Task | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [tfCorrections, setTfCorrections] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showUnansweredConfirm, setShowUnansweredConfirm] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  // Helper to accurately identify True/False or True/False/Not Given questions
+  const isTrueFalseQuestion = (q: TaskQuestion | undefined | null): boolean => {
+    if (!q || !Array.isArray(q.options) || q.options.length < 2 || q.options.length > 3) return false;
+    const lowerOpts = q.options.map((o) => o.trim().toLowerCase());
+    return lowerOpts.includes('true') && lowerOpts.includes('false');
+  };
 
   // View modes: Step-by-Step Card Focus (default) or List
   const [viewMode, setViewMode] = useState<TaskViewMode>('CARDS');
@@ -111,7 +120,17 @@ export const TaskView: React.FC = () => {
         const draft = await getDraftLocal(`task_${taskId}`);
         if (draft) {
           try {
-            setAnswers(JSON.parse(draft));
+            const parsed = JSON.parse(draft);
+            if (parsed && typeof parsed === 'object') {
+              if (parsed.answers) {
+                setAnswers(parsed.answers);
+                if (parsed.tfCorrections) {
+                  setTfCorrections(parsed.tfCorrections);
+                }
+              } else {
+                setAnswers(parsed);
+              }
+            }
           } catch {
           }
         }
@@ -227,7 +246,7 @@ export const TaskView: React.FC = () => {
 
   const handleSaveDraft = async () => {
     if (!taskId) return;
-    await saveDraftLocal(`task_${taskId}`, JSON.stringify(answers));
+    await saveDraftLocal(`task_${taskId}`, JSON.stringify({ answers, tfCorrections }));
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2000);
   };
@@ -261,7 +280,13 @@ export const TaskView: React.FC = () => {
 
     try {
       const formattedAnswers = (task.questions || []).map((q, idx) => {
-        return `Q${idx + 1}: ${answers[q.id] || 'No answer'}`;
+        const rawAns = answers[q.id];
+        const isFalse = rawAns && rawAns.trim().toLowerCase() === 'false';
+        const correction = tfCorrections[q.id]?.trim();
+        if (isFalse && correction) {
+          return `Q${idx + 1}: False | Correction: ${correction}`;
+        }
+        return `Q${idx + 1}: ${rawAns || 'No answer'}`;
       }).join('\n');
 
       const result = await submissionApi.submitText({
@@ -477,10 +502,7 @@ export const TaskView: React.FC = () => {
 
       // 12. Multiple Choice & True/False answer selection
       if (Array.isArray(currentQ.options) && currentQ.options.length > 0 && task?.canSubmit !== false) {
-        const isTF =
-          currentQ.options.length === 2 &&
-          (currentQ.options.some((o) => o.toLowerCase() === 'true') ||
-            currentQ.options.some((o) => o.toLowerCase() === 'false'));
+        const isTF = isTrueFalseQuestion(currentQ);
 
         if (isTF) {
           // True: '1', 't', 'е'
@@ -901,10 +923,7 @@ export const TaskView: React.FC = () => {
               );
             }
 
-            const isTF =
-              Array.isArray(currentQ.options) &&
-              currentQ.options.length === 2 &&
-              (currentQ.options.includes('True') || currentQ.options.includes('False'));
+            const isTF = isTrueFalseQuestion(currentQ);
             const isMCQ = Array.isArray(currentQ.options) && currentQ.options.length > 0 && !isTF;
             const hasOptions =
               Array.isArray(currentQ.options) &&
@@ -1054,6 +1073,35 @@ export const TaskView: React.FC = () => {
                         );
                       })}
                     </div>
+
+                    {isTF && selectedAnswer.trim().toLowerCase() === 'false' && (
+                      <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2.5 animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between">
+                          <label htmlFor={`tf-correction-${currentQ.id}`} className="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
+                            <Edit3 className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Explain why this statement is False / Rewrite correctly:</span>
+                          </label>
+                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-md">
+                            Evaluated by AI
+                          </span>
+                        </div>
+                        <textarea
+                          id={`tf-correction-${currentQ.id}`}
+                          disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(currentQ.id))}
+                          rows={2}
+                          value={tfCorrections[currentQ.id] || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setTfCorrections((prev) => ({ ...prev, [currentQ.id]: val }));
+                          }}
+                          placeholder="State the correct fact or explain why it is false according to the text..."
+                          className="w-full p-3 rounded-xl border border-amber-300 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition resize-y"
+                        />
+                        <p className="text-[11px] text-amber-800 leading-tight">
+                          Because you chose <strong>False</strong>, provide the factual correction. The AI will evaluate both your False choice and this correction upon submission.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : task.type === 'REWRITE' ? (
                   <div className="space-y-2">
@@ -1276,10 +1324,7 @@ export const TaskView: React.FC = () => {
               </div>
             ) : (
               questions.map((q, idx) => {
-                const isTF =
-                  Array.isArray(q.options) &&
-                  q.options.length === 2 &&
-                  (q.options.includes('True') || q.options.includes('False'));
+                const isTF = isTrueFalseQuestion(q);
                 const isMCQ = Array.isArray(q.options) && q.options.length > 0 && !isTF;
 
                 return (
@@ -1321,26 +1366,57 @@ export const TaskView: React.FC = () => {
                     </div>
 
                     {isMCQ || isTF ? (
-                      <div className="space-y-2">
-                        {q.options?.map((opt, optIdx) => {
-                          const isSelected = answers[q.id] === opt;
-                          return (
-                            <button
-                              type="button"
-                              key={optIdx}
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          {q.options?.map((opt, optIdx) => {
+                            const isSelected = answers[q.id] === opt;
+                            return (
+                              <button
+                                type="button"
+                                key={optIdx}
+                                disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(q.id))}
+                                onClick={() => handleSelectAnswer(q.id, opt)}
+                                className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
+                                  isSelected
+                                    ? 'border-primary bg-indigo-50/60 text-primary font-semibold'
+                                    : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                                } disabled:opacity-60`}
+                              >
+                                <span>{opt}</span>
+                                {isSelected && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {isTF && (answers[q.id] || '').trim().toLowerCase() === 'false' && (
+                          <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-2 animate-in fade-in duration-200">
+                            <div className="flex items-center justify-between">
+                              <label htmlFor={`tf-correction-list-${q.id}`} className="text-xs font-bold text-amber-900 flex items-center space-x-1.5">
+                                <Edit3 className="w-3.5 h-3.5 text-amber-600" />
+                                <span>Explain why this statement is False / Rewrite correctly:</span>
+                              </label>
+                              <span className="text-[10px] font-semibold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-md">
+                                Evaluated by AI
+                              </span>
+                            </div>
+                            <textarea
+                              id={`tf-correction-list-${q.id}`}
                               disabled={task.canSubmit === false || (instantFeedback && !isTeacherTask && lockedInstantQuestions.has(q.id))}
-                              onClick={() => handleSelectAnswer(q.id, opt)}
-                              className={`w-full text-left p-3.5 rounded-2xl border text-sm font-medium transition flex items-center justify-between ${
-                                isSelected
-                                  ? 'border-primary bg-indigo-50/60 text-primary font-semibold'
-                                  : 'border-slate-200 hover:border-slate-300 text-slate-700'
-                              } disabled:opacity-60`}
-                            >
-                              <span>{opt}</span>
-                              {isSelected && <CheckCircle2 className="w-4 h-4 text-primary" />}
-                            </button>
-                          );
-                        })}
+                              rows={2}
+                              value={tfCorrections[q.id] || ''}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setTfCorrections((prev) => ({ ...prev, [q.id]: val }));
+                              }}
+                              placeholder="State the correct fact or explain why it is false according to the text..."
+                              className="w-full p-2.5 rounded-xl border border-amber-300 bg-white text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition resize-y"
+                            />
+                            <p className="text-[11px] text-amber-800 leading-tight">
+                              State what is actually true according to the passage. Evaluated by AI alongside your False choice.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <input

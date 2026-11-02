@@ -198,6 +198,7 @@ public class ActionAuditFilter extends OncePerRequestFilter {
         if (normalized.startsWith("/api/export/")) return "REPORT_EXPORT";
         if (normalized.startsWith("/api/progress/")) return "PROGRESS_INSPECT";
         if (normalized.startsWith("/api/curriculum/custom")) return "CUSTOM_CURRICULUM_MUTATE";
+        if (normalized.contains("/pronunciation-packs")) return "PRONUNCIATION_PACKS_INSPECT";
         if (normalized.startsWith("/api/api-keys")) return "BYOK_KEY_MUTATE";
         if (normalized.startsWith("/api/ai/proxy")) return "AI_VENDOR_PROXY";
 

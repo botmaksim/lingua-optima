@@ -10,10 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.LocalDateTime;
@@ -198,6 +200,59 @@ public class GlobalExceptionHandler {
                 .errorCode("VALIDATION_ERROR")
                 .timestamp(LocalDateTime.now())
                 .errors(errors)
+                .build()
+        );
+    }
+
+    /**
+     * @brief Translates IllegalArgumentException into HTTP 400 Bad Request response.
+     * @param ex Caught argument exception.
+     * @return ErrorResponse ResponseEntity.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(ex.getMessage() != null ? ex.getMessage() : "Invalid argument provided")
+                .errorCode("INVALID_ARGUMENT")
+                .timestamp(LocalDateTime.now())
+                .build()
+        );
+    }
+
+    /**
+     * @brief Translates HttpMessageNotReadableException into HTTP 400 Bad Request response.
+     * @param ex Caught message not readable exception.
+     * @return ErrorResponse ResponseEntity.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Malformed request payload or invalid JSON format")
+                .errorCode("MALFORMED_REQUEST")
+                .timestamp(LocalDateTime.now())
+                .build()
+        );
+    }
+
+    /**
+     * @brief Translates MethodArgumentTypeMismatchException into HTTP 400 Bad Request response.
+     * @param ex Caught argument type mismatch exception.
+     * @return ErrorResponse ResponseEntity.
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String detail = "Parameter '" + ex.getName() + "' should be of type "
+            + (ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(detail)
+                .errorCode("TYPE_MISMATCH")
+                .timestamp(LocalDateTime.now())
                 .build()
         );
     }

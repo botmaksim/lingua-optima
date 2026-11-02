@@ -80,7 +80,7 @@ backend/
 │   │   │   ├── RegisterRequest.java    — email, password, fullName, role
 │   │   │   ├── LoginRequest.java       — email, password
 │   │   │   ├── GoogleAuthRequest.java  — credential, role
-│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty, ecoMode, groupIds[], dueDate, maxAttempts, readingTitle, readingLength, readingParagraphs, mcqQuestionsCount, mcqPoints, trueFalseQuestionsCount, trueFalsePoints, openQuestionsCount, openPoints, speakingTitle, targetSounds, speakingLength
+│   │   │   ├── TaskParamsRequest.java  — cefrLevel, grammarTopic, domain, taskType, difficulty, ecoMode, groupIds[], dueDate, maxAttempts, readingTitle, readingLength, readingParagraphs, mcqQuestionsCount, mcqPoints, trueFalseQuestionsCount, trueFalsePoints, openQuestionsCount, openPoints, speakingTitle, targetSounds, speakingLength, pronunciationPackId, speakingMode (TEXT | SITUATION)
 │   │   │   ├── AssignTaskRequest.java  — groupIds[], dueDate, maxAttempts
 │   │   │   ├── TransferTaskRequest.java — targetGroupId, keepInSource, dueDate, maxAttempts
 │   │   │   ├── TextSubmissionRequest.java — text, assignmentId, type (GRAMMAR/ESSAY)
@@ -583,13 +583,21 @@ The system registers 3 scheduled background jobs (`@Scheduled`).
 
 | Exception | HTTP Status | Description / Typical Message |
 |---|---|---|
+| `MethodArgumentNotValidException` | `400 Bad Request` | Bean validation failure (`VALIDATION_ERROR` with itemized field messages) |
+| `IllegalArgumentException` | `400 Bad Request` | Invalid argument or unsupported parameter (`INVALID_ARGUMENT`) |
+| `HttpMessageNotReadableException` | `400 Bad Request` | Malformed request payload or invalid JSON format (`MALFORMED_REQUEST`) |
+| `MethodArgumentTypeMismatchException` | `400 Bad Request` | Query parameter or path variable type mismatch (`TYPE_MISMATCH`) |
+| `UnauthorizedException` | `401 Unauthorized` | Missing, expired, or invalid JWT / OAuth2 token (`UNAUTHORIZED`) |
+| `BadCredentialsException` | `401 Unauthorized` | Invalid email or password (`BAD_CREDENTIALS`) |
+| `PaymentException` | `402 Payment Required` | Payment processing errors (`CARD_DECLINED`, `INSUFFICIENT_FUNDS`, etc.) |
+| `ForbiddenException` / `AccessDeniedException` | `403 Forbidden` | Insufficient permissions (e.g., modifying another teacher's group) (`FORBIDDEN`) |
+| `ResourceNotFoundException` | `404 Not Found` | Requested entity (`Task`, `Group`, `User`, etc.) does not exist (`RESOURCE_NOT_FOUND`) |
+| `ConcurrentGenerationException` | `409 Conflict` | AI generation currently active on another device with takeover offer (`CONCURRENT_GENERATION`) |
+| `MaxUploadSizeExceededException` | `413 Payload Too Large` | Uploaded image or multipart exceeds 10MB limit (`FILE_TOO_LARGE`) |
 | `OcrException` | `422 Unprocessable Entity` | "Image is unclear, please try again." (Failed to extract legible text from image) |
 | `QuotaExceededException` | `429 Too Many Requests` | "Weekly evaluation limit reached." (Free-tier weekly quota exhausted) |
 | `AIServiceException` | `503 Service Unavailable` | "AI service temporarily unavailable." (All providers in the fallback chain failed) |
-| `PaymentException` | `402 Payment Required` | Payment processing errors (`CARD_DECLINED`, `INSUFFICIENT_FUNDS`, etc.) |
-| `UnauthorizedException` | `401 Unauthorized` | Missing, expired, or invalid JWT / OAuth2 token |
-| `ForbiddenException` | `403 Forbidden` | Insufficient permissions (e.g., attempting to modify another teacher's group) |
-| `ResourceNotFoundException` | `404 Not Found` | Requested entity (`Task`, `Group`, `User`, etc.) does not exist |
+| `Exception` (catch-all) | `500 Internal Server Error` | Unexpected server runtime exception (`INTERNAL_SERVER_ERROR`) |
 
 ## 9. Diagnostic Rule Segregation & Submission Analytics Engine
 
@@ -725,8 +733,27 @@ The PostgreSQL relational database is version-controlled using an enterprise bas
 
 ---
 
+## 15. True/False Justification Evaluation Rubric & Communicative Speaking Contracts
+
+### 15.1 True/False Factual Correction Rubric (`PromptTemplates.buildGrammarCheckingPrompt`)
+- **Dual Verification Contract**:
+  - When a student answers `False` on any True/False statement and provides an explanatory correction (formatted as `False | Correction: <student text>`), downstream AI evaluation assesses both the boolean choice and the factual accuracy of the justification against the passage or grammar rule.
+  - **Grading Rubric**:
+    - **False Choice + Accurate Factual Correction**: Full credit awarded (`isCorrect: true`).
+    - **False Choice + Missing or Inaccurate Correction**: Partial credit awarded (50% score for the question, `isCorrect: false` or partial), and the AI explicitly explains the correct factual sentence from the passage.
+    - **Statement Was Actually True**: 0 credit awarded (`isCorrect: false`), with an explanation of why the passage confirms the statement.
+- **Reading Generator Enforcement (`PromptTemplates.buildReadingGenerationPrompt`)**:
+  - Requires the AI generator to include explicit factual justifications in the answer key for all `False` statements, citing the exact contradicting sentence from the reading passage.
+
+### 15.2 Communicative Speaking Model Speech Contract (`PromptTemplates.buildSpeakingGenerationPrompt`)
+- Generates structured scenario metadata (`Role`, `Setting`, `Goal`, `Talking Points`, `Useful Expressions`) alongside an explicit model response calibrated to the target CEFR level.
+- Stored directly in `content` and `questions[0].correctAnswer`, enabling instant client parsing (`parseSituationContent`) and guaranteed rendering of a prominent, audible model speech passage.
+
+---
+
 ## License and Copyright
 
 Copyright (c) 2026 **Maksim Manastyrski**. All rights reserved.  
 Licensed under the **[MIT License](../LICENSE)**.
+
 
