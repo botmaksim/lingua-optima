@@ -629,6 +629,8 @@ The PostgreSQL relational database is version-controlled using an enterprise bas
 | Version | File | Description |
 |---|---|---|
 | `V1` | `V1__initial_schema.sql` | Complete baseline schema: users, encrypted API keys, subscriptions, usage quotas, notifications, cohorts (`groups`, `group_students`), custom curriculum, tasks (MCQ, GAP_FILL, ESSAY, REWRITE, SHORT_ANSWER, OPEN_BRACKETS, READING, SPEAKING), adaptive CAT session states, submissions with item diagnostics, and CEFR mastery progress |
+| `V2` | `V2__teacher_student_aliases.sql` | Educator custom student aliases and roster annotations (`teacher_student_aliases`) |
+| `V3` | `V3__group_tasks.sql` | Cohort task mapping (`group_tasks`), ensuring tasks assigned to groups persist and display independently of active student count, and automatically backfill assignments when new students enroll |
 
 ---
 

@@ -394,12 +394,9 @@ Database schema versioning is managed via **Flyway**, integrated directly into S
 **Naming convention:** `V<Version>__<Description>.sql` (note the double underscore separator).
 
 ### Migration List
-- `V1__create_users.sql` — Creation of the users table and user preferences.
-- `V2__create_user_api_keys.sql` — Table for storing encrypted user-supplied API keys.
-- `V3__create_materials.sql` — Table of study materials and curriculum templates.
-- `V4__create_exercises.sql` — Table of exercises and AI-generated tasks.
-- `V5__create_user_progress.sql` — Table of mastery statistics, progress history, and submission results.
-- `V6__create_vocabulary.sql` — Personal vocabulary and queued AI task state (`V1__init_schema.sql` .. `V4__create_pending_ai_tasks.sql` in production).
+- `V1__initial_schema.sql` — Baseline enterprise relational schema (users, quotas, cohorts, tasks, submissions).
+- `V2__teacher_student_aliases.sql` — Educator student custom aliases and roster annotations.
+- `V3__group_tasks.sql` — Explicit cohort-level task assignments (`group_tasks`) with enrollment backfill.
 
 ---
 

@@ -2022,6 +2022,11 @@ describe('GrammarConfigPanel component', () => {
     const hardBtn = screen.getByRole('button', { name: /Hard/i });
     fireEvent.click(hardBtn);
     expect(handleDifficultyChange).toHaveBeenCalledWith('HARD');
+
+    // Select question count via preset button
+    const countTenBtn = screen.getByRole('button', { name: '10' });
+    fireEvent.click(countTenBtn);
+    expect(handleCountChange).toHaveBeenCalledWith(10);
   });
 
   it('renders curriculum rules and target vocabulary with library saving', () => {

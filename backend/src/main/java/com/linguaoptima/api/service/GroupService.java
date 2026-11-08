@@ -34,6 +34,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.linguaoptima.api.domain.TeacherStudentAlias;
+import com.linguaoptima.api.domain.GroupTask;
+import com.linguaoptima.api.domain.TaskAssignment;
+import com.linguaoptima.api.domain.enums.AssignmentStatus;
+import com.linguaoptima.api.repository.GroupTaskRepository;
+import com.linguaoptima.api.repository.TaskAssignmentRepository;
 import com.linguaoptima.api.repository.TeacherStudentAliasRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -67,6 +72,10 @@ public class GroupService {
     private final SubscriptionRepository subscriptionRepository;
     /** @brief Teacher-student alias repository for custom educator roster names. */
     private final TeacherStudentAliasRepository teacherStudentAliasRepository;
+    /** @brief Group task repository for backfilling assignments upon enrollment. */
+    private final GroupTaskRepository groupTaskRepository;
+    /** @brief Task assignment repository for student task delivery. */
+    private final TaskAssignmentRepository taskAssignmentRepository;
 
     /**
      * @brief Resolves subscription tier for an educator.
@@ -258,6 +267,24 @@ public class GroupService {
         gs.setJoinedAt(LocalDateTime.now());
         gs.setRemovedAt(null);
         groupStudentRepository.save(gs);
+
+        List<GroupTask> groupTasks = groupTaskRepository.findByGroupIdWithTask(groupId);
+        for (GroupTask gt : groupTasks) {
+            Optional<TaskAssignment> existingTargetAssignment = taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), gt.getTask().getId());
+            if (existingTargetAssignment.isEmpty()) {
+                TaskAssignment assignment = TaskAssignment.builder()
+                    .task(gt.getTask())
+                    .student(student)
+                    .assignedBy(gt.getAssignedBy())
+                    .dueDate(gt.getDueDate())
+                    .status(AssignmentStatus.PENDING)
+                    .maxAttempts(gt.getMaxAttempts() != null ? gt.getMaxAttempts() : 1)
+                    .attemptsUsed(0)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+                taskAssignmentRepository.save(assignment);
+            }
+        }
 
         List<Notification> notifs = notificationRepository.findByUserIdAndTypeAndReferenceId(
             student.getId(), NotificationType.GROUP_INVITATION, groupId);

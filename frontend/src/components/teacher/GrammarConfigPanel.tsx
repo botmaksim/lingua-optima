@@ -23,6 +23,7 @@ import {
 import { CefrLevel, DifficultyLevel, TopicsCatalogResponse, TaskType } from '../../types/task';
 import { CustomCurriculumEntry } from '../../types/curriculum';
 import { TopicSelector } from '../common/TopicSelector';
+import { NumberStepper } from '../common/NumberStepper';
 import { taskApi } from '../../api/taskApi';
 
 export interface UploadedCurriculumFile {
@@ -270,21 +271,37 @@ export const GrammarConfigPanel: React.FC<GrammarConfigPanelProps> = ({
           </div>
         </div>
 
-        <div className={`grid ${!isStudent && totalPoints !== undefined && onTotalPointsChange ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+        <div className={`grid ${!isStudent && totalPoints !== undefined && onTotalPointsChange ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'} gap-3`}>
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
               Number of Questions
             </label>
-            <div className="flex items-center space-x-2">
-              <input
-                type="number"
+            <div className="flex flex-wrap items-center gap-2">
+              <NumberStepper
+                value={numberOfQuestions}
+                onChange={onNumberOfQuestionsChange}
                 min={1}
                 max={25}
-                value={numberOfQuestions}
-                onChange={(e) => onNumberOfQuestionsChange(Math.max(1, Math.min(25, parseInt(e.target.value) || 5)))}
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center"
+                step={1}
+                unit="items"
+                ariaLabel="Number of Questions"
               />
-              <span className="text-xs font-semibold text-slate-400">items</span>
+              <div className="flex items-center gap-1">
+                {[3, 5, 10, 15, 20].map((count) => (
+                  <button
+                    key={count}
+                    type="button"
+                    onClick={() => onNumberOfQuestionsChange(count)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer ${
+                      numberOfQuestions === count
+                        ? 'bg-primary text-white ring-2 ring-primary/20'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {count}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -293,17 +310,32 @@ export const GrammarConfigPanel: React.FC<GrammarConfigPanelProps> = ({
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Total Points
               </label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
+              <div className="flex flex-wrap items-center gap-2">
+                <NumberStepper
+                  value={totalPoints}
+                  onChange={onTotalPointsChange}
                   min={5}
                   max={500}
                   step={5}
-                  value={totalPoints}
-                  onChange={(e) => onTotalPointsChange(Math.max(1, parseInt(e.target.value) || 100))}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white text-xs font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-center"
+                  unit="pts"
+                  ariaLabel="Total Points"
                 />
-                <span className="text-xs font-semibold text-slate-400">pts</span>
+                <div className="flex items-center gap-1">
+                  {[50, 100, 150, 200].map((pts) => (
+                    <button
+                      key={pts}
+                      type="button"
+                      onClick={() => onTotalPointsChange(pts)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-2xs cursor-pointer ${
+                        totalPoints === pts
+                          ? 'bg-primary text-white ring-2 ring-primary/20'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {pts}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}

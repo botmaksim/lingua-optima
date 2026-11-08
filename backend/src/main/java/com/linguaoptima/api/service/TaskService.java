@@ -67,6 +67,8 @@ public class TaskService {
     private final GenerationProtectionService generationProtectionService;
     /** @brief Pricing properties for tiered quota validation. */
     private final PricingProperties pricingProperties;
+    /** @brief Repository managing cohort-level task assignments. */
+    private final GroupTaskRepository groupTaskRepository;
 
     /**
      * @brief Generates an educational task with AI, persists it, and creates an automatic assignment for students.
@@ -444,24 +446,46 @@ public class TaskService {
                     " plan allows up to " + maxAllowedGroups + " active group(s). Upgrade to Educator Pro to assign tasks to this cohort.");
             }
 
+            // Persist cohort-level group task mapping
+            Optional<GroupTask> existingGroupTask = groupTaskRepository.findByGroupIdAndTaskId(groupId, taskId);
+            if (existingGroupTask.isEmpty()) {
+                GroupTask gt = GroupTask.builder()
+                    .group(group)
+                    .task(task)
+                    .assignedBy(teacher)
+                    .dueDate(request.getDueDate())
+                    .maxAttempts(effectiveMaxAttempts)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+                groupTaskRepository.save(gt);
+            } else {
+                GroupTask gt = existingGroupTask.get();
+                gt.setDueDate(request.getDueDate());
+                gt.setMaxAttempts(effectiveMaxAttempts);
+                groupTaskRepository.save(gt);
+            }
+
             List<GroupStudent> students = groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId);
             for (GroupStudent gs : students) {
                 User student = gs.getStudent();
-                TaskAssignment assignment = TaskAssignment.builder()
-                    .task(task)
-                    .student(student)
-                    .assignedBy(teacher)
-                    .dueDate(request.getDueDate())
-                    .status(AssignmentStatus.PENDING)
-                    .maxAttempts(effectiveMaxAttempts)
-                    .attemptsUsed(0)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-                taskAssignmentRepository.save(assignment);
+                Optional<TaskAssignment> existingOpt = taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), taskId);
+                if (existingOpt.isEmpty()) {
+                    TaskAssignment assignment = TaskAssignment.builder()
+                        .task(task)
+                        .student(student)
+                        .assignedBy(teacher)
+                        .dueDate(request.getDueDate())
+                        .status(AssignmentStatus.PENDING)
+                        .maxAttempts(effectiveMaxAttempts)
+                        .attemptsUsed(0)
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                    taskAssignmentRepository.save(assignment);
 
-                notificationService.send(student,
-                    "📝 New task assigned: " + task.getType() + " (" + task.getCefrLevel() + ") by " + teacher.getFullName(),
-                    NotificationType.TASK);
+                    notificationService.send(student,
+                        "📝 New task assigned: " + task.getType() + " (" + task.getCefrLevel() + ") by " + teacher.getFullName(),
+                        NotificationType.TASK);
+                }
             }
         }
     }
@@ -486,52 +510,74 @@ public class TaskService {
             throw new ForbiddenException("You are not the owner of group: " + group.getName());
         }
 
+        List<GroupTask> groupTasks = groupTaskRepository.findByGroupIdWithTask(groupId);
         List<GroupStudent> students = groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId);
-        if (students.isEmpty()) {
-            return Collections.emptyList();
-        }
-
         List<UUID> studentIds = students.stream().map(gs -> gs.getStudent().getId()).toList();
-        List<TaskAssignment> assignments = taskAssignmentRepository.findByStudentIdsWithTaskAndStudent(studentIds);
+
+        List<TaskAssignment> assignments = studentIds.isEmpty()
+            ? Collections.emptyList()
+            : taskAssignmentRepository.findByStudentIdsWithTaskAndStudent(studentIds);
 
         Map<UUID, List<TaskAssignment>> assignmentsByTask = assignments.stream()
             .collect(Collectors.groupingBy(ta -> ta.getTask().getId(), LinkedHashMap::new, Collectors.toList()));
 
-        List<GroupTaskResponse> result = new ArrayList<>();
+        List<GroupTask> allTasks = new ArrayList<>(groupTasks);
+        Set<UUID> coveredTaskIds = groupTasks.stream().map(gt -> gt.getTask().getId()).collect(Collectors.toSet());
         for (Map.Entry<UUID, List<TaskAssignment>> entry : assignmentsByTask.entrySet()) {
-            List<TaskAssignment> taskAssignments = entry.getValue();
-            Task task = taskAssignments.get(0).getTask();
-            LocalDateTime earliestDue = taskAssignments.stream()
-                .map(TaskAssignment::getDueDate)
-                .filter(Objects::nonNull)
-                .min(LocalDateTime::compareTo)
-                .orElse(null);
-            Integer maxAttempts = taskAssignments.stream()
-                .map(TaskAssignment::getMaxAttempts)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(1);
+            if (!coveredTaskIds.contains(entry.getKey())) {
+                List<TaskAssignment> legacyAssignments = entry.getValue();
+                Task task = legacyAssignments.get(0).getTask();
+                LocalDateTime earliestDue = legacyAssignments.stream()
+                    .map(TaskAssignment::getDueDate)
+                    .filter(Objects::nonNull)
+                    .min(LocalDateTime::compareTo)
+                    .orElse(null);
+                Integer maxAttempts = legacyAssignments.stream()
+                    .map(TaskAssignment::getMaxAttempts)
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(1);
+                allTasks.add(GroupTask.builder()
+                    .group(group)
+                    .task(task)
+                    .assignedBy(teacher)
+                    .dueDate(earliestDue)
+                    .maxAttempts(maxAttempts)
+                    .createdAt(task.getCreatedAt())
+                    .build());
+            }
+        }
+
+        List<GroupTaskResponse> result = new ArrayList<>();
+        for (GroupTask gt : allTasks) {
+            Task task = gt.getTask();
+            List<TaskAssignment> taskAssignments = assignmentsByTask.getOrDefault(task.getId(), Collections.emptyList());
+
+            LocalDateTime dueDate = gt.getDueDate();
+            Integer maxAttempts = gt.getMaxAttempts() != null ? gt.getMaxAttempts() : 1;
 
             int assignedCount = taskAssignments.size();
             long completedCount = taskAssignments.stream()
                 .filter(ta -> ta.getStatus() == AssignmentStatus.GRADED || ta.getStatus() == AssignmentStatus.SUBMITTED)
                 .count();
 
-            List<UUID> assignmentIds = taskAssignments.stream().map(TaskAssignment::getId).toList();
-            List<Submission> submissions = submissionRepository.findByAssignmentIdIn(assignmentIds);
             Double avgScore = null;
-            if (submissions != null && !submissions.isEmpty()) {
-                double sum = 0.0;
-                int scoredCount = 0;
-                for (Submission s : submissions) {
-                    Double score = s.getOverrideScore() != null ? s.getOverrideScore() : s.getAiScore();
-                    if (score != null) {
-                        sum += score;
-                        scoredCount++;
+            if (!taskAssignments.isEmpty()) {
+                List<UUID> assignmentIds = taskAssignments.stream().map(TaskAssignment::getId).toList();
+                List<Submission> submissions = submissionRepository.findByAssignmentIdIn(assignmentIds);
+                if (submissions != null && !submissions.isEmpty()) {
+                    double sum = 0.0;
+                    int scoredCount = 0;
+                    for (Submission s : submissions) {
+                        Double score = s.getOverrideScore() != null ? s.getOverrideScore() : s.getAiScore();
+                        if (score != null) {
+                            sum += score;
+                            scoredCount++;
+                        }
                     }
-                }
-                if (scoredCount > 0) {
-                    avgScore = Math.round((sum / scoredCount) * 10.0) / 10.0;
+                    if (scoredCount > 0) {
+                        avgScore = Math.round((sum / scoredCount) * 10.0) / 10.0;
+                    }
                 }
             }
 
@@ -542,14 +588,16 @@ public class TaskService {
                 .grammarTopic(task.getGrammarTopic())
                 .domain(task.getDomain())
                 .totalPoints(task.getTotalPoints())
-                .dueDate(earliestDue)
+                .dueDate(dueDate)
                 .maxAttempts(maxAttempts)
                 .assignedStudentCount(assignedCount)
                 .completedStudentCount((int) completedCount)
                 .avgScore(avgScore)
-                .createdAt(task.getCreatedAt())
+                .createdAt(gt.getCreatedAt() != null ? gt.getCreatedAt() : task.getCreatedAt())
                 .build());
         }
+
+        result.sort(Comparator.comparing(GroupTaskResponse::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
 
         return result;
     }
@@ -647,13 +695,34 @@ public class TaskService {
             }
         }
 
-        if (!request.isKeepInSource() && !sourceStudentIds.isEmpty()) {
-            for (UUID sId : sourceStudentIds) {
-                Optional<TaskAssignment> existingOpt = taskAssignmentRepository.findByStudentIdAndTaskId(sId, taskId);
-                if (existingOpt.isPresent()) {
-                    TaskAssignment existing = existingOpt.get();
-                    if (existing.getStatus() == AssignmentStatus.PENDING && existing.getAttemptsUsed() == 0) {
-                        taskAssignmentRepository.delete(existing);
+        Optional<GroupTask> targetGroupTask = groupTaskRepository.findByGroupIdAndTaskId(request.getTargetGroupId(), taskId);
+        if (targetGroupTask.isEmpty()) {
+            GroupTask newGt = GroupTask.builder()
+                .group(targetGroup)
+                .task(task)
+                .assignedBy(teacher)
+                .dueDate(effectiveDueDate)
+                .maxAttempts(effectiveMaxAttempts)
+                .createdAt(LocalDateTime.now())
+                .build();
+            groupTaskRepository.save(newGt);
+        } else {
+            GroupTask tgt = targetGroupTask.get();
+            tgt.setDueDate(effectiveDueDate);
+            tgt.setMaxAttempts(effectiveMaxAttempts);
+            groupTaskRepository.save(tgt);
+        }
+
+        if (!request.isKeepInSource()) {
+            groupTaskRepository.deleteByGroupIdAndTaskId(sourceGroupId, taskId);
+            if (!sourceStudentIds.isEmpty()) {
+                for (UUID sId : sourceStudentIds) {
+                    Optional<TaskAssignment> existingOpt = taskAssignmentRepository.findByStudentIdAndTaskId(sId, taskId);
+                    if (existingOpt.isPresent()) {
+                        TaskAssignment existing = existingOpt.get();
+                        if (existing.getStatus() == AssignmentStatus.PENDING && existing.getAttemptsUsed() == 0) {
+                            taskAssignmentRepository.delete(existing);
+                        }
                     }
                 }
             }

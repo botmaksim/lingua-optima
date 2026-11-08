@@ -19,11 +19,18 @@ import com.linguaoptima.api.exception.ForbiddenException;
 import com.linguaoptima.api.exception.QuotaExceededException;
 import com.linguaoptima.api.exception.ResourceNotFoundException;
 import com.linguaoptima.api.config.PricingProperties;
+import com.linguaoptima.api.domain.GroupTask;
+import com.linguaoptima.api.domain.Task;
+import com.linguaoptima.api.domain.TaskAssignment;
+import com.linguaoptima.api.domain.enums.TaskType;
+import com.linguaoptima.api.domain.enums.CefrLevel;
 import com.linguaoptima.api.repository.GroupRepository;
 import com.linguaoptima.api.repository.GroupStudentRepository;
+import com.linguaoptima.api.repository.GroupTaskRepository;
 import com.linguaoptima.api.repository.NotificationRepository;
 import com.linguaoptima.api.repository.SubmissionRepository;
 import com.linguaoptima.api.repository.SubscriptionRepository;
+import com.linguaoptima.api.repository.TaskAssignmentRepository;
 import com.linguaoptima.api.repository.TeacherStudentAliasRepository;
 import com.linguaoptima.api.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,6 +76,10 @@ class GroupServiceTest {
     /** @brief Teacher-student alias repository mock. */
     @Mock
     private TeacherStudentAliasRepository teacherStudentAliasRepository;
+    @Mock
+    private GroupTaskRepository groupTaskRepository;
+    @Mock
+    private TaskAssignmentRepository taskAssignmentRepository;
 
     @InjectMocks
     private GroupService groupService;
@@ -245,10 +256,29 @@ class GroupServiceTest {
             .isRead(false)
             .build();
 
+        Task task = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.MCQ)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Reported Speech")
+            .build();
+        GroupTask groupTask = GroupTask.builder()
+            .id(UUID.randomUUID())
+            .group(group)
+            .task(task)
+            .assignedBy(teacher)
+            .dueDate(LocalDateTime.now().plusDays(2))
+            .maxAttempts(1)
+            .build();
+
         when(groupStudentRepository.findByGroupIdAndStudentIdAndStatus(group.getId(), student.getId(), EnrollmentStatus.PENDING))
             .thenReturn(Optional.of(gs));
         when(notificationRepository.findByUserIdAndTypeAndReferenceId(student.getId(), NotificationType.GROUP_INVITATION, group.getId()))
             .thenReturn(List.of(notif));
+        when(groupTaskRepository.findByGroupIdWithTask(group.getId()))
+            .thenReturn(List.of(groupTask));
+        when(taskAssignmentRepository.findByStudentIdAndTaskId(student.getId(), task.getId()))
+            .thenReturn(Optional.empty());
 
         GroupResponse res = groupService.acceptInvitation(group.getId(), student);
         assertNotNull(res);
@@ -257,6 +287,7 @@ class GroupServiceTest {
         assertTrue(notif.isRead());
         verify(groupStudentRepository).save(gs);
         verify(notificationRepository).save(notif);
+        verify(taskAssignmentRepository).save(any(TaskAssignment.class));
         verify(notificationService).send(eq(teacher), anyString(), eq(NotificationType.SYSTEM));
     }
 

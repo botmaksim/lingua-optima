@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linguaoptima.api.config.PricingProperties;
 import com.linguaoptima.api.domain.Group;
 import com.linguaoptima.api.domain.GroupStudent;
+import com.linguaoptima.api.domain.GroupTask;
 import com.linguaoptima.api.domain.Task;
 import com.linguaoptima.api.domain.TaskAssignment;
 import com.linguaoptima.api.domain.User;
@@ -84,6 +85,8 @@ class TaskServiceTest {
     /** @brief Mock for tiered pricing properties. */
     @Mock
     private PricingProperties pricingProperties;
+    @Mock
+    private GroupTaskRepository groupTaskRepository;
 
     @Spy
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -508,8 +511,73 @@ class TaskServiceTest {
 
         taskService.assignTask(taskId, req, teacherUser);
 
+        verify(groupTaskRepository).save(any(GroupTask.class));
         verify(taskAssignmentRepository).save(argThat(a -> a.getStudent().getId().equals(studentUser.getId())));
         verify(notificationService).send(eq(studentUser), anyString(), eq(NotificationType.TASK));
+    }
+
+    /**
+     * @brief Verifies assigning a task to a cohort with zero active students persists GroupTask.
+     */
+    @Test
+    void testAssignTaskEmptyGroupSuccess() {
+        UUID taskId = UUID.randomUUID();
+        UUID groupId = UUID.randomUUID();
+        Task task = Task.builder().id(taskId).type(TaskType.MCQ).cefrLevel(CefrLevel.B1).build();
+        Group group = Group.builder().id(groupId).name("Empty Cohort").teacher(teacherUser).build();
+
+        AssignTaskRequest req = AssignTaskRequest.builder()
+            .groupIds(List.of(groupId))
+            .dueDate(LocalDateTime.now().plusDays(7))
+            .maxAttempts(2)
+            .build();
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of());
+
+        taskService.assignTask(taskId, req, teacherUser);
+
+        verify(groupTaskRepository).save(argThat(gt ->
+            gt.getGroup().getId().equals(groupId) &&
+            gt.getTask().getId().equals(taskId) &&
+            gt.getMaxAttempts() == 2
+        ));
+        verify(taskAssignmentRepository, never()).save(any(TaskAssignment.class));
+    }
+
+    /**
+     * @brief Verifies re-assigning a task to a cohort updates existing GroupTask due date and attempts.
+     */
+    @Test
+    void testAssignTaskExistingGroupTaskUpdatesDueDate() {
+        UUID taskId = UUID.randomUUID();
+        UUID groupId = UUID.randomUUID();
+        Task task = Task.builder().id(taskId).type(TaskType.MCQ).cefrLevel(CefrLevel.B1).build();
+        Group group = Group.builder().id(groupId).name("Cohort").teacher(teacherUser).build();
+        GroupTask existingGt = GroupTask.builder()
+            .group(group)
+            .task(task)
+            .assignedBy(teacherUser)
+            .maxAttempts(1)
+            .build();
+
+        AssignTaskRequest req = AssignTaskRequest.builder()
+            .groupIds(List.of(groupId))
+            .dueDate(LocalDateTime.now().plusDays(10))
+            .maxAttempts(3)
+            .build();
+
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+        when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
+        when(groupTaskRepository.findByGroupIdAndTaskId(groupId, taskId)).thenReturn(Optional.of(existingGt));
+        when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of());
+
+        taskService.assignTask(taskId, req, teacherUser);
+
+        assertEquals(3, existingGt.getMaxAttempts());
+        assertNotNull(existingGt.getDueDate());
+        verify(groupTaskRepository).save(existingGt);
     }
 
     /**
@@ -1237,15 +1305,45 @@ class TaskServiceTest {
         when(groupRepository.findById(groupId)).thenReturn(Optional.of(otherGroup));
         assertThrows(ForbiddenException.class, () -> taskService.getTasksForGroup(groupId, teacherUser));
 
-        // 3. Empty group returns empty list
+        // 3. Empty group returns empty list when no group tasks
         Group group = Group.builder().id(groupId).name("Group 1").teacher(teacherUser).build();
         when(groupRepository.findById(groupId)).thenReturn(Optional.of(group));
         when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of());
+        when(groupTaskRepository.findByGroupIdWithTask(groupId)).thenReturn(List.of());
 
         List<GroupTaskResponse> emptyRes = taskService.getTasksForGroup(groupId, teacherUser);
         assertTrue(emptyRes.isEmpty());
 
+        // 3b. Empty cohort with assigned GroupTask returns the task with 0 student count
+        Task emptyGroupTask = Task.builder()
+            .id(UUID.randomUUID())
+            .type(TaskType.MCQ)
+            .cefrLevel(CefrLevel.B1)
+            .grammarTopic("Conditional Sentences")
+            .domain("Business")
+            .totalPoints(100)
+            .createdAt(LocalDateTime.now())
+            .build();
+        GroupTask gtEmptyCohort = GroupTask.builder()
+            .id(UUID.randomUUID())
+            .group(group)
+            .task(emptyGroupTask)
+            .assignedBy(teacherUser)
+            .dueDate(LocalDateTime.now().plusDays(5))
+            .maxAttempts(2)
+            .createdAt(LocalDateTime.now())
+            .build();
+        when(groupTaskRepository.findByGroupIdWithTask(groupId)).thenReturn(List.of(gtEmptyCohort));
+
+        List<GroupTaskResponse> emptyCohortRes = taskService.getTasksForGroup(groupId, teacherUser);
+        assertEquals(1, emptyCohortRes.size());
+        assertEquals(emptyGroupTask.getId(), emptyCohortRes.get(0).getTaskId());
+        assertEquals(0, emptyCohortRes.get(0).getAssignedStudentCount());
+        assertEquals(0, emptyCohortRes.get(0).getCompletedStudentCount());
+        assertNull(emptyCohortRes.get(0).getAvgScore());
+
         // 4. Group with students and assigned tasks
+        when(groupTaskRepository.findByGroupIdWithTask(groupId)).thenReturn(List.of());
         User student1 = User.builder().id(UUID.randomUUID()).fullName("Student 1").build();
         GroupStudent gs1 = GroupStudent.builder().group(group).student(student1).isActive(true).build();
         when(groupStudentRepository.findByGroupIdAndIsActiveTrue(groupId)).thenReturn(List.of(gs1));
@@ -1380,10 +1478,22 @@ class TaskServiceTest {
         TransferTaskRequest copyReq = TransferTaskRequest.builder()
             .targetGroupId(targetGroupId)
             .keepInSource(true)
+            .dueDate(LocalDateTime.now().plusDays(4))
+            .maxAttempts(3)
             .build();
         clearInvocations(taskAssignmentRepository);
+        GroupTask existingTargetGt = GroupTask.builder()
+            .id(UUID.randomUUID())
+            .group(targetGroup)
+            .task(task)
+            .assignedBy(teacherUser)
+            .build();
+        when(groupTaskRepository.findByGroupIdAndTaskId(targetGroupId, taskId)).thenReturn(Optional.of(existingTargetGt));
 
         taskService.transferTask(sourceGroupId, taskId, copyReq, teacherUser);
+        assertEquals(3, existingTargetGt.getMaxAttempts());
+        assertNotNull(existingTargetGt.getDueDate());
+        verify(groupTaskRepository).save(existingTargetGt);
         verify(taskAssignmentRepository).save(any(TaskAssignment.class));
         verify(taskAssignmentRepository, never()).delete(any(TaskAssignment.class));
     }
